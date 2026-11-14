@@ -1,8 +1,9 @@
 # ADR 0111: Regions as the unit of content, loading and budgets
 
-**Status:** §1 (the region manifest) and §2 (per-region loading) accepted, 2026-11-14. §3's
-current behaviour is unchanged; its proposal for later regions and §4 (budgets) wait for the owner;
-the budget gates change only when the owner accepts §4. Builds on ADR 0011 (regions in the world model), ADR 0076 (asset families), ADR 0104
+**Status:** accepted, 2026-11-14. §1 (the region manifest) and §2 (per-region loading) were accepted
+first; the owner then decided §3 (offline for later regions), §4 (budgets) and the music trial on the
+same day (see "Owner decisions"). The §4 gates are live; §3's caching for later regions and the music
+trial are follow-up work. Builds on ADR 0011 (regions in the world model), ADR 0076 (asset families), ADR 0104
 (top-down scenes as assets), ADR 0108 (area music) and ADR 0109 (the JS budget). Answers "Scale and
 saves" in `docs/pipeline-proof-plan.md`.
 
@@ -111,20 +112,21 @@ interludes, discovery markers, followers, journal notes, Ba Dan's routines and c
 (`**/*.js`) and its scenes and boards (`art/topdown/**`) stay precached and the game plays offline
 after a first visit. Music still streams (ADR 0108).
 
-**Proposed for the next region** (owner decision, below): the start region is precached; every other
-region's chunk (`assets/region-<folder>-*`) and art are left out of the precache
-(`scripts/precache.mjs`) and cached by the service worker on first fetch (workbox `CacheFirst`), so
-a tablet plays offline anywhere it has already been. The alternative is to precache every region:
-simpler and always offline, but the install grows with the saga.
+**Decided for later regions** (owner, 2026-11-14): the start region is precached at install; every
+other region's chunk (`assets/region-<folder>-*`) and art are left out of the precache
+(`scripts/precache.mjs`) and cached by the service worker the first time the party visits it
+(workbox `CacheFirst`), so a tablet plays offline anywhere it has already been. Rejected: precaching
+every region, which is simpler but grows the install with the saga. This is follow-up work; the
+demo, a single start region, needs none of it.
 
-### 4. Budgets (proposed; the owner decides)
+### 4. Budgets (accepted by the owner, 2026-11-14)
 
-One total per kind grows with every region and would need raising each time. Proposed instead: a
-budget for what the core ships and one per region. **For the demo's one region every proposed cap
-adds up to today's number**, so nothing grows today; each new region then brings its own caps
+One total per kind grows with every region and would need raising each time. Instead: a budget for
+what the core ships and one per region. **For the demo's one region every cap adds up to the old
+total**, so nothing grows today; each new region then brings its own caps
 instead of a raise. Measured on this branch:
 
-| Gate                 | Today (rule, number)                       | Proposed (rule, number)                                       | Demo now             |
+| Gate                 | Before (rule, number)                      | Now (rule, number)                                            | Demo now             |
 | -------------------- | ------------------------------------------ | ------------------------------------------------------------- | -------------------- |
 | JS per session       | all shipped JS ≤ 410 KB gz                 | boot JS + the largest region chunk ≤ **410 KB gz**            | 362.8 + 21.9 = 384.7 |
 | JS per region        | (none)                                     | each region chunk ≤ **40 KB gz**                              | 21.9                 |
@@ -138,27 +140,26 @@ instead of a raise. Measured on this branch:
 
 (The caps are MiB, as the scripts have always measured; the report prints them as "MB".)
 
-The draft PR that carries this section implements exactly these gates in
-`scripts/check-bundle-size.mjs` and `scripts/check-asset-budget.mjs`; a region's files are found
-from its manifest (`scripts/region-assets.ts`). Until the owner agrees, `main` keeps today's gates
-and only reports the per-region numbers.
+`scripts/check-bundle-size.mjs` and `scripts/check-asset-budget.mjs` enforce exactly these gates; a
+region's files are found from its manifest (`scripts/region-assets.ts`). The audio check also fails
+when a music file is played by neither a region nor the title.
 
 **The audio rethink.** Music is most of the audio (3.19 of 3.35 MiB) and the reason it is out of
 room. With the split above, each region carries up to 2.75 MiB of its own music, streamed and never
-precached, so the next region's track does not break anything. Two further options, for the owner's
-ear rather than for the budget: shorter loops (the Ba Dan loop is 90 s, the title 45 s), or HE-AAC at
-about 64 kbps, roughly a third smaller per track, which ADR 0108 did not try. And music is not
-cached for offline play today (ADR 0108); caching each track on first play would make a visited
-region's music play offline too.
+precached, so the next region's track does not break anything. On top of that the owner chose to
+trial a smaller format (below). Music is not cached for offline play today (ADR 0108).
 
-### Decisions for the owner
+### Owner decisions (2026-11-14)
 
-1. **Budgets:** accept §4's structure and numbers (the draft PR), change them, or keep the totals.
-2. **Offline for later regions:** precache every region (simple, the install grows with the saga) or
-   only the start region, with later regions cached on first visit (§3). The demo is the start region
-   either way.
-3. **Music:** keep 96 kbps and per-region caps, or try shorter loops or HE-AAC; and whether music
-   should be cached for offline after its first play.
+1. **Budgets:** §4's structure and numbers are accepted as proposed: boot JS plus the largest region
+   chunk ≤ 410 KB gz; each region chunk ≤ 40 KB gz; shared top-down art ≤ 4.5 MiB; each region's
+   boards ≤ 1.5 MiB; sound effects ≤ 0.5 MiB; shared (title) music ≤ 0.75 MiB; each region's music
+   ≤ 2.75 MiB; the precache stays at 25 MB.
+2. **Offline for later regions:** the start region is precached at install; every other region is
+   cached for offline play the first time the party visits it (§3). Implementation is follow-up work.
+3. **Music:** try a smaller format, HE-AAC at about 64 kbps or similar, about a third smaller per
+   track. The owner listens and approves each track before it replaces the current file. The trial
+   is follow-up work.
 
 ## Consequences
 

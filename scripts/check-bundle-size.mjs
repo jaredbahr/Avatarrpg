@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 // ADR 0109 (410, owner, 2026-11-12): the victory card (#630) and the guided first fight (#625).
 // ADR 0104 amendment (404, owner, 2026-11-11, permanent): the rest of the demo (#500, #587, #588, #590).
 // ADR 0094 had set 380 (2026-10-28); ADR 0074 had raised it to 360, ADR 0066 from 320 to 350.
-// ADR 0111 §4 (proposed, awaiting the owner): since regions load on demand, 410 is what one session
+// ADR 0111 §4 (accepted by the owner, 2026-11-14): since regions load on demand, 410 is what one session
 // holds at most, the boot JS plus the largest region chunk, and each region chunk has its own cap.
 const BUDGET_KB = 410;
 const REGION_CHUNK_BUDGET_KB = 40;

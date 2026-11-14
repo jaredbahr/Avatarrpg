@@ -28,7 +28,7 @@ const MAPS_BUDGET_MB = 6;
 // effects, 6 MiB. ADR 0111 §4 splits it: each region's boards are budgeted with the region, and the
 // family keeps the shared sheets, objects and effects (`TOPDOWN_SHARED_BUDGET_MB`).
 /*
- * ADR 0111 §4 (proposed, awaiting the owner): budgets per region instead of one ever-growing family.
+ * ADR 0111 §4 (accepted by the owner, 2026-11-14): budgets per region instead of one ever-growing family.
  * For the demo's one region the caps add up to today's numbers: the top-down family's 6 MiB is
  * 4.5 shared plus 1.5 of boards, and the audio family's 4 MiB is 0.5 of sound effects, 0.75 of
  * shared music and 2.75 of the region's music.
