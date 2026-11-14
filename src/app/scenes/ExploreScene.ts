@@ -53,7 +53,7 @@ import { NextWalk, previewWalk } from '../world/walking';
 import type { WalkPreview } from '../world/walking';
 import { nearbyExits, nearbyExploreTarget, TALK_RANGE } from '../world/guidance';
 import { partyWalkPhase } from '../animator';
-import { activeFollowers, lineIds, placeFollowers } from '../world/followers';
+import { activeFollowers, followerPose, lineIds, placeFollowers } from '../world/followers';
 import type { PlacedFollowers } from '../world/followers';
 import {
   createExploreObjectivePresentation,
@@ -517,23 +517,27 @@ export class ExploreScene implements Scene {
   }
 
   /**
-   * Where the last frame drew each follower (#696), for the e2e suite: a
-   * retained backdrop answers for its still, so a missed repaint shows.
+   * Where the last frame drew each follower (#696), and the clip it drew, for
+   * the e2e suite: a retained backdrop answers for its still, so a missed
+   * repaint shows.
    */
-  followerPositions(): readonly { readonly id: string; readonly pos: Vec2 }[] | null {
+  followerPositions():
+    readonly { readonly id: string; readonly pos: Vec2; readonly clip?: string }[] | null {
     const state = this.app.state;
     const drawn = this.lastLife?.units;
     if (!state || !drawn) return null;
     const party = new Set(state.party.map((member) => member.id));
     return drawn
       .filter((unit) => !party.has(unit.id))
-      .map((unit) => ({ id: unit.id, pos: unit.pos }));
+      .map((unit) => ({ id: unit.id, pos: unit.pos, clip: unit.clip }));
   }
 
   /**
    * A retained backdrop repaints its still when the story moves on under a
-   * staged conversation and someone has joined or left the line: Ruon steps up
-   * as he surrenders after a talked-open gate, and steps away as Jin takes him.
+   * staged conversation and someone has joined or left the line, or changed
+   * the pose they hold: Ruon steps up as he surrenders after a talked-open gate,
+   * picks his sabre back up as the vote is answered, and steps away as Jin
+   * takes him.
    */
   refreshStill(): void {
     const state = this.app.state;
@@ -1599,6 +1603,11 @@ export class ExploreScene implements Scene {
     ];
     for (const { follower, pos } of placed) {
       const pose = animator.unitPose(now, follower.id, follower.sprite);
+      const renderPos = animator.renderPos(now, follower.id);
+      const gait = animator.locomotion(now, follower.id, 'rest', follower.sprite);
+      // Standing still, a follower holds its staged pose (Ruon's surrender); walking, its gait.
+      const held =
+        !renderPos && gait.clip.startsWith('idle') ? followerPose(state, follower) : undefined;
       units.push({
         id: follower.id,
         pos,
@@ -1613,10 +1622,10 @@ export class ExploreScene implements Scene {
         showHealth: false,
         shadow: true,
         scale,
-        renderPos: animator.renderPos(now, follower.id),
+        renderPos,
         offset: animator.offset(now, follower.id, follower.sprite),
-        clipTime: pose?.clipTime,
-        ...animator.locomotion(now, follower.id, 'rest', follower.sprite),
+        clipTime: held ? now : pose?.clipTime,
+        ...(held ? { clip: held, facing: 1 as const } : gait),
       });
     }
 
@@ -1776,5 +1785,9 @@ export class ExploreScene implements Scene {
 /** Who the frame draws beside the party, and where a staged follower stands (#696). */
 function paintedLine(state: GameState, followers: PlacedFollowers): string {
   const staged = followers.standing.map(({ follower, pos }) => `${follower.id}@${pos.x},${pos.y}`);
-  return [...lineIds(state, followers.walking), ...staged].join();
+  // A follower's held pose is part of the still too: Ruon takes his sabre back up as the vote is answered.
+  const poses = [...followers.walking, ...followers.standing.map(({ follower }) => follower)].map(
+    (follower) => `${follower.id}:${followerPose(state, follower) ?? ''}`,
+  );
+  return [...lineIds(state, followers.walking), ...staged, ...poses].join();
 }

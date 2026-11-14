@@ -11,12 +11,20 @@
  */
 
 import type { Condition, Vec2 } from '../../core/types';
+import type { ClipName } from '../assets/clips';
 
 /** A tile a follower is staged on instead of walking in the line, while `when` holds on `mapId`. */
 export interface FollowerStation {
   readonly when: Condition;
   readonly mapId: string;
   readonly pos: Vec2;
+}
+
+/** A clip a follower holds while it stands still and `when` holds, in place of its idle. */
+export interface FollowerPose {
+  readonly when: Condition;
+  /** A sheet without the clip falls back to its idle (`resolveClip`). */
+  readonly clip: ClipName;
 }
 
 export interface FollowerDef {
@@ -27,6 +35,8 @@ export interface FollowerDef {
   readonly when: Condition;
   /** First match wins; without one the follower walks in the line. */
   readonly stations?: readonly FollowerStation[];
+  /** First match wins; without one, or while walking, the follower plays its idle. */
+  readonly poses?: readonly FollowerPose[];
 }
 
 const visited = (nodeId: string): Condition => ({ kind: 'visited', nodeId });
@@ -52,6 +62,17 @@ const RUON_AT_THE_GATE: Condition = {
  * #628 stages him at his own post ("I'll keep to the back") until the party has
  * beaten the Driller; he walks down the hill beside them from there.
  */
+/**
+ * While he surrenders and the table votes on him (`ruon_surrender`, `ruon_choice`),
+ * Ruon stands with his sabre laid on the ground at his feet and his open hands
+ * raised a little ("My sabre stays on the ground"). Once the vote is answered,
+ * escort or trade, he is back on his idle.
+ */
+const RUON_SURRENDERING: Condition = {
+  kind: 'all',
+  of: [visited('ruon_surrender'), unvisited('escort_chosen'), unvisited('trade_payment')],
+};
+
 const RUON_ESCORTED: Condition = {
   kind: 'all',
   of: [
@@ -83,5 +104,6 @@ export const FOLLOWERS: readonly FollowerDef[] = [
     sprite: 'unit.ally.ruon',
     when: { kind: 'any', of: [RUON_AT_THE_GATE, RUON_ESCORTED] },
     stations: [WELCOME_CROWD],
+    poses: [{ when: RUON_SURRENDERING, clip: 'surrender' }],
   },
 ];

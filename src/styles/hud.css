@@ -1138,6 +1138,10 @@ html[data-contrast='high'] .title-card .tagline {
 .stage-portrait .painter {
   position: relative;
   display: block;
+  /* The canvas is 15rem inline; this caps it at Largest text, where the
+     portrait token holds the Large-text size. */
+  max-width: var(--conversation-portrait);
+  max-height: var(--conversation-portrait);
   border-radius: var(--radius);
   box-shadow:
     0 0 0 1px var(--c-ink-line),

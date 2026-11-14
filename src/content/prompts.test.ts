@@ -241,10 +241,12 @@ describe('sheet prompt packs', () => {
       const text = readFileSync(join(SHEETS, `${key}.md`), 'utf8');
       // Riverside tea, PixelLab's eight-way runtime locomotion, its fighting
       // stance (ADR 0052), its G hits (ADR 0063) and its jog (ADR 0095) have
-      // their own bounded source packs rather than the legacy hero prompt table.
+      // their own bounded source packs rather than the legacy hero prompt table,
+      // and Ruon's top-down surrender is made by `prototypes/topdown/tools/t15ruon.py`.
       for (const clip of CLIP_NAMES.filter(
         (clip) =>
           clip !== 'tea' &&
+          clip !== 'surrender' &&
           !clip.startsWith('stance') &&
           !clip.startsWith('jog') &&
           !/^hit[A-Z]/.test(clip) &&

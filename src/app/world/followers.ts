@@ -9,6 +9,7 @@ import type { GameState, Vec2 } from '../../core/types';
 import { evaluate } from '../../core/story/conditions';
 import { FOLLOWERS } from '../../content/story/followers';
 import type { FollowerDef } from '../../content/story/followers';
+import type { ClipName } from '../../content/assets/clips';
 
 export function activeFollowers(
   state: GameState,
@@ -44,4 +45,9 @@ export function placeFollowers(
 /** The animator ids of everyone in the line, leader first: the party, then the walking followers. */
 export function lineIds(state: GameState, walking: readonly FollowerDef[]): string[] {
   return [...state.party.map((member) => member.id), ...walking.map((who) => who.id)];
+}
+
+/** The pose a follower standing still holds now, if one of its `poses` holds; undefined plays its idle. */
+export function followerPose(state: GameState, follower: FollowerDef): ClipName | undefined {
+  return follower.poses?.find((pose) => evaluate(state, pose.when))?.clip;
 }

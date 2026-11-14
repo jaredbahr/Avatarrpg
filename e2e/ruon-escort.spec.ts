@@ -91,6 +91,13 @@ const line = (page: Page) =>
     };
   });
 
+/** The clip the last frame drew Ruon with. */
+const ruonClip = (page: Page) =>
+  page.evaluate(
+    () =>
+      window.fnt!.app.followerPositions()?.find((who) => who.id === 'follower.ruon')?.clip ?? null,
+  );
+
 const npcIds = (page: Page) =>
   page.evaluate(() =>
     (
@@ -121,9 +128,17 @@ async function surrender(page: Page): Promise<void> {
   await expect(page.locator('.dialogue-line')).toContainText('My sabre stays on the ground');
   // He stands with the party while he speaks: drawn in the world behind the panel.
   await expect.poll(() => followers(page)).toEqual(['follower.ruon']);
+  // ...in his surrender: the sabre on the ground at his feet, his hands open.
+  await expect.poll(() => ruonClip(page)).toBe('surrender');
+  const atlas = (await (await page.request.get('art/topdown/ruon.json')).json()) as {
+    frames: Record<string, unknown>;
+  };
+  expect(Object.keys(atlas.frames)).toContain('unit.ally.ruon/surrender/0');
   await finishDialogue(page, 'ruon_surrender');
   expect(await nodeId(page)).toBe('ruon_choice');
   expect(await followers(page)).toEqual(['follower.ruon']);
+  // He holds it while the table votes.
+  await expect.poll(() => ruonClip(page)).toBe('surrender');
 }
 
 test.beforeEach(async ({ page }) => {
@@ -180,6 +195,8 @@ test('Ruon surrenders beside the party and follows it on the escort route', asyn
   await page.evaluate(() => window.fnt!.app.dispatch({ type: 'chooseOption', optionIndex: 0 }));
   expect(await nodeId(page)).toBe('escort_chosen');
   expect(await followers(page)).toEqual(['follower.ruon']);
+  // The vote is answered: "I'll need my sabre." He is back on his idle.
+  await expect.poll(() => ruonClip(page)).toMatch(/^idle/);
   await finishDialogue(page, 'escort_chosen');
   expect(await nodeId(page)).toBe('gate_escort_explore');
   await waitForIdle(page);
@@ -248,7 +265,7 @@ test('Ruon walks home with the party and joins the welcome home', async ({ page 
   // The welcome plays over the village as the party walked in, Ruon among the crowd:
   // he waits with Bo-shan at the east-road mouth.
   expect(await page.evaluate(() => window.fnt!.app.followerPositions())).toEqual([
-    { id: 'follower.ruon', pos: { x: 22, y: 6 } },
+    { id: 'follower.ruon', pos: { x: 22, y: 6 }, clip: expect.stringMatching(/^idle/) },
   ]);
 });
 
