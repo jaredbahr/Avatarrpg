@@ -48,6 +48,8 @@ import {
   reconcileDisciplines,
   reconcileWorld,
 } from '../core/save/reconcile';
+import { applyIdAliases } from '../core/save/aliases';
+import { ID_ALIASES } from '../content/idAliases';
 import type { SessionMeta } from '../core/save/serialize';
 import { announce, clear, el } from './ui/dom';
 import { loadIcons } from './ui/icons';
@@ -397,6 +399,12 @@ export class App {
   }
 
   showScene(scene: Scene, replaceRetained = false): void {
+    const active = document.activeElement;
+    const enterDialogueWithFocus =
+      scene.name === 'dialogue' &&
+      active instanceof HTMLElement &&
+      this.sceneHost.contains(active) &&
+      active.matches(':focus-visible');
     this.cancelRoute();
     this.syncMusic(scene.name);
     const previousInterlude = this.currentSceneIsInterlude;
@@ -534,6 +542,14 @@ export class App {
     this.setMood(this.defaultMood());
     scene.mount(this.dialogueHost ?? this.sceneHost);
     scene.sync();
+    // Layered dialogue manages its own focus. A full-stage interlude also
+    // needs a keyboard starting point when it replaces the focused scene.
+    if (enterDialogueWithFocus && !this.dialogueHost) {
+      const firstControl = this.sceneHost.querySelector<HTMLElement>(
+        '[data-interlude-control="next"], [data-conversation-control="next"], .choice-option:not(:disabled), .end-panel button',
+      );
+      firstControl?.focus({ preventScroll: true });
+    }
     // After the swap, never instead of it: see Curtain.
     if (!keepWorld) curtain?.reveal(scene.firstFrameSheetKeys?.() ?? [], scene.firstFrameReady?.());
   }
@@ -765,7 +781,10 @@ export class App {
   }
 
   /** Installs a loaded save, replacing everything. */
-  adoptSave(state: GameState, session: SessionMeta | undefined): void {
+  adoptSave(saved: GameState, session: SessionMeta | undefined): void {
+    // Content ids are forever: a retired id is renamed before anything reads it, the region
+    // lookup below included (`core/save/aliases.ts`). Idempotent, so the wait's re-entry is safe.
+    const state = applyIdAliases(saved, ID_ALIASES);
     // A save from another region loads that region before it is reconciled against content.
     const wait = this.regionsPending([
       this.regions?.pendingForMap(state.location.mapId),

@@ -197,8 +197,10 @@ content for a route of 30–40 minutes) puts a forty-hour game far past any sing
 
 - [ ] **Release fixtures:** each tagged release adds its golden saves under `fixtures/golden/<version>/`, never
       regenerated; CI loads every one and plays a few commands from it.
-- [ ] **Content ids are forever:** a story node, map, NPC or encounter id that a save may hold is never deleted or
-      renamed; removal goes through an alias table that `reconcile` reads. A test diffs ids against the last release.
+- [x] **Content ids are forever** (#765): every id a save may hold is recorded in `src/content/ids.ledger.json`
+      (`npm run ids:ledger` adds new ones; it never removes). A retired id needs a row in `src/content/idAliases.ts`,
+      which `applyIdAliases` (`src/core/save/aliases.ts`) applies first on load; `savedIds.test.ts` holds the ledger,
+      content and aliases together.
 - [ ] **Saves outside the browser:** localStorage can be wiped (iPad storage pressure, a PC browser profile reset).
       Keep JSON export prominent; consider a reminder after each region.
 - [ ] Save size per region: `sizeBudget.test.ts` today; extend with one checkpoint per region.
