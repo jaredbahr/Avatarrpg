@@ -270,6 +270,13 @@
   padding-inline-start: var(--hairline);
 }
 
+html:is([data-large-text='on'], [data-large-text='huge']) .combat-bar .title-plate-name {
+  overflow: visible;
+  overflow-wrap: anywhere;
+  text-overflow: clip;
+  white-space: normal;
+}
+
 .title-plate-round {
   font-size: var(--fs-xs);
   color: var(--c-ink-dim);

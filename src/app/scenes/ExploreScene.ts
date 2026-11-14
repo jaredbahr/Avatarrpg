@@ -771,12 +771,17 @@ export class ExploreScene implements Scene {
         class: 'local-map-follow',
         title: 'North-up map. Recenter the camera on your party.',
       });
-      follow.setAttribute('aria-label', 'Follow party');
-      follow.prepend(
-        this.localMap.element,
-        el('span', { class: 'local-map-north', text: 'N ↑', attrs: { 'aria-hidden': 'true' } }),
+      this.localMap.element.setAttribute('aria-hidden', 'true');
+      follow.prepend(this.localMap.element);
+      corner.append(
+        follow,
+        el('span', {
+          class: 'local-map-north',
+          text: 'N ↑',
+          attrs: { 'aria-hidden': 'true' },
+          style: { pointerEvents: 'none' },
+        }),
       );
-      corner.append(follow);
     }
   }
 
@@ -799,10 +804,12 @@ export class ExploreScene implements Scene {
     if (expanded)
       button.append(
         el('strong', { class: 'explore-objective-label tiny', text: 'Current objective' }),
+        document.createTextNode(' '),
       );
     button.append(el('span', { class: 'title-plate-objective', text: objective }));
     if (gate)
       button.append(
+        document.createTextNode(' '),
         el('span', {
           class: 'explore-objective-gate tiny muted',
           text: expanded ? gate : ` · ${gate}`,
