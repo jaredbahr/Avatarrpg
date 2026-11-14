@@ -23,8 +23,10 @@ function buildEarnedRewardFixture() {
     if (state === before) throw new Error(`Reward fixture command ${commandCount} was refused`);
     if (state.story.nodeId === 'ruon_surrender' && state.pendingChoices.length) break;
   }
+  // The boundary is the state below, not the number of commands that reach
+  // it: the transcript is generated from the current story, so an added
+  // opening line (the storm prologue, #763) changes the count, not the place.
   if (
-    commandCount !== 46 ||
     state.story.nodeId !== 'ruon_surrender' ||
     state.story.lineIndex !== 0 ||
     state.screen !== 'dialogue' ||
