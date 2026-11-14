@@ -101,6 +101,11 @@ describe('regions (ADR 0111)', () => {
     for (const map of CONTENT.maps.values()) expect(regionOfMap(map.id), map.id).toBeDefined();
   });
 
+  it('loads each region as the same data the full index holds', async () => {
+    for (const [index, manifest] of REGIONS.entries())
+      expect(await manifest.load(), manifest.id).toBe(REGION_CONTENT[index]);
+  });
+
   it("keeps each region's story in its story files' order", () => {
     for (const region of REGION_CONTENT)
       expect(region.story.map((node) => node.id)).toEqual(

@@ -42,4 +42,5 @@ export const BA_DAN_VALLEY: RegionManifest = {
     ambush_road: { url: 'art/topdown/cutting/scene.json', cameraCentreMargin: 1 },
     quarry_floor: { url: 'art/topdown/quarry-floor/scene.json', cameraCentreMargin: 1 },
   },
+  load: () => import('./content').then((module) => module.BA_DAN_VALLEY_CONTENT),
 };

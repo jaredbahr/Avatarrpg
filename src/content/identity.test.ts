@@ -142,7 +142,7 @@ describe('the identity register (ADR 0047 W0, released W2)', () => {
     expect(problems.some((p) => p.includes('lw.npc.senn'))).toBe(true);
   });
 
-  it('keeps every look-alike pair distinct: Bo/Bo-shan, Hesh/Hesra, Miri/Mira, Dema (cook)/Dema (road-keeper), Sen/Senn/Sena', () => {
+  it('keeps every look-alike pair distinct: Bo/Bo-shan, Hesh/Hesra, Miri/Mira, Dema (cook)/Lanfen (road keeper, runtime `dema`), Senn/Sena', () => {
     expect(isReservedIdentity('lw.npc.bo')).toBe(true);
     expect(isReservedIdentity('lw.npc.bo_shan')).toBe(true);
     expect(isExcludedResident('lw.npc.bo')).toBe(false);
@@ -156,21 +156,20 @@ describe('the identity register (ADR 0047 W0, released W2)', () => {
     expect(isReservedIdentity('lw.npc.hesra')).toBe(true);
     expect(excludedResidentFor('hesra', 'Hesra')).toBeUndefined();
     expect(excludedResidentFor('hesh', 'Hesh')?.id).toBe('lw.npc.hesh');
-    // Wearing the carving's name is still a claim on Hesh, whatever the key:
+    // Wearing Hesh's name is still a claim on him, whatever the key:
     // the pair stays distinct because neither *key* reaches the other person.
     expect(excludedResidentFor('hesra', 'Hesh')?.id).toBe('lw.npc.hesh');
 
     expect(isExcludedResident('lw.npc.miri')).toBe(true);
     expect(isExcludedResident('lw.npc.mira')).toBe(false);
     expect(isReservedIdentity('lw.npc.mira')).toBe(true);
-    expect(isReservedIdentity('lw.npc.dema_roadkeeper')).toBe(true);
-    expect(isExcludedResident('lw.npc.dema_roadkeeper')).toBe(false);
+    expect(isReservedIdentity('lw.npc.lanfen_roadkeeper')).toBe(true);
+    expect(isExcludedResident('lw.npc.lanfen_roadkeeper')).toBe(false);
 
     const ids = IDENTITY_REGISTER.map((entry) => entry.id);
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids).toContain('lw.npc.dema_cook');
-    expect(ids).toContain('lw.npc.dema_roadkeeper');
-    expect(ids).toContain('lw.npc.sen_tea');
+    expect(ids).toContain('lw.npc.lanfen_roadkeeper');
     expect(ids).toContain('lw.npc.senn_messenger');
     expect(ids).toContain('lw.npc.sena');
     expect(ids).toContain('lw.npc.mira');
@@ -189,13 +188,12 @@ describe('the identity register (ADR 0047 W0, released W2)', () => {
       'lw.npc.bo',
       'lw.npc.bo_shan',
       'lw.npc.dema_cook',
-      'lw.npc.dema_roadkeeper',
       'lw.npc.hesh',
       'lw.npc.hesra',
+      'lw.npc.lanfen_roadkeeper',
       'lw.npc.leto',
       'lw.npc.mira',
       'lw.npc.miri',
-      'lw.npc.sen_tea',
       'lw.npc.sena',
       'lw.npc.senn',
       'lw.npc.senn_messenger',
@@ -204,7 +202,7 @@ describe('the identity register (ADR 0047 W0, released W2)', () => {
 
   it('exports the forbidden-binding table for W4a, pointing at real register entries', () => {
     expect(FORBIDDEN_BINDINGS.dema).toContain('lw.npc.dema_cook');
-    expect(FORBIDDEN_BINDINGS.rest_keeper).toContain('lw.npc.sen_tea');
+    expect(FORBIDDEN_BINDINGS.rest_keeper).toBeUndefined();
     for (const forbiddenIds of Object.values(FORBIDDEN_BINDINGS)) {
       for (const id of forbiddenIds) {
         expect(isReservedIdentity(id), `${id} should be a registered identity`).toBe(true);

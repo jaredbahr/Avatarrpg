@@ -386,16 +386,20 @@ for (const change of changes) {
     await assertLiveRendering(page, expected);
     await attachEvidence(page, info, 'reloaded-effects');
 
+    // A relaunch closes the game first: the old tab is gone before the new one
+    // opens, so nothing it still holds or draws can stand in for the stored
+    // settings (and its live board does not share the device with the boot).
+    const url = page.url();
+    await page.close();
     const relaunched = await context.newPage();
     errorsFrom(relaunched, errors);
     await relaunched.emulateMedia({ reducedMotion: 'no-preference' });
-    await relaunched.goto(page.url());
+    await relaunched.goto(url);
     // This is a fresh Page in the same browser context/origin, with no storage
     // seeding or live settings mutation between the old tab and the relaunch.
     await checkBoot(relaunched, expected, true);
     await assertLiveRendering(relaunched, expected);
     await attachEvidence(relaunched, info, 'fresh-page-effects');
-    await page.close();
 
     // There is no Reset all button. Restore every shipped value through the
     // actual current controls and prove the reset survives both boot paths.
@@ -409,16 +413,17 @@ for (const change of changes) {
     await checkBoot(relaunched, defaults, true);
     await assertLiveRendering(relaunched, defaults);
 
+    const resetUrl = relaunched.url();
+    await relaunched.close();
     const resetRelaunch = await context.newPage();
     errorsFrom(resetRelaunch, errors);
     await resetRelaunch.emulateMedia({ reducedMotion: 'no-preference' });
-    await resetRelaunch.goto(relaunched.url());
+    await resetRelaunch.goto(resetUrl);
     await checkBoot(resetRelaunch, defaults, true);
     await assertLiveRendering(resetRelaunch, defaults);
     await attachEvidence(resetRelaunch, info, 'defaults-restored-and-relaunched');
     expect(errors).toEqual([]);
     await resetRelaunch.close();
-    await relaunched.close();
   });
 }
 

@@ -98,7 +98,13 @@ test('the player still heals their own unit through the real targeting controls'
   await resetStorage(page, '?renderer=canvas');
   await page.evaluate(({ state, session }) => {
     const app = window.fnt!.app;
-    app.updateSettings({ reduceMotion: false });
+    // The final check compares the whole GameState with the reducer's. The
+    // board opens with surfaces, so combat tips queue at battle start and each
+    // one, once shown, writes its `guidance.tip.` flag into that state (App
+    // bookkeeping, 3a228a10). The queue runs on toast timers, so on a slow
+    // runner a tip lands between the two snapshots; tips stay off here, as in
+    // grumbler-aim, and combat-guidance specs cover them.
+    app.updateSettings({ reduceMotion: false, combatGuidance: false });
     app.adoptSave(state, session);
   }, fixture);
   expect(await takeTurn(page)).toBe(true);

@@ -117,6 +117,27 @@ async function swipe(page: Page, from: Point, to: Point): Promise<void> {
   );
 }
 
+/** The forest road board every fight here opens on. */
+const BOARD = { width: 20, height: 12 };
+
+/** Device pixels per world pixel, which integer zoom keeps whole. */
+const deviceScale = (cam: CameraInfo, dpr: number) => (cam.tilePx / cam.tile) * dpr;
+
+/** The lowest stop: the whole scale at or under the board's fit, never under N = dpr. */
+async function lowestStop(page: Page, cam: CameraInfo, dpr: number): Promise<number> {
+  const box = await page.locator('.map-canvas').boundingBox();
+  if (!box) throw new Error('no canvas');
+  const fit = Math.max(
+    0.35,
+    Math.min(
+      2.5,
+      (box.width - 24) / (BOARD.width * cam.tile),
+      (box.height - 24) / (BOARD.height * cam.tile),
+    ),
+  );
+  return Math.max(1, Math.floor(fit * dpr + 1e-6), dpr);
+}
+
 async function openFight(page: Page, node = 'battle_forest_road'): Promise<void> {
   await resetStorage(page);
   await startGame(page, ['Elias'], ['kaya'], 'gestures-spec');
@@ -391,7 +412,12 @@ test.describe('zoom and pan', () => {
         { x: point.x + 18, y: point.y },
       ],
     );
-    await expect.poll(async () => (await camera(page)).fitted).toBe(true);
+    // Out as far as the board goes. That is its lowest whole stop (ADR 0104), which `fitted`'s
+    // margin can miss: on an iPad (N >= dpr = 2) the 480 px board sits in a 497 px map, all of it
+    // on screen, under a fit of 0.985.
+    const dpr = await page.evaluate(() => window.devicePixelRatio || 1);
+    const low = await lowestStop(page, await camera(page), dpr);
+    await expect.poll(async () => deviceScale(await camera(page), dpr)).toBeCloseTo(low, 6);
     const fitted = await camera(page);
 
     await page.getByRole('button', { name: /water whip/i }).click();
@@ -491,26 +517,6 @@ test.describe('zoom and pan', () => {
  * Recentre goes back to the whole board at the largest stop that shows it.
  */
 test.describe('top-down integer zoom', () => {
-  const BOARD = { width: 20, height: 12 };
-
-  /** Device pixels per world pixel, which integer zoom keeps whole. */
-  const deviceScale = (cam: CameraInfo, dpr: number) => (cam.tilePx / cam.tile) * dpr;
-
-  /** The lowest stop: the whole scale at or under the board's fit, never under N = dpr. */
-  async function lowestStop(page: Page, cam: CameraInfo, dpr: number): Promise<number> {
-    const box = await page.locator('.map-canvas').boundingBox();
-    if (!box) throw new Error('no canvas');
-    const fit = Math.max(
-      0.35,
-      Math.min(
-        2.5,
-        (box.width - 24) / (BOARD.width * cam.tile),
-        (box.height - 24) / (BOARD.height * cam.tile),
-      ),
-    );
-    return Math.max(1, Math.floor(fit * dpr + 1e-6), dpr);
-  }
-
   async function wheel(page: Page, deltaY: number): Promise<void> {
     await page.evaluate((deltaY) => {
       const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');

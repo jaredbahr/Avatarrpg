@@ -4,6 +4,7 @@ import type { Condition, MapDef, MapEdgeSide, MapExit, MapTrigger, Vec2 } from '
 import { discoveryMarkers } from './discoveries';
 import { RETURNEES_HOME, RETURNEES_RETURNING, VILLAGE_HOMECOMINGS_COMPLETE } from '../story/return';
 import { RETURNEE_PRESENTATIONS } from '../residents/returnees';
+import { SQ01_HAS_LIST, SQ01_RESOLVED } from '../story/sq01Cabbages';
 
 const visited = (nodeId: string): Condition => ({ kind: 'visited', nodeId });
 const unvisited = (nodeId: string): Condition => ({ kind: 'not', of: visited(nodeId) });
@@ -212,8 +213,19 @@ export function connectAct1(map: MapDef): MapDef {
           ...map.npcs,
           ...discoveryMarkers('forest_road'),
           {
+            // SQ-01: Bo-shan's tipped sled in the south ditch, for a party carrying Pella's list,
+            // until the workers are home. The cabbage cart stands in for a sled until art exists.
+            id: 'sq01_sled',
+            name: 'Overturned sled',
+            pos: { x: 11, y: 10 },
+            sprite: 'prop.cart',
+            node: 'sq01_sled',
+            when: { kind: 'all', of: [SQ01_HAS_LIST, { kind: 'not', of: rescued }] },
+            routes: [{ when: SQ01_RESOLVED, node: 'sq01_sled_again' }],
+          },
+          {
             id: 'dema',
-            name: 'Dema, road keeper',
+            name: 'Lanfen, road keeper',
             pos: { x: 3, y: 1 },
             sprite: 'npc.dema',
             node: 'forest_dema',
@@ -309,7 +321,7 @@ export function connectAct1(map: MapDef): MapDef {
         objectiveVariants: [
           {
             when: rescued,
-            text: 'Ba Dan lies west, past the quarry gate. Sen is at the rest stop.',
+            text: 'Ba Dan lies west, past the quarry gate. Kuan is at the rest stop.',
           },
         ],
         exits: [
@@ -360,7 +372,7 @@ export function connectAct1(map: MapDef): MapDef {
           },
           {
             id: 'rest_keeper',
-            name: 'Sen, the tea keeper',
+            name: 'Kuan, the tea keeper',
             pos: { x: 5, y: 9 },
             sprite: 'npc.sen',
             node: 'cutting_tea',

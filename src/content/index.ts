@@ -6,20 +6,18 @@
  * is what keeps `src/core/` runnable against a tiny fixture bundle in tests.
  */
 
-import type { ContentIndex, StatusId, SurfaceId } from '../core/types';
-import { ABILITY_BY_ID, ALL_ABILITIES } from './abilities';
+import type { ContentIndex } from '../core/types';
+import { ALL_ABILITIES } from './abilities';
 import { ASSETS } from './assets/manifest';
-import { CHARACTERS, CHARACTER_BY_ID } from './characters';
-import { DISCIPLINES, DISCIPLINE_BY_ID } from './disciplines';
+import { CHARACTERS } from './characters';
+import { DISCIPLINES } from './disciplines';
 import { COMBOS } from './combos';
-import { ELEMENT_BY_ID } from './elements';
 import { ENCOUNTERS } from './encounters';
-import { ENEMIES, ENEMY_BY_ID } from './enemies';
-import { PROPS, PROP_BY_ID } from './props';
-import { STATUSES, STATUS_BY_ID } from './statuses';
-import { SURFACES, SURFACE_BY_ID } from './surfaces';
-import { COMBAT_TUNING } from './tuning';
-import { UNIVERSAL_ABILITY_IDS } from './abilities';
+import { ENEMIES } from './enemies';
+import { PROPS } from './props';
+import { STATUSES } from './statuses';
+import { SURFACES } from './surfaces';
+import { CORE_INDEX, emptyRegionIndex, fillRegionIndex } from './core';
 import { ACT1_NODES } from './story/act1';
 import type { ContentBundle } from './schemas';
 import type {
@@ -69,29 +67,31 @@ export const CONTENT_BUNDLE: ContentBundle = {
   backgroundRoles: BACKGROUND_ROLES,
 };
 
-/** The indexed form, used by the rules. */
+const REGION_INDEX = emptyRegionIndex();
+fillRegionIndex(REGION_INDEX, REGION_CONTENT);
+
+/** The indexed form, used by the rules: the core and every region. */
 export const CONTENT: ContentIndex = {
-  elements: ELEMENT_BY_ID,
-  abilities: ABILITY_BY_ID,
-  characters: CHARACTER_BY_ID,
-  disciplines: DISCIPLINE_BY_ID,
-  enemies: ENEMY_BY_ID,
-  maps: new Map(ALL_MAPS.map((m) => [m.id, m])),
-  encounters: new Map(ALL_ENCOUNTERS.map((e) => [e.id, e])),
-  statuses: STATUS_BY_ID as ReadonlyMap<StatusId, (typeof STATUSES)[number]>,
-  surfaces: SURFACE_BY_ID as ReadonlyMap<SurfaceId, (typeof SURFACES)[number]>,
-  props: PROP_BY_ID,
-  combos: COMBOS,
-  tuning: COMBAT_TUNING,
-  story: new Map(ALL_STORY.map((n) => [n.id, n])),
-  anchors: new Map(ANCHORS.map((a) => [a.id, a])),
-  residents: new Map(RESIDENTS.map((r) => [r.id, r])),
-  backgroundRoles: new Map(BACKGROUND_ROLES.map((r) => [r.id, r])),
-  universalAbilities: UNIVERSAL_ABILITY_IDS,
+  elements: CORE_INDEX.elements,
+  abilities: CORE_INDEX.abilities,
+  characters: CORE_INDEX.characters,
+  disciplines: CORE_INDEX.disciplines,
+  enemies: CORE_INDEX.enemies,
+  maps: REGION_INDEX.maps,
+  encounters: REGION_INDEX.encounters,
+  statuses: CORE_INDEX.statuses,
+  surfaces: CORE_INDEX.surfaces,
+  props: CORE_INDEX.props,
+  combos: CORE_INDEX.combos,
+  tuning: CORE_INDEX.tuning,
+  story: REGION_INDEX.story,
+  anchors: REGION_INDEX.anchors,
+  residents: REGION_INDEX.residents,
+  backgroundRoles: REGION_INDEX.backgroundRoles,
+  universalAbilities: CORE_INDEX.universalAbilities,
 };
 
-/** The node a fresh game starts on. */
-export const STORY_ENTRY = 'act1_open';
+export { STORY_ENTRY } from './entry';
 
 export {
   CHARACTERS,

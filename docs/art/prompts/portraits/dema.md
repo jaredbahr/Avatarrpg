@@ -1,4 +1,6 @@
-# Portrait: Dema, road keeper — `portrait.dema`
+# Portrait: Lanfen, road keeper — `portrait.dema`
+
+Lanfen was the placeholder Dema until 2026-11-14; the key and file keep the old name.
 
 |              |                                                                                         |
 | ------------ | --------------------------------------------------------------------------------------- |
