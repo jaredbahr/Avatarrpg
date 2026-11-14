@@ -296,6 +296,21 @@ async function takeRoute(page: Page, label: string, mapId: string): Promise<void
   beginPhase(page, `route ${mapId}`);
   await page.getByRole('button', { name: 'Map', exact: true }).click();
   await page.getByRole('button', { name: label, exact: true }).click();
+  // The Cutting's culvert (C-29) plays once on the way east; read it, then carry on.
+  const stop = () =>
+    page.evaluate(() =>
+      window.fnt?.app.state?.story.nodeId === 'cutting_culvert'
+        ? 'culvert'
+        : window.fnt?.app.state?.location.mapId,
+    );
+  await expect.poll(stop).toMatch(new RegExp(`^(culvert|${mapId})$`));
+  if ((await stop()) === 'culvert') {
+    endPhase(page);
+    await continueStory(page);
+    beginPhase(page, `route ${mapId}`);
+    await page.getByRole('button', { name: 'Map', exact: true }).click();
+    await page.getByRole('button', { name: label, exact: true }).click();
+  }
   await expect.poll(() => page.evaluate(() => window.fnt?.app.state?.location.mapId)).toBe(mapId);
   await completeAuthoredPlayback(page);
   endPhase(page);
