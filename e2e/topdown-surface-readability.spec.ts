@@ -229,6 +229,8 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         [{ characterId: 'kaya', level: 3, chosen: ['fire_step'] }],
         'surface-char-quarry-gate-598',
       );
+      // Keep the material comparison independent of the cover tip's saved flag.
+      app.updateSettings({ combatGuidance: false });
     });
     await enterNode(page, 'battle_quarry_gate');
     expect(await takeTurn(page)).toBe(true);
