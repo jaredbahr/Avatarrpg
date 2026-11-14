@@ -6,7 +6,7 @@
  * family iPad returns from `navigator.storage.persist()`, in a tab and from the
  * Home Screen, and whether a save is still there after a week without play, are
  * only known on that iPad. So the game keeps two small dates beside the saves
- * and shows them, with the browser's own answers, in Settings:
+ * and shows them, with the browser's own answers, from the Save menu:
  *
  * - **when this storage was first used.** It is written once and never updated,
  *   so if the browser ever clears the site the date starts again. A date that

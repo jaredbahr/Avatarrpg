@@ -39,12 +39,21 @@ export const TAB_EVICTION_WARNING =
   'Saves made in a browser tab can be cleared after a week without play. Save a copy, then add the game to the Home Screen and load it there.';
 
 /**
- * True on iOS and iPadOS, in Safari and in every other browser there (all of
- * them are WebKit): only that platform defines `navigator.standalone`, as a
- * boolean, whether or not the page was launched from the Home Screen.
+ * True on an iPad or iPhone, in Safari and in every other browser there (all
+ * of them are WebKit). Two signs, both needed: the platform's own
+ * `navigator.standalone` flag is a boolean, and the device has a touch screen.
+ * The flag alone is Apple's documented sign of iOS, but no source read for
+ * #772 says a Mac's Safari never defines it, so the touch test keeps a Mac
+ * (no touch points) on the general wording whatever its Safari does. A wrong
+ * no here costs only the mention of the Home Screen, never the warning.
  */
 export function onAppleMobile(win: Window | undefined = globalThis.window): boolean {
-  return typeof (win?.navigator as { standalone?: unknown } | undefined)?.standalone === 'boolean';
+  const nav = win?.navigator as { standalone?: unknown; maxTouchPoints?: unknown } | undefined;
+  return (
+    typeof nav?.standalone === 'boolean' &&
+    typeof nav.maxTouchPoints === 'number' &&
+    nav.maxTouchPoints > 0
+  );
 }
 
 /** The line to show for what the browser answered and how the game was opened, or null. */

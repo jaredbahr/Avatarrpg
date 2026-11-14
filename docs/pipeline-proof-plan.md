@@ -216,7 +216,7 @@ content for a route of 30–40 minutes) puts a forty-hour game far past any sing
 - [ ] **Saves outside the browser** (#772): a Safari tab on the iPad deletes a site's storage after seven days of
       browser use without a tap in the game; the Home Screen app is exempt but starts with its own empty storage. The
       verified rules, the defences built (the game asks to be kept, one line on the title and Save menu, "Save a copy" at
-      a region's end, Settings, Storage check) and the ten-minute iPad check are in `docs/device-matrix.md`, "Where the
+      a region's end, Save, Storage check) and the ten-minute iPad check are in `docs/device-matrix.md`, "Where the
       saves live". Open until the iPad table there is filled in.
 - [ ] Save size per region: `sizeBudget.test.ts` today; extend with one checkpoint per region.
 

@@ -64,7 +64,7 @@ primary source was found. The answers only the real iPad can give are in the che
 - **On a PC a second store would be worse, not better:** IndexedDB and the Origin Private File System are the
   quota-managed data Chromium evicts, and `localStorage` is the one store it leaves out.
 - **The file is the only copy outside the browser.** "Save a copy" at a region's end and "Export to file" in the Save
-  menu write the same `.json`; Settings, Storage check says how old the last one is.
+  menu write the same `.json`; the Save menu's Storage check says how old the last one is.
 - **The game asks once** (`navigator.storage.persist()`, after the first save of a run), which costs nothing and is
   answered without a prompt on both platforms. While the answer is no and the game is not on the Home Screen, the title
   and the Save menu say so in one line, worded for an iPad tab or for a PC (`src/app/storage/persistence.ts`).
@@ -79,14 +79,14 @@ primary source was found. The answers only the real iPad can give are in the che
 Playwright's Chromium against the production build (`vite preview`), launched twice on one dedicated profile folder
 with `--app=<url>`, the Steam shortcut's shape. It is Chromium on Linux, not Chrome on the family PC.
 
-| Step                                    | Seen                                                                                                             |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Fresh profile, before a save            | `persisted()` false; the title shows the PC line; "Storage first used" is stamped                                |
-| Save to Slot 1                          | the game asks; `persist()` answers false with no prompt; the line stays                                          |
-| Export                                  | a 1.9 KB `.json` downloads; "Last copy saved to a file" reads today                                              |
-| Quit, relaunch on the same folder       | Continue is there, both slots, the settings and the same "Storage first used"; `persisted()` still false         |
-| The profile folder                      | the saves are under `Default/Local Storage`, so copying the folder copies them                                   |
-| Settings, Storage check, in that window | "Opened from: A browser tab" (an `--app` window is not an installed app), "Browser has agreed to keep saves: No" |
+| Step                              | Seen                                                                                                             |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Fresh profile, before a save      | `persisted()` false; the title shows the PC line; "Storage first used" is stamped                                |
+| Save to Slot 1                    | the game asks; `persist()` answers false with no prompt; the line stays                                          |
+| Export                            | a 1.9 KB `.json` downloads; "Last copy saved to a file" reads today                                              |
+| Quit, relaunch on the same folder | Continue is there, both slots, the settings and the same "Storage first used"; `persisted()` still false         |
+| The profile folder                | the saves are under `Default/Local Storage`, so copying the folder copies them                                   |
+| Load a save, Storage check, there | "Opened from: A browser tab" (an `--app` window is not an installed app), "Browser has agreed to keep saves: No" |
 
 [itp-2020]: https://webkit.org/blog/10218/full-third-party-cookie-blocking-and-more/
 [itp-doc]: https://webkit.org/tracking-prevention/
@@ -109,11 +109,11 @@ with `--app=<url>`, the Steam shortcut's shape. It is Chromium on Linux, not Chr
 
 ## Saves on the real iPad: a ten-minute check (#772)
 
-Run once on the family iPad against the deployed URL, then fill in the table. Settings, Storage check shows every
+Run once on the family iPad against the deployed URL, then fill in the table. The Save menu's Storage check (Load a save on the title, Save in a game) shows every
 answer in large type, so nothing needs a cable or a console. Steps 1 to 7 take about ten minutes; step 8 is one look, a
 week or more later.
 
-1. **Tab, before a save.** Open the URL in Safari. Settings, Storage check. Write down "Opened from" and "Browser has
+1. **Tab, before a save.** Open the URL in Safari. Load a save, Storage check. Write down "Opened from" and "Browser has
    agreed to keep saves".
 2. **Tab, after a save.** New game, the suggested party, play until the first scene changes (that autosaves). Back to the
    title: is there a line under the buttons that starts "Saves made in a browser tab"? Storage check again: write down
@@ -126,7 +126,7 @@ week or more later.
    tab left it? Save once into Slot 1.
 6. **A copy from the Home Screen.** Save, Export to file. Does a file land in Files, does a preview open, or does
    nothing happen? If a preview opens, can it be saved from there, and can you get back to the game?
-7. **Home Screen, storage check.** Settings, Storage check: write down all three answers, and "Storage first used". The
+7. **Home Screen, storage check.** Save, Storage check: write down all three answers, and "Storage first used". The
    title should show no line about saves.
 8. **A week or more later** (seven or more days on which Safari was used, without opening the game in a tab): open the
    **tab** and the **Home Screen app**. Is Continue still there in each? Storage check: has "Storage first used" moved
