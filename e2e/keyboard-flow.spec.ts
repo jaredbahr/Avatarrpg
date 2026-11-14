@@ -4,17 +4,19 @@ import { resetStorage } from './helpers';
 
 async function expectVisibleFocus(target: Locator): Promise<void> {
   await expect(target).toBeFocused();
-  await expect(target).toBeVisible();
-  await expect(target).toBeInViewport();
-  await expect(target).toBeEnabled();
-  const outline = await target.evaluate((element) => {
-    const style = getComputedStyle(element);
-    return {
-      focusVisible: element.matches(':focus-visible'),
-      style: style.outlineStyle,
-      width: Number.parseFloat(style.outlineWidth),
-    };
-  });
+  const [outline] = await Promise.all([
+    target.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        focusVisible: element.matches(':focus-visible'),
+        style: style.outlineStyle,
+        width: Number.parseFloat(style.outlineWidth),
+      };
+    }),
+    expect(target).toBeVisible(),
+    expect(target).toBeInViewport(),
+    expect(target).toBeEnabled(),
+  ]);
   expect(outline.focusVisible).toBe(true);
   expect(outline.style).not.toBe('none');
   expect(outline.width).toBeGreaterThan(0);
