@@ -84,7 +84,7 @@ export const RIVERSIDE_STORY: readonly StoryNode[] = [
     portrait: 'portrait.narrator',
     lines: [
       'Fresh flowers stand in a chipped jar beside the inscription.',
-      '“The river belongs to everyone downstream.”',
+      'The inscription is one line cut across the stone at knee height, with a year beside it too worn to read.',
       'The jar’s handle has been carefully mended with wire.',
     ],
     next: 'riverside_shrine_found',

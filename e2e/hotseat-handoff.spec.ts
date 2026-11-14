@@ -288,6 +288,9 @@ for (const size of [1, 2, 4, 6]) {
   test(`${size} named players receive their own combat turns before and after reload`, async ({
     page,
   }, info) => {
+    // Six heroes' turns, a reload and every hand-off ran past the 60 s default
+    // on CI's iPad WebKit (main, 2026-11-14); each step keeps its own wait.
+    test.setTimeout(180_000);
     const { configured, heroes, expectedPlayers } = await setupNamedParty(page, size);
     // Earn a nonzero story rotation before entering the combat fixture, so a
     // combat save must preserve both kinds of ownership at once.

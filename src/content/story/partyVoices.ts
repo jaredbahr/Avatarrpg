@@ -35,8 +35,8 @@ export const VOICES = [
     character: 'bo',
     lines: [
       'I ran a crew three towns over. We stopped work when a gallery cracked. Lost a week of wages over it.',
-      'Ruon, those supports need replacing. You cannot keep people down there while that machine is running.',
-      'Let us through. You can talk to us yourself. Your crew can put the slings down.',
+      'There is fresh rubble under your east face. I can see it from here. Whoever gives the orders up there already knows what that means.',
+      'Open the gate and tell us yourself. Your crew can put the slings down.',
     ],
   },
   {
@@ -61,9 +61,9 @@ export const VOICES = [
     node: 'dorin_directions',
     character: 'jinu',
     lines: [
-      "I've carried post up those switchbacks. Two hours. Allow longer when the steps are muddy.",
-      'Dorin, stay at the village gate. If we send anyone down ahead of us, they will need someone watching for them.',
-      "If we find anyone who can walk, I'll send them straight to you.",
+      "East road, then switchbacks, two hours. I'll count the bends going up. People walk better when they know how many are left.",
+      "There's a town up north that is all stairs. I counted four hundred and six. A boy on the top step told me I'd missed one.",
+      "Anyone who can walk, I'll send down to you with the number. You'll see them before you hear them. Tired people don't talk.",
     ],
   },
   {
@@ -103,8 +103,8 @@ export const VOICES = [
     node: 'defeat_gate',
     character: 'riko',
     lines: [
-      'All the way down the switchbacks under their stones, and I kept us in one line. Nobody fell behind.',
-      'Nobody followed. Now the gate is open and the wall is empty. Ruon is waiting in the yard, laying his sabre down.',
+      'Their slingers aimed low. Legs and shields, every stone. Nobody on that wall was trying to kill us.',
+      'We climb back, and the gate is open and the wall is empty. That was no rout. Somebody up there decided to stop.',
     ],
   },
   {
@@ -119,7 +119,7 @@ export const VOICES = [
     node: 'gate_kinship',
     character: 'lin_mei',
     lines: [
-      'Ruon, there are fresh falls on the east face. Old supports under a face like that get replaced before anyone works beneath it.',
+      'There are fresh falls on your east face. Old supports under a face like that get replaced before anyone works beneath it.',
       'Who was told about them? No, lower the slings and open the gate first. You can tell me in the yard.',
     ],
   },
@@ -151,7 +151,7 @@ export const VOICES = [
     node: 'quarry_assessment',
     character: 'bo',
     lines: [
-      'Hear that? They\'re shouting "Grumbler!" The driver knows every one of those voices.',
+      '"Grumbler." You only get a name like that from people who have eaten lunch beside you. He knows every voice behind those bars.',
       "Nobody parks anything on that ramp. Everyone in those galleries comes out that way, and I'll be counting heads when they do.",
     ],
   },

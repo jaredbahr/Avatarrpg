@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
+import { CONTENT } from '../src/content';
 import { resetStorage } from './helpers';
 
 async function expectVisibleFocus(target: Locator): Promise<void> {
@@ -39,6 +40,12 @@ async function pressControl(
     expect(await page.evaluate(() => document.activeElement === document.body)).toBe(false);
   }
   throw new Error(`Keyboard could not reach ${await control.textContent()}`);
+}
+
+function linesOf(nodeId: string): number {
+  const node = CONTENT.story.get(nodeId);
+  if (node?.kind !== 'dialogue') throw new Error(`${nodeId} is not a dialogue`);
+  return node.lines.length;
 }
 
 function button(page: Page, name: string | RegExp): Locator {
@@ -89,14 +96,17 @@ test('the opening route uses the keyboard from title to a conversation on the Fo
   }
   await expectVisibleFocus(button(page, 'Begin'));
   await page.keyboard.press('Enter');
-  await expectNode(page, 'act1_open');
+  // The campaign opens on the prologue (#763), then Ba Dan's opening lines.
+  await expectNode(page, 'prologue_storm');
   expect(await page.evaluate(() => window.fnt?.app.session.participants[0]?.name)).toBe('Alex');
   expect(
     await page.evaluate(() => window.fnt?.app.state?.party.map((hero) => hero.characterId)),
   ).toEqual(['kaya', 'nilak', 'bo']);
 
   const opening = page.locator('[data-interlude-control="next"]');
-  await advanceLines(page, opening, 3);
+  await advanceLines(page, opening, linesOf('prologue_storm'));
+  await expectNode(page, 'act1_open');
+  await advanceLines(page, opening, linesOf('act1_open'));
   await expectNode(page, 'village_explore');
   const map = button(page, 'Map');
   await expectVisibleFocus(map);
