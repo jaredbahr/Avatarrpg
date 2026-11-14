@@ -66,6 +66,9 @@ async function sample(panel: Locator) {
           return {
             key: `${index}:${line}`,
             text: text.textContent,
+            top: r.top,
+            bottom: r.bottom,
+            width: r.width,
             left: r.left,
             right: r.right,
             insideOption:
@@ -178,6 +181,19 @@ async function readAll(page: Page, panel: Locator) {
       .poll(() => panel.evaluate((element) => element.scrollTop))
       .toBeGreaterThan(previous.panel.scrollTop);
     const next = await sample(panel);
+    if (
+      JSON.stringify(next.fragments.map((fragment) => fragment.key)) !==
+      JSON.stringify(first.fragments.map((fragment) => fragment.key))
+    )
+      console.log(
+        'FRAGMENT-DIAG',
+        JSON.stringify({
+          step,
+          first: { panel: first.panel, fragments: first.fragments },
+          previous: { panel: previous.panel, fragments: previous.fragments },
+          next: { panel: next.panel, fragments: next.fragments },
+        }),
+      );
     expect(next.fragments.map((fragment) => fragment.key)).toEqual(
       first.fragments.map((fragment) => fragment.key),
     );
