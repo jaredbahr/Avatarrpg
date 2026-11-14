@@ -247,6 +247,20 @@ interface OverlayBuild {
 
 /** Sound cues a top-down skip still plays: the ones that tell how a blow or the fight ended. */
 const OUTCOME_CUES: ReadonlySet<string> = new Set(['ko', 'victory', 'defeat']);
+
+/** The board's arrow keys (#753): one tile a press, in board directions. */
+const BOARD_STEPS: Readonly<Record<string, Vec2>> = {
+  ArrowUp: { x: 0, y: -1 },
+  ArrowDown: { x: 0, y: 1 },
+  ArrowLeft: { x: -1, y: 0 },
+  ArrowRight: { x: 1, y: 0 },
+};
+
+/** True when the focused control was reached by keyboard, so a choice it makes can hand focus on. */
+function keyboardFocused(): boolean {
+  const active = document.activeElement;
+  return active instanceof HTMLElement && active.matches(':focus-visible');
+}
 export class CombatScene implements Scene {
   readonly name = 'combat';
 
@@ -273,6 +287,8 @@ export class CombatScene implements Scene {
 
   private mode: Mode = { kind: 'idle' };
   private pending: Vec2 | null = null;
+  /** The tile the arrow keys stand on (#753); `pending` may snap away from it to a legal aim. */
+  private cursor: Vec2 | null = null;
   private hover: Vec2 | null = null;
   /** How high each ability's flight lobs, or null when nothing flies; read once from its recipe. */
   private lobs = new Map<string, number | null>();
@@ -513,7 +529,12 @@ export class CombatScene implements Scene {
     const scene = el('div', { class: 'scene combat-scene' });
     scene.appendChild(el('div', { class: 'top-bar combat-bar' }));
     scene.appendChild(el('div', { class: 'turn-strip' }));
-    const canvas = el('canvas', { class: 'map-canvas', attrs: { 'aria-label': 'Battlefield' } });
+    const canvas = el('canvas', {
+      class: 'map-canvas',
+      // Focusable from script always and by Tab while a tile is being chosen (#753).
+      attrs: { 'aria-label': 'Battlefield', tabindex: '-1' },
+    });
+    canvas.addEventListener('keydown', this.onBoardKey);
     this.canvas = canvas;
     scene.appendChild(
       el('div', { class: 'map-wrap' }, canvas, el('div', { class: 'combat-overlays' })),
@@ -772,6 +793,7 @@ export class CombatScene implements Scene {
 
   private clearPending(): void {
     this.pending = null;
+    this.cursor = null;
     this.lastPendingMoveReveal = null;
   }
 
@@ -1249,12 +1271,98 @@ export class CombatScene implements Scene {
       return;
     }
 
+    this.cursor = null;
+    this.pickTile(tile);
+  }
+
+  /** A destination or aim for the current mode: the same step a tap and the arrow keys take. */
+  private pickTile(tile: Vec2): void {
+    const battle = this.battle();
+    if (!battle) return;
     const unit = this.active();
     const ability =
       this.mode.kind === 'aim' ? this.app.content.abilities.get(this.mode.abilityId) : undefined;
     this.pending =
       unit && ability ? resolveAim(this.app.content, battle, unit, ability, tile) : tile;
     this.renderHud();
+  }
+
+  /**
+   * The board's keyboard (#753), while Move or an ability is choosing a tile:
+   * arrows move a cursor and pick that tile through the same forecast a tap
+   * shows, Enter (or Space) presses the forecast's Confirm, and Escape backs
+   * out one step. Nothing here reaches the rules except through Confirm.
+   */
+  private onBoardKey = (event: KeyboardEvent): void => {
+    if (this.mode.kind === 'idle') return;
+    const battle = this.battle();
+    const unit = this.active();
+    if (!battle || !unit || battle.phase !== 'active' || this.victoryBeat) return;
+    if (!this.isPlayerTurn() || this.needsHandoff()) return;
+    if (this.boardActionBusy(this.presentationNow(), unit.id)) return;
+    const step = BOARD_STEPS[event.key];
+    if (step) {
+      event.preventDefault();
+      const from = this.cursor ?? this.pending ?? unit.pos;
+      const tile = {
+        x: Math.min(battle.grid.width - 1, Math.max(0, from.x + step.x)),
+        y: Math.min(battle.grid.height - 1, Math.max(0, from.y + step.y)),
+      };
+      this.pickTile(tile);
+      this.cursor = tile;
+      announce(this.describeTile(tile));
+      return;
+    }
+    if (event.key === 'Enter' || event.key === ' ') {
+      if (event.repeat) return;
+      const confirm = this.host?.querySelector<HTMLButtonElement>(
+        '.confirm-dialog .btn-ok:not(:disabled)',
+      );
+      if (!confirm) return;
+      event.preventDefault();
+      confirm.click();
+      this.focusFirstAction();
+      return;
+    }
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      if (this.pending) this.clearPending();
+      else this.mode = { kind: 'idle' };
+      this.renderHud();
+      if (this.mode.kind === 'idle') this.focusFirstAction();
+      else this.canvas?.focus({ preventScroll: true });
+    }
+  };
+
+  /** What a screen reader hears as the cursor lands: where, who, and whether it is a legal pick. */
+  private describeTile(tile: Vec2): string {
+    const battle = this.battle();
+    const parts = [`Column ${tile.x + 1}, row ${tile.y + 1}`];
+    const unit = battle?.units.find(
+      (other) => other.hp > 0 && occupiedCells(other).some((cell) => samePos(cell, tile)),
+    );
+    if (unit) parts.push(unit.name);
+    parts.push(
+      this.host?.querySelector('.confirm-dialog .btn-ok:not(:disabled)')
+        ? 'Enter to confirm'
+        : 'not a legal choice',
+    );
+    return `${parts.join('. ')}.`;
+  }
+
+  /** After the board's keyboard finishes a pick, keyboard focus returns to the actions. */
+  private focusFirstAction(): void {
+    const target =
+      this.host?.querySelector<HTMLElement>('.hud .action-button:not(:disabled)') ??
+      this.host?.querySelector<HTMLElement>('.hud button:not(:disabled)');
+    target?.focus({ preventScroll: true });
+  }
+
+  /** Move and the abilities hand the keyboard to the board when they were chosen by keyboard. */
+  private boardTakesKeyboard(fromKeyboard: boolean): void {
+    if (!fromKeyboard || this.mode.kind === 'idle' || !this.canvas) return;
+    this.canvas.focus({ preventScroll: true });
+    announce('Choose a tile with the arrow keys, Enter to confirm, Escape to cancel.');
   }
 
   private onLongPress(x: number, y: number): void {
@@ -1930,6 +2038,11 @@ export class CombatScene implements Scene {
     const overlays = this.host?.querySelector<HTMLElement>('.combat-overlays');
     const battle = this.battle();
     if (!hud || !overlays || !battle) return;
+    // While a tile is being chosen the board joins the Tab order, so the keyboard can reach it.
+    this.canvas?.setAttribute(
+      'tabindex',
+      this.mode.kind !== 'idle' && battle.phase === 'active' ? '0' : '-1',
+    );
 
     clear(hud);
     clear(overlays);
@@ -2383,18 +2496,22 @@ export class CombatScene implements Scene {
       this.renderHud();
       return;
     }
+    const fromKeyboard = keyboardFocused();
     this.mode = this.mode.kind === 'move' ? { kind: 'idle' } : { kind: 'move' };
     this.clearPending();
     this.renderHud();
+    this.boardTakesKeyboard(fromKeyboard);
   }
 
   private selectAbility(ability: Ability): void {
+    const fromKeyboard = keyboardFocused();
     this.mode =
       this.mode.kind === 'aim' && this.mode.abilityId === ability.id
         ? { kind: 'idle' }
         : { kind: 'aim', abilityId: ability.id };
     this.clearPending();
     this.renderHud();
+    this.boardTakesKeyboard(fromKeyboard);
   }
 
   private endTurn(unit: Unit): void {
