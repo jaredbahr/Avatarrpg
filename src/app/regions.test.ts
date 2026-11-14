@@ -28,6 +28,7 @@ function region(id: string, neighbours: readonly string[] = [], scenes = {}) {
     name: id,
     mapIds: [`${id}_map`],
     neighbours,
+    levelBand: { minLevel: 1, maxLevel: 3, placeholder: false },
     music: {},
     scenes,
     load,
