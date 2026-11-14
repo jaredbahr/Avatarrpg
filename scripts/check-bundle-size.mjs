@@ -53,6 +53,31 @@ for (const [name, gz] of rows) {
 const totalKb = total / 1024;
 console.log(`\nTotal JS: ${totalKb.toFixed(1)} KB gzipped (budget ${BUDGET_KB} KB)`);
 
+/*
+ * Each region's data is a chunk of its own (ADR 0111 §2), named `assets/region-<folder>-*.js`.
+ * Reported here; the gate stays the total above until the owner agrees the per-chunk budgets of
+ * ADR 0111 §4. A region folder without its chunk means a shipped module imported the region's data
+ * directly and the bundler pulled it back into the boot chunk.
+ */
+const regionRows = rows.filter(([name]) => /^assets\/region-/.test(name));
+const bootKb = (total - regionRows.reduce((sum, [, gz]) => sum + gz, 0)) / 1024;
+console.log(`Boot JS (everything but region chunks): ${bootKb.toFixed(1)} KB gzipped`);
+for (const [name, gz] of regionRows)
+  console.log(`Region chunk: ${(gz / 1024).toFixed(1)} KB gzipped  ${name}`);
+const regionsDir = resolve(dirname(fileURLToPath(import.meta.url)), '../src/content/regions');
+const regionFolders = readdirSync(regionsDir).filter((entry) =>
+  statSync(join(regionsDir, entry)).isDirectory(),
+);
+const chunkless = regionFolders.filter(
+  (folder) => !regionRows.some(([name]) => name.startsWith(`assets/region-${folder}-`)),
+);
+if (chunkless.length > 0) {
+  console.error(
+    `\nNo chunk for region ${chunkless.join(', ')}: its data is back in the boot chunk (ADR 0111 §2).`,
+  );
+  process.exit(1);
+}
+
 const required = ['sw.js', 'manifest.webmanifest'];
 const missing = required.filter((name) => !files.some((f) => f.endsWith(name)));
 if (missing.length > 0) {

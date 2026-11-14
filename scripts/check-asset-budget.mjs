@@ -10,6 +10,8 @@ import { existsSync, readdirSync, statSync } from 'node:fs';
 import { join, resolve, dirname, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isPrecacheIgnored } from './precache.mjs';
+// TypeScript, so `check:assets` runs this script under tsx: the region manifests are the source.
+import { regionAssets } from './region-assets.ts';
 
 const FAMILY_BUDGET_MB = 4;
 // ADR 0051: the PixelLab G party's locomotion now, and its stance and bend
@@ -98,6 +100,35 @@ console.log(
   audioOver ? 'OVER ' : '     ',
   mb(audioBytes).padStart(7),
 );
+
+/*
+ * Per region (ADR 0111 §4), reported only: each region's boards and area music, the shared music
+ * and the sound effects. The gates above and below are unchanged until the owner agrees new ones.
+ */
+const bytesUnder = (path) => {
+  const full = join(root, 'public', path);
+  if (!existsSync(full)) return 0;
+  if (!statSync(full).isDirectory()) return statSync(full).size;
+  return walk(full).reduce((sum, f) => sum + statSync(f).size, 0);
+};
+const plan = regionAssets();
+console.log('\nBy region (reported, not gated):');
+for (const region of plan.regions) {
+  const art = region.artDirs.reduce((sum, dir) => sum + bytesUnder(dir), 0);
+  const music = region.musicFiles.reduce((sum, file) => sum + bytesUnder(file), 0);
+  console.log(`  ${mb(art).padStart(7)} MB  ${region.id} boards (${region.artDirs.length} maps)`);
+  console.log(
+    `  ${mb(music).padStart(7)} MB  ${region.id} music (${region.musicFiles.length} tracks)`,
+  );
+}
+const sharedMusic = plan.sharedMusic.reduce((sum, file) => sum + bytesUnder(file), 0);
+const effects = walk(audioDir)
+  .filter((f) => !relative(audioDir, f).split(sep).includes('music'))
+  .reduce((sum, f) => sum + statSync(f).size, 0);
+console.log(
+  `  ${mb(sharedMusic).padStart(7)} MB  shared music (${plan.sharedMusic.length} tracks)`,
+);
+console.log(`  ${mb(effects).padStart(7)} MB  sound effects`);
 
 const dist = join(root, 'dist');
 const shipped = walk(dist).filter((f) => !f.endsWith('.map'));
