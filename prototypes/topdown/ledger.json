@@ -27616,6 +27616,66 @@
    "ids": {
     "animation_group_id": "ff3d70c5-eb86-495c-bcfa-79ceb9497212"
    }
+  },
+  {
+   "name": "t15_ruon_surrender",
+   "endpoint": "/characters/animations",
+   "job": [
+    "11cf2747-724d-431e-b3ce-3757d3e38d47"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "c6aeeb28-28fd-4ecc-b3e4-253304f193a5",
+    "mode": "skeleton-v3",
+    "action_description": "a calm surrender: standing in place with the feet planted, he draws the curved s...",
+    "frame_count": 8,
+    "directions": [
+     "south"
+    ]
+   },
+   "credits": 3.0,
+   "credit_source": "usage",
+   "balance_diff": 3.0,
+   "usage": {
+    "generations": 3.0
+   },
+   "balance_before": 7388.1654640625,
+   "balance_after": 7385.1654640625,
+   "secs": 77,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "89162380-4933-4069-9aaf-4e7c379a8c67"
+   }
+  },
+  {
+   "name": "t15_ruon_surrender2",
+   "endpoint": "/characters/animations",
+   "job": [
+    "be68dc5b-309f-4e45-a740-a5353622fd7a"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "c6aeeb28-28fd-4ecc-b3e4-253304f193a5",
+    "mode": "skeleton-v3",
+    "action_description": "a calm surrender: standing in place with the feet planted, he draws the curved s...",
+    "frame_count": 8,
+    "directions": [
+     "south"
+    ]
+   },
+   "credits": 3.0,
+   "credit_source": "usage",
+   "balance_diff": 3.0,
+   "usage": {
+    "generations": 3.0
+   },
+   "balance_before": 7385.1654640625,
+   "balance_after": 7382.1654640625,
+   "secs": 111,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "2c4bd589-1413-4af6-9656-275ca945d7c6"
+   }
   }
  ],
  "end_balance": 16728.0,

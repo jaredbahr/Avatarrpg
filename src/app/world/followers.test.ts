@@ -5,7 +5,8 @@ import { createGame } from '../../core/state/createGame';
 import { visibleNpcs } from '../../core/story/world';
 import { buildGrid, tileAt } from '../../core/rules/grid';
 import type { Condition, GameState } from '../../core/types';
-import { activeFollowers, lineIds, placeFollowers } from './followers';
+import { activeFollowers, followerPose, lineIds, placeFollowers } from './followers';
+import { TOPDOWN_SHEETS } from '../../content/assets/topdownSheets';
 
 function game(): GameState {
   return createGame(CONTENT, {
@@ -106,7 +107,8 @@ describe('followers (#696)', () => {
             ? nodes(condition.of)
             : [];
     for (const follower of FOLLOWERS)
-      for (const node of nodes(follower.when)) expect(CONTENT.story.has(node), node).toBe(true);
+      for (const condition of [follower.when, ...(follower.poses ?? []).map((pose) => pose.when)])
+        for (const node of nodes(condition)) expect(CONTENT.story.has(node), node).toBe(true);
   });
 
   it('puts Ruon on the end of the line, after every party member', () => {
@@ -203,5 +205,42 @@ describe('followers (#696)', () => {
       expect(standing && activeFollowers(state).length > 0, ESCORT[index]).toBe(false);
     }
     expect(staged).toBeGreaterThan(0);
+  });
+
+  it('holds Ruon in his surrender, sabre at his feet, only while he surrenders and the table votes', () => {
+    const ruon = FOLLOWERS.find((who) => who.id === 'follower.ruon');
+    expect(ruon).toBeDefined();
+    if (!ruon) return;
+    const base = game();
+    const poseAlong = (route: readonly string[], flags: GameState['flags']) =>
+      Object.fromEntries(
+        route.map((node, index) => {
+          const chosen = index > route.indexOf('ruon_choice') ? flags : {};
+          return [
+            node,
+            followerPose(walked(base, route.slice(0, index + 1), chosen), ruon) ?? null,
+          ];
+        }),
+      );
+    const escort = poseAlong(ESCORT.slice(0, 8), { ruon_spared: true });
+    expect(escort).toEqual({
+      forest_after_explore: null,
+      gate_parley: null,
+      battle_quarry_gate: null,
+      ruon_surrender: 'surrender',
+      ruon_choice: 'surrender',
+      // "If they catch us in the cutting, I'll need my sabre."
+      escort_chosen: null,
+      gate_escort_explore: null,
+      cutting_explore: null,
+    });
+    const trade = poseAlong(TRADE.slice(0, 7), { ruon_traded: true });
+    expect(trade.ruon_choice).toBe('surrender');
+    expect(trade.trade_payment).toBeNull();
+    // The earthbender's talk brings him to the same surrender.
+    const talked = ['forest_after_explore', 'gate_parley', 'gate_kinship', 'gate_talked_through'];
+    expect(followerPose(walked(base, [...talked, 'ruon_surrender'], {}), ruon)).toBe('surrender');
+    // His top-down sheet carries the pose it names, one held cel.
+    expect(TOPDOWN_SHEETS.ruon.surrender?.frames).toEqual(['unit.ally.ruon/surrender/0']);
   });
 });
