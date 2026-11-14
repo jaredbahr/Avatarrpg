@@ -49,9 +49,9 @@ not ticked for them and should be brought up to date.
 
 ### Fixes
 
-- [ ] **Region manifest:** one `src/content/regions/<id>/index.ts` exporting maps, story, residents, encounters,
-      music rows and scene sources, with `index.ts`, `STORY_GROUPS` and `TOPDOWN_SCENES` built from the list of regions.
-      Removes most registration points.
+- [x] **Region manifest:** one `src/content/regions/<id>/` folder (`manifest.ts`, `content.ts`, `layouts.ts`)
+      declaring maps, story, residents, encounters, music rows and scene sources, with `index.ts`, `STORY_GROUPS`,
+      `TOPDOWN_SCENES`, `TOPDOWN_LAYOUTS` and `MAP_MUSIC` built from the list of regions (ADR 0111 §1).
 - [ ] **Move special cases into data:** guided-fight steps on the encounter, environment audio on the map, projectile
       look on the ability. Exit test: `grep` for map and encounter ids in `src/app` and `src/render` finds none.
 - [ ] **Region template and generator:** `scripts/content/new-region.ts <id>` writes the manifest, an empty map, a
