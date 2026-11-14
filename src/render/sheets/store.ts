@@ -33,6 +33,7 @@ import type { BakedSheet } from './bake';
 import { bakeSheet, frameHeadroom, headroomFromPixels } from './bake';
 import { frameIndex, resolveClip } from './resolveClip';
 import { feetFromPixels, plantAnchor, standsOnSoles, type FrameFeet } from './feet';
+import { cropPixels, readPagePixels, type PagePixels } from './pagePixels';
 
 export interface ResolvedFrame {
   readonly source: HTMLCanvasElement | HTMLImageElement;
@@ -99,6 +100,7 @@ export function atlasHeadroom(
   atlas: AtlasJson,
   image: CanvasImageSource,
   clips: SheetClips = entry.clips,
+  page: PagePixels | null = readPagePixels(image, atlas.width, atlas.height),
 ): number {
   // Each frame is measured from the anchor it stands by: a trimmed clip's own
   // (ADR 0059), or the sheet's.
@@ -107,20 +109,13 @@ export function atlasHeadroom(
     for (const name of clip?.frames ?? []) names.set(name, clip?.anchor?.y ?? entry.anchor.y);
   for (const frames of Object.values(entry.meleeDirections ?? {}))
     for (const name of frames ?? []) names.set(name, entry.anchor.y);
-  const scratch = typeof document === 'undefined' ? null : document.createElement('canvas');
-  const ctx = scratch?.getContext('2d');
   let envelope = 0;
   for (const [name, anchorY] of names) {
     const frame = atlas.frames.get(name);
     if (!frame || frame.w === 0 || frame.h === 0) continue;
-    let height = frameHeadroom(frame, anchorY, entry.pixelsPerTile);
-    if (scratch && ctx) {
-      scratch.width = frame.w;
-      scratch.height = frame.h;
-      ctx.drawImage(image, frame.x, frame.y, frame.w, frame.h, 0, 0, frame.w, frame.h);
-      const data = ctx.getImageData(0, 0, frame.w, frame.h).data;
-      height = headroomFromPixels(data, frame.w, frame.h, entry.pixelsPerTile, anchorY);
-    }
+    const height = page
+      ? headroomFromPixels(cropPixels(page, frame), frame.w, frame.h, entry.pixelsPerTile, anchorY)
+      : frameHeadroom(frame, anchorY, entry.pixelsPerTile);
     envelope = Math.max(envelope, height);
   }
   return envelope;
@@ -135,27 +130,28 @@ export function atlasFeet(
   atlas: AtlasJson,
   image: CanvasImageSource,
   clips: SheetClips = entry.clips,
+  pixels?: PagePixels | null,
 ): Map<string, FrameFeet> {
   const feet = new Map<string, FrameFeet>();
-  const scratch = typeof document === 'undefined' ? null : document.createElement('canvas');
-  const ctx = scratch?.getContext('2d', { willReadFrequently: true });
-  if (!scratch || !ctx) return feet;
+  let page: PagePixels | null;
+  try {
+    page = pixels === undefined ? readPagePixels(image, atlas.width, atlas.height) : pixels;
+  } catch {
+    return feet;
+  }
+  if (!page) return feet;
   for (const [clip, def] of Object.entries(clips))
     if (def && standsOnSoles(clip))
       for (const name of def.frames) {
         const frame = atlas.frames.get(name);
         if (feet.has(name) || !frame || frame.w === 0 || frame.h === 0) continue;
-        scratch.width = frame.w;
-        scratch.height = frame.h;
-        ctx.clearRect(0, 0, frame.w, frame.h);
-        try {
-          ctx.drawImage(image, frame.x, frame.y, frame.w, frame.h, 0, 0, frame.w, frame.h);
-          const data = ctx.getImageData(0, 0, frame.w, frame.h).data;
-          const found = feetFromPixels(data, frame.w, frame.h, entry.pixelsPerTile);
-          if (found) feet.set(name, found);
-        } catch {
-          return feet;
-        }
+        const found = feetFromPixels(
+          cropPixels(page, frame),
+          frame.w,
+          frame.h,
+          entry.pixelsPerTile,
+        );
+        if (found) feet.set(name, found);
       }
   return feet;
 }
@@ -447,8 +443,19 @@ export class SheetStore {
     const loading = Promise.all([pages, clipsPromise, actionsPromise])
       .then(([pages, fetched, actions]) => {
         const clips: SheetClips = fetched ? { ...entry.clips, ...fetched } : entry.clips;
+        // Each page is read back once for both measures. A page that cannot be read (tainted)
+        // goes to each on its own: the feet fall back to the anchor, the headroom fails the load.
+        const pixels = pages.map((page) => {
+          try {
+            return readPagePixels(page.image, page.atlas.width, page.atlas.height);
+          } catch {
+            return undefined;
+          }
+        });
         const feet = new Map(
-          pages.flatMap((page) => [...atlasFeet(entry, page.atlas, page.image, clips)]),
+          pages.flatMap((page, i) => [
+            ...atlasFeet(entry, page.atlas, page.image, clips, pixels[i]),
+          ]),
         );
         this.loaded.set(key, {
           pages,
@@ -458,7 +465,11 @@ export class SheetStore {
             : clips,
           headroom: Math.min(
             entry.uiHeadroomCap ?? Number.POSITIVE_INFINITY,
-            Math.max(...pages.map((page) => atlasHeadroom(entry, page.atlas, page.image, clips))),
+            Math.max(
+              ...pages.map((page, i) =>
+                atlasHeadroom(entry, page.atlas, page.image, clips, pixels[i]),
+              ),
+            ),
           ),
           feet,
         });
