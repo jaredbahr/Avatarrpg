@@ -99,6 +99,11 @@ export interface StartOptions {
    * shipped default, the table vote (#621).
    */
   readonly storyChoices?: 'vote' | 'turns';
+  /**
+   * A new game opens on the flash-forward prologue (C-28). The suite starts on
+   * Ba Dan's opening, as Skip scene would, unless a spec is about the prologue.
+   */
+  readonly prologue?: boolean;
 }
 
 /** Starts a game without walking the whole setup flow. */
@@ -110,7 +115,7 @@ export async function startGame(
   options: StartOptions = {},
 ): Promise<void> {
   await page.evaluate(
-    ({ players, characterIds, seed, reduceMotion, storyChoices }) => {
+    ({ players, characterIds, seed, reduceMotion, storyChoices, prologue }) => {
       const app = window.fnt?.app;
       if (!app) throw new Error('The game has not finished booting.');
       app.updateSettings({ reduceMotion, storyChoices });
@@ -119,6 +124,8 @@ export async function startGame(
         characterIds.map((characterId) => ({ characterId })),
         seed,
       );
+      if (!prologue && app.state?.story.nodeId === 'prologue_storm')
+        app.dispatch({ type: 'enterNode', nodeId: 'act1_open' });
     },
     {
       players,
@@ -126,6 +133,7 @@ export async function startGame(
       seed,
       reduceMotion: options.reduceMotion ?? true,
       storyChoices: options.storyChoices ?? 'turns',
+      prologue: options.prologue ?? false,
     },
   );
 }
