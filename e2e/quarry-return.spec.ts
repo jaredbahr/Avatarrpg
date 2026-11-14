@@ -296,6 +296,21 @@ async function takeRoute(page: Page, label: string, mapId: string): Promise<void
   beginPhase(page, `route ${mapId}`);
   await page.getByRole('button', { name: 'Map', exact: true }).click();
   await page.getByRole('button', { name: label, exact: true }).click();
+  // The Cutting's culvert (C-29) plays once on the way east; read it, then carry on.
+  const stop = () =>
+    page.evaluate(() =>
+      window.fnt?.app.state?.story.nodeId === 'cutting_culvert'
+        ? 'culvert'
+        : window.fnt?.app.state?.location.mapId,
+    );
+  await expect.poll(stop).toMatch(new RegExp(`^(culvert|${mapId})$`));
+  if ((await stop()) === 'culvert') {
+    endPhase(page);
+    await continueStory(page);
+    beginPhase(page, `route ${mapId}`);
+    await page.getByRole('button', { name: 'Map', exact: true }).click();
+    await page.getByRole('button', { name: label, exact: true }).click();
+  }
   await expect.poll(() => page.evaluate(() => window.fnt?.app.state?.location.mapId)).toBe(mapId);
   await completeAuthoredPlayback(page);
   endPhase(page);
@@ -463,6 +478,11 @@ for (const custody of ['trade', 'escort'] as const) {
     // The workers-are-free beat leads straight into the walk home.
     await expect(page.getByRole('button', { name: 'Skip scene' })).toBeVisible();
     await page.getByRole('button', { name: 'Skip scene' }).click();
+    // Bo-shan's delivery book in the Driller's cab (C-31), then the walk home.
+    await expect
+      .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
+      .toBe('quarry_ledger');
+    await continueStory(page, custody);
     expect(await page.evaluate(() => window.fnt?.app.state?.flags.act1_complete)).toBe(true);
     await expect(page.locator('.title-plate-objective')).toContainText('west');
     await expectJournalObjective(page, 'Take the west path');

@@ -176,6 +176,12 @@ for (const custody of ['escort', 'trade'] as const) {
     );
     // The workers-are-free beat is an interlude now; the demo ends in Ba Dan.
     await page.getByRole('button', { name: 'Skip scene' }).click();
+    // Then Bo-shan's delivery book in the Driller's cab (C-31).
+    await expect
+      .poll(() => page.evaluate(() => window.fnt!.app.state?.story.nodeId))
+      .toBe('quarry_ledger');
+    for (let line = 0; line < 4; line++)
+      await page.locator('.dialogue-panel button.btn-primary').click();
 
     await takeRoute(page, 'West → The Cutting', 'ambush_road');
     await takeRoute(page, 'West → Quarry Gate', 'quarry_gate');

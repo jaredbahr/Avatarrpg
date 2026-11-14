@@ -2,6 +2,7 @@
 import type { Condition, MapDef, MapEdgeSide, MapExit, MapTrigger, Vec2 } from '../../core/types';
 
 import { discoveryMarkers } from './discoveries';
+import { reasonMarkers } from '../story/reasons';
 import { RETURNEES_HOME, RETURNEES_RETURNING, VILLAGE_HOMECOMINGS_COMPLETE } from '../story/return';
 import { RETURNEE_PRESENTATIONS } from '../residents/returnees';
 import { SQ01_HAS_LIST, SQ01_RESOLVED } from '../story/sq01Cabbages';
@@ -312,6 +313,8 @@ export function connectAct1(map: MapDef): MapDef {
             unvisited('ruon_choice'),
           ),
         ],
+        // Jinu's find in the gate office on the walk home (C-31; reasons.ts).
+        npcs: [...map.npcs, ...reasonMarkers('quarry_gate')],
       };
     case 'ambush_road':
       return {
@@ -348,6 +351,17 @@ export function connectAct1(map: MapDef): MapDef {
           crossing(map, 8, 4, 'battle_ambush', 'Jin’s waiting mercenaries', 'unit.enemy.thug', {
             kind: 'all',
             of: [{ kind: 'flag', key: 'ruon_spared', op: 'set' }, unvisited('after_ambush')],
+          }),
+          // The culvert (C-29): column 10 is the only dry crossing east of the pool, so
+          // either branch passes it once on the way down. Until the art batch draws a
+          // culvert mouth, the runoff measuring stone stands in for it.
+          crossing(map, 10, 6, 'cutting_culvert', 'The culvert', 'world.runoff_marker', {
+            kind: 'all',
+            of: [
+              { kind: 'any', of: [visited('after_ambush'), visited('trade_chosen')] },
+              unvisited('cutting_culvert'),
+              { kind: 'not', of: rescued },
+            ],
           }),
         ],
         npcs: [
@@ -412,6 +426,8 @@ export function connectAct1(map: MapDef): MapDef {
             of: [unvisited('act1_epilogue'), unvisited('act1_epilogue_lost')],
           }),
         ],
+        // The off-ledger cargo and the Driller's cab: one find per present hero (C-31).
+        npcs: [...map.npcs, ...reasonMarkers('quarry_floor')],
       };
     default:
       return map;
