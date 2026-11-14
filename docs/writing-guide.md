@@ -133,6 +133,41 @@ an appropriate narrator. Do not put unmarked actions into a character's speech.
 Keep node IDs, destinations, conditions, rewards, and interlude shot counts intact
 unless the task explicitly requires a behavior change.
 
+## Let the themes stay unspoken
+
+The core themes (responsibility, belonging, balance, racial and social
+equality, equality among all people, and respect for each other's
+differences; [story bible index](story-bible.md#core-themes), bible Part 01
+§4–8) come through what people do and the situations they face. Nobody states
+the moral. There are no lessons spelled out, no "what we learned" lines and no
+closing speech that names the theme. Trust the players, including the kids
+aged 7–12, to see it for themselves.
+
+A theme lives in a choice with a cost: Ruon owning what he allowed and still
+facing a hearing, a bowl set out at the table for a worker who is not back
+yet, a non-bender opening the route the bender could not. If a line explains
+what the scene meant, cut it and let the scene stand.
+
+## Theme card
+
+Every mission, side story or scene draft carries a short theme card, in the
+draft PR (the PR template has the section) or at the top of the draft. It
+says what the scene carries; it is never shown to players.
+
+```markdown
+**Theme card:** <scene or mission id and name>
+
+Themes: <which of the core themes>. <One or two sentences on how the scene
+carries them, said through what people do, not as a moral.>
+
+- [ ] No nation, element or culture stereotype
+- [ ] Every valid party, non-benders included, has a real route through
+- [ ] No instant forgiveness or absolution
+- [ ] The other side's reasons are shown
+- [ ] The theme is never stated outright
+- [ ] Absent heroes are never voiced
+```
+
 ## Review before integration
 
 ### Contributions during the quarry run
