@@ -4,17 +4,18 @@
 
 Generated from the effective runtime story nodes, including party voice dialogue variants. Regenerate with `npm run docs:story`; verify committed output with `npm run docs:story -- --check`.
 
-111 nodes; 4 fights; 8 branches; 4 choices
+125 nodes; 4 fights; 8 branches; 6 choices
 
 Each runtime story node is owned by exactly one diagram. Entry points are highlighted; cross-file exits and cross-part continuations link to the diagram owning their target. Files over 80 nodes split from entry points into parts of at most 80 owned nodes. Boundary placeholders are excluded from counts.
 
 Edges show every authored story transition, choice condition and flag mutation. Branches use runtime truthiness (false and 0 take the falsy route). Map NPCs and triggers mark possible entry points without inventing transitions or bypassing their conditions. Connected map exits clear the story cursor rather than following explore.next; those authored links are labeled legacy/audit exits. Physical map travel is outside this graph. Dialogue variants are presentation alternatives, not transitions.
 
-| Story file                      | Nodes | Fights | Branches | Choices | Parts |
-| ------------------------------- | ----: | -----: | -------: | ------: | ----: |
-| [Act 1](./act1.md)              |    44 |      4 |        0 |       2 |     1 |
-| [Ba Dan day](./ba-dan-day.md)   |    18 |      0 |        5 |       2 |     1 |
-| [Discoveries](./discoveries.md) |    12 |      0 |        3 |       0 |     1 |
-| [Return](./return.md)           |    18 |      0 |        0 |       0 |     1 |
-| [Riverside](./riverside.md)     |     7 |      0 |        0 |       0 |     1 |
-| [World](./world.md)             |    12 |      0 |        0 |       0 |     1 |
+| Story file                                            | Nodes | Fights | Branches | Choices | Parts |
+| ----------------------------------------------------- | ----: | -----: | -------: | ------: | ----: |
+| [Act 1](./act1.md)                                    |    44 |      4 |        0 |       2 |     1 |
+| [Ba Dan day](./ba-dan-day.md)                         |    18 |      0 |        5 |       2 |     1 |
+| [Discoveries](./discoveries.md)                       |    12 |      0 |        3 |       0 |     1 |
+| [Return](./return.md)                                 |    18 |      0 |        0 |       0 |     1 |
+| [Riverside](./riverside.md)                           |     7 |      0 |        0 |       0 |     1 |
+| [SQ-02 A Very Official Gate](./sq02-official-gate.md) |    14 |      0 |        0 |       2 |     1 |
+| [World](./world.md)                                   |    12 |      0 |        0 |       0 |     1 |

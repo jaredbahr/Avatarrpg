@@ -49,6 +49,7 @@ export const FLAG_ARCS = [
   'Demo · Walk home',
   'Demo · Riverside',
   'Demo · A Ba Dan day',
+  'Side story · SQ-02 A Very Official Gate',
   'Saga · Nation standing',
   'Saga · Disciplines',
   'App · Guidance',
@@ -388,10 +389,9 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     values: [true],
     meaning: 'The party finished Dorin’s flow-spark-flow footwork drill by the river.',
     arc: 'Demo · Riverside',
-    status: 'informational',
-    note: 'Saved for a later payoff; no journal note or line reads it yet.',
+    status: 'live',
     setBy: ['app:app/village/VillageLife'],
-    readBy: [],
+    readBy: ['story:sq02_return'],
   },
 
   /* -------------------------------------------------------- A Ba Dan day */
@@ -414,6 +414,25 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     status: 'live',
     setBy: ['story:handover_done'],
     readBy: ['map:ba_dan_village', 'app:app/world/barks'],
+  },
+
+  /* -------------------------------------- SQ-02 A Very Official Gate */
+  {
+    key: 'sq02.gate',
+    type: 'string',
+    values: ['quiet', 'public', 'mocked'],
+    meaning:
+      'How the backwards side gate was put right: quietly with Dorin, by helping him explain it publicly, or by laughing it open.',
+    arc: 'Side story · SQ-02 A Very Official Gate',
+    status: 'live',
+    setBy: ['story:sq02_choice'],
+    readBy: [
+      'map:ba_dan_village',
+      'story:demo_complete',
+      'story:sq02_after',
+      'story:sq02_return',
+      'story:sq02_return_gate',
+    ],
   },
 
   /* ----------------------------------------------- Nation standing (reserved prefix) */

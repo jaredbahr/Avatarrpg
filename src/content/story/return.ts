@@ -235,6 +235,20 @@ export const RETURN_STORY: readonly StoryNode[] = [
           text: 'You listened to Pella, and her brother’s cabbage cart helped on the quarry floor.',
         },
         {
+          when: {
+            kind: 'any',
+            of: [
+              { kind: 'flag', key: 'sq02.gate', op: 'eq', value: 'quiet' },
+              { kind: 'flag', key: 'sq02.gate', op: 'eq', value: 'public' },
+            ],
+          },
+          text: 'You helped Dorin find out why the side gate never opened.',
+        },
+        {
+          when: { kind: 'flag', key: 'sq02.gate', op: 'eq', value: 'mocked' },
+          text: 'You laughed the side gate open. Dorin wrote something down.',
+        },
+        {
           when: { kind: 'flag', key: 'world.ducks_seen', op: 'set' },
           text: 'You stopped for Dema’s ducklings on the Forest Road.',
         },

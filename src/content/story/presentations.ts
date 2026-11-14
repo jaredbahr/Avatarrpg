@@ -62,6 +62,21 @@ const NPC_PRESENTATIONS: readonly (readonly [string, string, WorldStage?])[] = [
   ['handover_float', 'ba_dan_village'],
   ['hanru_watch', 'ba_dan_village'],
   ['school_notice', 'ba_dan_village'],
+  // SQ-02 (sq02OfficialGate.ts): every conversation node, so the scene keeps its map.
+  ['sq02_hook', 'ba_dan_village'],
+  ['sq02_ask', 'ba_dan_village'],
+  ['sq02_register', 'ba_dan_village'],
+  ['sq02_hen', 'ba_dan_village'],
+  ['sq02_choice', 'ba_dan_village'],
+  ['sq02_quiet', 'ba_dan_village'],
+  ['sq02_public', 'ba_dan_village'],
+  ['sq02_public_after', 'ba_dan_village'],
+  ['sq02_mocked', 'ba_dan_village'],
+  ['sq02_mocked_after', 'ba_dan_village'],
+  ['sq02_shortcut', 'ba_dan_village'],
+  ['sq02_after', 'ba_dan_village'],
+  ['sq02_return', 'ba_dan_village'],
+  ['sq02_return_gate', 'ba_dan_village'],
 
   // Riverside.
   ['riverside_mira', 'ba_dan_riverside'],
