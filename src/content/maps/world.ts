@@ -225,7 +225,7 @@ export function connectAct1(map: MapDef): MapDef {
           },
           {
             id: 'dema',
-            name: 'Dema, road keeper',
+            name: 'Lanfen, road keeper',
             pos: { x: 3, y: 1 },
             sprite: 'npc.dema',
             node: 'forest_dema',
@@ -321,7 +321,7 @@ export function connectAct1(map: MapDef): MapDef {
         objectiveVariants: [
           {
             when: rescued,
-            text: 'Ba Dan lies west, past the quarry gate. Sen is at the rest stop.',
+            text: 'Ba Dan lies west, past the quarry gate. Kuan is at the rest stop.',
           },
         ],
         exits: [
@@ -372,7 +372,7 @@ export function connectAct1(map: MapDef): MapDef {
           },
           {
             id: 'rest_keeper',
-            name: 'Sen, the tea keeper',
+            name: 'Kuan, the tea keeper',
             pos: { x: 5, y: 9 },
             sprite: 'npc.sen',
             node: 'cutting_tea',

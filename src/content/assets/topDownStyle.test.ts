@@ -74,7 +74,7 @@ describe('?style=topdown (ADR 0104)', () => {
     const before = Object.fromEntries(Object.keys(ASSETS).map((key) => [key, resolveAsset(key)]));
     for (const key of Object.keys(TOPDOWN_KEYS)) {
       const entry = resolveAsset(key);
-      // Every key T7 moved holds its top-down sheet already (ADR 0104); Hanru, Dema and Sen are
+      // Every key T7 moved holds its top-down sheet already (ADR 0104); Hanru, Lanfen and Kuan are
       // still the painted figures by default.
       if (PAINTED.includes(key)) expect(entry.kind, key).toBe('painter');
       else if (entry.kind === 'sheet') expect(entry.atlas, key).toMatch(/^art\/topdown\//);

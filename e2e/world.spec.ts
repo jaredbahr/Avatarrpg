@@ -183,7 +183,7 @@ for (const renderer of ['canvas', 'webgl']) {
     await waitForIdle(page);
     await expect(page.locator('.title-plate-name')).toHaveText('The Forest Road');
     await expect(page.locator('.explore-context strong')).toHaveText(
-      'Speak with Dema, road keeper',
+      'Speak with Lanfen, road keeper',
     );
     await expect(page.locator('.explore-hud .action-button').first()).toContainText('Talk');
     await page.getByRole('button', { name: 'Map', exact: true }).click();

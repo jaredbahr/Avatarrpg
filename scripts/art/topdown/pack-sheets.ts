@@ -621,8 +621,9 @@ const ROSTER: readonly FigureSpec[] = [
     actions: {},
     timing: 'blow',
   },
-  // T10: the road keeper Dema and Sen, the Cutting's tea keeper, who borrowed Mira's and Gao's sheets, made as the
-  // guard was (`tools/t10residents.py`): idle and walk, eight headings.
+  // T10: the road keeper Lanfen and Kuan, the Cutting's tea keeper, who borrowed Mira's and Gao's sheets, made as the
+  // guard was (`tools/t10residents.py`): idle and walk, eight headings. The sheets keep their placeholder names,
+  // `dema` and `sen`.
   {
     name: 'dema',
     key: 'npc.dema',

@@ -207,8 +207,8 @@ export const CREDITS: readonly CreditEntry[] = [
     note: 'Original generated transparent prop, packed from the Act 1 environment work (docs/art/act1-environments.md) and documented in docs/art/tea-station.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
   },
   {
-    what: 'The forest turtle-duck nest',
-    work: 'Turtle-duck and duckling nest discovery illustration',
+    what: 'The forest turtle duck nest',
+    work: 'Turtle duck and duckling nest discovery illustration',
     authors: 'This project, generated with OpenAI image generation',
     licence: 'own work',
     source: '',

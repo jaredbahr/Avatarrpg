@@ -58,7 +58,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
     kind: 'explore',
     mapId: 'ambush_road',
     objective:
-      'The workers are returning to Ba Dan. Ba Dan lies west; Sen is at the rest stop if you need a pause.',
+      'The workers are returning to Ba Dan. Ba Dan lies west; Kuan is at the rest stop if you need a pause.',
     next: 'gate_return_explore',
   },
   {
@@ -277,11 +277,11 @@ export const RETURN_STORY: readonly StoryNode[] = [
         },
         {
           when: { kind: 'flag', key: 'world.ducks_seen', op: 'set' },
-          text: 'You stopped for Dema’s ducklings on the Forest Road.',
+          text: 'You stopped for Lanfen’s ducklings on the Forest Road.',
         },
         {
           when: { kind: 'flag', key: 'world.tea_shared', op: 'set' },
-          text: 'You shared Sen’s tea in the Cutting.',
+          text: 'You shared Kuan’s tea in the Cutting.',
         },
       ],
     },
@@ -397,7 +397,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
   {
     id: 'dema_home',
     kind: 'dialogue',
-    speaker: 'Dema',
+    speaker: 'Lanfen',
     portrait: 'portrait.dema',
     lines: [
       'The crews came past. A few stopped to ask about the stream.',
@@ -409,7 +409,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
   {
     id: 'sen_home',
     kind: 'dialogue',
-    speaker: 'Sen',
+    speaker: 'Kuan',
     portrait: 'portrait.sen',
     lines: [
       'They came through just ahead of you. Filled this bench and most of the ground around it.',

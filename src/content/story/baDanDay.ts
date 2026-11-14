@@ -2,8 +2,9 @@
  * A Ba Dan day (ADR 0047 §8, W6): Gao's plant scene (LW-S-BD-01), the gate
  * handover (LW-S-BD-03), Hanru's watch and the school notice.
  *
- * Voice for Hanru is set here, since the story bible is not available: few
- * words, practical, kind without saying so. Hanru uses they/them (D7).
+ * Hanru is canon NPC-25 (`docs/story-bible.md`): few words, practical, kind
+ * without saying so. Hanru uses they/them (ADR 0047 D7). The scene ids
+ * LW-S-BD-01 and -03 are ADR 0047's; the scenes are demo additions.
  *
  * No line claims time passing inside a conversation; the phase is fixed while
  * one is open. Scene memory uses the reserved `scene.` prefix and is written
@@ -31,7 +32,7 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
     speaker: GAO,
     portrait: 'portrait.gao',
     prompt: 'Come in out of the sun. Sit down a minute.',
-    // A visit does not reset the custody disagreement (guide §04.2).
+    // A visit does not reset the custody disagreement (ADR 0047 §8).
     variants: [
       {
         when: { kind: 'flag', key: 'ruon_traded', op: 'set' },
