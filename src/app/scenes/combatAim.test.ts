@@ -69,9 +69,9 @@ function tap(tile: Vec2, mode: Mode = { kind: 'aim', abilityId: checkpoint.abili
 
 describe('combat tap aim acceptance', () => {
   it('uses the earned Grumbler turn and exact reloadable save', () => {
-    expect(checkpoint.transcript).toHaveLength(79);
+    expect(checkpoint.transcript).toHaveLength(81);
     expect(createHash('sha256').update(checkpoint.json).digest('hex')).toBe(
-      '89e04d1627447200e9c6abc317a36ea4a4a7ed924870e07992412b9c02bc7bed',
+      '5de07e9bf45efbab9ce098ff814edec75290695ffcbdc847399de3eceedb27ff',
     );
     expect(loadQuarryCheckpoint(checkpoint.json)).toEqual(checkpoint.state);
     expect(checkpoint.state.battle).toMatchObject({

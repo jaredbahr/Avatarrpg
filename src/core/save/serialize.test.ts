@@ -102,7 +102,7 @@ describe('save round trip', () => {
         { name: 'Alex', unitId: 'p2', participantId: 'person-1' },
       ],
       participants: [
-        { id: 'person-1', name: 'Alex' },
+        { id: 'person-1', name: 'Alex', handoffName: 'Maya' },
         { id: 'person-2', name: 'Alex' },
       ],
       soloPlay: false,

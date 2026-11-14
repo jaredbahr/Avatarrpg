@@ -11,6 +11,7 @@ html[data-large-text='on'] {
 
 html[data-large-text='huge'] {
   --ui-scale: 1.5;
+  --conversation-portrait: var(--conversation-portrait-largest);
 }
 
 /* Reduce motion: the animator reads --motion-scale and skips tweens when it

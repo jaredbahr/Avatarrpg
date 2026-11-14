@@ -32,7 +32,7 @@ function unit(id: string, pos: Vec2, size: 1 | 2 = 2): Unit {
   };
 }
 
-function fixture(projection: 'orthographic' | 'oblique', size: 1 | 2 = 2, square = true) {
+function fixture(projection: 'orthographic', size: 1 | 2 = 2, square = true) {
   const boss = unit('boss', { x: 15, y: 5 }, size);
   const camera = new Camera(
     { width: 1194, height: 540, dpr: 1 },
@@ -56,7 +56,7 @@ function fixture(projection: 'orthographic' | 'oblique', size: 1 | 2 = 2, square
 }
 
 describe('large upright actor body picking', () => {
-  for (const projection of ['orthographic', 'oblique'] as const) {
+  for (const projection of ['orthographic'] as const) {
     it(`resolves empty floor inside a scaled 2x2 body in ${projection}`, () => {
       const { boss, box, point } = fixture(projection);
       const result = resolveCombatBodyPick({
@@ -74,7 +74,7 @@ describe('large upright actor body picking', () => {
   }
 
   it('leaves a reachable move cell under the body unchanged', () => {
-    const { boss, box, point } = fixture('oblique');
+    const { boss, box, point } = fixture('orthographic');
     const groundTile = { x: 12, y: 3 };
     expect(
       resolveCombatBodyPick({
@@ -90,7 +90,7 @@ describe('large upright actor body picking', () => {
   });
 
   it("leaves another unit's ground cell unchanged", () => {
-    const { boss, box, point } = fixture('oblique');
+    const { boss, box, point } = fixture('orthographic');
     const behind = unit('behind', { x: 12, y: 3 }, 1);
     expect(
       resolveCombatBodyPick({
@@ -106,7 +106,7 @@ describe('large upright actor body picking', () => {
   });
 
   it('leaves a prop cell unchanged', () => {
-    const { boss, box, point } = fixture('oblique');
+    const { boss, box, point } = fixture('orthographic');
     const groundTile = { x: 12, y: 3 };
     expect(
       resolveCombatBodyPick({
@@ -157,7 +157,7 @@ describe('large upright actor body picking', () => {
       [1, true],
       [2, false],
     ] as const) {
-      const { boss, box, point } = fixture('oblique', size, square);
+      const { boss, box, point } = fixture('orthographic', size, square);
       const groundTile = { x: 12, y: 3 };
       expect(
         resolveCombatBodyPick({
@@ -175,7 +175,7 @@ describe('large upright actor body picking', () => {
   });
 
   it('leaves a point well inside a scaled 1x1 body unchanged', () => {
-    const { boss, box } = fixture('oblique', 1);
+    const { boss, box } = fixture('orthographic', 1);
     const groundTile = { x: 12, y: 3 };
     const point = { x: box.x + box.size / 2, y: box.y + box.size / 2 };
     expect(
@@ -192,7 +192,7 @@ describe('large upright actor body picking', () => {
   });
 
   it('aims at the nearest legal footprint cell', () => {
-    const { boss, box, point } = fixture('oblique');
+    const { boss, box, point } = fixture('orthographic');
     const result = resolveCombatBodyPick({
       point,
       groundTile: { x: 12, y: 3 },
@@ -207,7 +207,7 @@ describe('large upright actor body picking', () => {
   });
 
   it('falls back to the ground tile when no footprint cell is a legal raw aim', () => {
-    const { boss, box, point } = fixture('oblique');
+    const { boss, box, point } = fixture('orthographic');
     const groundTile = { x: 12, y: 3 };
     expect(
       resolveCombatBodyPick({
@@ -224,7 +224,7 @@ describe('large upright actor body picking', () => {
   });
 
   it("does not pick the boss through another living 1x1 actor's upright body", () => {
-    const { boss, box, point } = fixture('oblique');
+    const { boss, box, point } = fixture('orthographic');
     const groundTile = { x: 12, y: 3 };
     const other = unit('other', { x: 12, y: 4 }, 1);
     expect(

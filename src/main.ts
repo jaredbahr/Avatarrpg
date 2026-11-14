@@ -9,20 +9,21 @@ import './styles/fonts.css';
 import './styles/base.css';
 import './styles/hud.css';
 import './styles/interludes.css';
+import './styles/objective-pointer.css';
 import './styles/a11y.css';
 
-import { CONTENT, CONTENT_BUNDLE, STORY_ENTRY } from './content';
+import { STORY_PROLOGUE } from './content/entry';
 import { App } from './app/App';
+import { loadIcons } from './app/ui/icons';
 import { bakeReview } from './render/sheets/review';
-import { liftCost } from './render/geometry/lift';
 import { fxCelsReady, celReady } from './render/fx/atlas';
 import { FX_CELS } from './content/fxCels';
-import { useTopDownStyle, useWorldStyleTest } from './content/assets/manifest';
-import { loadTopDownPresentations, withTopDownMaps } from './content/topdown';
+import { START_REGION_ID, regionOfMap } from './content/regions';
+import { RegionStore } from './app/regions';
+import { AUTOSAVE_ID, loadFromSlot } from './app/storage/localSaves';
 import { loadTopdownVfx } from './content/assets/topdownVfx';
+import { useTopDownStyle } from './content/assets/manifest';
 import { assetUrl } from './render/spriteCache';
-import type { ContentIndex } from './core/types';
-import { pageStyle } from './app/style';
 
 /** Gallery checks await decoded pixels, not just successful HTTP requests. */
 async function loadedFxCels() {
@@ -39,46 +40,62 @@ if (!root) throw new Error('Missing #app mount point in index.html');
  * production the validation module is omitted entirely.
  */
 if (import.meta.env.DEV) {
-  void import('./content/schemas').then(({ validateContent }) => {
-    const problems = validateContent(CONTENT_BUNDLE);
-    if (problems.length > 0) {
-      console.error(`Content validation found ${problems.length} problem(s):`);
-      for (const problem of problems) console.error(`  - ${problem}`);
-    }
+  void Promise.all([import('./content/schemas'), import('./content')]).then(
+    ([{ validateContent }, { CONTENT_BUNDLE }]) => {
+      const problems = validateContent(CONTENT_BUNDLE);
+      if (problems.length > 0) {
+        console.error(`Content validation found ${problems.length} problem(s):`);
+        for (const problem of problems) console.error(`  - ${problem}`);
+      }
+    },
+  );
+}
+
+// The icon sprite is requested now, while the page is still loading, rather than when the app
+// starts. The app waits for the top-down scenes below, so a request made from `App.start` goes out
+// after the load event; a reload or navigation then cancels it in flight, and WebKit logs that as
+// an uncaught "Cannot load … due to access control checks" error although `loadIcons` catches it.
+// Started here, it goes out with the page's own loading, as it did before the top-down boot made
+// the start asynchronous. `App.start` still calls it, as a no-op.
+loadIcons();
+
+// The game draws in the top-down style (ADR 0104); `?style=` is ignored, so old links still work.
+useTopDownStyle();
+void loadTopdownVfx(import.meta.env.BASE_URL);
+
+// Regions load as the party needs them (ADR 0111 §2). The top-down scenes are assets (ADR 0104),
+// fetched with their region; without them the maps draw their bare boards.
+const regions = new RegionStore(async (url) => {
+  const response = await fetch(assetUrl(url));
+  if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
+  return (await response.json()) as unknown;
+});
+
+/** The region the title's Continue resumes in, or the start region when there is no autosave. */
+function bootRegion(): string {
+  const autosave = loadFromSlot(AUTOSAVE_ID);
+  const mapId = autosave.ok ? autosave.save.state.location.mapId : null;
+  return (mapId && regionOfMap(mapId)?.id) || START_REGION_ID;
+}
+
+function boot(): void {
+  if (!root) return;
+  // A new game from the title opens on the flash-forward prologue (C-28).
+  const app = new App(regions.content, root, STORY_PROLOGUE, regions);
+  app.start();
+  window.fnt = { app, bakeReview, loadedFxCels };
+  // New game and the riverside preview start in the start region; fetch it while the title shows.
+  void regions.ensure(START_REGION_ID).catch((error: unknown) => {
+    console.error('The start region did not load.', error);
   });
 }
 
-// Top-down is the default look (ADR 0104 T6): its sheets, and its maps for those it has drawn.
-// `?style=oblique` keeps the old look until T7; `?style=world` is the world-style figure test.
-const style = pageStyle(window.location.search);
-if (style === 'world') useWorldStyleTest();
-if (style === 'topdown') useTopDownStyle();
-if (style === 'topdown') void loadTopdownVfx(style, import.meta.env.BASE_URL);
-
-function boot(content: ContentIndex): void {
-  if (!root) return;
-  const app = new App(content, root, STORY_ENTRY);
-  app.start();
-  window.fnt = { app, bakeReview, loadedFxCels, liftCost };
-}
-
-if (style === 'topdown') {
-  // The top-down scenes are assets (ADR 0104), fetched before the app boots; without them the
-  // maps keep their oblique look.
-  loadTopDownPresentations(async (url) => {
-    const response = await fetch(assetUrl(url));
-    if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
-    return (await response.json()) as unknown;
-  })
-    .then(
-      (presentations) => withTopDownMaps(CONTENT, presentations),
-      (error: unknown) => {
-        console.error('The top-down scenes did not load; drawing the oblique maps.', error);
-        return CONTENT;
-      },
-    )
-    .then(boot);
-} else boot(CONTENT);
+// Boot waits for the autosave's region, so Continue never waits; it boots without it if the fetch
+// fails (offline before a first visit), and the region is fetched again when it is needed.
+regions
+  .ensure(bootRegion())
+  .catch((error: unknown) => console.error('The first region did not load.', error))
+  .then(boot);
 
 // Handy from the browser console, and how the e2e suite drives setup quickly.
 // `bakeReview` is for the gallery's figure page: every placeholder sheet as a picture.
@@ -88,7 +105,6 @@ declare global {
       app: App;
       bakeReview?: typeof bakeReview;
       loadedFxCels: typeof loadedFxCels;
-      liftCost: typeof liftCost;
     };
   }
 }

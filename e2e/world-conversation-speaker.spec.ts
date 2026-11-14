@@ -4,9 +4,10 @@ import { enterNode, resetStorage, setLargeText, startGame, waitForIdle } from '.
 test.use({ serviceWorkers: 'block' });
 
 for (const layout of [
-  { name: 'iPad portrait', width: 834, height: 1194, huge: false, wholeWord: true },
-  { name: 'iPad portrait Huge', width: 834, height: 1194, huge: true, wholeWord: true },
-  { name: 'phone Huge', width: 390, height: 844, huge: true, wholeWord: false },
+  { name: 'iPad portrait', width: 834, height: 1194, huge: false },
+  { name: 'iPad portrait Huge', width: 834, height: 1194, huge: true },
+  // A phone used to cut the name to an ellipsis; it now wraps whole too (#627).
+  { name: 'phone Huge', width: 390, height: 844, huge: true },
 ]) {
   test(`${layout.name}: Gao's world-conversation speaker and Continue remain usable`, async ({
     page,
@@ -65,7 +66,7 @@ for (const layout of [
         line: box(line),
         next: box(next),
         word: [...word.getClientRects()].map((r) => ({ x: r.x, right: r.right })),
-        phoneEllipsis: getComputedStyle(name).textOverflow === 'ellipsis',
+        ellipsis: getComputedStyle(name).textOverflow === 'ellipsis',
         panelScrollWidth: panel.scrollWidth,
         panelClientWidth: panel.clientWidth,
       };
@@ -78,15 +79,12 @@ for (const layout of [
     expect(geometry.next.width).toBeGreaterThanOrEqual(48);
     expect(geometry.next.height).toBeGreaterThanOrEqual(48);
     expect(geometry.line.width).toBeGreaterThan(0);
-    if (layout.wholeWord) {
-      expect(geometry.word).toHaveLength(1);
-      expect(geometry.word[0]!.x).toBeGreaterThanOrEqual(geometry.name.x);
-      expect(geometry.word[0]!.right).toBeLessThanOrEqual(geometry.name.right);
-      expect(geometry.name.x).toBeGreaterThanOrEqual(geometry.panel.x);
-      expect(geometry.name.right).toBeLessThanOrEqual(geometry.panel.right);
-    } else {
-      expect(geometry.phoneEllipsis).toBe(true);
-    }
+    expect(geometry.ellipsis).toBe(false);
+    expect(geometry.word).toHaveLength(1);
+    expect(geometry.word[0]!.x).toBeGreaterThanOrEqual(geometry.name.x);
+    expect(geometry.word[0]!.right).toBeLessThanOrEqual(geometry.name.right);
+    expect(geometry.name.x).toBeGreaterThanOrEqual(geometry.panel.x);
+    expect(geometry.name.right).toBeLessThanOrEqual(geometry.panel.right);
     await page.screenshot({ path: testInfo.outputPath(`${layout.name.replaceAll(' ', '-')}.png`) });
     await conversation.locator('[data-conversation-control="next"]').tap();
     await expect(conversation.locator('.line-count')).toHaveText(/^2 of /);

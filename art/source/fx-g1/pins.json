@@ -1,9 +1,6 @@
 {
   "sources": {
-    "layout.json": "bb35846e848fb233a8224c2ae076e10cd916aa0bb8f2b1e153341fa04ea15583",
-    "inputs/bend-earth-0.png": "d8a0c248742b1a15d7bb4776d3ea70581e9ee7f68f33af9d2f66542aa388f90a",
-    "inputs/bend-fire-0.png": "46b2a847659983b420abeece7203bd6980e747e9d11734a2740a601aab3af23f",
-    "inputs/bend-water-0.png": "6077a5a6092e905d2b549354316bcad53eb6246b17c72a4fa6f924219c68568c",
+    "layout.json": "cdfb126b9277cbbf6ba2e1a1f30e52f677d3b286ee80418aad2b68b5bee38f50",
     "inputs/cel-boulder.png": "b21a2c2237c9e5a926c14bf1013ee38ed95bf18808752a68b11a534509cc9601",
     "inputs/cel-cushion.png": "2ecf845a874dfba2403862413ff9d22c04351702c644eccfeb2c4bb75541286f",
     "inputs/cel-cyclone.png": "7494720d196a8cf1581f99a5ac0aca0291e480473aea11496dcb8be019398e1b",
@@ -17,9 +14,6 @@
     "inputs/cel-metal.png": "df6f3914d64c5650cab6bf55ded03e92d628969a628c01251be4464f33b4abe2",
     "inputs/cel-splash.png": "1ffa2b57794538972d4d24c4e70325112fc82492465d11d686819f9123790a1a",
     "inputs/cel-wind.png": "d745fc086d355cf7e7ccc01af1208c3adec353f627a2ec69e96a1c4db0292a44",
-    "generated/bend-earth-0.png": "dc28359b434e68bef0f500a2c31acf80017b9be627c00489b2e930eeb82d90b6",
-    "generated/bend-fire-0.png": "83689b4f948d3b452a7d6c0379dee940fa5c7e301b6ee5dad536188f823acb8a",
-    "generated/bend-water-0.png": "2db4df053eb6f118111ef2b852f7f6523a9e55e0e20feec5cf3e7a10dff5a617",
     "generated/cel-boulder.png": "d29d9bb3dce82ece32f584688cc4dd30f57d4bfc9ca1e1a4fc6a99f6aaa3a167",
     "generated/cel-cushion.png": "011e2eaf6ae8534121ac899c156d8628285ce6d485c18164f9f8263b704471c7",
     "generated/cel-cyclone.png": "99162963a558e1140c7c9787caa56112e48deeb2b290c76aa98dde5b47e803a1",

@@ -25,8 +25,7 @@ export interface Edges {
  * place, so taps and the camera never move; the step down is a face drawn
  * inside the *lower* tile along the edge it shares with the ledge. From the
  * three-quarter view only a south-facing step shows its face; a step to the
- * side shows as a shadow line. That is the orthographic board; the oblique
- * one lifts the raised tile itself instead (ADR 0065).
+ * side shows as a shadow line.
  */
 export interface TileRelief {
   /** Tiers the ground drops from the tile to the north, when that tile is higher. */
@@ -68,12 +67,8 @@ export function isCanopy(tile: Tile): boolean {
   return tile.blocked && tile.terrain === 'grass';
 }
 
-/**
- * Relief for every tile that has any, keyed by the tile's index in the grid.
- * `lifted` is the oblique board, where the lift pass draws a raised tile as a
- * block (`lift.ts`), so the flat cliff bands and rims are left out.
- */
-export function boardRelief(grid: Grid, lifted = false): ReadonlyMap<number, TileRelief> {
+/** Relief for every tile that has any, keyed by the tile's index in the grid. */
+export function boardRelief(grid: Grid): ReadonlyMap<number, TileRelief> {
   const out = new Map<number, TileRelief>();
   for (let y = 0; y < grid.height; y++) {
     for (let x = 0; x < grid.width; x++) {
@@ -85,7 +80,7 @@ export function boardRelief(grid: Grid, lifted = false): ReadonlyMap<number, Til
       const south = at(grid, x, y + 1);
 
       const rise = (other: Tile | undefined): number =>
-        other && !lifted ? Math.max(0, other.elevation - tile.elevation) : 0;
+        other ? Math.max(0, other.elevation - tile.elevation) : 0;
       const faceDrop = rise(north);
       const westDrop = rise(west);
       const eastDrop = rise(east);
@@ -98,7 +93,7 @@ export function boardRelief(grid: Grid, lifted = false): ReadonlyMap<number, Til
         s: lower(south),
         w: lower(west),
       };
-      const rim = !lifted && tile.elevation > 0 && any(rimEdges) ? rimEdges : null;
+      const rim = tile.elevation > 0 && any(rimEdges) ? rimEdges : null;
 
       const open = (other: Tile | undefined): boolean =>
         other !== undefined && !(other.blocked && !isCanopy(other));

@@ -75,7 +75,7 @@ export const GRUMBLER_BEATS: readonly Beat[] = [
       await openGrumbler(ctx);
       await ctx.page.evaluate(async () => {
         const image = new Image();
-        image.src = new URL('art/units/driller.webp', document.baseURI).href;
+        image.src = new URL('art/topdown/driller.webp', document.baseURI).href;
         await image.decode();
       });
       await ctx.filmstrip(this.note, [60, 180, 330, 460, 620, 900], async () => {
@@ -157,7 +157,7 @@ export const GRUMBLER_BEATS: readonly Beat[] = [
     note: 'The live Driller atlas request is blocked. Its 2x2 machine painter must remain visible, correctly grounded and recognizable.',
     projects: ['surface-canvas', 'surface-webgl'],
     async run(ctx) {
-      await ctx.page.route('**/art/units/driller.*', (route) => route.abort());
+      await ctx.page.route('**/art/topdown/driller*', (route) => route.abort());
       await openGrumbler(ctx);
       await ctx.shoot(this.note);
     },

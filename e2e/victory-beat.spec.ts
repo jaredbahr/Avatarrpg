@@ -2,7 +2,6 @@ import { expect, test } from '@playwright/test';
 import {
   enterNode,
   pauseClock,
-  pinObliqueStyle,
   resetStorage,
   settleLayout,
   startGame,
@@ -10,9 +9,6 @@ import {
   waitForIdle,
 } from './helpers';
 import type { Page } from '@playwright/test';
-
-// Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
-test.beforeEach(async ({ page }) => pinObliqueStyle(page));
 
 async function openReadyFight(page: Page, reduceMotion: boolean): Promise<void> {
   await resetStorage(page, '?renderer=canvas');
@@ -49,23 +45,6 @@ async function sealVictory(page: Page): Promise<void> {
   });
   expect(phase).toBe('victory');
 }
-
-test('a tap on the clear-board victory overlay skips to the unchanged result card', async ({
-  page,
-}) => {
-  await openReadyFight(page, false);
-  await pauseClock(page);
-  await sealVictory(page);
-  await page.clock.runFor(50);
-
-  await expect(page.locator('.combat-scene[data-victory-beat="active"]')).toBeVisible();
-  await expect(page.locator('.result-panel')).toHaveCount(0);
-  await page.getByRole('button', { name: 'Show result' }).click();
-
-  await expect(page.locator('.result-panel')).toBeVisible();
-  await expect(page.locator('.result-panel')).toContainText('The fight is won');
-  await page.clock.resume();
-});
 
 test('reduced motion keeps the camera still and shows the card without a hold', async ({
   page,

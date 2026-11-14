@@ -16,8 +16,8 @@
  * - crop-<name>-4x.png: nearest-neighbour 4x enlargements of fixed regions;
  * - practice-ready.png, then practice-<character>-gather.png, -release.png and
  *   -impact.png: the bending practice on the south canal bank, each bender
- *   frozen mid wind-up, at their bend's first release and at its impact (the
- *   video shows it in real time first);
+ *   frozen at a third, three fifths and the end of their cast (the video shows
+ *   it in real time first);
  * - provenance.json: revision, renderer, seed, tile size, day phase, errors.
  * Playwright records the run as video (see the config) for the walk-through clip.
  *
@@ -32,7 +32,6 @@ import { PNG } from 'pngjs';
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from './helpers';
-import type * as ChoreoModule from '../src/app/anim/bendChoreo';
 
 /**
  * The zoom the captures ask for (FNT_DEMO_TILE_PX overrides it). Under integer
@@ -168,7 +167,7 @@ function crop4x(source: string, cx: number, cy: number, w: number, h: number, ou
 
 /**
  * Makes `performance.now` pausable, so a still can be taken at an exact moment
- * of a bend without a fake clock: frozen, every frame draws that moment; let
+ * of a cast without a fake clock: frozen, every frame draws that moment; let
  * go, time resumes from it. Presentation reads only this clock.
  */
 async function installPausableClock(page: Page): Promise<void> {
@@ -214,9 +213,8 @@ const PRACTICE_FROM = [14, 8] as const;
 const PRACTICE_FRAME = [9, 6] as const;
 
 /**
- * The practice beat: stand the party on the south bank, wait for the bends to
- * load, practise once in real time for the video, then again with each bender
- * frozen at their first release and at their impact.
+ * The practice beat: stand the party on the south bank, practise once in real
+ * time for the video, then again with each bender frozen through their cast.
  */
 async function practice(page: Page, folder: string): Promise<string[]> {
   await place(page, ...PRACTICE_FROM);
@@ -237,11 +235,8 @@ async function practice(page: Page, folder: string): Promise<string[]> {
   await page.waitForTimeout(400);
 
   // Press Practice and stop the clock in the same tick, so a slow software
-  // WebGL frame cannot carry the first bend past its release before the still.
-  const plan = await page.evaluate(async () => {
-    const choreo = (await import(
-      /* @vite-ignore */ `/src/app/anim/${'bendChoreo'}.ts`
-    )) as typeof ChoreoModule;
+  // WebGL frame cannot carry the first cast past its release before the still.
+  const plan = await page.evaluate(() => {
     const app = window.fnt!.app;
     const clock = (window as unknown as { reviewClock: { freeze: (t: number) => void } })
       .reviewClock;
@@ -250,31 +245,19 @@ async function practice(page: Page, folder: string): Promise<string[]> {
     const { tracks } = (
       app.animator as unknown as {
         timeline: {
-          tracks: {
-            kind: string;
-            unitId: string;
-            start: number;
-            plan: ChoreoModule.BendPlan;
-          }[];
+          tracks: { kind: string; unitId: string; start: number; duration: number }[];
         };
       }
     ).timeline;
-    return tracks
-      .filter((t) => t.kind === 'bend')
-      .map((t) => {
-        const last = t.plan.shot.releases.length - 1;
-        const first = t.plan.shot.releases[0]!.launchAt;
-        const arrival = t.plan.arrivals[last] ?? t.plan.shot.releases[last]!.launchAt;
-        const member = app.state!.party.find((m) => m.id === t.unitId)!;
-        const release = t.start + choreo.bendSceneAt(t.plan, first);
-        return {
-          name: member.characterId,
-          // Halfway through the wind-up, when Sura's water is on its way up from the canal.
-          gather: t.start + (release - t.start) * 0.55,
-          release: release + 10,
-          impact: t.start + choreo.bendSceneAt(t.plan, arrival) + 10,
-        };
-      });
+    // Each bender's cast: the first pose track the practice laid for them.
+    const casts = new Map<string, { start: number; duration: number }>();
+    for (const t of tracks) if (t.kind === 'pose' && !casts.has(t.unitId)) casts.set(t.unitId, t);
+    return [...casts].map(([unitId, t]) => ({
+      name: app.state!.party.find((m) => m.id === unitId)!.characterId,
+      gather: t.start + t.duration * 0.3,
+      release: t.start + t.duration * 0.6,
+      impact: t.start + t.duration - 10,
+    }));
   });
   expect(plan.map((p) => p.name)).toEqual(['kaya', 'sura', 'bo']);
   const shots: string[] = [];

@@ -202,7 +202,7 @@ describe('a top-down action', () => {
 describe('a top-down shot (#588)', () => {
   const crossbow = unit('xbow', 'unit.enemy.crossbow', 5, 2, 'enemy');
   const victim = unit('victim', 'unit.fire.kaya', 5, 7);
-  const shoot = (rate = 1, projection: 'topdown' | 'oblique' = 'topdown', shots = true) =>
+  const shoot = (rate = 1, projection: 'topdown' | 'orthographic' = 'topdown', shots = true) =>
     choreograph({
       content,
       events: [
@@ -256,7 +256,7 @@ describe('a top-down shot (#588)', () => {
   });
 
   it('skips the flight under reduce motion, on the oblique board and before the cels load', () => {
-    for (const out of [shoot(0.02), shoot(1, 'oblique'), shoot(1, 'topdown', false)])
+    for (const out of [shoot(0.02), shoot(1, 'orthographic'), shoot(1, 'topdown', false)])
       expect(out.tracks.some((t) => t.kind === 'shot')).toBe(false);
   });
 });
@@ -269,7 +269,7 @@ describe('the animator with top-down actions', () => {
     a.setProjection('topdown');
     a.push(1000, [used('kaya', 'fire_jab', { x: 5, y: 1 })], roster);
     expect(a.unitPose(1100, 'kaya', kaya.sprite)?.clip).toBe('cast@north');
-    expect(a.locomotion(9000, 'kaya', 'stance', kaya.sprite).clip).toBe('stanceNorth');
+    expect(a.locomotion(9000, 'kaya', 'idle', kaya.sprite).clip).toBe('idleNorth');
   });
 
   it('knocks the Driller out in its own heading and holds the last cel', () => {

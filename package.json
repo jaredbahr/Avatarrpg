@@ -5,7 +5,7 @@
   "description": "Four Nations Tactics - a hot-seat turn-based tactical RPG for the family. Non-commercial fan work.",
   "type": "module",
   "engines": {
-    "node": ">=20"
+    "node": ">=22.19"
   },
   "scripts": {
     "dev": "vite",
@@ -35,29 +35,32 @@
     "art:portrait": "node --import tsx scripts/art/portrait.ts",
     "art:prop": "node --import tsx scripts/art/prop.ts",
     "art:prop-family": "node --import tsx scripts/art/prop-family.ts",
-    "check:assets": "node scripts/check-asset-budget.mjs",
+    "check:assets": "node --import tsx scripts/check-asset-budget.mjs",
     "credits": "node --import tsx scripts/credits.ts",
     "docs:content": "node --import tsx scripts/docs/content-reference.ts",
     "docs:story": "node --import tsx scripts/docs/story-graph.ts",
+    "ids:ledger": "node --import tsx scripts/content/id-ledger.ts",
+    "new:region": "node --import tsx scripts/content/new-region.ts",
     "soak": "node --import tsx scripts/soak.ts",
     "replay": "node --import tsx scripts/replay.ts",
     "bench:core": "node --import tsx scripts/perf/core-bench.ts",
     "lighthouse": "node scripts/lighthouse.mjs"
   },
   "dependencies": {
-    "pixi.js": "^8.20.1",
-    "zod": "^3.23.8"
+    "pixi.js": "^8.20.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
     "@eslint/js": "^9.17.0",
     "@iconify-json/game-icons": "^1.2.4",
     "@jsquash/webp": "^1.5.0",
     "@playwright/test": "^1.49.1",
     "@types/node": "^22.10.2",
     "@types/pngjs": "^6.0.5",
+    "esbuild": "0.28.2",
     "eslint": "^9.17.0",
     "jpeg-js": "^0.4.4",
-    "lighthouse": "12.8.2",
+    "lighthouse": "13.6.0",
     "pngjs": "^7.0.0",
     "prettier": "^3.4.2",
     "terser": "^5.51.2",
@@ -66,6 +69,7 @@
     "typescript-eslint": "^8.18.1",
     "vite": "^6.0.5",
     "vite-plugin-pwa": "^0.21.1",
-    "vitest": "^2.1.8"
+    "vitest": "5.1.0",
+    "zod": "4.6.7"
   }
 }

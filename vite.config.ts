@@ -74,8 +74,20 @@ export default defineConfig({
     // Vite passes terser `safari10: true` by default. That Safari 10/11 workaround
     // costs 0.7 KB gzipped and cannot matter: an es2022 target needs Safari 15.
     terserOptions: { compress: { passes: 2 }, safari10: false },
-    // The whole game is one bundle; 350 KB gzipped is the budget we verify in CI.
+    // The boot chunk is checked against its own budget in CI (`scripts/check-bundle-size.mjs`).
     chunkSizeWarningLimit: 900,
+    rollupOptions: {
+      output: {
+        // Each region's data is a chunk of its own (ADR 0111 §2), named after its folder so the
+        // budget gate and the service worker can tell which region a chunk belongs to.
+        chunkFileNames: (chunk) => {
+          const region = /[/\\]src[/\\]content[/\\]regions[/\\]([^/\\]+)[/\\]content\.ts$/.exec(
+            chunk.facadeModuleId ?? '',
+          )?.[1];
+          return region ? `assets/region-${region}-[hash].js` : 'assets/[name]-[hash].js';
+        },
+      },
+    },
   },
   server: {
     host: true,

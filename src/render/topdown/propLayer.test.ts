@@ -248,7 +248,7 @@ function view(props: RenderProp[]): MapView {
   } as unknown as MapView;
 }
 
-function camera(projection: 'topdown' | 'orthographic' | 'oblique'): Camera {
+function camera(projection: 'topdown' | 'orthographic'): Camera {
   const out = new Camera({ width: 1000, height: 700, dpr: 1 }, { width: 9, height: 6 }, projection);
   out.integerZoom = projection !== 'orthographic';
   out.fitExplore(projection === 'topdown' ? 120 : 96);
@@ -261,7 +261,7 @@ function withArt(): void {
 }
 
 /** What a whole Canvas 2D frame drew with `drawImage`, by source. */
-function canvasFrame(projection: 'topdown' | 'orthographic' | 'oblique', props: RenderProp[]) {
+function canvasFrame(projection: 'topdown' | 'orthographic', props: RenderProp[]) {
   const drawn: { what: string; args: number[] }[] = [];
   const state: Record<string, unknown> = {
     globalAlpha: 1,
@@ -331,7 +331,7 @@ describe('Canvas 2D stands top-down props on their shadow', () => {
 
   it('draws no top-down art or layer on the other boards', () => {
     withArt();
-    for (const projection of ['orthographic', 'oblique'] as const) {
+    for (const projection of ['orthographic'] as const) {
       const { drawn } = canvasFrame(projection, [barrel('a', 3, 4)]);
       expect(
         drawn.some(({ what }) => what === 'prop-shadows' || what.startsWith('art/topdown')),
@@ -380,10 +380,10 @@ describe('Pixi lays the same layer', () => {
     expect(sprite.texture.source.scaleMode).toBe('nearest');
   });
 
-  it('hides it on the oblique board and once the props are gone', () => {
+  it('hides it on the orthographic board and once the props are gone', () => {
     withArt();
     const { sprite, sync } = pixi();
-    sync(view([barrel('a', 3, 4)]), camera('oblique'));
+    sync(view([barrel('a', 3, 4)]), camera('orthographic'));
     expect(sprite.visible).toBe(false);
     sync(view([barrel('a', 3, 4)]), camera('topdown'));
     expect(sprite.visible).toBe(true);

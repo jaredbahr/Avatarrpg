@@ -2,7 +2,8 @@
  * The two difficulties (ADR 0110), layered on the table scaling.
  *
  * Story is the authored tuning; Hard is one profile of multipliers and bonuses
- * that applies to every enemy the same way, with no per-encounter rule. These
+ * that applies to every enemy the same way, unless an encounter names its own
+ * Hard fields (the Cutting, ADR 0110's amendment). These
  * tests hold both halves of that: Story changes nothing, and Hard changes the
  * same stats in the same direction at every table size, without touching the
  * roster, the initiative order or the dice.
@@ -119,6 +120,29 @@ describe('difficulty levels', () => {
         }
       }
     }
+  });
+
+  it("lets an encounter replace Hard's fields for that fight only, never Story's", () => {
+    const blade = ENEMIES.find((enemy) => enemy.id === 'merc_blade');
+    if (!blade) throw new Error('No merc_blade in the content');
+    const ctx = { baselinePartySize: 3, partySize: 3, isBoss: false, hard: { hp: 1.5 } };
+    expect(scaleForTable(blade.stats, { ...ctx, difficulty: 'story' })).toBe(blade.stats);
+    const tough = scaleForTable(blade.stats, { ...ctx, difficulty: 'hard' });
+    expect(tough.maxHp).toBe(Math.round(blade.stats.maxHp * 1.5));
+    // Fields the encounter leaves out keep the shared Hard profile's.
+    expect(tough.power).toBe(blade.stats.power + DIFFICULTY_PROFILES.hard.power);
+    expect(tough.maxAp).toBe(blade.stats.maxAp + DIFFICULTY_PROFILES.hard.ap);
+
+    const cutting = ENCOUNTERS.find((encounter) => encounter.id === 'enc_ambush');
+    expect(cutting?.hard).toBeDefined();
+    const story = battleAt('story', 'enc_ambush', ['kaya', 'sura', 'bo']).battle;
+    const hard = battleAt('hard', 'enc_ambush', ['kaya', 'sura', 'bo']).battle;
+    const blades = (units: typeof story.units) =>
+      units.filter((unit) => unit.enemyId === 'merc_blade').map((unit) => unit.base.maxHp);
+    expect(blades(story.units).length).toBeGreaterThan(0);
+    expect(blades(hard.units)).toEqual(
+      blades(story.units).map((hp) => Math.round(hp * (cutting?.hard?.hp ?? 1))),
+    );
   });
 
   it('leaves a lone hero a boss it can answer: fewer actions and thinner armour', () => {

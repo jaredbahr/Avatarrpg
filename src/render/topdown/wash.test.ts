@@ -140,16 +140,16 @@ describe('the reach follows the 8-way rule', () => {
     expect(centre(m, grid, { x: 3, y: 3 })).toBe(0);
   });
 
-  it('lays the prototype dithered rim and its faint inside', () => {
+  it('lays a solid 1 px rim round a tinted inside (#699)', () => {
     const image = washImage(
       washSpec({ ...view, units: [], path: [], pathFrom: null, hoverTile: null }),
     );
     const W = image.width;
     const a = (p: Vec2) => image.data[(p.y * W + p.x) * 4 + 3];
-    expect(a({ x: CS + 20, y: CS + 20 })).toBe(46);
+    expect(a({ x: CS + 20, y: CS + 20 })).toBe(96);
     const seen = new Set<number>();
     for (let i = 3; i < image.data.length; i += 4) if (image.data[i]) seen.add(image.data[i] ?? 0);
-    expect([...seen].sort((x, y) => x - y)).toEqual([46, 60, 90, 190]);
+    expect([...seen].sort((x, y) => x - y)).toEqual([96, 255]);
   });
 });
 
@@ -357,14 +357,14 @@ function fixtureView(extra: Partial<MapView> = {}): MapView {
   } as unknown as MapView;
 }
 
-function camera(projection: 'topdown' | 'oblique'): Camera {
+function camera(projection: 'topdown' | 'orthographic'): Camera {
   const out = new Camera({ width: 1000, height: 700, dpr: 1 }, { width: 9, height: 6 }, projection);
   out.integerZoom = true;
   out.fitExplore(projection === 'topdown' ? 120 : 96);
   return out;
 }
 
-function canvasFrame(projection: 'topdown' | 'oblique', view: MapView) {
+function canvasFrame(projection: 'topdown' | 'orthographic', view: MapView) {
   const drawn: { what: string; args: number[] }[] = [];
   const ctx = new Proxy(
     { globalAlpha: 1, imageSmoothingEnabled: true } as Record<string, unknown>,
@@ -405,19 +405,19 @@ describe('Canvas 2D draws the organic layer', () => {
     expect(wash?.args).toEqual([-cam.offsetX, -cam.offsetY, 360 * cam.scale, 240 * cam.scale]);
     const overlays = marks.mock.calls.flatMap((call) => call[0] as unknown as { id: string }[]);
     expect(overlays.some((c) => c.id.startsWith('overlay:'))).toBe(false);
-    // the same view on the oblique board does draw its cell overlay
+    // the same view on the orthographic board does draw its cell overlay
     resetWashCache();
-    const oblique = canvasFrame('oblique', fixtureView()).marks.mock.calls.flatMap(
+    const flat = canvasFrame('orthographic', fixtureView()).marks.mock.calls.flatMap(
       (call) => call[0] as unknown as { id: string }[],
     );
-    expect(oblique.some((c) => c.id.startsWith('overlay:'))).toBe(true);
+    expect(flat.some((c) => c.id.startsWith('overlay:'))).toBe(true);
   });
 
-  it('not on the oblique board, nor under High contrast', () => {
+  it('not on the orthographic board, nor under High contrast', () => {
     fakeDocument();
-    expect(canvasFrame('oblique', fixtureView()).drawn.some(({ what }) => what === 'wash')).toBe(
-      false,
-    );
+    expect(
+      canvasFrame('orthographic', fixtureView()).drawn.some(({ what }) => what === 'wash'),
+    ).toBe(false);
     resetWashCache();
     expect(
       canvasFrame('topdown', fixtureView({ crispOverlays: true })).drawn.some(
@@ -459,7 +459,7 @@ describe('Pixi lays the same layer', () => {
       240,
     ]);
     expect(sprite.texture.source.scaleMode).toBe('nearest');
-    sync(fixtureView(), camera('oblique'));
+    sync(fixtureView(), camera('orthographic'));
     expect(sprite.visible).toBe(false);
     sync(fixtureView({ overlays: [] }), camera('topdown'));
     expect(sprite.visible).toBe(false);

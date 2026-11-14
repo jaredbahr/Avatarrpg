@@ -1,9 +1,11 @@
 /** The first connected region. Encounters retain their authored level order. */
-import type { Condition, MapDef, MapExit, MapTrigger, Vec2 } from '../../core/types';
+import type { Condition, MapDef, MapEdgeSide, MapExit, MapTrigger, Vec2 } from '../../core/types';
 
 import { discoveryMarkers } from './discoveries';
+import { reasonMarkers } from '../story/reasons';
 import { RETURNEES_HOME, RETURNEES_RETURNING, VILLAGE_HOMECOMINGS_COMPLETE } from '../story/return';
 import { RETURNEE_PRESENTATIONS } from '../residents/returnees';
+import { SQ01_HAS_LIST, SQ01_RESOLVED } from '../story/sq01Cabbages';
 
 const visited = (nodeId: string): Condition => ({ kind: 'visited', nodeId });
 const unvisited = (nodeId: string): Condition => ({ kind: 'not', of: visited(nodeId) });
@@ -13,10 +15,11 @@ const route = (
   toMapId: string,
   toPos: Vec2,
   label: string,
+  direction: MapEdgeSide,
   area?: readonly Vec2[],
   requires?: Condition,
   lockedHint?: string,
-): MapExit => ({ pos, toMapId, toPos, label, area, requires, lockedHint });
+): MapExit => ({ pos, toMapId, toPos, label, direction, area, requires, lockedHint });
 
 /** A road mouth (M2): the walkable cells of the exit's cross-section at the map edge. */
 const mouth = (x: number, ys: readonly number[]): readonly Vec2[] => ys.map((y) => ({ x, y }));
@@ -73,6 +76,7 @@ export function connectAct1(map: MapDef): MapDef {
             'forest_road',
             { x: 1, y: 4 },
             'East road → Forest Road',
+            'east',
             mouth(23, [7, 8]),
           ),
           route(
@@ -80,6 +84,7 @@ export function connectAct1(map: MapDef): MapDef {
             'ba_dan_riverside',
             { x: 10, y: 19 },
             'River path → Riverside',
+            'south',
             // The path's mouth on the rim, between the canal's end and the
             // small trees on both shoulders: the walkable border cells are the exit.
             [18, 19, 20].map((x) => ({ x, y: 15 })),
@@ -124,6 +129,7 @@ export function connectAct1(map: MapDef): MapDef {
             // One step inside the village's river-path mouth, never on it.
             { x: 19, y: 14 },
             'South path → Ba Dan Village',
+            'south',
             // The south path from row 20 to the rim: it leaves with no tile to miss.
             [
               { x: 10, y: 20 },
@@ -138,12 +144,18 @@ export function connectAct1(map: MapDef): MapDef {
       return {
         ...map,
         objective: 'Follow the road east to the quarry gate, past the roadblock. Ba Dan is west.',
+        objectiveTargetId: 'quarry_gate',
         objectiveVariants: [
           {
             when: RETURNEES_RETURNING,
             text: 'The five workers are returning. The roadblock is gone. Follow the road west to Ba Dan.',
+            objectiveTargetId: 'ba_dan_village',
           },
-          { when: rescued, text: 'The roadblock is gone. Follow the road west to Ba Dan.' },
+          {
+            when: rescued,
+            text: 'The roadblock is gone. Follow the road west to Ba Dan.',
+            objectiveTargetId: 'ba_dan_village',
+          },
         ],
         exits: [
           route(
@@ -151,6 +163,7 @@ export function connectAct1(map: MapDef): MapDef {
             'ba_dan_village',
             { x: 22, y: 7 },
             'West → Ba Dan Village',
+            'west',
             // Preserve the road's five-cell mouth; these walkable rim cells are
             // exits rather than edge-band terrain.
             mouth(0, [4, 5, 6, 7, 8]),
@@ -160,6 +173,7 @@ export function connectAct1(map: MapDef): MapDef {
             'quarry_gate',
             { x: 1, y: 5 },
             'East → Quarry Gate',
+            'east',
             // Preserve the road's five-cell mouth past the NE bank; these
             // walkable rim cells remain exits rather than edge-band terrain.
             mouth(19, [4, 5, 6, 7, 8]),
@@ -200,8 +214,19 @@ export function connectAct1(map: MapDef): MapDef {
           ...map.npcs,
           ...discoveryMarkers('forest_road'),
           {
+            // SQ-01: Bo-shan's tipped sled in the south ditch, for a party carrying Pella's list,
+            // until the workers are home. The cabbage cart stands in for a sled until art exists.
+            id: 'sq01_sled',
+            name: 'Overturned sled',
+            pos: { x: 11, y: 10 },
+            sprite: 'prop.cart',
+            node: 'sq01_sled',
+            when: { kind: 'all', of: [SQ01_HAS_LIST, { kind: 'not', of: rescued }] },
+            routes: [{ when: SQ01_RESOLVED, node: 'sq01_sled_again' }],
+          },
+          {
             id: 'dema',
-            name: 'Dema, road keeper',
+            name: 'Lanfen, road keeper',
             pos: { x: 3, y: 1 },
             sprite: 'npc.dema',
             node: 'forest_dema',
@@ -263,6 +288,7 @@ export function connectAct1(map: MapDef): MapDef {
             'forest_road',
             { x: 18, y: 4 },
             'West → Forest Road',
+            'west',
             mouth(0, [5, 6]),
           ),
           route(
@@ -270,6 +296,7 @@ export function connectAct1(map: MapDef): MapDef {
             'ambush_road',
             { x: 1, y: 4 },
             'East → The Cutting',
+            'east',
             mouth(19, [5, 6]),
             { kind: 'any', of: [visited('escort_chosen'), visited('trade_chosen')] },
             'Speak with Ruon and decide how to proceed first.',
@@ -286,6 +313,8 @@ export function connectAct1(map: MapDef): MapDef {
             unvisited('ruon_choice'),
           ),
         ],
+        // Jinu's find in the gate office on the walk home (C-31; reasons.ts).
+        npcs: [...map.npcs, ...reasonMarkers('quarry_gate')],
       };
     case 'ambush_road':
       return {
@@ -295,7 +324,7 @@ export function connectAct1(map: MapDef): MapDef {
         objectiveVariants: [
           {
             when: rescued,
-            text: 'Ba Dan lies west, past the quarry gate. Sen is at the rest stop.',
+            text: 'Ba Dan lies west, past the quarry gate. Kuan is at the rest stop.',
           },
         ],
         exits: [
@@ -304,6 +333,7 @@ export function connectAct1(map: MapDef): MapDef {
             'quarry_gate',
             { x: 18, y: 5 },
             'West → Quarry Gate',
+            'west',
             mouth(0, [4, 5, 6, 7]),
           ),
           route(
@@ -311,6 +341,7 @@ export function connectAct1(map: MapDef): MapDef {
             'quarry_floor',
             { x: 1, y: 5 },
             'East → Quarry Floor',
+            'east',
             mouth(19, [4, 5, 6, 7]),
             { kind: 'any', of: [visited('after_ambush'), visited('trade_chosen')] },
             'Jin’s people are waiting further along the cutting.',
@@ -320,6 +351,17 @@ export function connectAct1(map: MapDef): MapDef {
           crossing(map, 8, 4, 'battle_ambush', 'Jin’s waiting mercenaries', 'unit.enemy.thug', {
             kind: 'all',
             of: [{ kind: 'flag', key: 'ruon_spared', op: 'set' }, unvisited('after_ambush')],
+          }),
+          // The culvert (C-29): column 10 is the only dry crossing east of the pool, so
+          // either branch passes it once on the way down. Until the art batch draws a
+          // culvert mouth, the runoff measuring stone stands in for it.
+          crossing(map, 10, 6, 'cutting_culvert', 'The culvert', 'world.runoff_marker', {
+            kind: 'all',
+            of: [
+              { kind: 'any', of: [visited('after_ambush'), visited('trade_chosen')] },
+              unvisited('cutting_culvert'),
+              { kind: 'not', of: rescued },
+            ],
           }),
         ],
         npcs: [
@@ -344,7 +386,7 @@ export function connectAct1(map: MapDef): MapDef {
           },
           {
             id: 'rest_keeper',
-            name: 'Sen, the tea keeper',
+            name: 'Kuan, the tea keeper',
             pos: { x: 5, y: 9 },
             sprite: 'npc.sen',
             node: 'cutting_tea',
@@ -374,6 +416,7 @@ export function connectAct1(map: MapDef): MapDef {
             'ambush_road',
             { x: 18, y: 4 },
             'West → The Cutting',
+            'west',
             mouth(0, [5, 6]),
           ),
         ],
@@ -383,6 +426,8 @@ export function connectAct1(map: MapDef): MapDef {
             of: [unvisited('act1_epilogue'), unvisited('act1_epilogue_lost')],
           }),
         ],
+        // The off-ledger cargo and the Driller's cab: one find per present hero (C-31).
+        npcs: [...map.npcs, ...reasonMarkers('quarry_floor')],
       };
     default:
       return map;

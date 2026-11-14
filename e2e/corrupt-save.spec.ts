@@ -1,16 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
-import {
-  enterNode,
-  pinObliqueStyle,
-  resetStorage,
-  startGame,
-  takeTurn,
-  waitForIdle,
-} from './helpers';
-
-// Pinned to the oblique look until migrated or deleted at T7 (ADR 0104 T6).
-test.beforeEach(async ({ page }) => pinObliqueStyle(page));
+import { enterNode, resetStorage, startGame, takeTurn, waitForIdle } from './helpers';
 
 async function game(page: Page) {
   return page.evaluate(() => {

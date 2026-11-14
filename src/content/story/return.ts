@@ -1,5 +1,6 @@
 import type { Condition, ResidentProfile, StoryNode } from '../../core/types';
 import { RETURNEE_IDS } from '../residents/returnees';
+import { SQ01_FLAG, SQ01_RESOLVED } from './sq01Cabbages';
 
 const profilesAre = (...profiles: ResidentProfile[]): Condition => ({
   kind: 'all',
@@ -57,7 +58,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
     kind: 'explore',
     mapId: 'ambush_road',
     objective:
-      'The workers are returning to Ba Dan. Ba Dan lies west; Sen is at the rest stop if you need a pause.',
+      'The workers are returning to Ba Dan. Ba Dan lies west; Kuan is at the rest stop if you need a pause.',
     next: 'gate_return_explore',
   },
   {
@@ -153,7 +154,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
       'The crew says you knocked on the quarry gate and fought your way in. When I knocked, I came straight home.',
       'I’m putting all of it in the watch book, so it’s done properly. Does “mecha-driller” have a dash in it?',
     ],
-    next: 'demo_complete',
+    next: 'welcome_home_supper',
     variants: [
       {
         when: { kind: 'flag', key: 'gate_talked_through', op: 'set' },
@@ -178,16 +179,77 @@ export const RETURN_STORY: readonly StoryNode[] = [
       },
     ],
   },
+  /*
+   * The supper, and the boot (saga outline, decision 23; story bible C-30): a
+   * worker's lost boot comes back to a Ba Dan doorstep with a river shell in
+   * it, and nobody explains it. Latch returns the other boot in MQ-07. It is
+   * Hesra's, which plants her outsider's background in passing (C-33): she is
+   * a hill-farm girl lodging at the mason's yard as an apprentice. Pella's
+   * lost shoe (`pella_home`) is a different story and stays one.
+   */
+  {
+    id: 'welcome_home_supper',
+    kind: 'dialogue',
+    speaker: 'Ba Dan',
+    portrait: 'portrait.narrator',
+    lines: [
+      'Lamps come on along the canal. Gao carries out a pot of soup big enough to sit in, and the whole village squeezes around Mira’s table.',
+      'Somewhere under the noise, Bo-shan is explaining that he could have lifted the driller by himself.',
+      'Late that night, Hesra finds a boot on the step of the mason’s yard, where she lodges.',
+      'It is the one she lost in the galleries, hobnailed the hill-farm way. She walked home in the other boot and a sock.',
+      'She tips it up. A river shell drops into her palm, still wet, with sand in its ridges.',
+      'She looks up the lane and down it. Then she sets the shell on the windowsill and the boot by the door.',
+    ],
+    next: 'cart_departure',
+  },
+  /*
+   * Bo-shan takes the reins (saga outline, decisions 8 and 9; story bible
+   * C-32). He gets the bigger life he wanted, and it costs Pella. The cart is
+   * the one Pella told the party to look for, home from the quarry floor.
+   * Leto, Ba Dan's cart driver hired from the coast, and Amri, who came from
+   * Saltstep about five years ago, each get one passing detail (C-33). Staged
+   * as an interlude on the empty-cart painting until the art batch.
+   */
+  {
+    id: 'cart_departure',
+    kind: 'dialogue',
+    speaker: 'Ba Dan',
+    portrait: 'portrait.narrator',
+    lines: [
+      'Bo-shan’s cart comes down from the quarry floor with one wheel tied on with rope. Gao and Bo-shan mend it by lamplight, and by morning it runs true.',
+      'Gao finds an axle pin at the back of his shop. Leto, who drove the coast road before Mira hired him, rehangs the harness the coast way, and nobody argues.',
+      'Bo-shan loads the cart himself, piled higher than anyone thinks is sensible.',
+      'Amri brings him a letter for Saltstep, addressed to a street she has not lived on for five years. He tucks it under the seat.',
+      'He climbs up and takes the reins. In the early light, half the village has come to the east gate to see him off.',
+      'Pella has not. Her shutter is open the width of a hand.',
+      'Bo-shan looks at the shutter for a long moment. Then he shakes the reins, and the ostrich horse leans into the harness.',
+    ],
+    variants: [
+      {
+        // SQ-01's persistent change: he has learned to stack, mostly.
+        when: SQ01_RESOLVED,
+        lines: [
+          'Bo-shan’s cart comes down from the quarry floor with one wheel tied on with rope. Gao and Bo-shan mend it by lamplight, and by morning it runs true.',
+          'Gao finds an axle pin at the back of his shop. Leto, who drove the coast road before Mira hired him, rehangs the harness the coast way, and nobody argues.',
+          'Bo-shan loads the cart himself, low and even. Then he sets one enormous cabbage on the very top.',
+          'Amri brings him a letter for Saltstep, addressed to a street she has not lived on for five years. He tucks it under the seat.',
+          'He climbs up and takes the reins. In the early light, half the village has come to the east gate to see him off.',
+          'Pella has not. Her shutter is open the width of a hand.',
+          'Bo-shan looks at the shutter for a long moment. Then he shakes the reins, and the ostrich horse leans into the harness.',
+        ],
+      },
+    ],
+    next: 'demo_complete',
+  },
   {
     id: 'demo_complete',
     kind: 'end',
     title: 'Home to Ba Dan',
     lines: [
-      'Lamps come on along the canal. Gao carries out a pot of soup big enough to sit in, and the whole village squeezes around Mira’s table.',
-      'Somewhere under the noise, Bo-shan is explaining that he could have lifted the driller by himself.',
+      'The cart rattles down to the coast road. There is room in the back, and you are in it, wedged between the sacks.',
     ],
     teaser:
-      'Across the bay, lamps burn in a Fire Nation outpost closed nine years ago. A supply boat ties up at its jetty.',
+      'Across the bay, in a Fire Nation outpost that has been dark for nine years, the lamps come on, one by one.',
     recap: {
       label: 'Demo complete',
       thanks:
@@ -235,12 +297,52 @@ export const RETURN_STORY: readonly StoryNode[] = [
           text: 'You listened to Pella, and her brother’s cabbage cart helped on the quarry floor.',
         },
         {
+          when: {
+            kind: 'any',
+            of: [
+              { kind: 'flag', key: SQ01_FLAG, op: 'eq', value: 'families' },
+              { kind: 'flag', key: SQ01_FLAG, op: 'eq', value: 'crew' },
+            ],
+          },
+          text: 'You found Bo-shan’s tipped sled and sent his cabbages where they were needed.',
+        },
+        {
+          when: { kind: 'flag', key: SQ01_FLAG, op: 'eq', value: 'leverage' },
+          text: 'You found Bo-shan’s tipped sled and hid his cabbages to bargain with.',
+        },
+        {
+          when: {
+            kind: 'any',
+            of: [
+              { kind: 'flag', key: 'sq02.gate', op: 'eq', value: 'quiet' },
+              { kind: 'flag', key: 'sq02.gate', op: 'eq', value: 'public' },
+            ],
+          },
+          text: 'You helped Dorin find out why the side gate never opened.',
+        },
+        {
+          when: { kind: 'flag', key: 'sq02.gate', op: 'eq', value: 'mocked' },
+          text: 'You laughed the side gate open. Dorin wrote something down.',
+        },
+        {
+          when: { kind: 'flag', key: 'sq03.ledger', op: 'eq', value: 'extension' },
+          text: 'You helped Gao ask the wholesaler for more time, and kept his neighbours’ names out of it.',
+        },
+        {
+          when: { kind: 'flag', key: 'sq03.ledger', op: 'eq', value: 'fund' },
+          text: 'You helped Ba Dan start a food jar at Gao’s, with no names on it.',
+        },
+        {
+          when: { kind: 'flag', key: 'sq03.ledger', op: 'eq', value: 'praised' },
+          text: 'You told the square about Gao’s other ledger. He had asked you not to.',
+        },
+        {
           when: { kind: 'flag', key: 'world.ducks_seen', op: 'set' },
-          text: 'You stopped for Dema’s ducklings on the Forest Road.',
+          text: 'You stopped for Lanfen’s ducklings on the Forest Road.',
         },
         {
           when: { kind: 'flag', key: 'world.tea_shared', op: 'set' },
-          text: 'You shared Sen’s tea in the Cutting.',
+          text: 'You shared Kuan’s tea in the Cutting.',
         },
       ],
     },
@@ -271,6 +373,15 @@ export const RETURN_STORY: readonly StoryNode[] = [
       'Thank you for finding him.',
     ],
     variants: [
+      {
+        // SQ-01: the party found his sled. Her list of helpers waits for the next talk.
+        when: SQ01_RESOLVED,
+        lines: [
+          'You found him. I hugged him so hard his hat came off. Then I told him about the sled.',
+          'He says the cabbages were only a little bit high. You saw them. They were not a little bit high.',
+          'He is asleep now. I am making a list while he cannot argue.',
+        ],
+      },
       {
         // The return lands in the evening (D2); this hold lasts until she is heard.
         when: {
@@ -347,7 +458,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
   {
     id: 'dema_home',
     kind: 'dialogue',
-    speaker: 'Dema',
+    speaker: 'Lanfen',
     portrait: 'portrait.dema',
     lines: [
       'The crews came past. A few stopped to ask about the stream.',
@@ -359,7 +470,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
   {
     id: 'sen_home',
     kind: 'dialogue',
-    speaker: 'Sen',
+    speaker: 'Kuan',
     portrait: 'portrait.sen',
     lines: [
       'They came through just ahead of you. Filled this bench and most of the ground around it.',

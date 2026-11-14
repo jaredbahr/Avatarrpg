@@ -3,31 +3,17 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { format, resolveConfig } from 'prettier';
 import { ALL_STORY, CONTENT, STORY_ENTRY } from '../../src/content';
-import { ACT1_NODES } from '../../src/content/story/act1';
-import { BA_DAN_DAY_STORY } from '../../src/content/story/baDanDay';
-import { DISCOVERY_STORY } from '../../src/content/story/discoveries';
-import { RETURN_STORY } from '../../src/content/story/return';
-import { RIVERSIDE_STORY } from '../../src/content/story/riverside';
-import { WORLD_STORY } from '../../src/content/story/world';
+import { REGION_CONTENT } from '../../src/content/regions/content';
+import type { StoryGroup } from '../../src/content/regions';
 import { describe } from '../../src/core/story/conditions';
 import type { ContentIndex, FlagValue, StoryNode } from '../../src/core/types';
 
-export interface StoryGroup {
-  readonly slug: string;
-  readonly title: string;
-  readonly source: string;
-  readonly nodes: readonly StoryNode[];
-}
+export type { StoryGroup };
 
-/** Register new story files here; coverage validation rejects unregistered runtime nodes. */
-export const STORY_GROUPS: readonly StoryGroup[] = [
-  { slug: 'act1', title: 'Act 1', source: 'act1.ts', nodes: ACT1_NODES },
-  { slug: 'riverside', title: 'Riverside', source: 'riverside.ts', nodes: RIVERSIDE_STORY },
-  { slug: 'world', title: 'World', source: 'world.ts', nodes: WORLD_STORY },
-  { slug: 'discoveries', title: 'Discoveries', source: 'discoveries.ts', nodes: DISCOVERY_STORY },
-  { slug: 'return', title: 'Return', source: 'return.ts', nodes: RETURN_STORY },
-  { slug: 'ba-dan-day', title: 'Ba Dan day', source: 'baDanDay.ts', nodes: BA_DAN_DAY_STORY },
-];
+/** Every region's story files (ADR 0111); coverage validation rejects unregistered runtime nodes. */
+export const STORY_GROUPS: readonly StoryGroup[] = REGION_CONTENT.flatMap(
+  (region) => region.storyGroups,
+);
 
 export interface StoryGraphOptions {
   readonly content?: ContentIndex;

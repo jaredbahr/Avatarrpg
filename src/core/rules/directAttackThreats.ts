@@ -1,6 +1,12 @@
 import type { BattleState, ContentIndex, Unit, Vec2 } from '../types';
-import { affectedTiles, isValidTarget, movePoints, usableAbilities } from './abilities';
-import { occupiedCells, posKey, reachable, standCost } from './grid';
+import {
+  affectedTiles,
+  canReachFromHeight,
+  isValidTarget,
+  movePoints,
+  usableAbilities,
+} from './abilities';
+import { distance, occupiedCells, posKey, reachable, samePos, standCost } from './grid';
 import { canMove, isAlive } from './stats';
 
 /** Caller chooses the resource/status snapshot; no next-turn timing is inferred. */
@@ -105,6 +111,11 @@ export function directAttackThreats(
       ability.effects.slice(0, firstDamage).some((e) => ['dash', 'push', 'pull'].includes(e.kind))
     )
       continue;
+    const shape = ability.targeting;
+    const reach = Math.ceil(
+      ability.range +
+        (canReachFromHeight(ability) ? Math.max(0, content.tuning.heightReachBonus) : 0),
+    );
     let found = false;
     for (const cell of cells.values()) {
       const caster = { ...attacker, pos: cell.pos };
@@ -112,9 +123,35 @@ export function directAttackThreats(
         ...projected,
         units: projected.units.map((u) => (u.id === attackerId ? caster : u)),
       };
-      for (let y = 0; y < battle.grid.height && !found; y++) {
-        for (let x = 0; x < battle.grid.width; x++) {
+      const casterCells = occupiedCells(caster);
+      // Self abilities accept any aim. Other shapes have to reach the aim
+      // from a footprint cell, even when they hit a different defender cell.
+      const minX = shape.shape === 'self' ? 0 : Math.max(0, cell.pos.x - reach);
+      const minY = shape.shape === 'self' ? 0 : Math.max(0, cell.pos.y - reach);
+      const last = casterCells[casterCells.length - 1]!;
+      const maxX =
+        shape.shape === 'self'
+          ? battle.grid.width - 1
+          : Math.min(battle.grid.width - 1, last.x + reach);
+      const maxY =
+        shape.shape === 'self'
+          ? battle.grid.height - 1
+          : Math.min(battle.grid.height - 1, last.y + reach);
+      // Keep the original row-major first witness. Only filter aims which
+      // cannot reach a defender footprint cell under the existing shape rule.
+      for (let y = minY; y <= maxY && !found; y++) {
+        for (let x = minX; x <= maxX; x++) {
           const aim = { x, y };
+          if (
+            (shape.shape === 'unit' || shape.shape === 'tile') &&
+            !defenderCells.some((pos) => samePos(pos, aim))
+          )
+            continue;
+          if (
+            shape.shape === 'blast' &&
+            !defenderCells.some((pos) => distance(pos, aim) <= shape.radius)
+          )
+            continue;
           if (!isValidTarget(content, atOrigin, caster, ability, aim).ok) continue;
           const affected = new Set(
             affectedTiles(content, battle.grid, caster, ability, aim).map(posKey),

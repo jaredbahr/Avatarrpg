@@ -1,20 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { SceneScenery, Vec2 } from '../core/types';
-import { BA_DAN_SCENE } from '../content/scenes/baDan';
 import { Camera } from './camera';
-import {
-  REVEAL_MIN,
-  revealBox,
-  revealOccluders,
-  revealPixels,
-  revealTint,
-  revealsUnit,
-} from './reveal';
+import { REVEAL_MIN, revealBox, revealPixels, revealTint, revealsUnit } from './reveal';
 import { sceneImages, sceneryOpacity } from './scene';
 import type { MapView, RenderUnit } from './view';
-
-/** The oblique board's ground point in world px (as `scripts/art/ba-dan-occlusion.test.ts` takes it). */
-const ground = { groundPoint: (p: Vec2) => ({ x: 1024 + (p.x - p.y) * 64, y: (p.x + p.y) * 32 }) };
 
 const W = 8;
 const H = 12;
@@ -115,31 +104,6 @@ describe('who is revealed', () => {
   });
 });
 
-describe('Ba Dan', () => {
-  it('reveals behind every piece that hid a figure, and fades none of them', () => {
-    const hiding = BA_DAN_SCENE.scenery.filter((piece) => piece.fadeWhenOccluding);
-    expect(hiding.length).toBeGreaterThan(10);
-    expect(hiding.filter((piece) => !piece.revealOccluded).map((p) => p.id)).toEqual([]);
-  });
-
-  /** A figure 40 x 80 world px standing on a cell's centre. */
-  const figureAt = (cx: number, cy: number) => {
-    const foot = ground.groundPoint({ x: cx + 0.5, y: cy + 0.5 });
-    return { x: foot.x - 20, y: foot.y - 80, w: 40, h: 80, foot: foot.y };
-  };
-
-  it.each([
-    ['southwest-house', 7, 9],
-    ['gao-house', 7, 0],
-  ])('finds %s in front of a figure behind it, and not one in front of it', (id, cx, cy) => {
-    const ids = (cells: readonly [number, number]) =>
-      revealOccluders(BA_DAN_SCENE.scenery, figureAt(...cells), ground).map((p) => p.id);
-    expect(ids([cx, cy])).toContain(id);
-    // Down on the lane in front of the house, nothing hides the figure.
-    expect(ids([cx, cy + 6])).not.toContain(id);
-  });
-});
-
 describe('a house that reveals keeps its paint', () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -188,7 +152,7 @@ describe('a house that reveals keeps its paint', () => {
     const camera = new Camera(
       { width: 800, height: 600, dpr: 1 },
       { width: 8, height: 8 },
-      'oblique',
+      'orthographic',
     );
     camera.scale = 1;
     camera.offsetX = camera.offsetY = 0;
@@ -215,8 +179,8 @@ describe('a house that reveals keeps its paint', () => {
 });
 
 describe('the reveal tint per projection', () => {
-  it('keeps the oblique tint ADR 0096 shipped and quiets the top-down one', () => {
-    expect(revealTint('oblique')).toEqual({
+  it('keeps the tint ADR 0096 shipped on the orthographic board and quiets the top-down one', () => {
+    expect(revealTint('orthographic')).toEqual({
       rim: [255, 238, 196, 255],
       fill: [255, 226, 160, 120],
     });

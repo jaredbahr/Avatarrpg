@@ -1,6 +1,6 @@
 /**
- * Loads the top-down VFX recipes only for the opted-in top-down presentation.
- * The default bundle contains only this small loader, never the fetched JSON.
+ * Loads the top-down VFX recipes (ADR 0104). The bundle contains only this small loader, never the
+ * fetched JSON.
  */
 export interface TopdownVfxData {
   readonly frames: Readonly<Record<string, unknown>>;
@@ -25,11 +25,10 @@ function validData(value: unknown): value is TopdownVfxData {
   );
 }
 
-/** Injectable so the flag, in-flight reuse and failure contract stay testable. */
+/** Injectable so the in-flight reuse and failure contract stay testable. */
 export function createTopdownVfxLoader(fetcher: typeof fetch) {
   let request: Promise<TopdownVfxData | null> | undefined;
-  return (style: string | null, baseUrl: string): Promise<TopdownVfxData | null> => {
-    if (style !== 'topdown') return Promise.resolve(null);
+  return (baseUrl: string): Promise<TopdownVfxData | null> => {
     if (!request) {
       request = fetcher(baseUrl + 'art/topdown/vfx.json')
         .then((response) => (response.ok ? response.json() : null))
@@ -43,8 +42,8 @@ export function createTopdownVfxLoader(fetcher: typeof fetch) {
 const fetchVfx = createTopdownVfxLoader(fetch);
 let loaded: TopdownVfxData | null = null;
 
-export const loadTopdownVfx = (style: string | null, baseUrl: string) =>
-  fetchVfx(style, baseUrl).then((data) => (loaded ??= data));
+export const loadTopdownVfx = (baseUrl: string) =>
+  fetchVfx(baseUrl).then((data) => (loaded ??= data));
 
 /** The top-down VFX atlas once it has loaded, for what draws from it synchronously (the shots in flight). */
 export const topdownVfx = (): TopdownVfxData | null => loaded;

@@ -195,7 +195,7 @@ describe('top-down follow camera', () => {
       const scale = camera.scale;
       const pos = { x: 10, y: row };
       const box = camera.spriteBox(pos, 1, true);
-      // The crossbowman draws at 1.23, so his head runs past the board's top edge on row 0.
+      // A figure drawn at 1.25 runs its head past the board's top edge on row 0.
       const tall = actorBodyBounds({ ...box, width: box.size }, 1, null, 1.25);
       const follow = topdownFollow({
         focus: { x: (tall.left + tall.right) / 2, y: (tall.top + tall.bottom) / 2 },

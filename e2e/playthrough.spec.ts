@@ -39,6 +39,8 @@ test.describe('a session', () => {
       await page
         .getByRole('button', { name: 'Start with the suggested party', exact: true })
         .click();
+      // A table is offered the optional names step; skipping it plays as before.
+      if (size > 1) await page.getByRole('button', { name: 'Skip', exact: true }).click();
 
       const state = await snapshot(page);
       expect(state.players).toEqual(

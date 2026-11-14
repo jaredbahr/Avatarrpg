@@ -14,8 +14,6 @@ import type { Curve } from '../../render/geometry/curve';
 import type { ClipName, EmitterAttachments } from '../../render/view';
 import type { Heading, MeleeDirection } from '../../content/assets/clips';
 import type { Easing } from './easing';
-import type { BendFxIndex } from '../../render/fx/bendFx';
-import type { BendPlan } from './bendChoreo';
 import type { Shot } from '../../render/topdown/shots';
 
 export type { ClipName };
@@ -99,18 +97,6 @@ export interface ShakeTrack extends Track {
   readonly seed: number;
 }
 
-/**
- * A character's bend and its painted effect (ADR 0055, step 6). Its duration
- * is scene time, every hold included, so `busy()`, `finishesAt` and pruning
- * wait out the hit-stops; the plan maps scene time to its own frozen clock.
- */
-export interface BendTrack extends Track {
-  readonly kind: 'bend';
-  readonly unitId: string;
-  readonly plan: BendPlan;
-  readonly fx: BendFxIndex;
-}
-
 /** A top-down Earth Wall rising out of the ground on one cell (#590). */
 export interface RiseTrack extends Track {
   readonly kind: 'rise';
@@ -129,7 +115,6 @@ export type AnyTrack =
   | EmitterTrack
   | FloaterTrack
   | ShakeTrack
-  | BendTrack
   | RiseTrack
   | ShotTrack;
 
@@ -177,10 +162,7 @@ export class Timeline {
   actorFinishesAt(unitId: string): number {
     let end = 0;
     for (const track of this.tracks) {
-      if (
-        (track.kind === 'pose' || track.kind === 'move' || track.kind === 'bend') &&
-        track.unitId === unitId
-      )
+      if ((track.kind === 'pose' || track.kind === 'move') && track.unitId === unitId)
         end = Math.max(end, track.start + track.duration);
     }
     return end;

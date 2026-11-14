@@ -7,7 +7,7 @@ import { completeAuthoredPlayback, resetStorage, settleLayout, waitForIdle } fro
  * The demo's ending (owner, 2026-11-11), on an iPad-landscape viewport in the top-down style: the
  * walk home from the Driller floor, the first step into Ba Dan, the welcome home from Mira, Gao and
  * Dorin that pays off this route's choices (the earthbender talked the gate open, Ruon escorted),
- * the demo-complete card, and "Play again with a different party" reaching party setup.
+ * the supper and the boot, Bo-shan taking the reins, the demo-complete card, and "Play again with a different party" reaching party setup.
  */
 test.use({ viewport: { width: 1180, height: 820 }, hasTouch: true });
 
@@ -92,6 +92,17 @@ test('the walk home ends in a welcome home and a demo-complete card', async ({ p
   await nextLine(page);
   await nextLine(page);
 
+  // The supper, and a boot on a doorstep with a river shell in it (C-30).
+  await expect
+    .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
+    .toBe('welcome_home_supper');
+  for (let index = 0; index < 6; index++) await nextLine(page);
+  // Bo-shan takes the reins (C-32): a staged scene the table can skip.
+  await expect
+    .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
+    .toBe('cart_departure');
+  await page.getByRole('button', { name: 'Skip scene', exact: true }).click();
+
   const card = page.locator('.end-panel');
   await expect(card).toContainText('Demo complete');
   await expect(card.getByRole('heading', { name: 'Home to Ba Dan' })).toBeVisible();
@@ -113,8 +124,13 @@ test('the walk home ends in a welcome home and a demo-complete card', async ({ p
   await expect(page.getByRole('dialog')).toContainText('Credits');
   await page.getByRole('dialog').getByRole('button', { name: 'Done' }).click();
 
+  // The same table plays again: setup starts from the number of people who just finished.
+  const people = await page.evaluate(() => window.fnt?.app.session.count ?? 0);
+  expect(people).toBeGreaterThan(1);
   await card.getByRole('button', { name: 'Play again with a different party' }).click();
   await expect(page.getByRole('heading', { name: 'Choose your party' })).toBeVisible();
-  await expect(page.getByRole('button', { name: '3 players' })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: `${people} players`, exact: true }),
+  ).toHaveAttribute('aria-pressed', 'true');
   expect(errors).toEqual([]);
 });

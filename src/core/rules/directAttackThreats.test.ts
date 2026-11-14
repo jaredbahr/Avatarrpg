@@ -180,6 +180,41 @@ describe('possible direct attack threats', () => {
     ).toBe(false);
   });
 
+  it('keeps a first witness beyond base range from the far cell of a high attacker', () => {
+    const { battle, enemy, hero, budget } = fixture();
+    const caster = { ...enemy, size: 2 as const, pos: { x: 2, y: 2 }, abilities: ['rock_throw'] };
+    const projected = openBattle(battle, [caster, { ...hero, pos: { x: 9, y: 2 } }]);
+    const elevated = {
+      ...projected,
+      grid: {
+        ...projected.grid,
+        tiles: projected.grid.tiles.map((tile, index) => {
+          const x = index % projected.grid.width;
+          const y = Math.floor(index / projected.grid.width);
+          return x >= 2 && x <= 3 && y >= 2 && y <= 3 ? { ...tile, elevation: 1 } : tile;
+        }),
+      },
+    };
+    const stationary = { ...budget, move: 0 };
+    expect(directAttackThreats(CONTENT, projected, enemy.id, hero.id, stationary)).toEqual({
+      valid: true,
+      threats: [],
+    });
+    expect(directAttackThreats(CONTENT, elevated, enemy.id, hero.id, stationary)).toEqual({
+      valid: true,
+      threats: [
+        {
+          abilityId: 'rock_throw',
+          path: [],
+          moveCost: 0,
+          origin: { x: 2, y: 2 },
+          aim: { x: 9, y: 2 },
+          affectedDefenderCells: [{ x: 9, y: 2 }],
+        },
+      ],
+    });
+  });
+
   it('does not squeeze a two-cell attacker through a one-cell opening', () => {
     const { battle, enemy, hero, budget } = fixture();
     const base = openBattle(battle, [

@@ -53,7 +53,7 @@ async function village(
     const resources = performance.getEntriesByType('resource');
     return (
       Boolean(gao) &&
-      resources.some((entry) => new URL(entry.name).pathname.endsWith('/art/units/gao-g.json')) &&
+      resources.some((entry) => new URL(entry.name).pathname.endsWith('/art/topdown/gao.json')) &&
       resources.some((entry) => new URL(entry.name).pathname.endsWith('/art/units/gao-g.webp'))
     );
   });
@@ -165,7 +165,6 @@ async function forestAndKo(
       clip: undefined,
       clipTime: 0,
       clipFrame: undefined,
-      bend: undefined,
     });
     const chosen = staged(party, 'pixel-pair-chosen', { x: 8, y: 4 });
     const hostile = staged(enemy, 'pixel-pair-hostile', { x: 8, y: 6 });

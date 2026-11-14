@@ -208,7 +208,7 @@ Names are shown in authored content order within each entry; sections and record
 
 ### Mercenary
 
-- Stats: defense 2, focus 10, maxAp 4, maxHp 50, maxMove 4, power 6, speed 6
+- Stats: defense 2, focus 10, maxAp 4, maxHp 32, maxMove 4, power 6, speed 6
 - Abilities: Mercenary Blade
 - XP: 150
 

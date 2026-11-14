@@ -8,16 +8,6 @@ const fixture: TopdownVfxData = {
 };
 
 describe('top-down VFX recipe loading', () => {
-  it('does not fetch unless the recognized style is topdown', async () => {
-    const fetcher = vi.fn<typeof fetch>();
-    const load = createTopdownVfxLoader(fetcher);
-
-    await expect(load(null, '/deploy/')).resolves.toBeNull();
-    await expect(load('default', '/deploy/')).resolves.toBeNull();
-    await expect(load('topdown-extra', '/deploy/')).resolves.toBeNull();
-    expect(fetcher).not.toHaveBeenCalled();
-  });
-
   it('reuses the in-flight request and builds the JSON URL from BASE_URL', async () => {
     let resolveResponse: ((value: Response) => void) | undefined;
     const fetcher = vi.fn<typeof fetch>(
@@ -27,8 +17,8 @@ describe('top-down VFX recipe loading', () => {
         }),
     );
     const load = createTopdownVfxLoader(fetcher);
-    const first = load('topdown', '/deployed/game/');
-    const second = load('topdown', '/deployed/game/');
+    const first = load('/deployed/game/');
+    const second = load('/deployed/game/');
 
     expect(second).toBe(first);
     expect(fetcher).toHaveBeenCalledTimes(1);
@@ -50,8 +40,8 @@ describe('top-down VFX recipe loading', () => {
         .mockResolvedValue({ ok: true, json: async () => ({ frames: {} }) } as Response),
     );
 
-    await expect(rejected('topdown', '/')).resolves.toBeNull();
-    await expect(httpFailure('topdown', '/')).resolves.toBeNull();
-    await expect(malformed('topdown', '/')).resolves.toBeNull();
+    await expect(rejected('/')).resolves.toBeNull();
+    await expect(httpFailure('/')).resolves.toBeNull();
+    await expect(malformed('/')).resolves.toBeNull();
   });
 });

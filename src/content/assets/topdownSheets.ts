@@ -3,10 +3,14 @@
  *
  * The top-down figure sheets (ADR 0104 T2): each sheet's pages, its locomotion frame and foot anchor
  * (idle, walk and rest share it), the idle and walk cels per heading (`HEADINGS` order), the walk timing
- * and the legacy cast. The hits and knockouts are in each sheet's clip file, the per-heading abilities in
- * its actions file, both beside its atlas under `public/art/topdown/`.
+ * and the legacy cast, and the riverside's seated tea and wave and Ruon's surrender where a sheet has them. The
+ * hits and knockouts are in each sheet's clip file, the per-heading abilities in its actions file, both beside
+ * its atlas under `public/art/topdown/`.
  */
 import type { ClipDef } from './clips';
+
+const castFrames = (prefix: string, count: number): string[] =>
+  Array.from({ length: count }, (_, index) => `${prefix}/${index}`);
 
 export type TopdownName =
   | 'kaya'
@@ -52,6 +56,9 @@ export interface TopdownSheetData {
   readonly cast: ClipDef | null;
   readonly clipData: boolean;
   readonly actions: boolean;
+  readonly tea?: ClipDef;
+  readonly wave?: ClipDef;
+  readonly surrender?: ClipDef;
   readonly treadGrounding?: readonly {
     readonly spanPx: number;
     readonly centerXFromAnchorPx: number;
@@ -71,19 +78,7 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     walkCelMs: 19.231,
     walkMsPerTile: 307.7,
     cast: {
-      frames: [
-        'unit.fire.kaya/cast/0',
-        'unit.fire.kaya/cast/1',
-        'unit.fire.kaya/cast/2',
-        'unit.fire.kaya/cast/3',
-        'unit.fire.kaya/cast/4',
-        'unit.fire.kaya/cast/5',
-        'unit.fire.kaya/cast/6',
-        'unit.fire.kaya/cast/7',
-        'unit.fire.kaya/cast/8',
-        'unit.fire.kaya/cast/9',
-        'unit.fire.kaya/cast/10',
-      ],
+      frames: castFrames('unit.fire.kaya/cast', 11),
       fps: 10,
       loop: false,
       frameMs: [57, 57, 57, 66, 41, 115, 90, 50, 50, 50, 58],
@@ -93,6 +88,20 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     },
     clipData: true,
     actions: true,
+    tea: {
+      frames: ['unit.fire.kaya/tea/0', 'unit.fire.kaya/tea/1'],
+      fps: 0.25,
+      loop: true,
+      frameSize: { w: 26, h: 39 },
+      anchor: { x: 0.5, y: 0.974359 },
+    },
+    wave: {
+      frames: ['unit.fire.kaya/wave/0', 'unit.fire.kaya/wave/1'],
+      fps: 4,
+      loop: true,
+      frameSize: { w: 27, h: 47 },
+      anchor: { x: 0.518519, y: 0.978723 },
+    },
   },
   sura: {
     pages: 1,
@@ -105,18 +114,7 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     walkCelMs: 26.923,
     walkMsPerTile: 307.7,
     cast: {
-      frames: [
-        'unit.water.sura/cast/0',
-        'unit.water.sura/cast/1',
-        'unit.water.sura/cast/2',
-        'unit.water.sura/cast/3',
-        'unit.water.sura/cast/4',
-        'unit.water.sura/cast/5',
-        'unit.water.sura/cast/6',
-        'unit.water.sura/cast/7',
-        'unit.water.sura/cast/8',
-        'unit.water.sura/cast/9',
-      ],
+      frames: castFrames('unit.water.sura/cast', 10),
       fps: 10,
       loop: false,
       frameMs: [62, 62, 62, 62, 62, 62, 84, 46, 46, 46],
@@ -126,6 +124,20 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     },
     clipData: true,
     actions: true,
+    tea: {
+      frames: ['unit.water.sura/tea/0', 'unit.water.sura/tea/1'],
+      fps: 0.25,
+      loop: true,
+      frameSize: { w: 30, h: 36 },
+      anchor: { x: 0.366667, y: 0.972222 },
+    },
+    wave: {
+      frames: ['unit.water.sura/wave/0', 'unit.water.sura/wave/1'],
+      fps: 4,
+      loop: true,
+      frameSize: { w: 32, h: 50 },
+      anchor: { x: 0.46875, y: 0.98 },
+    },
   },
   bo: {
     pages: 1,
@@ -138,18 +150,7 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     walkCelMs: 26.923,
     walkMsPerTile: 307.7,
     cast: {
-      frames: [
-        'unit.earth.bo/cast/0',
-        'unit.earth.bo/cast/1',
-        'unit.earth.bo/cast/2',
-        'unit.earth.bo/cast/3',
-        'unit.earth.bo/cast/4',
-        'unit.earth.bo/cast/5',
-        'unit.earth.bo/cast/6',
-        'unit.earth.bo/cast/7',
-        'unit.earth.bo/cast/8',
-        'unit.earth.bo/cast/9',
-      ],
+      frames: castFrames('unit.earth.bo/cast', 10),
       fps: 10,
       loop: false,
       frameMs: [62, 62, 62, 62, 62, 62, 84, 46, 46, 46],
@@ -171,18 +172,7 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     walkCelMs: 26.923,
     walkMsPerTile: 307.7,
     cast: {
-      frames: [
-        'unit.enemy.thug/cast/0',
-        'unit.enemy.thug/cast/1',
-        'unit.enemy.thug/cast/2',
-        'unit.enemy.thug/cast/3',
-        'unit.enemy.thug/cast/4',
-        'unit.enemy.thug/cast/5',
-        'unit.enemy.thug/cast/6',
-        'unit.enemy.thug/cast/7',
-        'unit.enemy.thug/cast/8',
-        'unit.enemy.thug/cast/9',
-      ],
+      frames: castFrames('unit.enemy.thug/cast', 10),
       fps: 10,
       loop: false,
       frameMs: [62, 62, 62, 62, 62, 62, 84, 46, 46, 46],
@@ -204,18 +194,7 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     walkCelMs: 26.923,
     walkMsPerTile: 307.7,
     cast: {
-      frames: [
-        'unit.enemy.slinger/cast/0',
-        'unit.enemy.slinger/cast/1',
-        'unit.enemy.slinger/cast/2',
-        'unit.enemy.slinger/cast/3',
-        'unit.enemy.slinger/cast/4',
-        'unit.enemy.slinger/cast/5',
-        'unit.enemy.slinger/cast/6',
-        'unit.enemy.slinger/cast/7',
-        'unit.enemy.slinger/cast/8',
-        'unit.enemy.slinger/cast/9',
-      ],
+      frames: castFrames('unit.enemy.slinger/cast', 10),
       fps: 10,
       loop: false,
       frameMs: [62, 62, 62, 62, 62, 62, 84, 46, 46, 46],
@@ -237,18 +216,7 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     walkCelMs: 28.846,
     walkMsPerTile: 307.7,
     cast: {
-      frames: [
-        'unit.enemy.bruiser/cast/0',
-        'unit.enemy.bruiser/cast/1',
-        'unit.enemy.bruiser/cast/2',
-        'unit.enemy.bruiser/cast/3',
-        'unit.enemy.bruiser/cast/4',
-        'unit.enemy.bruiser/cast/5',
-        'unit.enemy.bruiser/cast/6',
-        'unit.enemy.bruiser/cast/7',
-        'unit.enemy.bruiser/cast/8',
-        'unit.enemy.bruiser/cast/9',
-      ],
+      frames: castFrames('unit.enemy.bruiser/cast', 10),
       fps: 10,
       loop: false,
       frameMs: [62, 62, 62, 62, 62, 62, 84, 46, 46, 46],
@@ -354,18 +322,7 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     walkCelMs: 26.923,
     walkMsPerTile: 307.7,
     cast: {
-      frames: [
-        'unit.enemy.deserter/cast/0',
-        'unit.enemy.deserter/cast/1',
-        'unit.enemy.deserter/cast/2',
-        'unit.enemy.deserter/cast/3',
-        'unit.enemy.deserter/cast/4',
-        'unit.enemy.deserter/cast/5',
-        'unit.enemy.deserter/cast/6',
-        'unit.enemy.deserter/cast/7',
-        'unit.enemy.deserter/cast/8',
-        'unit.enemy.deserter/cast/9',
-      ],
+      frames: castFrames('unit.enemy.deserter/cast', 10),
       fps: 10,
       loop: false,
       frameMs: [62, 62, 62, 62, 62, 62, 84, 46, 46, 46],
@@ -387,18 +344,7 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     walkCelMs: 28.846,
     walkMsPerTile: 307.7,
     cast: {
-      frames: [
-        'unit.enemy.quarrybender/cast/0',
-        'unit.enemy.quarrybender/cast/1',
-        'unit.enemy.quarrybender/cast/2',
-        'unit.enemy.quarrybender/cast/3',
-        'unit.enemy.quarrybender/cast/4',
-        'unit.enemy.quarrybender/cast/5',
-        'unit.enemy.quarrybender/cast/6',
-        'unit.enemy.quarrybender/cast/7',
-        'unit.enemy.quarrybender/cast/8',
-        'unit.enemy.quarrybender/cast/9',
-      ],
+      frames: castFrames('unit.enemy.quarrybender/cast', 10),
       fps: 10,
       loop: false,
       frameMs: [62, 62, 62, 62, 62, 62, 84, 46, 46, 46],
@@ -420,18 +366,7 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     walkCelMs: 26.923,
     walkMsPerTile: 307.7,
     cast: {
-      frames: [
-        'unit.enemy.merc/cast/0',
-        'unit.enemy.merc/cast/1',
-        'unit.enemy.merc/cast/2',
-        'unit.enemy.merc/cast/3',
-        'unit.enemy.merc/cast/4',
-        'unit.enemy.merc/cast/5',
-        'unit.enemy.merc/cast/6',
-        'unit.enemy.merc/cast/7',
-        'unit.enemy.merc/cast/8',
-        'unit.enemy.merc/cast/9',
-      ],
+      frames: castFrames('unit.enemy.merc/cast', 10),
       fps: 10,
       loop: false,
       frameMs: [62, 62, 62, 62, 62, 62, 84, 46, 46, 46],
@@ -453,18 +388,7 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     walkCelMs: 26.923,
     walkMsPerTile: 307.7,
     cast: {
-      frames: [
-        'unit.enemy.crossbow/cast/0',
-        'unit.enemy.crossbow/cast/1',
-        'unit.enemy.crossbow/cast/2',
-        'unit.enemy.crossbow/cast/3',
-        'unit.enemy.crossbow/cast/4',
-        'unit.enemy.crossbow/cast/5',
-        'unit.enemy.crossbow/cast/6',
-        'unit.enemy.crossbow/cast/7',
-        'unit.enemy.crossbow/cast/8',
-        'unit.enemy.crossbow/cast/9',
-      ],
+      frames: castFrames('unit.enemy.crossbow/cast', 10),
       fps: 10,
       loop: false,
       frameMs: [62, 62, 62, 62, 62, 62, 84, 46, 46, 46],
@@ -486,18 +410,7 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     walkCelMs: 26.923,
     walkMsPerTile: 307.7,
     cast: {
-      frames: [
-        'unit.enemy.sergeant/cast/0',
-        'unit.enemy.sergeant/cast/1',
-        'unit.enemy.sergeant/cast/2',
-        'unit.enemy.sergeant/cast/3',
-        'unit.enemy.sergeant/cast/4',
-        'unit.enemy.sergeant/cast/5',
-        'unit.enemy.sergeant/cast/6',
-        'unit.enemy.sergeant/cast/7',
-        'unit.enemy.sergeant/cast/8',
-        'unit.enemy.sergeant/cast/9',
-      ],
+      frames: castFrames('unit.enemy.sergeant/cast', 10),
       fps: 10,
       loop: false,
       frameMs: [62, 62, 62, 62, 62, 62, 84, 46, 46, 46],
@@ -519,18 +432,7 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     walkCelMs: 26.923,
     walkMsPerTile: 307.7,
     cast: {
-      frames: [
-        'unit.ally.ruon/cast/0',
-        'unit.ally.ruon/cast/1',
-        'unit.ally.ruon/cast/2',
-        'unit.ally.ruon/cast/3',
-        'unit.ally.ruon/cast/4',
-        'unit.ally.ruon/cast/5',
-        'unit.ally.ruon/cast/6',
-        'unit.ally.ruon/cast/7',
-        'unit.ally.ruon/cast/8',
-        'unit.ally.ruon/cast/9',
-      ],
+      frames: castFrames('unit.ally.ruon/cast', 10),
       fps: 10,
       loop: false,
       frameMs: [62, 62, 62, 62, 62, 62, 84, 46, 46, 46],
@@ -540,6 +442,13 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     },
     clipData: true,
     actions: true,
+    surrender: {
+      frames: ['unit.ally.ruon/surrender/0'],
+      fps: 1,
+      loop: true,
+      frameSize: { w: 41, h: 49 },
+      anchor: { x: 0.317073, y: 0.959184 },
+    },
   },
   tenzo: {
     pages: 1,
@@ -552,18 +461,7 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     walkCelMs: 26.923,
     walkMsPerTile: 307.7,
     cast: {
-      frames: [
-        'unit.fire.tenzo/cast/0',
-        'unit.fire.tenzo/cast/1',
-        'unit.fire.tenzo/cast/2',
-        'unit.fire.tenzo/cast/3',
-        'unit.fire.tenzo/cast/4',
-        'unit.fire.tenzo/cast/5',
-        'unit.fire.tenzo/cast/6',
-        'unit.fire.tenzo/cast/7',
-        'unit.fire.tenzo/cast/8',
-        'unit.fire.tenzo/cast/9',
-      ],
+      frames: castFrames('unit.fire.tenzo/cast', 10),
       fps: 10,
       loop: false,
       frameMs: [62, 62, 62, 62, 62, 62, 84, 46, 46, 46],
@@ -585,18 +483,7 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     walkCelMs: 26.923,
     walkMsPerTile: 307.7,
     cast: {
-      frames: [
-        'unit.water.nilak/cast/0',
-        'unit.water.nilak/cast/1',
-        'unit.water.nilak/cast/2',
-        'unit.water.nilak/cast/3',
-        'unit.water.nilak/cast/4',
-        'unit.water.nilak/cast/5',
-        'unit.water.nilak/cast/6',
-        'unit.water.nilak/cast/7',
-        'unit.water.nilak/cast/8',
-        'unit.water.nilak/cast/9',
-      ],
+      frames: castFrames('unit.water.nilak/cast', 10),
       fps: 10,
       loop: false,
       frameMs: [62, 62, 62, 62, 62, 62, 84, 46, 46, 46],
@@ -618,18 +505,7 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     walkCelMs: 26.923,
     walkMsPerTile: 307.7,
     cast: {
-      frames: [
-        'unit.earth.linmei/cast/0',
-        'unit.earth.linmei/cast/1',
-        'unit.earth.linmei/cast/2',
-        'unit.earth.linmei/cast/3',
-        'unit.earth.linmei/cast/4',
-        'unit.earth.linmei/cast/5',
-        'unit.earth.linmei/cast/6',
-        'unit.earth.linmei/cast/7',
-        'unit.earth.linmei/cast/8',
-        'unit.earth.linmei/cast/9',
-      ],
+      frames: castFrames('unit.earth.linmei/cast', 10),
       fps: 10,
       loop: false,
       frameMs: [62, 62, 62, 62, 62, 62, 84, 46, 46, 46],
@@ -651,18 +527,7 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     walkCelMs: 26.923,
     walkMsPerTile: 307.7,
     cast: {
-      frames: [
-        'unit.air.nima/cast/0',
-        'unit.air.nima/cast/1',
-        'unit.air.nima/cast/2',
-        'unit.air.nima/cast/3',
-        'unit.air.nima/cast/4',
-        'unit.air.nima/cast/5',
-        'unit.air.nima/cast/6',
-        'unit.air.nima/cast/7',
-        'unit.air.nima/cast/8',
-        'unit.air.nima/cast/9',
-      ],
+      frames: castFrames('unit.air.nima/cast', 10),
       fps: 10,
       loop: false,
       frameMs: [62, 62, 62, 62, 62, 62, 84, 46, 46, 46],
@@ -684,18 +549,7 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     walkCelMs: 26.923,
     walkMsPerTile: 307.7,
     cast: {
-      frames: [
-        'unit.air.jinu/cast/0',
-        'unit.air.jinu/cast/1',
-        'unit.air.jinu/cast/2',
-        'unit.air.jinu/cast/3',
-        'unit.air.jinu/cast/4',
-        'unit.air.jinu/cast/5',
-        'unit.air.jinu/cast/6',
-        'unit.air.jinu/cast/7',
-        'unit.air.jinu/cast/8',
-        'unit.air.jinu/cast/9',
-      ],
+      frames: castFrames('unit.air.jinu/cast', 10),
       fps: 10,
       loop: false,
       frameMs: [62, 62, 62, 62, 62, 62, 84, 46, 46, 46],
@@ -717,18 +571,7 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     walkCelMs: 26.923,
     walkMsPerTile: 307.7,
     cast: {
-      frames: [
-        'unit.non.riko/cast/0',
-        'unit.non.riko/cast/1',
-        'unit.non.riko/cast/2',
-        'unit.non.riko/cast/3',
-        'unit.non.riko/cast/4',
-        'unit.non.riko/cast/5',
-        'unit.non.riko/cast/6',
-        'unit.non.riko/cast/7',
-        'unit.non.riko/cast/8',
-        'unit.non.riko/cast/9',
-      ],
+      frames: castFrames('unit.non.riko/cast', 10),
       fps: 10,
       loop: false,
       frameMs: [62, 62, 62, 62, 62, 62, 84, 46, 46, 46],
@@ -750,18 +593,7 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     walkCelMs: 26.923,
     walkMsPerTile: 307.7,
     cast: {
-      frames: [
-        'unit.non.wen/cast/0',
-        'unit.non.wen/cast/1',
-        'unit.non.wen/cast/2',
-        'unit.non.wen/cast/3',
-        'unit.non.wen/cast/4',
-        'unit.non.wen/cast/5',
-        'unit.non.wen/cast/6',
-        'unit.non.wen/cast/7',
-        'unit.non.wen/cast/8',
-        'unit.non.wen/cast/9',
-      ],
+      frames: castFrames('unit.non.wen/cast', 10),
       fps: 10,
       loop: false,
       frameMs: [62, 62, 62, 62, 62, 62, 84, 46, 46, 46],
@@ -825,20 +657,7 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     walkCelMs: 76.923,
     walkMsPerTile: 307.7,
     cast: {
-      frames: [
-        'unit.enemy.driller/cast/0',
-        'unit.enemy.driller/cast/1',
-        'unit.enemy.driller/cast/2',
-        'unit.enemy.driller/cast/3',
-        'unit.enemy.driller/cast/4',
-        'unit.enemy.driller/cast/5',
-        'unit.enemy.driller/cast/6',
-        'unit.enemy.driller/cast/7',
-        'unit.enemy.driller/cast/8',
-        'unit.enemy.driller/cast/9',
-        'unit.enemy.driller/cast/10',
-        'unit.enemy.driller/cast/11',
-      ],
+      frames: castFrames('unit.enemy.driller/cast', 12),
       fps: 10,
       loop: false,
       frameMs: [72, 72, 72, 88, 88, 88, 184, 184, 56, 56, 170, 72],

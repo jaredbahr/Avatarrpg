@@ -29,6 +29,7 @@ import type {
 import { evaluate } from '../story/conditions';
 import { buildGrid, occupiedCells, posKey, standCost, tileAt, withTile } from '../rules/grid';
 import { DEFAULT_DIFFICULTY, enemiesToDrop, scaleForTable } from '../rules/difficulty';
+import type { ScaleContext } from '../rules/difficulty';
 import {
   combinedKit,
   grantedUpTo,
@@ -226,7 +227,7 @@ function createUnitFromPlacement(
   serial: number,
   pos: Vec2,
   defaultLevel: number,
-  table: { baselinePartySize: number; partySize: number; difficulty: Difficulty },
+  table: Omit<ScaleContext, 'isBoss'>,
 ): Unit | null {
   const def = content.enemies.get(placement.enemyId);
   if (!def) return null;
@@ -240,12 +241,7 @@ function createUnitFromPlacement(
   // against the party — only opposition is.
   const stats =
     faction === 'enemy'
-      ? scaleForTable(levelled, {
-          baselinePartySize: table.baselinePartySize,
-          partySize: table.partySize,
-          isBoss: def.ai === 'boss',
-          difficulty: table.difficulty,
-        })
+      ? scaleForTable(levelled, { ...table, isBoss: def.ai === 'boss' })
       : levelled;
 
   return {
@@ -498,6 +494,7 @@ export function createBattle(
     baselinePartySize: encounter.baselinePartySize,
     partySize: state.party.length + encounter.allies.length,
     difficulty: state.difficulty,
+    hard: encounter.hard,
   };
 
   for (const placement of roster.allies) {

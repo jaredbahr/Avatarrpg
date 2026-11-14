@@ -95,6 +95,24 @@ describe('balance scenario tooling', () => {
     expect(JSON.stringify([...CONTENT.encounters])).toBe(authoredEncounters);
   });
 
+  it('rejects unsafe integers in encounter stat overrides', () => {
+    const parse = (power: number) =>
+      balanceScenarioSchema.safeParse({
+        encounters: { quarry: { enemyStats: { bandit: { power } } } },
+      });
+    expect(parse(Number.MAX_SAFE_INTEGER).success).toBe(true);
+    const result = parse(Number.MAX_SAFE_INTEGER + 1);
+    expect(result.success).toBe(false);
+    if (!result.success)
+      expect(result.error.issues.map((issue) => issue.path)).toContainEqual([
+        'encounters',
+        'quarry',
+        'enemyStats',
+        'bandit',
+        'power',
+      ]);
+  });
+
   it('rejects a bad key with a readable path', () => {
     const parsed = balanceScenarioSchema.safeParse({ props: { hay_bale: { fuels: 3 } } });
     expect(parsed.success).toBe(false);

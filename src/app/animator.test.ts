@@ -15,6 +15,7 @@ import { sampleParticles, PARTICLE_STRIDE } from '../render/fx/simulate';
 import { choreograph, TIMING } from './anim/choreography';
 import { STROLL_RAMP_MS, strollTiming } from './anim/stroll';
 import { frameIndex, resolveClip } from '../render/sheets/resolveClip';
+import { ASSETS } from '../content/assets/manifest';
 
 /**
  * The animator runs in Node here with the reduce-motion lookup injected, so
@@ -54,6 +55,19 @@ const airBlast: GameEvent = {
   target: { x: 5, y: 3 },
   tiles: [{ x: 5, y: 3 }],
 };
+
+/** Kaya's east walk: its cel length, cels a loop and the clip ms it starts on. */
+function kayaWalk(): { cel: number; cels: number; walkStartMs: number } {
+  const sheet = ASSETS['unit.fire.kaya'];
+  const walk = sheet?.kind === 'sheet' ? sheet.clips.walk : undefined;
+  if (sheet?.kind !== 'sheet' || !sheet.locomotion || !walk) throw new Error('Kaya walks');
+  const cels = walk.frames.length;
+  return {
+    cel: sheet.locomotion.walkCycleMs / cels,
+    cels,
+    walkStartMs: sheet.locomotion.walkStartMs,
+  };
+}
 
 describe('Animator', () => {
   it('does not carry a stale stagger into a later walk pushed without one', () => {
@@ -119,15 +133,16 @@ describe('Animator', () => {
     ids.forEach((id, index) => {
       a.push(0, [move(id)], [], { alongside: index > 0, walkPhase: partyWalkPhase(index) });
     });
+    const { cel, cels, walkStartMs } = kayaWalk();
     const start = a.unitPose(0.01, 'leader', 'unit.fire.kaya');
-    // The walk starts on its quarter-cycle passing cel, 3 of 12 at 114 ms.
-    expect(Math.floor((start?.clipTime ?? -1) / 114) % 12).toBe(3);
+    // The walk starts on the cel its sheet declares (`walkStartMs`).
+    expect(Math.floor((start?.clipTime ?? -1) / cel) % cels).toBe(Math.floor(walkStartMs / cel));
     const phases = ids.map((id) => a.unitPose(400, id, 'unit.fire.kaya')?.clipTime ?? -1);
-    // No two members within two cels of each other on the 12-cel loop.
+    // No two members within a cel of each other on the loop.
     for (let i = 0; i < phases.length; i++)
       for (let j = i + 1; j < phases.length; j++) {
-        const gap = Math.abs((phases[i] ?? 0) - (phases[j] ?? 0)) % (12 * 114);
-        expect(Math.min(gap, 12 * 114 - gap), `${i}/${j}`).toBeGreaterThan(2 * 114);
+        const gap = Math.abs((phases[i] ?? 0) - (phases[j] ?? 0)) % (cels * cel);
+        expect(Math.min(gap, cels * cel - gap), `${i}/${j}`).toBeGreaterThan(cel);
       }
     for (const at of [1, 200, 400, 600]) {
       expect(a.offset(at, 'leader', 'unit.fire.kaya')).toBeUndefined();
@@ -151,8 +166,10 @@ describe('Animator', () => {
       expect(pose?.clipTime ?? -1).toBeGreaterThanOrEqual(last);
       last = pose?.clipTime ?? -1;
     }
-    // The window closes on a planted passing cel (3 or 9 of 12).
-    expect([3, 9]).toContain(Math.round(last / 114) % 12);
+    // The window closes on a planted cel: the start cel or the one half a loop on.
+    const { cel, cels, walkStartMs } = kayaWalk();
+    const first = Math.round(walkStartMs / cel);
+    expect([first % cels, (first + cels / 2) % cels]).toContain(Math.round(last / cel) % cels);
     expect(at(end + STOP_SETTLE_MS)).toBeUndefined();
   });
   it.each([false, true])('holds damage feedback until Air Blast impact, reduced=%s', (reduced) => {
@@ -289,10 +306,7 @@ describe('Animator', () => {
     const thug = 'unit.enemy.thug';
     expect(a.locomotion(0, 'e0', 'idle', thug, -1)).toEqual({ clip: 'idleWest', facing: -1 });
     // The party's default is unchanged: east, unsuffixed.
-    expect(a.locomotion(0, 'p0', 'stance', 'unit.fire.kaya')).toEqual({
-      clip: 'stance',
-      facing: 1,
-    });
+    expect(a.locomotion(0, 'p0', 'idle', 'unit.fire.kaya')).toEqual({ clip: 'idle', facing: 1 });
     a.push(0, [moved('e0', [4, 5])], [unit('e0', 4, 4)]);
     a.prune(10);
     expect(a.locomotion(10, 'e0', 'idle', thug, -1).clip).toBe('walkSouth');
@@ -303,7 +317,7 @@ describe('Animator', () => {
   it('an unturned enemy reacts the way it stands: west (ADR 0078)', () => {
     const thug = 'unit.enemy.thug';
     const thugClips = JSON.parse(
-      readFileSync('public/art/units/thug-g-clips.json', 'utf8'),
+      readFileSync('src/app/anim/fixtures/thug-g-clips.json', 'utf8'),
     ) as SheetClips;
     const a = new Animator(CONTENT, {
       motionReduced: () => false,
@@ -344,7 +358,7 @@ describe('Animator', () => {
   it('plays the heading’s G hit and holds the G knockout it falls on once the sheet is in (ADR 0059, ADR 0063)', () => {
     const kaya = 'unit.fire.kaya';
     const kayaClips = JSON.parse(
-      readFileSync('public/art/units/kaya-g-clips.json', 'utf8'),
+      readFileSync('src/app/anim/fixtures/kaya-g-clips.json', 'utf8'),
     ) as SheetClips;
     const a = new Animator(CONTENT, {
       motionReduced: () => false,

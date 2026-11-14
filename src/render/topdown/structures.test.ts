@@ -1,7 +1,7 @@
 /**
  * The Earth Wall and rubble on top-down boards (#577): which cells stand a drawing (a raised wall,
  * not authored masonry nor an expired one; a rubble surface, not the scene's painted heaps), the
- * wall's depth among the figures, both backends, and the oblique board untouched.
+ * wall's depth among the figures, both backends, and the orthographic board untouched.
  */
 import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -156,7 +156,7 @@ const unit = (id: string, pos: Vec2): RenderUnit =>
     sprite: 'unit.fire.kaya',
   }) as unknown as RenderUnit;
 
-function frame(projection: 'topdown' | 'oblique', units: RenderUnit[] = []) {
+function frame(projection: 'topdown' | 'orthographic', units: RenderUnit[] = []) {
   const drawn: { what: string; args: number[] }[] = [];
   const ctx = new Proxy({ globalAlpha: 1 } as Record<string, unknown>, {
     get(target, k: string) {
@@ -255,9 +255,9 @@ describe('Canvas 2D stands the wall and the heap', () => {
     expect(order).toEqual(['unit:north', WALL_URL, 'unit:south']);
   });
 
-  it('leaves the oblique board as it was', () => {
+  it('leaves the orthographic board as it was', () => {
     fakeDocument();
-    const { drawn } = frame('oblique');
+    const { drawn } = frame('orthographic');
     expect(drawn.some(({ what }) => what === WALL_URL || what === RUBBLE_URL)).toBe(false);
   });
 });

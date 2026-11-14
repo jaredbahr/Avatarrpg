@@ -4,23 +4,9 @@ import { resolveFx } from '../../src/content/fx';
 import { CEL_FRAMES, CEL_SIZE, FX_CELS, FX_CEL_SHEETS } from '../../src/content/fxCels';
 import { ATLAS_CELL, ATLAS_SIZE } from '../../src/render/fx/atlas';
 import { FX_CELLS } from '../../src/content/fx';
-import { parseAtlasJson } from '../../src/render/sheets/atlasJson';
 import { parseHex, readPng } from './lib/image';
-import { decodeWebp, isLosslessWebp } from './lib/webp';
-import {
-  BEND_PAGE,
-  BEND_PAGE_JSON,
-  EMISSIVE,
-  INK,
-  RAMPS,
-  SHEET_RAMP,
-  buildG1,
-  checkG1Sources,
-  luma,
-  snap,
-  upscale,
-} from './fx-g1';
-import { validateBendFx, validateFxCels } from './validate';
+import { EMISSIVE, INK, RAMPS, SHEET_RAMP, buildG1, checkG1Sources, luma, snap } from './fx-g1';
+import { validateFxCels } from './validate';
 
 const build = buildG1();
 
@@ -39,22 +25,12 @@ describe('the G1 effects packer', () => {
     expect(luma([255, 255, 255])).toBe(255);
   });
 
-  it('upscales an art px to a 2 x 2 block, cropped to the frame', () => {
-    const one = { width: 2, height: 1, data: new Uint8Array([1, 2, 3, 255, 4, 5, 6, 255]) };
-    const out = upscale(one, 2, 3, 2);
-    expect([...out.data.subarray(0, 12)]).toEqual([1, 2, 3, 255, 1, 2, 3, 255, 4, 5, 6, 255]);
-    expect([...out.data.subarray(12, 24)]).toEqual([1, 2, 3, 255, 1, 2, 3, 255, 4, 5, 6, 255]);
-  });
-
-  it('ships exactly what the sources make', async () => {
-    const page = new Uint8Array(readFileSync(BEND_PAGE));
-    expect(isLosslessWebp(page)).toBe(true);
-    expect((await decodeWebp(page)).data).toEqual(build.page.data);
+  it('ships exactly what the sources make', () => {
     for (const [url, image] of build.sheets) expect(readPng(url).data).toEqual(image.data);
   }, 60_000);
 
   it('gives every cel at most four tones and the ink, all on its ramp, with one opacity', () => {
-    expect(build.report).toHaveLength(33 + FX_CELS.length * CEL_FRAMES);
+    expect(build.report).toHaveLength(FX_CELS.length * CEL_FRAMES);
     for (const cel of build.report) expect(cel.colours).toBeLessThanOrEqual(5);
     const allowed = (ramp: keyof typeof RAMPS) =>
       new Set([INK, ...RAMPS[ramp]].map((hex) => parseHex(hex).join(',')));
@@ -94,27 +70,11 @@ describe('the G1 effects packer', () => {
           }
       });
     }
-    // The bend page: the fireball and the water bolt are light, the rock keeps its ink.
-    const frames = parseAtlasJson(
-      JSON.parse(readFileSync(BEND_PAGE_JSON, 'utf8')) as unknown,
-    ).frames;
-    const inkIn = { fire: 0, water: 0, earth: 0 } as Record<string, number>;
-    for (const [name, f] of frames)
-      for (let y = f.y; y < f.y + f.h; y++)
-        for (let x = f.x; x < f.x + f.w; x++) {
-          const i = (y * build.page.width + x) * 4;
-          const d = build.page.data;
-          if (d[i + 3] && `${d[i]},${d[i + 1]},${d[i + 2]}` === ink)
-            inkIn[name.split('.')[1]!] = (inkIn[name.split('.')[1]!] ?? 0) + 1;
-        }
-    expect([inkIn.fire, inkIn.water]).toEqual([0, 0]);
-    expect(inkIn.earth).toBeGreaterThan(0);
   });
 
-  it('passes art:validate, the bend page against its re-written pins', async () => {
+  it('passes art:validate', () => {
     expect(validateFxCels()).toEqual([]);
-    expect(await validateBendFx()).toEqual([]);
-  }, 60_000);
+  });
 
   it('fits the shared atlas: nine shape ladders and every cel master in a slot', () => {
     expect(FX_CELLS.length + FX_CELS.length * CEL_FRAMES).toBeLessThanOrEqual(
@@ -124,8 +84,7 @@ describe('the G1 effects packer', () => {
   });
 
   it('is smaller than the painted effects it replaced', () => {
-    // Painted: bend page 54,376 B; the five cel sheets 1,497,073 B (ADR 0086).
-    expect(readFileSync(BEND_PAGE).length).toBeLessThan(54_376 / 4);
+    // Painted: the five cel sheets 1,497,073 B (ADR 0086).
     const sheets = FX_CEL_SHEETS.reduce(
       (sum, def) => sum + readFileSync(`public/${def.url}`).length,
       0,

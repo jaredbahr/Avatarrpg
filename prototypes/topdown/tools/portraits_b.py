@@ -47,6 +47,11 @@ CAST = {
  'enemy.grumbler': ('enemy.grumbler.png', 'the same steam-powered tracked drilling machine', 'its brass and rust-red boiler body, glowing amber window, caterpillar tracks and big grey drill cone, no person'),
  'dema': ('mira.png', 'a weathered woman in her forties, the road keeper',
           'her strong build; she is a new person: tan weathered skin with laugh lines, a wide conical straw hat shading her face, an oatmeal-coloured tunic with the sleeves rolled to the elbow, a rust-orange sash at the waist, a warm practical expression with a small knowing smile'),
+ 'hanru': ('dorin.png', 'a sturdy middle-aged village watch keeper',
+           'the upright spear and calm guard pose; this is a new person: a plain weathered face with steady patient eyes and a faint kind '
+           'half-smile, short dark hair greying at the temples under a soft brown cloth cap, a knee-length muted olive-green padded coat '
+           'with a plain leather belt, holding a plain wooden spear upright; practical, few words, kind without saying so; '
+           'an androgynous look, neither clearly a man nor a woman, no moustache or beard'),
  'sen': ('gao.png', 'a tall lanky man in his thirties, the tea keeper',
          'his friendly pose; he is a new person: narrow kind face with a slightly wry smile, short dark hair under a grey headband, a slate-grey quilted vest over a brick-red shirt, a white towel over one shoulder, a tan sash, holding out a dented tin kettle in one hand and a chipped cup with a blue handle in the other'),
 }
@@ -65,12 +70,30 @@ REDO = {
                    'with a few loose spiral ringlets at her temples; draw the curls as clustered curl shapes with highlights, not as two smooth buns, '
                    'with a clean outline and no scattered stray pixels',
               style_extra=' Clean, calm hair shapes; sparing dithering.'),
+ # 2026-11-12 owner review: the B redraw lost the forearm, so the hand on the abacus floats.
+ 'gao': dict(keep='his warm smile, flat brown cap, grey-black beard, green shirt with a pale apron, string of red chillies, and the gourd on its strap; '
+                  'his right forearm, with the white sleeve rolled to the elbow, comes in across the bottom left of the picture and joins the hand '
+                  'that holds the abacus against his chest, so the arm runs unbroken from the sleeve to the hand; both arms clearly attached to his shoulders, '
+                  'nothing cut off or floating',
+             style_extra=' Anatomy must be whole: every hand connects to an arm.'),
+}
+
+# Not a person: the narrator speaks as the places of the route (docs/art/prompts/portraits/narrator.md). Its base is a rough
+# composition sketch (gate, quarry hill, low sun, empty cart) passed with --base-dir.
+PLACE_STYLE = ('Highly detailed pixel art emblem of a place, in the style of a premium modern pixel-art RPG dialogue portrait: '
+               'rich palette of about 48 colours, careful hand-placed shading with soft ramps, selective dithering, crisp 1 px outlines in darker material tones. '
+               '{keep}. No people, no faces, no text. Plain light parchment sky, a full square picture with no circular crop. '
+               'No anti-aliased blur; every pixel deliberate.')
+PLACES = {
+ 'narrator': ('narrator_sketch.png', 'a village gate', 'A squat gate of cut warm grey-brown stone blocks with a heavy wooden double door and a wooden crossbeam, '
+              'filling the middle of the picture; a muted green quarry hill with pale cut rock faces rising behind it under a low warm sun; '
+              'a dusty road in front with one small empty wooden hand cart; calm, patient, a little foreboding'),
 }
 
 
 def make(pid, out, seed=11, base_dir=None):
-    base, who, keep = CAST[pid]
-    style = STYLE
+    base, who, keep = CAST[pid] if pid in CAST else PLACES[pid]
+    style = PLACE_STYLE if pid in PLACES else STYLE
     if seed != 11 and pid in REDO:
         keep = REDO[pid]['keep']; style = STYLE + REDO[pid]['style_extra']
     src = Image.open((Path(base_dir) if base_dir else PORTRAITS) / base).convert('RGBA')

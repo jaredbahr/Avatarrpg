@@ -192,7 +192,16 @@ const sessionMeta = z.object({
       participantId: z.string().optional(),
     }),
   ),
-  participants: z.array(z.object({ id: z.string(), name: z.string() })).optional(),
+  participants: z
+    .array(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+        // The optional hand-off name (src/app/session.ts); older saves have none.
+        handoffName: z.string().optional(),
+      }),
+    )
+    .optional(),
   soloPlay: z.boolean().optional(),
 });
 

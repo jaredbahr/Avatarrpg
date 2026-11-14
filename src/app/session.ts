@@ -23,6 +23,35 @@ export interface Player {
 export interface Participant {
   readonly id: string;
   readonly name: string;
+  /**
+   * What the table typed on the optional names step after the suggested
+   * party. Presentation only, and shown in one place: the combat hand-off
+   * card ("Hand the tablet to Maya"). The story vote, the decider and the
+   * ending keep `name`, so a table that skips the step plays exactly as before.
+   */
+  readonly handoffName?: string;
+}
+
+/** The longest name the hand-off card will show, in characters. */
+export const HANDOFF_NAME_MAX = 12;
+
+/**
+ * Trims, folds runs of whitespace, drops control characters and caps a typed
+ * name at `HANDOFF_NAME_MAX` characters (code points, so an emoji is never cut
+ * in half). Returns `undefined` for a name that is empty once cleaned.
+ */
+export function sanitiseHandoffName(raw: string | undefined): string | undefined {
+  if (raw === undefined) return undefined;
+  const cleaned = [
+    ...raw
+      .replace(/\p{Cc}/gu, ' ')
+      .replace(/\s+/g, ' ')
+      .trim(),
+  ]
+    .slice(0, HANDOFF_NAME_MAX)
+    .join('')
+    .trim();
+  return cleaned.length > 0 ? cleaned : undefined;
 }
 
 export class Session {
@@ -60,7 +89,10 @@ export class Session {
         player.participantId ?? participants?.[index]?.id ?? `legacy-player-${index + 1}`,
     }));
     this.people = participants
-      ? [...participants]
+      ? participants.map(({ handoffName, ...person }) => {
+          const clean = sanitiseHandoffName(handoffName);
+          return clean ? { ...person, handoffName: clean } : person;
+        })
       : [
           ...new Map(
             this.roster.map((player) => [
@@ -90,6 +122,15 @@ export class Session {
   participantForUnit(unitId: string | null | undefined): Participant | undefined {
     const player = this.playerFor(unitId);
     return player ? this.people.find((person) => person.id === player.participantId) : undefined;
+  }
+
+  /**
+   * Who the combat hand-off card asks for: the optional name typed after the
+   * suggested party, or, without one, the same player name the card always used.
+   */
+  handoffNameFor(unitId: string | null | undefined): string | undefined {
+    const person = this.participantForUnit(unitId);
+    return person?.handoffName ?? this.playerFor(unitId)?.name;
   }
 
   /** "Nilak (Ava)" — the character, then the human. */

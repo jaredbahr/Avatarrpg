@@ -1,32 +1,22 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
-import type { Heading } from '../../content/assets/clips';
-import type { BendEffectDef, BendSetDef } from '../../content/bends';
-import { BEND_FX } from '../../content/fxCels';
-import { BA_DAN_CANAL_BRIDGE, BA_DAN_WATER_CELLS } from '../../content/scenes/baDan';
+import { BA_DAN_CANAL_BRIDGE, BA_DAN_WATER_CELLS } from '../../content/maps/baDanLayout';
 import { buildGrid, tileAt } from '../../core/rules/grid';
 import { createGame } from '../../core/state/createGame';
 import { apply } from '../../core/state/reducer';
-import type { MapDef, Vec2 } from '../../core/types';
-import { bendFxIndex, parseBendFxPage } from '../../render/fx/bendFx';
-import type { ResolvedBendFrame } from '../../render/sheets/store';
+import type { Ability, MapDef, Unit, Vec2 } from '../../core/types';
 import { Animator } from '../animator';
-import type { BendSources } from '../anim/bendHandoff';
 import { choreograph } from '../anim/choreography';
-import type { BendTrack, EmitterTrack } from '../anim/timeline';
 import { seatHere } from './waiting';
 import {
   BA_DAN_PRACTICE,
-  hasPractice,
+  isBendingAttack,
   practiceAbility,
   practiceAt,
   practiceCasts,
   glidePoint,
   practiceEvents,
   practiceFrame,
-  practiceSources,
   practiceUnits,
 } from './practice';
 
@@ -53,8 +43,7 @@ const STANDING: readonly Vec2[] = [
 
 describe('where the party can practise', () => {
   it('offers Ba Dan’s south canal bank by the bridge, and nowhere else', () => {
-    expect(hasPractice('ba_dan_village')).toBe(true);
-    expect(hasPractice('riverside')).toBe(false);
+    expect(practiceAt('riverside', BA_DAN_PRACTICE.anchor)).toBeNull();
     for (const pos of STANDING)
       expect(practiceAt('ba_dan_village', pos), String(pos.y)).toBe(BA_DAN_PRACTICE);
     expect(practiceAt('ba_dan_village', { x: 9, y: 3 })).toBeNull();
@@ -103,7 +92,7 @@ describe('who throws what', () => {
     ]);
   });
 
-  it('throws once each, in party order, at the mark; Sura draws from the nearest canal cell', () => {
+  it('throws once each, in party order, at the mark', () => {
     const casts = practiceCasts(CONTENT, state.party, STANDING, BA_DAN_PRACTICE);
     expect(casts.map((cast) => [cast.unitId, cast.abilityId, cast.from, cast.target])).toEqual(
       state.party.map((member, index) => [
@@ -113,13 +102,6 @@ describe('who throws what', () => {
         BA_DAN_PRACTICE.mark,
       ]),
     );
-    const sura = casts[1];
-    // From the bank at (11,7), the canal right in front of her.
-    expect(sura?.source).toEqual({ x: 11, y: 6 });
-    expect(BA_DAN_WATER_CELLS).toContainEqual(sura?.source);
-    expect(casts[0]?.source).toBeUndefined();
-    expect(casts[2]?.source).toBeUndefined();
-    expect(practiceSources(casts)).toEqual({ [state.party[1]!.id]: { x: 11, y: 6 } });
   });
 
   it('skips a member standing on the mark and one without a bend', () => {
@@ -144,57 +126,67 @@ describe('who throws what', () => {
   });
 });
 
-/* ------------------------------------------------------------------ */
-/* Playback: the combat bends, as combat plays them                     */
-/* ------------------------------------------------------------------ */
+const ability = (id: string): Ability => CONTENT.abilities.get(id)!;
+const member = (element: string, faction: Unit['faction'] = 'party'): Unit =>
+  ({
+    id: element,
+    sprite: `unit.${element}`,
+    element,
+    faction,
+    pos: { x: 0, y: 0 },
+  }) as unknown as Unit;
 
-const read = (path: string): unknown => JSON.parse(readFileSync(join('public', path), 'utf8'));
-const fx = bendFxIndex(
-  read(BEND_FX.data) as BendEffectDef[],
-  BEND_FX.pages.map((path) => parseBendFxPage(read(path), path)),
-);
-const SETS: Record<string, BendSetDef> = {
-  'unit.fire.kaya': read('art/units/kaya-bend.json') as BendSetDef,
-  'unit.water.sura': read('art/units/sura-bend.json') as BendSetDef,
-  'unit.earth.bo': read('art/units/bo-bend.json') as BendSetDef,
-};
-function frameOf(sprite: string, heading: Heading, index: number): ResolvedBendFrame | null {
-  const facing = SETS[sprite]?.facings[heading];
-  if (!facing || index >= facing.frames.length) return null;
-  return {
-    frame: { x: 0, y: 0, w: facing.frameSize.width, h: facing.frameSize.height },
-    anchor: facing.anchor,
-    pixelsPerTile: 128,
-    sockets: facing.socketsPerFrame.find((row) => row.frame === index)?.sockets ?? {},
-    heading,
-    index,
-    ms: facing.frameMs[index] ?? 0,
-  } as unknown as ResolvedBendFrame;
-}
-const loaded: BendSources = { fx, setOf: (sprite) => SETS[sprite], frameOf };
+describe('which abilities are practised', () => {
+  it('admits single-target ranged damage of the caster element only', () => {
+    for (const id of ['fire_jab', 'lightning'])
+      expect(isBendingAttack(member('fire'), ability(id)), id).toBe(true);
+    for (const id of ['water_whip', 'water_pull'])
+      expect(isBendingAttack(member('water'), ability(id)), id).toBe(true);
+    for (const id of ['rock_throw', 'metalbending', 'metal_cable'])
+      expect(isBendingAttack(member('earth'), ability(id)), id).toBe(true);
+  });
+
+  it('turns down area, melee, support, other elements and anyone outside the party', () => {
+    for (const id of [
+      'flame_arc',
+      'dragon_breath',
+      'fire_blast',
+      'lightning_storm',
+      'lightning_arc',
+      'fire_wall',
+      'fire_step',
+      'heat_shield',
+      'strike',
+      'water_whip',
+    ])
+      expect(isBendingAttack(member('fire'), ability(id)), id).toBe(false);
+    for (const id of ['healing_stream', 'ice_shield', 'healing_hands', 'octopus_form'])
+      expect(isBendingAttack(member('water'), ability(id)), id).toBe(false);
+    expect(isBendingAttack(member('fire', 'enemy'), ability('fire_jab'))).toBe(false);
+    expect(isBendingAttack(member('fire', 'ally'), ability('fire_jab'))).toBe(false);
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/* Playback: the combat casts, as combat plays them                     */
+/* ------------------------------------------------------------------ */
 
 describe('practice playback', () => {
   const state = baDan();
   const casts = practiceCasts(CONTENT, state.party, STANDING, BA_DAN_PRACTICE);
-  const play = (waterSources?: Record<string, Vec2>, rate = 1) =>
+  const play = () =>
     choreograph({
       content: CONTENT,
       events: practiceEvents(casts),
       unitsBefore: practiceUnits(state.party, STANDING),
       cursor: 0,
-      rate,
+      rate: 1,
       pushIndex: 0,
-      projection: 'oblique',
-      bends: loaded,
-      ...(waterSources ? { waterSources } : {}),
+      projection: 'orthographic',
     });
 
-  it('plays all three bends one after another, with their combat sounds', () => {
-    const out = play(practiceSources(casts));
-    const bends = out.tracks.filter((t): t is BendTrack => t.kind === 'bend');
-    expect(bends.map((b) => b.unitId)).toEqual(state.party.map((m) => m.id));
-    for (let i = 1; i < bends.length; i++)
-      expect(bends[i]!.start).toBeGreaterThanOrEqual(bends[i - 1]!.start + bends[i - 1]!.duration);
+  it('plays every cast in party order, with its combat sound, striking nobody', () => {
+    const out = play();
     expect(out.sounds.map((s) => s.key)).toEqual(
       casts.map((cast) => CONTENT.abilities.get(cast.abilityId)!.fx),
     );
@@ -202,49 +194,11 @@ describe('practice playback', () => {
     expect(out.health).toEqual([]);
   });
 
-  it('lifts Sura’s water out of the canal through her gather, and adds nothing else', () => {
-    const drawn = play(practiceSources(casts));
-    const plain = play();
-    const extra = drawn.tracks.filter((t) => !plain.tracks.includes(t));
-    const emitters = drawn.tracks.filter(
-      (t): t is EmitterTrack => t.kind === 'emitter' && t.from.x === 11.5 && t.from.y === 6.5,
-    );
-    expect(emitters.length).toBeGreaterThan(0);
-    const sura = drawn.tracks.find(
-      (t): t is BendTrack => t.kind === 'bend' && t.unitId === state.party[1]!.id,
-    )!;
-    for (const e of emitters) {
-      expect(e.start).toBe(sura.start);
-      expect(e.attachments?.to?.socket).toBe('cast-gather');
-    }
-    expect(extra.length).toBeGreaterThanOrEqual(emitters.length);
-    // Without a source the push is exactly combat's.
-    expect(plain.tracks.filter((t) => t.kind === 'emitter')).toHaveLength(0);
-    expect(drawn.tracks.filter((t) => t.kind !== 'emitter')).toEqual(plain.tracks);
-  });
-
-  it('keeps reduce motion on the collapsed legacy cast, with no particles', () => {
-    const out = play(practiceSources(casts), 0.02);
-    expect(out.tracks.some((t) => t.kind === 'bend' || t.kind === 'emitter')).toBe(false);
-  });
-
-  it('runs through the animator: busy for the whole practice, drawing each bender’s cels', () => {
-    const animator = new Animator(CONTENT, {
-      motionReduced: () => false,
-      bends: () => loaded,
-    });
-    animator.setProjection('oblique');
-    animator.push(0, practiceEvents(casts), practiceUnits(state.party, STANDING), {
-      waterSources: practiceSources(casts),
-    });
-    const out = play(practiceSources(casts));
-    const bends = out.tracks.filter((t): t is BendTrack => t.kind === 'bend');
-    for (const bend of bends) {
-      const mid = bend.start + bend.duration / 2;
-      expect(animator.busy(mid)).toBe(true);
-      expect(animator.bendPose(mid, bend.unitId)).toBeDefined();
-    }
-    const end = Math.max(...bends.map((b) => b.start + b.duration));
+  it('runs through the animator: busy for the whole practice', () => {
+    const animator = new Animator(CONTENT, { motionReduced: () => false });
+    animator.push(0, practiceEvents(casts), practiceUnits(state.party, STANDING));
+    const end = Math.max(...play().tracks.map((t) => t.start + t.duration));
+    expect(animator.busy(end / 2)).toBe(true);
     expect(animator.busy(end + 1000)).toBe(false);
   });
 });

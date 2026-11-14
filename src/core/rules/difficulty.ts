@@ -25,7 +25,9 @@
  * table scaling, so this file stays the only place a fight's numbers move.
  */
 
-import type { Difficulty, UnitStats } from '../types';
+import type { Difficulty, DifficultyProfile, UnitStats } from '../types';
+
+export type { DifficultyProfile };
 
 /** What a new game, and a save from before the setting existed, plays at. */
 export const DEFAULT_DIFFICULTY: Difficulty = 'story';
@@ -71,6 +73,8 @@ export interface ScaleContext {
   readonly isBoss: boolean;
   /** The table's chosen difficulty. Absent means the default. */
   readonly difficulty?: Difficulty;
+  /** The encounter's own Hard fields (`EncounterDef.hard`), over the shared profile. */
+  readonly hard?: Partial<DifficultyProfile>;
 }
 
 /**
@@ -143,7 +147,7 @@ export const MIN_BOSS_AP = 3;
  * and act more, and last a little longer. It is a layer over the table
  * scaling, not a replacement: a Hard boss still grows with the table and a
  * small Hard table is still thinned, so Hard means the same thing at every
- * size. Nothing in it is per encounter or per enemy.
+ * size. Nothing in it is per enemy.
  *
  * Damage and actions, not health, because the fights must stay short. Health
  * was the first lever tried and the wrong one: 1.25x HP, 1.4x boss HP and +1
@@ -156,26 +160,26 @@ export const MIN_BOSS_AP = 3;
  * 1.1x HP, 1.2x boss HP, +6 power, +2 AP 90%, 7.9; 1.15x HP, +6 power, +2 AP
  * 86%, 8.2. The middle is shipped; `BALANCE_DIFFICULTY=hard npm run balance`
  * prints it.
+ *
+ * One exception, and it lives in the content: an encounter may name Hard
+ * fields of its own (`EncounterDef.hard`), which replace the shared ones for
+ * that fight only. It exists so a fight trimmed for Story can keep its bite on
+ * Hard without moving every other fight (the Cutting, ADR 0110 amendment).
  */
-export interface DifficultyProfile {
-  /** Multiplies every enemy's max HP after the table scaling. */
-  readonly hp: number;
-  /** Multiplies a boss's max HP after the table scaling, instead of `hp`. */
-  readonly bossHp: number;
-  /** Added to every enemy's power. */
-  readonly power: number;
-  /** Added to every enemy's max AP. */
-  readonly ap: number;
-}
-
 export const DIFFICULTY_PROFILES: Readonly<Record<Difficulty, DifficultyProfile>> = {
   story: { hp: 1, bossHp: 1, power: 0, ap: 0 },
   hard: { hp: 1.1, bossHp: 1.2, power: 5, ap: 2 },
 };
 
+/** The profile a fight plays at (unset is Story, the default); Hard takes the encounter's own fields. */
+const profileFor = (ctx: ScaleContext): DifficultyProfile =>
+  ctx.difficulty === 'hard'
+    ? { ...DIFFICULTY_PROFILES.hard, ...ctx.hard }
+    : DIFFICULTY_PROFILES.story;
+
 /** Max AP for an enemy at this table and difficulty: a boss loses some below the baseline. */
 export function enemyApFor(maxAp: number, ctx: ScaleContext): number {
-  const profile = DIFFICULTY_PROFILES[ctx.difficulty ?? DEFAULT_DIFFICULTY];
+  const profile = profileFor(ctx);
   const authored = maxAp + profile.ap;
   if (!ctx.isBoss) return authored;
   const under = Math.max(0, ctx.baselinePartySize - ctx.partySize);
@@ -191,7 +195,7 @@ export function enemyApFor(maxAp: number, ctx: ScaleContext): number {
  * stat block comes back untouched (the same object).
  */
 export function scaleForTable(stats: UnitStats, ctx: ScaleContext): UnitStats {
-  const profile = DIFFICULTY_PROFILES[ctx.difficulty ?? DEFAULT_DIFFICULTY];
+  const profile = profileFor(ctx);
   const scale = enemyHpScale(ctx) * (ctx.isBoss ? profile.bossHp : profile.hp);
   const maxAp = enemyApFor(stats.maxAp, ctx);
   const power = stats.power + profile.power;

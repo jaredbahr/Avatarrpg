@@ -241,9 +241,10 @@ describe('bundle report CLI safety and base comparison', () => {
     const map = Buffer.from(
       JSON.stringify({ version: 3, sources: ['../src/inline.ts'], names: [], mappings: 'AAAA' }),
     ).toString('base64');
+    // Keep the fixture directive out of Vite's source-map scan of this test module.
     writeFileSync(
       join(folder, 'dist', 'app.js'),
-      `const x=1;\n//# sourceMappingURL=data:application/json;base64,${map}\n`,
+      `const x=1;\n//${'#'} sourceMappingURL=data:application/json;base64,${map}\n`,
     );
     const inline = invoke(folder, []);
     expect(inline.status, inline.stderr).toBe(0);

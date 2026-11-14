@@ -2,9 +2,9 @@ import { expect, test, type Page } from '@playwright/test';
 import { enterNode, resetStorage, settleLayout, startGame } from './helpers';
 
 /**
- * ADR 0104 T6: top-down is the default style. A fresh link with no `style` draws the top-down
- * boards, a Continue from the title lands in them too (the style is never part of a save), and
- * `?style=oblique` keeps the old look until T7.
+ * ADR 0104: top-down is the only style (T7 retired the oblique one). A fresh link draws the
+ * top-down boards, a Continue from the title lands in them too, and an old link's `?style=` is
+ * ignored.
  */
 async function board(page: Page, node: string): Promise<{ projection?: string; ground?: string }> {
   await enterNode(page, node);
@@ -45,16 +45,12 @@ test('a fresh link boots top-down: Ba Dan and the Forest Road draw their top-dow
   expect(errors).toEqual([]);
 });
 
-test('?style=oblique keeps the old look until T7, and ?style=topdown stays an alias', async ({
-  page,
-}) => {
-  await resetStorage(page, '?renderer=canvas&style=oblique');
-  await startGame(page, ['Sam'], ['kaya'], 'oblique-style');
-  const oblique = await board(page, 'village_explore');
-  expect(oblique.projection).not.toBe('topdown');
-  expect(oblique.ground ?? '').not.toMatch(/^art\/topdown\//);
-
-  await resetStorage(page, '?renderer=canvas&style=topdown');
-  await startGame(page, ['Sam'], ['kaya'], 'topdown-alias');
-  expect((await board(page, 'village_explore')).projection).toBe('topdown');
+test('an old link that names a style still boots top-down', async ({ page }) => {
+  for (const style of ['oblique', 'world', 'topdown']) {
+    await resetStorage(page, `?renderer=canvas&style=${style}`);
+    await startGame(page, ['Sam'], ['kaya'], `old-link-${style}`);
+    const village = await board(page, 'village_explore');
+    expect(village.projection, style).toBe('topdown');
+    expect(village.ground, style).toMatch(/^art\/topdown\/ba-dan\//);
+  }
 });

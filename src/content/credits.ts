@@ -38,18 +38,6 @@ export const THIRD_PARTY_CREDITS: readonly CreditEntry[] = [
     authors: 'Kenney (kenney.nl)',
     licence: 'CC0 1.0',
   },
-  {
-    what: 'The motion of the party’s, residents’ and bandits’ walks, jogs, breathing, hits and knockouts, and the party’s stance and bends',
-    work: 'CMU Graphics Lab Motion Capture Database, subjects 8, 9, 12, 76, 77, 79, 90, 135 and 143',
-    authors: 'Carnegie Mellon University Graphics Lab',
-    licence: 'CMU Motion Capture Database terms',
-  },
-  {
-    what: 'The motion of the quarry bender’s walk',
-    work: 'Mixamo “Unarmed Walk Forward”',
-    authors: 'Adobe Mixamo',
-    licence: 'Adobe Mixamo terms',
-  },
 ];
 
 export function needsAttribution(licence: Licence): boolean {

@@ -143,7 +143,7 @@ const door = (id: string, place: string, x: number, y: number): WorldAnchor => (
 
 /**
  * The road group sits on the open north verge at the west bend, beyond the x=4
- * departure trigger and clear of Dema. BD12-BD15 are honest south-lane contact
+ * departure trigger and clear of Lanfen. BD12-BD15 are honest south-lane contact
  * doors, not claims that painted workshops exist on today's village map.
  */
 export const RETURNEE_ANCHORS: readonly WorldAnchor[] = [

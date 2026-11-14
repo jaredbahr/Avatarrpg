@@ -25,6 +25,7 @@ import {
   INTERLUDES,
   INTERLUDE_ART,
   interludeHoldMs,
+  isCardStill,
   type InterludeDef,
 } from '../../content/story/interludes';
 
@@ -276,17 +277,25 @@ export class DialogueScene implements Scene {
       });
       return item;
     };
-    const picture = el('img', {
-      class: 'interlude-art',
-      attrs: {
-        src: `${import.meta.env.BASE_URL}art/interludes/${art.file}`,
-        alt: art.alt,
-        width: '1280',
-        height: '720',
-      },
-    });
-    picture.style.setProperty('--interlude-focus', art.focus);
-    picture.style.setProperty('--interlude-portrait-focus', art.portraitFocus);
+    // A placeholder card is drawn by the stylesheet and is ready at once; a painting loads.
+    const picture = isCardStill(art)
+      ? el('div', {
+          class: `interlude-art interlude-card interlude-card-${art.card}`,
+          attrs: { role: 'img', 'aria-label': art.alt },
+        })
+      : el('img', {
+          class: 'interlude-art',
+          attrs: {
+            src: `${import.meta.env.BASE_URL}art/interludes/${art.file}`,
+            alt: art.alt,
+            width: '1280',
+            height: '720',
+          },
+        });
+    if (!isCardStill(art)) {
+      picture.style.setProperty('--interlude-focus', art.focus);
+      picture.style.setProperty('--interlude-portrait-focus', art.portraitFocus);
+    }
     // Slow or unavailable art must never strand the story or spend its reading time unseen.
     const schedule = () => {
       if (!this.playing || !this.host?.contains(picture) || document.hidden) return;
@@ -296,15 +305,18 @@ export class DialogueScene implements Scene {
         else next();
       }, interludeHoldMs(text));
     };
-    picture.addEventListener('load', schedule, { once: true });
-    picture.addEventListener(
-      'error',
-      () => {
-        picture.replaceWith(el('p', { class: 'muted', text: art.alt }));
-        this.pauseInterlude();
-      },
-      { once: true },
-    );
+    if (isCardStill(art)) queueMicrotask(schedule);
+    else {
+      picture.addEventListener('load', schedule, { once: true });
+      picture.addEventListener(
+        'error',
+        () => {
+          picture.replaceWith(el('p', { class: 'muted', text: art.alt }));
+          this.pauseInterlude();
+        },
+        { once: true },
+      );
+    }
     const controls = el(
       'div',
       { class: 'interlude-controls' },
@@ -428,9 +440,13 @@ export class DialogueScene implements Scene {
             : null,
           el('div', { class: 'spacer' }),
           button('Back to the title', () => this.app.start(), { class: 'btn-ghost' }),
-          button('Play again with a different party', () => this.app.goToSetup(), {
-            class: 'btn-primary btn-large',
-          }),
+          button(
+            'Play again with a different party',
+            () => this.app.goToSetup(this.app.session.count),
+            {
+              class: 'btn-primary btn-large',
+            },
+          ),
         ]
       : [
           button('Save this game', () => this.app.openPause()),

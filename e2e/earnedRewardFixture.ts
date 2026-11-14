@@ -24,7 +24,7 @@ function buildEarnedRewardFixture() {
     if (state.story.nodeId === 'ruon_surrender' && state.pendingChoices.length) break;
   }
   if (
-    commandCount !== 49 ||
+    commandCount !== 46 ||
     state.story.nodeId !== 'ruon_surrender' ||
     state.story.lineIndex !== 0 ||
     state.screen !== 'dialogue' ||

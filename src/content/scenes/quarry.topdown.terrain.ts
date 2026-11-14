@@ -251,6 +251,7 @@ const reach = (tiers: number): number => tiers * Q_FACE + 3;
 function boxBump(px: number, py: number, x0: number, x1: number, y0: number, y1: number): number {
   const dx = Math.max(x0 - px, 0, px - x1) / FALL_X,
     dy = Math.max(y0 - py, 0, py - y1) / FALL_Y;
+  if (dx >= 1 || dy >= 1) return 0;
   const d = Math.hypot(dx, dy);
   if (d >= 1) return 0;
   const t = 1 - d;
@@ -268,29 +269,29 @@ function guardAt(q: QuarryRows, x: number, y: number, level: 1 | 2): { up: numbe
     cy = Math.floor((y - GRID.y) / CELL);
   let up = 0,
     keep = 0;
-  // the cells round it, on the board's rows and on the road running on past its sides (a mouth)
-  for (let gy = cy - 1; gy <= cy + 2; gy++)
-    for (let gx = cx - 1; gx <= cx + 1; gx++) {
-      if (gy < 0 || gy >= GH) continue;
-      const c = q.qcell(gx, gy);
-      const X = GRID.x + gx * CELL + CELL / 2,
-        Y = GRID.y + gy * CELL + CELL / 2;
-      const e = elevation(c);
-      if (blocked(c)) {
-        if (e >= level) keep = Math.max(keep, boxBump(x, y, X - 4, X + 4, Y - 4, Y + 4));
-        continue;
-      }
-      if (e < level)
-        up = Math.max(
-          up,
-          boxBump(x, y, X - BOX_HALF_W, X + BOX_HALF_W, Y - reach(level - e), Y + BOX_BELOW),
-        );
-      else
-        keep = Math.max(
-          keep,
-          boxBump(x, y, X - BOX_HALF_W, X + BOX_HALF_W, Y - BOX_BELOW, Y + BOX_BELOW),
-        );
+  // A bump reaches less than half a cell sideways. Vertically it reaches
+  // less than a cell above its center and less than half a cell below.
+  const X = GRID.x + cx * CELL + CELL / 2;
+  for (let gy = cy; gy <= cy + 1; gy++) {
+    if (gy < 0 || gy >= GH) continue;
+    const c = q.qcell(cx, gy);
+    const Y = GRID.y + gy * CELL + CELL / 2;
+    const e = elevation(c);
+    if (blocked(c)) {
+      if (e >= level) keep = Math.max(keep, boxBump(x, y, X - 4, X + 4, Y - 4, Y + 4));
+      continue;
     }
+    if (e < level)
+      up = Math.max(
+        up,
+        boxBump(x, y, X - BOX_HALF_W, X + BOX_HALF_W, Y - reach(level - e), Y + BOX_BELOW),
+      );
+    else
+      keep = Math.max(
+        keep,
+        boxBump(x, y, X - BOX_HALF_W, X + BOX_HALF_W, Y - BOX_BELOW, Y + BOX_BELOW),
+      );
+  }
   return { up, keep };
 }
 

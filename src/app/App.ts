@@ -48,6 +48,8 @@ import {
   reconcileDisciplines,
   reconcileWorld,
 } from '../core/save/reconcile';
+import { applyIdAliases } from '../core/save/aliases';
+import { ID_ALIASES } from '../content/idAliases';
 import type { SessionMeta } from '../core/save/serialize';
 import { announce, clear, el } from './ui/dom';
 import { loadIcons } from './ui/icons';
@@ -61,7 +63,9 @@ import { Curtain } from './ui/Curtain';
 import { PauseMenu } from './ui/PauseMenu';
 import { LevelUpDialog } from './ui/LevelUpDialog';
 import { DisciplineDialog } from './ui/DisciplineDialog';
-import { RIVERSIDE_ENTRY } from '../content/maps/riverside';
+import { RIVERSIDE_ENTRY, RIVERSIDE_ID } from '../content/maps/riversideIds';
+import { START_REGION_ID } from '../content/regions';
+import type { RegionLoader } from './regions';
 import { villagePreviewState } from './village/previewState';
 import { TitleScene } from './scenes/TitleScene';
 import { PartySetupScene } from './scenes/PartySetupScene';
@@ -70,11 +74,6 @@ import { ExploreScene } from './scenes/ExploreScene';
 import { ResidentWalks } from './world/residentMotion';
 import { CombatScene } from './scenes/CombatScene';
 import { worldConversationFor } from '../content/story/presentations';
-import { BEND_FX } from '../content/fxCels';
-import { loadBendFx } from '../render/fx/bendFx';
-import type { BendFxIndex } from '../render/fx/bendFx';
-import { bendFxPages } from '../render/fx/bendFxDraw';
-import { liftAt } from '../render/geometry/elevation';
 import type { Projection } from '../render/projection';
 import { INTERLUDES } from '../content/story/interludes';
 
@@ -122,6 +121,8 @@ export interface Scene {
   suspend?(): void;
   /** Restart work after a retained scene becomes current again. */
   resume?(): void;
+  /** Repaint a retained backdrop's still if the story has changed who stands in it. */
+  refreshStill?(): void;
   /** Park a combat scene's enemy dispatch without its dialogue suspension. */
   holdAi?(): void;
   /** Drop the pause hold; re-arm one pending enemy turn if still current. */
@@ -242,6 +243,7 @@ export class App {
   private dialogueBackdropOwner: DialogueBackdropOwner | null = null;
   private dialogueHost: HTMLElement | null = null;
   private pause: PauseMenu | null = null;
+  private pauseReturnFocus: (() => void) | null = null;
   private levelUp: LevelUpDialog | DisciplineDialog | null = null;
   /** Sound. Opens no context until a gesture unlocks it (ADR 0012). */
   readonly audio: AudioBus;
@@ -256,8 +258,6 @@ export class App {
     null;
   private resizeQueued = false;
   private routeTimer: number | null = null;
-  private bendFx: BendFxIndex | undefined;
-  private bendFxLoading = false;
 
   /**
    * Consumed by CombatScene at mount. This is intentionally ephemeral: a
@@ -280,28 +280,6 @@ export class App {
     return this.curtain.busy;
   }
 
-  /**
-   * Combat warms the painted bend effects at its start, and a map with a
-   * bending practice ground on arrival: the data, then every
-   * page decoded, and only then may a cast bend (ADR 0055, step 7). Until
-   * then, and for the session if any of it fails, casts stay legacy.
-   */
-  preloadBendFx(): void {
-    if (this.bendFx || this.bendFxLoading) return;
-    this.bendFxLoading = true;
-    void loadBendFx(BEND_FX, import.meta.env.BASE_URL)
-      .then(async (fx) => {
-        const pages = await Promise.all(fx.images.map((url) => bendFxPages.whenLoaded(url)));
-        if (pages.every(Boolean)) this.bendFx = fx;
-      })
-      .catch(() => undefined);
-  }
-
-  /** Whether the painted bend effects are in, so a cast may bend (see `preloadBendFx`). */
-  get bendFxReady(): boolean {
-    return this.bendFx !== undefined;
-  }
-
   private cancelRoute(): void {
     if (this.routeTimer !== null) window.clearTimeout(this.routeTimer);
     this.routeTimer = null;
@@ -311,6 +289,8 @@ export class App {
     readonly content: ContentIndex,
     root: HTMLElement,
     readonly storyEntry: string,
+    /** Fills `content` with regions as the party needs them (ADR 0111 §2); absent, it is complete. */
+    private readonly regions?: RegionLoader,
   ) {
     this.host = root;
     this.settings = loadSettings();
@@ -410,22 +390,6 @@ export class App {
       ...(overrides.timingProfile ? { timingProfile: overrides.timingProfile } : {}),
       // The G knockouts arrive with the sheet, not the bundle (ADR 0059).
       sheetClips: (sprite) => sheets.clips(sprite),
-      bends: () => {
-        const fx = this.bendFx;
-        return fx
-          ? {
-              fx,
-              // Asking a bend that has not been preloaded must not load it.
-              setOf: (sprite) =>
-                sheets.bendState(sprite) === 'loaded' ? sheets.bendSet(sprite) : undefined,
-              frameOf: (sprite, heading, index) => sheets.bendFrame(sprite, heading, index),
-            }
-          : undefined;
-      },
-      liftOf: (pos) => {
-        const grid = this.state?.battle?.grid;
-        return grid ? liftAt(grid, pos, this.rendererCamera()?.projection ?? 'orthographic') : 0;
-      },
     });
   }
 
@@ -435,6 +399,12 @@ export class App {
   }
 
   showScene(scene: Scene, replaceRetained = false): void {
+    const active = document.activeElement;
+    const enterDialogueWithFocus =
+      scene.name === 'dialogue' &&
+      active instanceof HTMLElement &&
+      this.sceneHost.contains(active) &&
+      active.matches(':focus-visible');
     this.cancelRoute();
     this.syncMusic(scene.name);
     const previousInterlude = this.currentSceneIsInterlude;
@@ -455,6 +425,7 @@ export class App {
     ) {
       if (previousInterlude !== nextInterlude) curtain?.coverCurrent();
       this.setMood(this.defaultMood());
+      this.dialogueBackdrop?.refreshStill?.();
       scene.sync();
       if (previousInterlude !== nextInterlude) curtain?.reveal(scene.firstFrameSheetKeys?.() ?? []);
       return;
@@ -474,6 +445,7 @@ export class App {
       this.scene = scene;
       this.host.dataset.scene = scene.name;
       this.setMood(this.defaultMood());
+      this.dialogueBackdrop?.refreshStill?.();
       scene.mount(this.dialogueHost);
       scene.sync();
       curtain?.reveal(scene.firstFrameSheetKeys?.() ?? []);
@@ -570,6 +542,14 @@ export class App {
     this.setMood(this.defaultMood());
     scene.mount(this.dialogueHost ?? this.sceneHost);
     scene.sync();
+    // Layered dialogue manages its own focus. A full-stage interlude also
+    // needs a keyboard starting point when it replaces the focused scene.
+    if (enterDialogueWithFocus && !this.dialogueHost) {
+      const firstControl = this.sceneHost.querySelector<HTMLElement>(
+        '[data-interlude-control="next"], [data-conversation-control="next"], .choice-option:not(:disabled), .end-panel button',
+      );
+      firstControl?.focus({ preventScroll: true });
+    }
     // After the swap, never instead of it: see Curtain.
     if (!keepWorld) curtain?.reveal(scene.firstFrameSheetKeys?.() ?? [], scene.firstFrameReady?.());
   }
@@ -621,6 +601,9 @@ export class App {
     if (!force && this.scene?.name === wanted) {
       if (wanted === 'dialogue') this.showScene(this.scene);
       else {
+        // The same scene can move to another area (a walk off the Forest Road onto the quarry
+        // gate), and only showScene picks the track otherwise; the player ignores an unchanged one.
+        this.syncMusic(this.scene.name);
         this.setMood(this.defaultMood());
         // A walk off one map onto the next keeps the explore scene, which swaps
         // its board in place: cover that swap as a scene change is covered, and
@@ -669,6 +652,29 @@ export class App {
     this.music.setDuck(battle !== null && (scene === 'combat' || scene === 'dialogue'));
   }
 
+  /**
+   * Null when every region in `pending` is loaded (each entry is a loader's answer, null when
+   * ready); otherwise one promise for them all, with a note on screen while the area loads.
+   */
+  private regionsPending(
+    pending: readonly (Promise<void> | null | undefined)[],
+  ): Promise<void> | null {
+    const waits = pending.filter((entry): entry is Promise<void> => entry instanceof Promise);
+    if (waits.length === 0) return null;
+    this.toasts.show('Loading the next area…');
+    return Promise.all(waits).then(() => undefined);
+  }
+
+  private readonly regionFailed = (error: unknown): void => {
+    console.error('A region did not load.', error);
+    this.toasts.show('That area could not load. Check the connection and try again.', 'warn');
+  };
+
+  /** Starts loading the party's region and its neighbours, if they are not loaded yet. */
+  private prefetchRegions(): void {
+    void this.regions?.pendingForMap(this.state?.location.mapId)?.catch(this.regionFailed);
+  }
+
   /** Discard the replaced state's queued animation and audio together. */
   private resetPlayback(): void {
     this.animator.clear();
@@ -678,6 +684,11 @@ export class App {
 
   startVillagePreview(): void {
     if (this.previewActive) return;
+    const wait = this.regionsPending([this.regions?.pendingForMap(RIVERSIDE_ID)]);
+    if (wait) {
+      void wait.then(() => this.startVillagePreview(), this.regionFailed);
+      return;
+    }
     this.cancelRoute();
     this.previewSnapshot = { state: this.state, session: this.session.toMeta() };
     this.state = villagePreviewState(this.content);
@@ -701,8 +712,9 @@ export class App {
     this.showScene(new TitleScene(this));
   }
 
-  goToSetup(): void {
-    this.showScene(new PartySetupScene(this));
+  /** Party setup, starting from `playerCount` people (the table that just finished, on Play again). */
+  goToSetup(playerCount = 1): void {
+    this.showScene(new PartySetupScene(this, playerCount));
   }
 
   /* ---------------------------------------------------------------- */
@@ -716,6 +728,14 @@ export class App {
     participants?: readonly Participant[],
     difficulty?: Difficulty,
   ): void {
+    const wait = this.regionsPending([this.regions?.pendingForRegion(START_REGION_ID)]);
+    if (wait) {
+      void wait.then(
+        () => this.newGame(players, slots, seed, participants, difficulty),
+        this.regionFailed,
+      );
+      return;
+    }
     if (this.previewActive) this.endVillagePreview();
     this.cancelRoute();
     this.freshCombatEntry = false;
@@ -761,7 +781,19 @@ export class App {
   }
 
   /** Installs a loaded save, replacing everything. */
-  adoptSave(state: GameState, session: SessionMeta | undefined): void {
+  adoptSave(saved: GameState, session: SessionMeta | undefined): void {
+    // Content ids are forever: a retired id is renamed before anything reads it, the region
+    // lookup below included (`core/save/aliases.ts`). Idempotent, so the wait's re-entry is safe.
+    const state = applyIdAliases(saved, ID_ALIASES);
+    // A save from another region loads that region before it is reconciled against content.
+    const wait = this.regionsPending([
+      this.regions?.pendingForMap(state.location.mapId),
+      this.regions?.pendingForMap(state.battle?.mapId),
+    ]);
+    if (wait) {
+      void wait.then(() => this.adoptSave(state, session), this.regionFailed);
+      return;
+    }
     if (this.previewActive) this.endVillagePreview();
     this.cancelRoute();
     this.freshCombatEntry = false;
@@ -805,10 +837,20 @@ export class App {
     this.cancelRoute();
     const state = this.state;
     if (!state) return [];
+    // No command runs until the party's region and its neighbours are in the index, so the rules
+    // read everything a command can reach (ADR 0111 §2). Loaded, as after boot, this never waits.
+    const wait = this.regionsPending([this.regions?.pendingForMap(state.location.mapId)]);
+    if (wait) {
+      void wait.then(() => {
+        if (this.state === state) this.dispatch(command);
+      }, this.regionFailed);
+      return [];
+    }
 
     const unitsBefore = state.battle?.units ?? [];
     const result = apply(this.content, state, command);
     this.state = result.state;
+    this.prefetchRegions();
     // A reward pick only counts when it consumed a pending choice; a refusal
     // returns the same list, untouched.
     const choiceConsumed =
@@ -969,8 +1011,10 @@ export class App {
   /* Pause and settings                                                */
   /* ---------------------------------------------------------------- */
 
-  openPause(): void {
+  openPause(returnFocus?: () => void): void {
     if (this.pause || !this.state) return;
+    const scene = this.scene;
+    this.pauseReturnFocus = returnFocus ?? null;
     // The pause owns combat progress: park enemy dispatch and timed scene
     // presentation. Explore keeps running, and a nested Save menu keeps
     // `this.pause` set so both holds remain in force.
@@ -979,13 +1023,25 @@ export class App {
       this.scene.pausePresentation?.();
     }
     this.pause = new PauseMenu(this, () => {
+      const restoreFocus = this.pauseReturnFocus;
+      this.pauseReturnFocus = null;
       this.pause = null;
       this.resumeAfterPause();
+      if (
+        restoreFocus &&
+        this.scene === scene &&
+        document.activeElement === document.body &&
+        !document.querySelector('[role="dialog"][aria-modal="true"]')
+      ) {
+        restoreFocus();
+      }
     });
     this.pause.open(this.overlayHost);
   }
 
   closePause(): void {
+    // A load or route replacement must not restore focus into the outgoing scene.
+    this.pauseReturnFocus = null;
     this.pause?.close();
     this.pause = null;
   }
@@ -1104,6 +1160,21 @@ export class App {
   partyPositions(): readonly Vec2[] | null {
     const scene = this.scene as unknown as { partyPositions?: () => readonly Vec2[] | null };
     return scene?.partyPositions?.() ?? null;
+  }
+
+  /**
+   * Where the map drawn now (the scene, or the world behind a conversation)
+   * stands each follower (#696). Exposed for the e2e suite.
+   */
+  followerPositions():
+    readonly { readonly id: string; readonly pos: Vec2; readonly clip?: string }[] | null {
+    type Drawn = {
+      followerPositions?: () =>
+        readonly { readonly id: string; readonly pos: Vec2; readonly clip?: string }[] | null;
+    };
+    const scene = this.scene as unknown as Drawn | null;
+    const backdrop = this.dialogueBackdrop as unknown as Drawn | null;
+    return scene?.followerPositions?.() ?? backdrop?.followerPositions?.() ?? null;
   }
 
   /**

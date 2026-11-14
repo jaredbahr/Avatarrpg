@@ -6,7 +6,21 @@ remain distinct when the nameplates are hidden.
 
 This guide applies to runtime dialogue, narration, biographies, incidental
 discoveries, and future story drafts. It accompanies the Common Current story
-bible and its living-world expansion. The owner's direction takes priority.
+bible ([docs/story/the-common-current-bible.md](story/the-common-current-bible.md))
+and its living-world expansion
+([docs/story/living-world-expansion.md](story/living-world-expansion.md)); the
+[story bible index](story-bible.md) says how they rank. The owner's direction
+takes priority.
+
+## Write at full strength
+
+A family game is not a lesser game (owner, 2026-11-14). Write to the standard of
+the best all-ages stories, the kind adults rewatch for themselves, and never
+soften a scene to appease younger players. Grief, guilt, betrayal and moral
+compromise get room to land; antagonists keep a real case; some things stay
+unresolved; subtext beats explanation. The game welcomes kids through its
+interface (big text, clear turns, forgiving difficulty), not through simpler
+writing. The full standard is in [story-outline.md](story-outline.md).
 
 ## Build the situation first
 
@@ -56,8 +70,8 @@ The village cast also needs different concerns and rhythms:
 | Gao     | Stock, repairs, people he knows                   | Fussy practical advice; short and direct when angry            |
 | Ruon    | Orders he gave and things he allowed              | Military habits, uncomfortable specifics, some defensiveness   |
 | Jin     | The bounty, the equipment, terms of a deal        | Brief and businesslike; lets the terms reveal her priorities   |
-| Dema    | The bank, runoff, her washing                     | Irritation grounded in what she has had to deal with           |
-| Sen     | The absent crews and keeping their rest stop open | Offers company by finding something practical to do            |
+| Lanfen  | The bank, runoff, her washing                     | Irritation grounded in what she has had to deal with           |
+| Kuan    | The absent crews and keeping their rest stop open | Offers company by finding something practical to do            |
 
 Make bending part of ordinary work: cooking, surveying, fishing, hauling stone.
 Give non-benders useful skills and commitments of their own. Industrial machinery
@@ -85,13 +99,14 @@ for sarcastic objects, elaborate bureaucracy for every animal, mock philosophy
 about chores, and a narrator who keeps grading the player's misfortune. These
 patterns call for editorial judgment, not a banned-word checker.
 
-Jared specifically rejected this Dema line: “Quiet feet. The turtle-ducks have
+Jared specifically rejected this line for the road keeper (then the placeholder
+Dema, now Lanfen): “Quiet feet. The turtle-ducks have
 right of way. I have explained this to the carts; the carts are taking it
 personally.” The carts have no motive or relationship in the scene; giving them
 offended feelings supplies a detachable punchline. Replacing “personally” with
 another word leaves the same weak joke.
 
-The replacement gives Dema an immediate concern: “Mind your feet. There are
+The replacement gives Lanfen an immediate concern: “Mind your feet. There are
 ducklings under that fern. Yes, the one you are about to step on.” Check the whole
 exchange for a specific listener, behaviour and consequence. Remove an unearned
 joke outright. Objects with opinions, mock officials among the animals and stock
@@ -129,6 +144,41 @@ an appropriate narrator. Do not put unmarked actions into a character's speech.
 Keep node IDs, destinations, conditions, rewards, and interlude shot counts intact
 unless the task explicitly requires a behavior change.
 
+## Let the themes stay unspoken
+
+The core themes (responsibility, belonging, balance, racial and social
+equality, equality among all people, and respect for each other's
+differences; [story bible index](story-bible.md#core-themes), bible Part 01
+§4–8) come through what people do and the situations they face. Nobody states
+the moral. There are no lessons spelled out, no "what we learned" lines and no
+closing speech that names the theme. Trust the players, including the kids
+aged 7–12, to see it for themselves.
+
+A theme lives in a choice with a cost: Ruon owning what he allowed and still
+facing a hearing, a bowl set out at the table for a worker who is not back
+yet, a non-bender opening the route the bender could not. If a line explains
+what the scene meant, cut it and let the scene stand.
+
+## Theme card
+
+Every mission, side story or scene draft carries a short theme card, in the
+draft PR (the PR template has the section) or at the top of the draft. It
+says what the scene carries; it is never shown to players.
+
+```markdown
+**Theme card:** <scene or mission id and name>
+
+Themes: <which of the core themes>. <One or two sentences on how the scene
+carries them, said through what people do, not as a moral.>
+
+- [ ] No nation, element or culture stereotype
+- [ ] Every valid party, non-benders included, has a real route through
+- [ ] No instant forgiveness or absolution
+- [ ] The other side's reasons are shown
+- [ ] The theme is never stated outright
+- [ ] Absent heroes are never voiced
+```
+
 ## Review before integration
 
 ### Contributions during the quarry run
@@ -141,7 +191,7 @@ The optional scenes stay optional; there is no compulsory roll call.
 | Character | Node                     | Contribution and when to encounter it                                                                               |
 | --------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------- |
 | Kaya      | `after_forest`           | Recognizes the attackers as quarry workers and questions why they are guarding the road; either road outcome        |
-| Tenzo     | `cutting_tea`            | Offers to help Sen feed the freed crews and wash cups; optional cutting rest stop                                   |
+| Tenzo     | `cutting_tea`            | Offers to help Kuan feed the freed crews and wash cups; optional cutting rest stop                                  |
 | Nilak     | `riverside_mira`         | Arranges a place and supplies for aftercare, with room for families; optional riverside visit before the rescue     |
 | Sura      | `discover_runoff_marker` | Recognizes grit from fishing work and reads the clue about the settling pit; optional stream marker                 |
 | Bo        | `gate_kinship`           | Uses his crew experience to argue for stopping unsafe work and opening the gate; earthbender approach               |
@@ -157,11 +207,11 @@ has two, the first present hero speaks.
 | Node                | Voices in priority order | Contribution and when to encounter it                                                  |
 | ------------------- | ------------------------ | -------------------------------------------------------------------------------------- |
 | `defeat_forest`     | Tenzo                    | Mourns the stolen food, then sets off after the tracks; forest road loss               |
-| `forest_dema_again` | Sura                     | A fishing boast, then the runoff is still owed an answer; any return visit to Dema     |
+| `forest_dema_again` | Sura                     | A fishing boast, then the runoff is still owed an answer; any return visit to Lanfen   |
 | `defeat_gate`       | Riko, Kaya               | Kept the retreat together / was first back up; the gate is open on return; gate loss   |
 | `gate_kinship`      | Bo, Lin Mei              | Lin Mei reads the fresh falls on the east face when Bo is absent; earthbender approach |
 | `defeat_ambush`     | Nilak, Jinu              | Tends to Ruon after he carries the party clear / misremembers a route; cutting loss    |
-| `cutting_tea_again` | Nima                     | Finds the cloth and dries the cups, turning up the blue handle; return to Sen          |
+| `cutting_tea_again` | Nima                     | Finds the cloth and dries the cups, turning up the blue handle; return to Kuan         |
 | `quarry_assessment` | Wen, Bo                  | Both name Grumbler; Bo keeps the ramp clear and counts heads; before the driller       |
 | `defeat_boss`       | Wen                      | Owns the plan that missed the blocked ramp; Mira arrives; boss loss                    |
 
