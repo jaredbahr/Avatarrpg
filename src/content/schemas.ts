@@ -546,6 +546,7 @@ export const mapSchema = z
           pos: vec2.optional(),
           sprite: z.string().min(1),
           interaction: z.literal('route-sign').optional(),
+          faces: z.enum(HEADINGS).optional(),
           when: conditionSchema.optional(),
           node: id,
           routes: z.array(z.object({ when: conditionSchema, node: id })).optional(),

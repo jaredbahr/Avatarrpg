@@ -641,6 +641,12 @@ export interface NpcDef {
   readonly sprite: string;
   /** Optional map guidance semantic for a non-person route marker. */
   readonly interaction?: 'route-sign';
+  /**
+   * The screen heading an eight-way figure idles in at its post. Absent means
+   * south-east, the three-quarter view toward the camera; presentation only.
+   */
+  readonly faces?:
+    'east' | 'southEast' | 'south' | 'southWest' | 'west' | 'northWest' | 'north' | 'northEast';
   /** Optional story condition for maps that reveal a person or landmark later. */
   readonly when?: Condition;
   /** Story node entered when the NPC is tapped, if no route matches. */
