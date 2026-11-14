@@ -15,13 +15,12 @@ it('measures a stable envelope including taller attack frames with the authored 
       ['cast', { x: 8, y: 0, w: 8, h: 8 }],
     ]),
   };
-  let frameX = 0;
-  const drawImage = vi.fn((_image: unknown, x: number) => {
-    frameX = x;
-  });
+  const drawImage = vi.fn();
+  // The whole 16 x 16 page: the idle's top pixel is on its row 4, the taller cast's on row 1.
   const getImageData = vi.fn(() => {
-    const data = new Uint8ClampedArray(8 * 8 * 4);
-    data[((frameX === 0 ? 4 : 1) * 8 + 3) * 4 + 3] = 255;
+    const data = new Uint8ClampedArray(16 * 16 * 4);
+    data[(4 * 16 + 3) * 4 + 3] = 255;
+    data[(1 * 16 + 8 + 3) * 4 + 3] = 255;
     return { data };
   });
   vi.stubGlobal('document', {
@@ -42,8 +41,9 @@ it('measures a stable envelope including taller attack frames with the authored 
       {} as CanvasImageSource,
     );
     expect(result).toBeCloseTo((0.75 * 8 - 1) / 4 - 0.85, 9);
-    // Duplicate clip references are read only once; no extra draw-time cache.
-    expect(getImageData).toHaveBeenCalledTimes(2);
+    // The page is read back once, not once a cel (`pagePixels.ts`); no extra draw-time cache.
+    expect(getImageData).toHaveBeenCalledTimes(1);
+    expect(getImageData).toHaveBeenCalledWith(0, 0, 16, 16);
   } finally {
     vi.unstubAllGlobals();
   }
