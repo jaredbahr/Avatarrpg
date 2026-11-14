@@ -155,7 +155,9 @@ for (const renderer of ['canvas', 'webgl'] as const satisfies readonly Renderer[
       // A centre tap on every walkable cell plus the corner probes, each read
       // back through software WebGL on CI: the phone case ran past the shared
       // software-WebGL cap (main, 2026-11-14), so it gets two of them.
-      if (renderer === 'webgl') test.setTimeout(2 * SOFTWARE_WEBGL_BUDGET_MS);
+      // Canvas pays the same 60-odd touch-and-read round trips: the tablet case
+      // ran past the 60 s default on CI and in a loaded local container (66 s).
+      test.setTimeout(renderer === 'webgl' ? 2 * SOFTWARE_WEBGL_BUDGET_MS : 180_000);
 
       const context = await browser.newContext({
         baseURL: `http://127.0.0.1:${process.env.FNT_E2E_PORT ?? '4173'}`,
