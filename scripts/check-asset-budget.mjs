@@ -10,6 +10,8 @@ import { existsSync, readdirSync, statSync } from 'node:fs';
 import { join, resolve, dirname, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isPrecacheIgnored } from './precache.mjs';
+// TypeScript, so `check:assets` runs this script under tsx: the region manifests are the source.
+import { regionAssets } from './region-assets.ts';
 
 const FAMILY_BUDGET_MB = 4;
 // ADR 0051: the PixelLab G party's locomotion now, and its stance and bend
@@ -22,13 +24,25 @@ const UNIT_BUDGET_MB = 8.5;
 // forest's uprights ship at 1 px per world px (27 October 2026), the family measures 5.48 MiB, and the budget comes down to
 // the next half MiB over it, so the freed space goes to the precache total rather than to this family.
 const MAPS_BUDGET_MB = 6;
-// ADR 0104 amendment (owner, 2026-11-07, permanent): the top-down port's sheets, boards, objects and effects.
-const TOPDOWN_BUDGET_MB = 6;
+// ADR 0104 amendment (owner, 2026-11-07, permanent): the top-down port's sheets, boards, objects and
+// effects, 6 MiB. ADR 0111 §4 splits it: each region's boards are budgeted with the region, and the
+// family keeps the shared sheets, objects and effects (`TOPDOWN_SHARED_BUDGET_MB`).
+/*
+ * ADR 0111 §4 (accepted by the owner, 2026-11-14): budgets per region instead of one ever-growing family.
+ * For the demo's one region the caps add up to today's numbers: the top-down family's 6 MiB is
+ * 4.5 shared plus 1.5 of boards, and the audio family's 4 MiB is 0.5 of sound effects, 0.75 of
+ * shared music and 2.75 of the region's music.
+ */
+const TOPDOWN_SHARED_BUDGET_MB = 4.5;
+const REGION_BOARDS_BUDGET_MB = 1.5;
+const EFFECTS_BUDGET_MB = 0.5;
+const SHARED_MUSIC_BUDGET_MB = 0.75;
+const REGION_MUSIC_BUDGET_MB = 2.75;
 /** A family's budget; any family not named here has `FAMILY_BUDGET_MB`. */
 const FAMILY_BUDGETS_MB = new Map([
   ['units', UNIT_BUDGET_MB],
   ['maps', MAPS_BUDGET_MB],
-  ['topdown', TOPDOWN_BUDGET_MB],
+  ['topdown', TOPDOWN_SHARED_BUDGET_MB],
 ]);
 const PRECACHE_BUDGET_MB = 25;
 
@@ -62,17 +76,30 @@ if (existsSync(join(root, 'art', 'incoming'))) {
   process.exit(1);
 }
 
+const bytesUnder = (path) => {
+  const full = join(root, 'public', path);
+  if (!existsSync(full)) return 0;
+  if (!statSync(full).isDirectory()) return statSync(full).size;
+  return walk(full).reduce((sum, f) => sum + statSync(f).size, 0);
+};
+const plan = regionAssets();
+const regionDirs = plan.regions.flatMap((region) => region.artDirs);
+
 const artDir = join(root, 'public', 'art');
 const families = new Map();
 for (const file of walk(artDir)) {
+  const path = relative(join(root, 'public'), file).split(sep).join('/');
+  // A region's boards count against the region (below), not the shared family.
+  if (regionDirs.some((dir) => path.startsWith(dir))) continue;
   const family = relative(artDir, file).split(sep)[0] ?? '.';
   families.set(family, (families.get(family) ?? 0) + statSync(file).size);
 }
 console.log(
-  'Art by family (budget %s MiB; units %s MiB; maps %s MiB):',
+  "Art by family, regions' boards apart (budget %s MiB; units %s MiB; maps %s MiB; topdown %s MiB):",
   FAMILY_BUDGET_MB,
   UNIT_BUDGET_MB,
   MAPS_BUDGET_MB,
+  TOPDOWN_SHARED_BUDGET_MB,
 );
 for (const [family, bytes] of [...families].sort()) {
   const budget = FAMILY_BUDGETS_MB.get(family) ?? FAMILY_BUDGET_MB;
@@ -83,21 +110,42 @@ for (const [family, bytes] of [...families].sort()) {
 if (families.size === 0) console.log('  (no art shipped yet)');
 
 /*
- * Sound is budgeted as one family of its own. It is not under public/art/
- * because it is not art: the art scripts, art:validate and the prompt packs
- * all walk that folder and none of them has anything to say about an ogg.
+ * Sound is not under public/art/ because it is not art: the art scripts, art:validate and the prompt
+ * packs all walk that folder and none of them has anything to say about an ogg. ADR 0111 §4 budgets
+ * it in parts: the sound effects (precached), the shared music (the title) and each region's area
+ * music (streamed).
  */
 const audioDir = join(root, 'public', 'audio');
-let audioBytes = 0;
-for (const file of walk(audioDir)) audioBytes += statSync(file).size;
-const audioOver = audioBytes > FAMILY_BUDGET_MB * 1024 * 1024;
-if (audioOver) failed = true;
-console.log(
-  'Audio (budget %s MB):\n  %s%s MB  audio',
-  FAMILY_BUDGET_MB,
-  audioOver ? 'OVER ' : '     ',
-  mb(audioBytes).padStart(7),
-);
+const gate = (bytes, budgetMb, label) => {
+  const over = bytes > budgetMb * 1024 * 1024;
+  if (over) failed = true;
+  console.log(
+    `  ${over ? 'OVER ' : '     '}${mb(bytes).padStart(7)} MB  ${label} (budget ${budgetMb} MiB)`,
+  );
+};
+const effects = walk(audioDir)
+  .filter((f) => !relative(audioDir, f).split(sep).includes('music'))
+  .reduce((sum, f) => sum + statSync(f).size, 0);
+const sharedMusic = plan.sharedMusic.reduce((sum, file) => sum + bytesUnder(file), 0);
+console.log('Audio:');
+gate(effects, EFFECTS_BUDGET_MB, 'sound effects');
+gate(sharedMusic, SHARED_MUSIC_BUDGET_MB, `shared music (${plan.sharedMusic.length} tracks)`);
+const regionMusic = new Set(plan.regions.flatMap((region) => region.musicFiles));
+const stray = walk(join(audioDir, 'music'))
+  .map((f) => relative(join(root, 'public'), f).split(sep).join('/'))
+  .filter((path) => !regionMusic.has(path) && !plan.sharedMusic.includes(path));
+if (stray.length > 0) {
+  failed = true;
+  console.error(`  Music no region or the title plays: ${stray.join(', ')}`);
+}
+
+console.log('\nBy region:');
+for (const region of plan.regions) {
+  const boards = region.artDirs.reduce((sum, dir) => sum + bytesUnder(dir), 0);
+  const music = region.musicFiles.reduce((sum, file) => sum + bytesUnder(file), 0);
+  gate(boards, REGION_BOARDS_BUDGET_MB, `${region.id} boards (${region.artDirs.length} maps)`);
+  gate(music, REGION_MUSIC_BUDGET_MB, `${region.id} music (${region.musicFiles.length} tracks)`);
+}
 
 const dist = join(root, 'dist');
 const shipped = walk(dist).filter((f) => !f.endsWith('.map'));
