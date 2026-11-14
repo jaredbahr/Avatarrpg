@@ -12,6 +12,8 @@ type CombatResult = Pick<
 >;
 type ResultRow = { index: number; result: CombatResult };
 
+const LANES = Math.min(4, availableParallelism());
+
 function startLane(source: string) {
   const worker = new Worker(source, { eval: true, execArgv: [] });
   let pending:
@@ -59,6 +61,43 @@ export function createCombatCasePool() {
     return stopping;
   }
 
+  async function startLanes(count: number) {
+    if (source === undefined) {
+      const entry = fileURLToPath(new URL('./combatWorker.ts', import.meta.url));
+      const bundle = await build({
+        entryPoints: [entry],
+        bundle: true,
+        write: false,
+        platform: 'node',
+        target: 'node22',
+        format: 'cjs',
+        sourcemap: 'inline',
+      });
+      source = bundle.outputFiles[0]!.text;
+    }
+    while (workers.length < count) workers.push(startLane(source));
+  }
+
+  /**
+   * Bundle the worker, start every lane and wait until each has loaded the
+   * content, so a test's deadline covers its fights rather than pool start-up.
+   * An empty batch is the round trip: the worker answers it only after its
+   * module (and the content it imports) has finished evaluating.
+   */
+  async function warm() {
+    if (running) throw new Error('Combat batches must run serially');
+    running = true;
+    try {
+      await startLanes(LANES);
+      await Promise.all(workers.map((worker) => worker.run([])));
+    } catch (error) {
+      await close();
+      throw error;
+    } finally {
+      running = false;
+    }
+  }
+
   async function run(cases: readonly CombatCase[], signal: AbortSignal): Promise<CombatResult[]> {
     signal.throwIfAborted();
     if (cases.length === 0) return [];
@@ -67,22 +106,9 @@ export function createCombatCasePool() {
     const onAbort = () => void close().catch(() => undefined);
     signal.addEventListener('abort', onAbort, { once: true });
     try {
-      if (source === undefined) {
-        const entry = fileURLToPath(new URL('./combatWorker.ts', import.meta.url));
-        const bundle = await build({
-          entryPoints: [entry],
-          bundle: true,
-          write: false,
-          platform: 'node',
-          target: 'node22',
-          format: 'cjs',
-          sourcemap: 'inline',
-        });
-        source = bundle.outputFiles[0]!.text;
-      }
+      const count = Math.min(LANES, cases.length);
+      await startLanes(count);
       signal.throwIfAborted();
-      const count = Math.min(4, availableParallelism(), cases.length);
-      while (workers.length < count) workers.push(startLane(source));
       const stripes = Array.from({ length: count }, () => [] as IndexedCase[]);
       for (const [index, options] of cases.entries()) {
         stripes[index % count]!.push({ index, options });
@@ -104,5 +130,5 @@ export function createCombatCasePool() {
     }
   }
 
-  return { run, close };
+  return { run, warm, close };
 }
