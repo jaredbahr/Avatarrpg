@@ -1088,9 +1088,11 @@ export class App {
    * Where the map drawn now (the scene, or the world behind a conversation)
    * stands each follower (#696). Exposed for the e2e suite.
    */
-  followerPositions(): readonly { readonly id: string; readonly pos: Vec2 }[] | null {
+  followerPositions():
+    readonly { readonly id: string; readonly pos: Vec2; readonly clip?: string }[] | null {
     type Drawn = {
-      followerPositions?: () => readonly { readonly id: string; readonly pos: Vec2 }[] | null;
+      followerPositions?: () =>
+        readonly { readonly id: string; readonly pos: Vec2; readonly clip?: string }[] | null;
     };
     const scene = this.scene as unknown as Drawn | null;
     const backdrop = this.dialogueBackdrop as unknown as Drawn | null;
