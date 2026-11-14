@@ -150,7 +150,7 @@ const gameState = z.object({
   battle: battle.nullable(),
   story: z.object({
     nodeId: z.string().nullable(),
-    deciderIndex: z.number(),
+    deciderIndex: z.number().int(),
     visited: z.array(z.string()),
     lineIndex: z.number(),
   }),
