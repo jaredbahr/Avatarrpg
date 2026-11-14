@@ -82,8 +82,8 @@ export const RETURN_STORY: readonly StoryNode[] = [
     speaker: 'The West Road',
     portrait: 'portrait.narrator',
     lines: [
-      'The west road reaches the edge of Ba Dan.',
-      'The returning group crosses into the village together.',
+      'The road bends, and Ba Dan is below: cooking smoke, the canal, the gate with someone sitting beside it.',
+      'They stand up so fast that the stool goes over. Then the gate bell starts, and it does not stop.',
     ],
     next: 'forest_return_arrived',
   },
@@ -108,7 +108,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
     portrait: 'portrait.mira',
     lines: [
       'There you are! Dorin rang the gate bell so hard that half the street came out still holding their spoons.',
-      'Five people walked out of that quarry, and every one of them asked for soup first. I have never been so happy to cook.',
+      'Every one of them asked for soup before they would sit down. I set out bowls for a month and took them in clean. Tonight I have run out.',
       'Sit down, all of you. Nobody carries anything else tonight.',
     ],
     next: 'welcome_home_gao',
@@ -130,7 +130,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
     portrait: 'portrait.gao',
     lines: [
       'Bowls are on the table, and there’s more in the pot. Don’t stack them. Last time somebody stacked them, I lost three.',
-      'Ruon walked down the hill beside you and never once tried to run. Here, the families can ask him their questions. That’s right.',
+      'Ruon walked down the hill beside you and never once tried to run. He is standing at the end of the table now. Nobody has told him he may sit, and he has not asked.',
       'And I want my water skins back. I counted them out, and I’m counting them in.',
     ],
     next: 'welcome_home_dorin',
@@ -185,7 +185,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
     title: 'Home to Ba Dan',
     lines: [
       'Lamps come on along the canal. Gao carries out a pot of soup big enough to sit in, and the whole village squeezes around Mira’s table.',
-      'Somewhere under the noise, Bo-shan is explaining that he could have lifted the driller by himself.',
+      'At the end of the bench, Bo-shan has fallen asleep sitting up. Pella slides his bowl out from under his chin and keeps hold of his sleeve.',
     ],
     teaser:
       'Across the bay, lamps burn in a Fire Nation outpost closed nine years ago. A supply boat ties up at its jetty.',

@@ -32,7 +32,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     lines: [
       'Ba Dan lies below a limestone quarry, its houses built from the same pale stone as the hill.',
       'Every week, a cart of cut stone comes down from the quarry. Gao opens his shop early for the crew; by noon, the whole square is white with dust.',
-      'The cart has not come for a month. Elder Mira has asked you to find out why her messengers have not come home.',
+      'The cart has not come for a month. Gao still opens early. By noon he has swept a square with nothing on it.',
     ],
     next: 'village_explore',
   },
@@ -143,7 +143,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
       'For the quarry? Water skins are by the door. Take one. You can pay me when everyone is home.',
       'Check the stopper. Dorin brought one back empty and told me it leaked. I filled it, turned it upside down, and we stood there watching it.',
       'Then he asked if I had any more water.',
-      'The cutting is flooded in places. Mind your footing, especially if there is a fight.',
+      'The cutting holds water after rain. If there is trouble up there, pick where you stand before it starts.',
     ],
     next: 'village_explore',
   },
@@ -272,7 +272,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.narrator',
     lines: [
       "Stone dust coats the attackers' cuffs. Their hands are calloused around the thumb, where a quarry hammer wears the skin.",
-      'These people worked the quarry. Something has put them on the road with weapons.',
+      'One of them dropped a tally stick, cut with a notch for every cart sent down to Ba Dan. The newest notch has weathered grey.',
     ],
     // Back onto the road; reaching the quarry watch starts the parley.
     next: 'forest_after_explore',
@@ -297,7 +297,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
         when: { kind: 'flag', key: 'lost_forest_road', op: 'set' },
         lines: [
           "You remember stone dust on the attackers' clothes and the worn hands of people who cut rock for a living.",
-          'Quarry workers have robbed you. There is still no word from the people Mira sent.',
+          'They took every scrap of food and left the coin lying beside it.',
         ],
       },
       {
@@ -457,7 +457,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
       {
         label: 'Trade him to Jin for the quarry key',
         detail:
-          'Accept Jin’s payment and the inner gate key. Her crew will let you pass the cutting, but Gao will hear about the trade.',
+          'Accept Jin’s payment and the inner gate key. Her crew will let you pass the cutting. Ruon leaves with her and will not answer to Ba Dan’s families.',
         next: 'trade_payment',
         setFlags: { ruon_traded: true },
         adjust: { earth: -2 },

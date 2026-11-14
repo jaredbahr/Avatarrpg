@@ -24,7 +24,7 @@ flowchart TD
   n22["dema_home<br/>Lanfen: The crews came past. A few stopped to ask about the str…"]:::entry
   n23(["demo_complete<br/>Home to Ba Dan"])
   n28["dorin_home<br/>Gate Guard Dorin: I saw them coming round the bend. Pella was t…"]:::entry
-  n35["forest_return_arrival<br/>The West Road: The west road reaches the edge of Ba Dan."]:::entry
+  n35["forest_return_arrival<br/>The West Road: The road bends, and Ba Dan is below: cooking smo…"]:::entry
   n36["forest_return_arrived<br/>Set flags"]
   n37["forest_return_explore<br/>Explore forest_road: The five workers are returning. Continue w…"]:::entry
   n40["gao_home<br/>Gao the Shopkeeper: Leave your packs by the door. There is rice…"]:::entry
