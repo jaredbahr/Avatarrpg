@@ -150,7 +150,9 @@ costs above: tilesets 4 × 15, objects 25 × 5, three enemies × (base + idle, w
 - [ ] **Flag registry** (#493): `src/content/flags.ts` declares every flag with its owner region, meaning and type;
       `validateContent` rejects a flag that is read but never set, set but never read, or not declared.
 - [ ] **Cross-region continuity test:** for each region entry, the set of flags that can be true or false there,
-      generated from the graph; a later region may only read flags its entry set can hold.
+      generated from the graph; a later region may only read flags its entry set can hold. **Partly done
+      (ADR 0112):** `docs/save-history.md` lists what each part of the story reads from the others, and
+      `saveHistory.test.ts` holds old saves to it; the per-entry value sets are not computed.
 - [ ] **Character availability:** who is in the party or alive at each node, so a line never has an absent speaker
       (the writing guide already asks for this by hand).
 
@@ -207,8 +209,15 @@ content for a route of 30–40 minutes) puts a forty-hour game far past any sing
 
 ### Plan: a region-one save loads years later
 
-- [ ] **Release fixtures:** each tagged release adds its golden saves under `fixtures/golden/<version>/`, never
-      regenerated; CI loads every one and plays a few commands from it.
+- [x] **Release fixtures** (ADR 0112): `npm run saves:release -- <id>` freezes a release under
+      `src/core/save/fixtures/releases/<id>/`: the golden route's saves and a snapshot of the story that wrote
+      them. The index holds every file's hash, so a release is never regenerated. `saveHistory.test.ts` loads
+      every one and plays it forward down today's route to the ending card, against a new game. The first
+      release is the existing `golden/v5` corpus (2026-11-08). **Left:** freezing one on every deploy.
+- [x] **History** (#773, ADR 0112): a save file records a history revision; backfill rules
+      (`src/content/story/flagBackfills.ts`) answer, once, for history the story started recording after the
+      save was written; a flag that gains a write under a release must say how that release's saves answer
+      (`oldSaves` in the flag registry). `docs/save-history.md` is the generated report.
 - [x] **Content ids are forever** (#765): every id a save may hold is recorded in `src/content/ids.ledger.json`
       (`npm run ids:ledger` adds new ones; it never removes). A retired id needs a row in `src/content/idAliases.ts`,
       which `applyIdAliases` (`src/core/save/aliases.ts`) applies first on load; `savedIds.test.ts` holds the ledger,
