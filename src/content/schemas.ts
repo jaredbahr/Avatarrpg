@@ -871,6 +871,7 @@ export const encounterSchema = z.object({
     .partial()
     .strict()
     .optional(),
+  guidance: z.literal('firstFight').optional(),
   expectedLevel: z.number().int().min(1).max(10),
   intro: z.string().min(1),
   tip: z.string().min(1),
