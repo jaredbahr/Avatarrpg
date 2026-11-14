@@ -9,15 +9,19 @@
  *                                                  -> new state -> scene.sync()
  */
 
+import { comboName } from './ui/comboText';
+import type { ComboReveal } from './ui/comboText';
 import type {
   BattleState,
   Command,
   ContentIndex,
+  Difficulty,
   ElementId,
   GameEvent,
   GameState,
   MapBackdrop,
   StoryNode,
+  Unit,
   Vec2,
 } from '../core/types';
 import { apply } from '../core/state/reducer';
@@ -26,8 +30,10 @@ import type { PartySlot } from '../core/state/createGame';
 import { backdrops } from '../render/backdrops';
 import { sheets } from '../render/sheets/store';
 import { Animator } from './animator';
+import type { AnimatorOptions } from './animator';
 import { Session } from './session';
-import type { Player } from './session';
+import { resetBallot } from './tableVote';
+import type { Participant, Player } from './session';
 import type { Settings, SlotId } from './storage/localSaves';
 import {
   AUTOSAVE_ID,
@@ -42,11 +48,14 @@ import {
   reconcileDisciplines,
   reconcileWorld,
 } from '../core/save/reconcile';
+import { applyIdAliases } from '../core/save/aliases';
+import { ID_ALIASES } from '../content/idAliases';
 import type { SessionMeta } from '../core/save/serialize';
 import { announce, clear, el } from './ui/dom';
 import { loadIcons } from './ui/icons';
 import { AudioBus } from './audio/bus';
 import { setUiSink } from './audio/ui';
+import { MusicPlayer, musicFor } from './audio/music';
 import { WHEEL_LINES_SVG } from './ui/marks';
 import { Toasts } from './ui/Toasts';
 import { Stats } from './ui/Stats';
@@ -54,7 +63,9 @@ import { Curtain } from './ui/Curtain';
 import { PauseMenu } from './ui/PauseMenu';
 import { LevelUpDialog } from './ui/LevelUpDialog';
 import { DisciplineDialog } from './ui/DisciplineDialog';
-import { RIVERSIDE_ENTRY } from '../content/maps/riverside';
+import { RIVERSIDE_ENTRY, RIVERSIDE_ID } from '../content/maps/riversideIds';
+import { START_REGION_ID } from '../content/regions';
+import type { RegionLoader } from './regions';
 import { villagePreviewState } from './village/previewState';
 import { TitleScene } from './scenes/TitleScene';
 import { PartySetupScene } from './scenes/PartySetupScene';
@@ -63,11 +74,6 @@ import { ExploreScene } from './scenes/ExploreScene';
 import { ResidentWalks } from './world/residentMotion';
 import { CombatScene } from './scenes/CombatScene';
 import { worldConversationFor } from '../content/story/presentations';
-import { BEND_FX } from '../content/fxCels';
-import { loadBendFx } from '../render/fx/bendFx';
-import type { BendFxIndex } from '../render/fx/bendFx';
-import { bendFxPages } from '../render/fx/bendFxDraw';
-import { liftAt } from '../render/geometry/elevation';
 import type { Projection } from '../render/projection';
 import { INTERLUDES } from '../content/story/interludes';
 
@@ -115,10 +121,14 @@ export interface Scene {
   suspend?(): void;
   /** Restart work after a retained scene becomes current again. */
   resume?(): void;
+  /** Repaint a retained backdrop's still if the story has changed who stands in it. */
+  refreshStill?(): void;
   /** Park a combat scene's enemy dispatch without its dialogue suspension. */
   holdAi?(): void;
   /** Drop the pause hold; re-arm one pending enemy turn if still current. */
   releaseAi?(): void;
+  /** Whether a scene-owned (top-down) playback is still running, on its own clock. */
+  presentationBusy?(): boolean;
   /** Pause and resume timed scene presentation while the pause menu is open. */
   pausePresentation?(): void;
   resumePresentation?(): void;
@@ -127,7 +137,11 @@ export interface Scene {
    * one the new state calls for. Return true when the scene schedules the
    * full playback itself (including the leader and its sound cues).
    */
-  onEvents?(events: readonly GameEvent[], now: number): boolean | void;
+  onEvents?(
+    events: readonly GameEvent[],
+    now: number,
+    unitsBefore: readonly Unit[],
+  ): boolean | void;
 }
 
 export type DialogueBackdropOwner =
@@ -229,9 +243,12 @@ export class App {
   private dialogueBackdropOwner: DialogueBackdropOwner | null = null;
   private dialogueHost: HTMLElement | null = null;
   private pause: PauseMenu | null = null;
+  private pauseReturnFocus: (() => void) | null = null;
   private levelUp: LevelUpDialog | DisciplineDialog | null = null;
   /** Sound. Opens no context until a gesture unlocks it (ADR 0012). */
   readonly audio: AudioBus;
+  /** Area music, on a context of its own so a load or Sound Off does not cut it (ADR 0108). */
+  readonly music: MusicPlayer;
   /** Set while a battle is being resolved, so it cannot double-fire. */
   private resolving = false;
   /** Presentation-only provenance for the next newly mounted combat scene. */
@@ -241,8 +258,6 @@ export class App {
     null;
   private resizeQueued = false;
   private routeTimer: number | null = null;
-  private bendFx: BendFxIndex | undefined;
-  private bendFxLoading = false;
 
   /**
    * Consumed by CombatScene at mount. This is intentionally ephemeral: a
@@ -265,28 +280,6 @@ export class App {
     return this.curtain.busy;
   }
 
-  /**
-   * Combat warms the painted bend effects at its start, and a map with a
-   * bending practice ground on arrival: the data, then every
-   * page decoded, and only then may a cast bend (ADR 0055, step 7). Until
-   * then, and for the session if any of it fails, casts stay legacy.
-   */
-  preloadBendFx(): void {
-    if (this.bendFx || this.bendFxLoading) return;
-    this.bendFxLoading = true;
-    void loadBendFx(BEND_FX, import.meta.env.BASE_URL)
-      .then(async (fx) => {
-        const pages = await Promise.all(fx.images.map((url) => bendFxPages.whenLoaded(url)));
-        if (pages.every(Boolean)) this.bendFx = fx;
-      })
-      .catch(() => undefined);
-  }
-
-  /** Whether the painted bend effects are in, so a cast may bend (see `preloadBendFx`). */
-  get bendFxReady(): boolean {
-    return this.bendFx !== undefined;
-  }
-
   private cancelRoute(): void {
     if (this.routeTimer !== null) window.clearTimeout(this.routeTimer);
     this.routeTimer = null;
@@ -296,6 +289,8 @@ export class App {
     readonly content: ContentIndex,
     root: HTMLElement,
     readonly storyEntry: string,
+    /** Fills `content` with regions as the party needs them (ADR 0111 §2); absent, it is complete. */
+    private readonly regions?: RegionLoader,
   ) {
     this.host = root;
     this.settings = loadSettings();
@@ -305,27 +300,8 @@ export class App {
     // `button()` cannot see the app, so the bus is registered rather than
     // passed; a control asks for a click without knowing what makes one.
     setUiSink((key) => this.audio.play([{ key, at: 0, seed: 0 }], 0));
-    this.animator = new Animator(content, {
-      onSounds: (cues, now) => this.audio.play(cues, now),
-      // The G knockouts arrive with the sheet, not the bundle (ADR 0059).
-      sheetClips: (sprite) => sheets.clips(sprite),
-      bends: () => {
-        const fx = this.bendFx;
-        return fx
-          ? {
-              fx,
-              // Asking a bend that has not been preloaded must not load it.
-              setOf: (sprite) =>
-                sheets.bendState(sprite) === 'loaded' ? sheets.bendSet(sprite) : undefined,
-              frameOf: (sprite, heading, index) => sheets.bendFrame(sprite, heading, index),
-            }
-          : undefined;
-      },
-      liftOf: (pos) => {
-        const grid = this.state?.battle?.grid;
-        return grid ? liftAt(grid, pos, this.rendererCamera()?.projection ?? 'orthographic') : 0;
-      },
-    });
+    this.music = new MusicPlayer(() => this.settings.music);
+    this.animator = this.createPresentationAnimator();
     this.residents = new ResidentWalks(content);
     applySettings(this.settings);
 
@@ -393,14 +369,44 @@ export class App {
      * the context is already running. `pointerdown` rather than `click`,
      * because a tap that starts a drag on the board never becomes a click.
      */
-    const unlock = (): void => this.audio.unlock();
+    const unlock = (): void => {
+      this.audio.unlock();
+      this.music.unlock();
+    };
     window.addEventListener('pointerdown', unlock, { passive: true });
     window.addEventListener('keydown', unlock, { passive: true });
+    // A backgrounded tab pauses the music and returning plays it on, where it left off.
+    document.addEventListener('visibilitychange', () => this.music.setHidden(document.hidden));
     this.showScene(new TitleScene(this));
   }
 
+  /** Builds a scene-owned Animator with the same asset and grounding sources. */
+  createPresentationAnimator(
+    overrides: Pick<AnimatorOptions, 'actionQueue' | 'onSounds' | 'timingProfile'> = {},
+  ): Animator {
+    return new Animator(this.content, {
+      onSounds: overrides.onSounds ?? ((cues, now) => this.audio.play(cues, now)),
+      ...(overrides.actionQueue ? { actionQueue: true } : {}),
+      ...(overrides.timingProfile ? { timingProfile: overrides.timingProfile } : {}),
+      // The G knockouts arrive with the sheet, not the bundle (ADR 0059).
+      sheetClips: (sprite) => sheets.clips(sprite),
+    });
+  }
+
+  /** Whether anything is still playing: the shared animator or the scene's own (top-down) playback. */
+  boardBusy(now = performance.now()): boolean {
+    return this.animator.busy(now) || this.scene?.presentationBusy?.() === true;
+  }
+
   showScene(scene: Scene, replaceRetained = false): void {
+    const active = document.activeElement;
+    const enterDialogueWithFocus =
+      scene.name === 'dialogue' &&
+      active instanceof HTMLElement &&
+      this.sceneHost.contains(active) &&
+      active.matches(':focus-visible');
     this.cancelRoute();
+    this.syncMusic(scene.name);
     const previousInterlude = this.currentSceneIsInterlude;
     const nextInterlude =
       scene.name === 'dialogue' && Boolean(INTERLUDES[this.state?.story.nodeId ?? '']);
@@ -419,6 +425,7 @@ export class App {
     ) {
       if (previousInterlude !== nextInterlude) curtain?.coverCurrent();
       this.setMood(this.defaultMood());
+      this.dialogueBackdrop?.refreshStill?.();
       scene.sync();
       if (previousInterlude !== nextInterlude) curtain?.reveal(scene.firstFrameSheetKeys?.() ?? []);
       return;
@@ -438,6 +445,7 @@ export class App {
       this.scene = scene;
       this.host.dataset.scene = scene.name;
       this.setMood(this.defaultMood());
+      this.dialogueBackdrop?.refreshStill?.();
       scene.mount(this.dialogueHost);
       scene.sync();
       curtain?.reveal(scene.firstFrameSheetKeys?.() ?? []);
@@ -480,7 +488,7 @@ export class App {
       scene.name === 'dialogue' &&
       wantedBackdrop !== null &&
       !this.dialogueBackdrop &&
-      (this.scene?.name === 'explore' || this.scene?.name === 'combat');
+      this.scene?.name === wantedBackdrop.kind;
 
     if (keepWorld && this.scene) {
       this.dialogueBackdrop = this.scene;
@@ -534,6 +542,14 @@ export class App {
     this.setMood(this.defaultMood());
     scene.mount(this.dialogueHost ?? this.sceneHost);
     scene.sync();
+    // Layered dialogue manages its own focus. A full-stage interlude also
+    // needs a keyboard starting point when it replaces the focused scene.
+    if (enterDialogueWithFocus && !this.dialogueHost) {
+      const firstControl = this.sceneHost.querySelector<HTMLElement>(
+        '[data-interlude-control="next"], [data-conversation-control="next"], .choice-option:not(:disabled), .end-panel button',
+      );
+      firstControl?.focus({ preventScroll: true });
+    }
     // After the swap, never instead of it: see Curtain.
     if (!keepWorld) curtain?.reveal(scene.firstFrameSheetKeys?.() ?? [], scene.firstFrameReady?.());
   }
@@ -585,6 +601,9 @@ export class App {
     if (!force && this.scene?.name === wanted) {
       if (wanted === 'dialogue') this.showScene(this.scene);
       else {
+        // The same scene can move to another area (a walk off the Forest Road onto the quarry
+        // gate), and only showScene picks the track otherwise; the player ignores an unchanged one.
+        this.syncMusic(this.scene.name);
         this.setMood(this.defaultMood());
         // A walk off one map onto the next keeps the explore scene, which swaps
         // its board in place: cover that swap as a scene change is covered, and
@@ -620,6 +639,42 @@ export class App {
     }
   }
 
+  /**
+   * The area's track, from the scene and the map (or battlefield) the state is on. Every scene change
+   * comes through here; the player ignores a track that is already playing, so moving between scenes
+   * of one area, a conversation included, never restarts it. A fight dips it rather than switching.
+   */
+  private syncMusic(scene: string): void {
+    const battle = this.state?.battle ?? null;
+    this.music.setTrack(
+      musicFor({ scene, mapId: this.state?.location.mapId, battleMapId: battle?.mapId }),
+    );
+    this.music.setDuck(battle !== null && (scene === 'combat' || scene === 'dialogue'));
+  }
+
+  /**
+   * Null when every region in `pending` is loaded (each entry is a loader's answer, null when
+   * ready); otherwise one promise for them all, with a note on screen while the area loads.
+   */
+  private regionsPending(
+    pending: readonly (Promise<void> | null | undefined)[],
+  ): Promise<void> | null {
+    const waits = pending.filter((entry): entry is Promise<void> => entry instanceof Promise);
+    if (waits.length === 0) return null;
+    this.toasts.show('Loading the next area…');
+    return Promise.all(waits).then(() => undefined);
+  }
+
+  private readonly regionFailed = (error: unknown): void => {
+    console.error('A region did not load.', error);
+    this.toasts.show('That area could not load. Check the connection and try again.', 'warn');
+  };
+
+  /** Starts loading the party's region and its neighbours, if they are not loaded yet. */
+  private prefetchRegions(): void {
+    void this.regions?.pendingForMap(this.state?.location.mapId)?.catch(this.regionFailed);
+  }
+
   /** Discard the replaced state's queued animation and audio together. */
   private resetPlayback(): void {
     this.animator.clear();
@@ -629,6 +684,11 @@ export class App {
 
   startVillagePreview(): void {
     if (this.previewActive) return;
+    const wait = this.regionsPending([this.regions?.pendingForMap(RIVERSIDE_ID)]);
+    if (wait) {
+      void wait.then(() => this.startVillagePreview(), this.regionFailed);
+      return;
+    }
     this.cancelRoute();
     this.previewSnapshot = { state: this.state, session: this.session.toMeta() };
     this.state = villagePreviewState(this.content);
@@ -644,7 +704,7 @@ export class App {
     this.cancelRoute();
     this.previewSnapshot = null;
     this.state = previous.state;
-    this.session.setPlayers(Session.fromMeta(previous.session).players);
+    this.session.restoreMeta(previous.session);
     this.resetPlayback();
     this.residents.reset();
     this.closePause();
@@ -652,15 +712,30 @@ export class App {
     this.showScene(new TitleScene(this));
   }
 
-  goToSetup(): void {
-    this.showScene(new PartySetupScene(this));
+  /** Party setup, starting from `playerCount` people (the table that just finished, on Play again). */
+  goToSetup(playerCount = 1): void {
+    this.showScene(new PartySetupScene(this, playerCount));
   }
 
   /* ---------------------------------------------------------------- */
   /* State                                                             */
   /* ---------------------------------------------------------------- */
 
-  newGame(players: readonly Player[], slots: readonly PartySlot[], seed?: string): void {
+  newGame(
+    players: readonly Player[],
+    slots: readonly PartySlot[],
+    seed?: string,
+    participants?: readonly Participant[],
+    difficulty?: Difficulty,
+  ): void {
+    const wait = this.regionsPending([this.regions?.pendingForRegion(START_REGION_ID)]);
+    if (wait) {
+      void wait.then(
+        () => this.newGame(players, slots, seed, participants, difficulty),
+        this.regionFailed,
+      );
+      return;
+    }
     if (this.previewActive) this.endVillagePreview();
     this.cancelRoute();
     this.freshCombatEntry = false;
@@ -669,23 +744,56 @@ export class App {
       seed: seed ?? `${Date.now()}-${players.map((p) => p.name).join('-')}`,
       party: slots,
       startNode: this.storyEntry,
+      ...(difficulty ? { difficulty } : {}),
     });
 
     this.session.setPlayers(
       players.map((player, index) => ({
         name: player.name,
         unitId: state.party[index]?.id ?? `p${index}`,
+        participantId: player.participantId,
       })),
+      participants,
     );
 
-    this.state = state;
+    this.state = {
+      ...state,
+      // Only a genuinely new game can enter the first-fight guidance flow.
+      // Loads, previews and parties that happen to be on the Forest Road do not.
+      flags: { ...state.flags, 'guidance.firstFightEligible': true },
+    };
     this.resetPlayback();
     this.residents.reset();
+    resetBallot();
     this.dispatch({ type: 'enterNode', nodeId: this.storyEntry });
   }
 
+  /**
+   * Changes the game's difficulty from Settings. A fight already on the field
+   * keeps its enemies; the next one (or a retry) is built at the new setting.
+   * Saved straight away, so Continue keeps it.
+   */
+  setDifficulty(difficulty: Difficulty): void {
+    const state = this.state;
+    if (!state || state.difficulty === difficulty) return;
+    this.state = apply(this.content, state, { type: 'setDifficulty', difficulty }).state;
+    if (!this.previewActive) this.saveTo(AUTOSAVE_ID, `Autosave — ${this.placeLabel()}`);
+  }
+
   /** Installs a loaded save, replacing everything. */
-  adoptSave(state: GameState, session: SessionMeta | undefined): void {
+  adoptSave(saved: GameState, session: SessionMeta | undefined): void {
+    // Content ids are forever: a retired id is renamed before anything reads it, the region
+    // lookup below included (`core/save/aliases.ts`). Idempotent, so the wait's re-entry is safe.
+    const state = applyIdAliases(saved, ID_ALIASES);
+    // A save from another region loads that region before it is reconciled against content.
+    const wait = this.regionsPending([
+      this.regions?.pendingForMap(state.location.mapId),
+      this.regions?.pendingForMap(state.battle?.mapId),
+    ]);
+    if (wait) {
+      void wait.then(() => this.adoptSave(state, session), this.regionFailed);
+      return;
+    }
     if (this.previewActive) this.endVillagePreview();
     this.cancelRoute();
     this.freshCombatEntry = false;
@@ -705,7 +813,8 @@ export class App {
       console.warn('Battle save could not be fully reconciled.', warning);
     }
     this.state = reconcileWorld(this.content, reconcileDisciplines(this.content, reconciled.state));
-    this.session.setPlayers(Session.fromMeta(session).players);
+    this.session.restoreMeta(session);
+    resetBallot();
     this.resetPlayback();
     this.residents.reset();
     this.closePause();
@@ -728,10 +837,20 @@ export class App {
     this.cancelRoute();
     const state = this.state;
     if (!state) return [];
+    // No command runs until the party's region and its neighbours are in the index, so the rules
+    // read everything a command can reach (ADR 0111 §2). Loaded, as after boot, this never waits.
+    const wait = this.regionsPending([this.regions?.pendingForMap(state.location.mapId)]);
+    if (wait) {
+      void wait.then(() => {
+        if (this.state === state) this.dispatch(command);
+      }, this.regionFailed);
+      return [];
+    }
 
     const unitsBefore = state.battle?.units ?? [];
     const result = apply(this.content, state, command);
     this.state = result.state;
+    this.prefetchRegions();
     // A reward pick only counts when it consumed a pending choice; a refusal
     // returns the same list, untouched.
     const choiceConsumed =
@@ -744,7 +863,7 @@ export class App {
 
     const now = performance.now();
     if (result.events.length > 0) {
-      if (this.scene?.onEvents?.(result.events, now) !== true)
+      if (this.scene?.onEvents?.(result.events, now, unitsBefore) !== true)
         this.animator.push(now, result.events, unitsBefore);
     }
 
@@ -797,6 +916,15 @@ export class App {
         announce(event.label);
       }
       if (event.type === 'message') this.toasts.show(event.text);
+      if (event.type === 'comboDiscovered') {
+        const rule = this.content.combos.find((candidate) => candidate.id === event.comboId);
+        if (!rule) continue;
+        // After the clip, so the caption never sits over the hit or its number.
+        window.setTimeout(
+          () => this.toasts.show(`New combo found: ${comboName(this.content, rule)}!`),
+          Math.max(0, this.animator.finishesAt - performance.now()),
+        );
+      }
     }
   }
 
@@ -806,10 +934,11 @@ export class App {
 
   offerLevelUpIfPending(): void {
     const state = this.state;
-    if (!state || state.pendingChoices.length === 0) return;
-    if (this.levelUp) return;
     // Never interrupt a fight with a menu; choices wait for the story beat.
-    if (state.screen === 'combat') return;
+    if (!state || state.pendingChoices.length === 0 || this.levelUp || state.screen === 'combat') {
+      this.syncRewardDialogue();
+      return;
+    }
 
     const choice = state.pendingChoices[0];
     if (!choice) return;
@@ -821,6 +950,21 @@ export class App {
       this.levelUp = null;
       // More than one member may have levelled in the same fight.
       this.offerLevelUpIfPending();
+      if (
+        !this.levelUp &&
+        (this.state?.screen === 'dialogue' || this.state?.screen === 'ended') &&
+        !this.overlayHost.querySelector('[role="dialog"][aria-modal="true"]')
+      ) {
+        const dialogue =
+          this.dialogueHost ??
+          this.sceneHost.querySelector<HTMLElement>('.dialogue-scene, .explore-conversation');
+        const target =
+          dialogue?.querySelector<HTMLElement>('[data-conversation-control="next"]') ??
+          dialogue?.querySelector<HTMLElement>('.choice-option:not(:disabled)') ??
+          dialogue?.querySelector<HTMLElement>('[data-interlude-control="next"]') ??
+          dialogue?.querySelector<HTMLElement>('.end-panel button');
+        target?.focus({ preventScroll: true });
+      }
     };
 
     this.levelUp =
@@ -828,7 +972,29 @@ export class App {
         ? new DisciplineDialog(this, choice, done)
         : new LevelUpDialog(this, choice, done);
     this.levelUp.open(this.overlayHost);
+    // The modal now owns focus; its underlying story can safely leave the
+    // accessibility tree until the last pick closes the reward queue.
+    this.syncRewardDialogue();
     this.audio.play([{ key: 'levelUp', at: 0, seed: 0 }], 0);
+  }
+
+  /** Keep the next story beat out of sight and out of the tab order until its rewards are chosen. */
+  private syncRewardDialogue(): void {
+    if (!this.sceneHost) return;
+    const storyScreen = this.state?.screen === 'dialogue' || this.state?.screen === 'ended';
+    const concealed =
+      storyScreen &&
+      this.state !== null &&
+      (this.state.pendingChoices.length > 0 || this.levelUp !== null);
+    const dialogue =
+      this.dialogueHost ??
+      this.sceneHost.querySelector<HTMLElement>('.dialogue-scene, .explore-conversation');
+    if (concealed) this.sceneHost.classList.add('reward-first');
+    else this.sceneHost.classList.remove('reward-first');
+    if (!dialogue) return;
+    dialogue.inert = concealed;
+    if (concealed) dialogue.setAttribute('aria-hidden', 'true');
+    else dialogue.removeAttribute('aria-hidden');
   }
 
   /**
@@ -845,8 +1011,10 @@ export class App {
   /* Pause and settings                                                */
   /* ---------------------------------------------------------------- */
 
-  openPause(): void {
+  openPause(returnFocus?: () => void): void {
     if (this.pause || !this.state) return;
+    const scene = this.scene;
+    this.pauseReturnFocus = returnFocus ?? null;
     // The pause owns combat progress: park enemy dispatch and timed scene
     // presentation. Explore keeps running, and a nested Save menu keeps
     // `this.pause` set so both holds remain in force.
@@ -855,13 +1023,25 @@ export class App {
       this.scene.pausePresentation?.();
     }
     this.pause = new PauseMenu(this, () => {
+      const restoreFocus = this.pauseReturnFocus;
+      this.pauseReturnFocus = null;
       this.pause = null;
       this.resumeAfterPause();
+      if (
+        restoreFocus &&
+        this.scene === scene &&
+        document.activeElement === document.body &&
+        !document.querySelector('[role="dialog"][aria-modal="true"]')
+      ) {
+        restoreFocus();
+      }
     });
     this.pause.open(this.overlayHost);
   }
 
   closePause(): void {
+    // A load or route replacement must not restore focus into the outgoing scene.
+    this.pauseReturnFocus = null;
     this.pause?.close();
     this.pause = null;
   }
@@ -875,6 +1055,11 @@ export class App {
     }
   }
 
+  /** Which combos the confirm step and the reference name openly (#622). */
+  comboReveal(): ComboReveal {
+    return this.settings.comboHints === 'show' ? 'all' : (this.state?.discoveredCombos ?? []);
+  }
+
   updateSettings(next: Partial<Settings>): void {
     this.settings = { ...this.settings, ...next };
     applySettings(this.settings);
@@ -884,6 +1069,8 @@ export class App {
     // setting *is* one.
     if (this.settings.volume <= 0) this.audio.close();
     else this.audio.unlock();
+    this.music.volumeChanged();
+    this.music.unlock();
     this.scene?.resize?.();
     this.scene?.sync();
   }
@@ -976,6 +1163,21 @@ export class App {
   }
 
   /**
+   * Where the map drawn now (the scene, or the world behind a conversation)
+   * stands each follower (#696). Exposed for the e2e suite.
+   */
+  followerPositions():
+    readonly { readonly id: string; readonly pos: Vec2; readonly clip?: string }[] | null {
+    type Drawn = {
+      followerPositions?: () =>
+        readonly { readonly id: string; readonly pos: Vec2; readonly clip?: string }[] | null;
+    };
+    const scene = this.scene as unknown as Drawn | null;
+    const backdrop = this.dialogueBackdrop as unknown as Drawn | null;
+    return scene?.followerPositions?.() ?? backdrop?.followerPositions?.() ?? null;
+  }
+
+  /**
    * Which rendering backend the mounted map scene chose. Null when no map is
    * up. Exposed so the e2e suite can assert on the choice rather than infer it.
    */
@@ -989,6 +1191,13 @@ export class App {
   /* ---------------------------------------------------------------- */
   /* Battle resolution                                                 */
   /* ---------------------------------------------------------------- */
+
+  /** "Try again" on a lost fight (#620): rebuild the opening board and remount. */
+  retryBattle(): void {
+    this.dispatch({ type: 'retryBattle' });
+    this.animator.clear();
+    this.routeToState(true);
+  }
 
   /** Called by CombatScene once the player has read the result panel. */
   resolveBattle(): void {

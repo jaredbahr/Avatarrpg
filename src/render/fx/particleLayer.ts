@@ -120,9 +120,8 @@ export class ParticleLayer {
 
   /**
    * Rebuilds the layer from the live emitters, in world pixels (tile * TILE).
-   * `oblique` says the container carries the oblique ground transform.
    */
-  draw(emitters: readonly EmitterInstance[], oblique = false): void {
+  draw(emitters: readonly EmitterInstance[]): void {
     let rasters = 0;
     let sprites = 0;
     const normal: Particle[] = [];
@@ -150,13 +149,11 @@ export class ParticleLayer {
         const tint = hexToNumber(roleColor(def.color, instance.palette));
         const ink = inkedPalette(instance.palette);
         const list = def.blend === 'add' ? additive : normal;
-        // Stretched along the ground diagonal the oblique camera halves, so it lands round.
-        const up = oblique && def.upright;
         for (let i = 0; i < n && used < MAX_PARTICLES; i++) {
           const at = i * PARTICLE_STRIDE;
           const x = (this.scratch[at] ?? 0) * TILE;
           const y = (this.scratch[at + 1] ?? 0) * TILE;
-          const rotation = up ? Math.PI / 4 : (this.scratch[at + 3] ?? 0);
+          const rotation = this.scratch[at + 3] ?? 0;
           const alpha = Math.max(0, Math.min(1, this.scratch[at + 4] ?? 0));
           const tiles = this.scratch[at + 2] ?? 0;
           if (cel) {
@@ -168,7 +165,7 @@ export class ParticleLayer {
             sprite.texture = texture;
             sprite.position.set(x, y);
             sprite.rotation = rotation;
-            sprite.scale.set(up ? Math.SQRT2 : 1, up ? Math.SQRT1_2 : 1);
+            sprite.scale.set(1, 1);
             sprite.alpha = alpha;
             sprite.blendMode = def.blend === 'add' ? 'add' : 'normal';
             sprite.visible = true;
@@ -182,8 +179,8 @@ export class ParticleLayer {
           particle.texture = texture;
           particle.x = x;
           particle.y = y;
-          particle.scaleX = up ? Math.SQRT2 : 1;
-          particle.scaleY = up ? Math.SQRT1_2 : 1;
+          particle.scaleX = 1;
+          particle.scaleY = 1;
           particle.rotation = rotation;
           particle.tint = tint;
           particle.alpha = alpha;

@@ -66,11 +66,12 @@ for (const chained of [false, true]) {
       await resetStorage(page, '?renderer=canvas');
       await page.evaluate(({ state, session }) => {
         const app = window.fnt!.app;
-        app.updateSettings({ reduceMotion: true });
+        app.updateSettings({ reduceMotion: true, storyChoices: 'turns' });
         app.adoptSave(state, session);
       }, fixture);
       expect(await page.evaluate(() => window.fnt!.app.state)).toEqual(fixture.state);
-      await expect(page.locator('.dialogue-layer .stage[data-kind="choice"]')).toBeVisible();
+      await expect(page.locator('.dialogue-layer .stage[data-kind="choice"]')).toBeHidden();
+      await expect(page.locator('.dialogue-layer')).toHaveAttribute('aria-hidden', 'true');
       await expect(page.locator('canvas.map-canvas')).toBeVisible();
       await expect(page.getByRole('dialog').getByRole('heading', { level: 2 })).toBeFocused();
       const initialCapture = info.outputPath('initial-technique-response-modal.png');

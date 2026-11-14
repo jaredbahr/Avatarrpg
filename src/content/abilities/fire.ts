@@ -18,7 +18,7 @@ export const FIRE_ABILITIES: readonly Ability[] = [
     targeting: enemyTarget,
     effects: [{ kind: 'damage', base: 4, scale: 0.7, damageType: 'fire' }],
     description:
-      'A quick jab of flame at one enemy. At 1 AP you can throw it more than once a turn, and it lights any oil the target stands in.',
+      'A quick jab of flame at one enemy. At 1 AP you can throw it more than once a turn.',
     flavor: 'The first form anyone learns, and the last one anyone respects.',
     fx: 'fx.fire.jab',
   }),
@@ -50,7 +50,7 @@ export const FIRE_ABILITIES: readonly Ability[] = [
     requiresLineOfSight: true,
     effects: [{ kind: 'dash' }, { kind: 'surface', surface: 'fire', duration: 2, area: 'center' }],
     description:
-      'Jet to an open tile you can see within 4. Bare ground catches fire for 2 rounds and can leave you Burning; water turns to steam instead.',
+      'Jet to an open tile you can see within 4. Bare ground catches fire for 2 rounds and can leave you Burning.',
     flavor: 'Propulsion, not flight. Mostly.',
     fx: 'fx.fire.step',
     tags: ['mobility', 'surface'],
@@ -83,7 +83,7 @@ export const FIRE_ABILITIES: readonly Ability[] = [
       { kind: 'status', status: 'shocked', duration: 2, chance: 0.6, to: 'hit' },
     ],
     description:
-      'A bolt of lightning at one enemy up to 8 tiles away. Double damage against anyone Wet, a 60% chance to Shock, and it races through any water they stand in.',
+      'A bolt of lightning at one enemy up to 8 tiles away. Double damage against anyone Wet, with a 60% chance to Shock.',
     flavor: 'Separation, then release. Never hesitate halfway.',
     fx: 'fx.fire.lightning',
     tags: ['attack', 'signature'],
@@ -160,7 +160,7 @@ export const FIRE_ABILITIES: readonly Ability[] = [
       { kind: 'status', status: 'shocked', duration: 2, chance: 0.6, to: 'hit' },
     ],
     description:
-      'Lightning along a line of five tiles out from you, striking everyone in it. Wet targets take double, each has a 60% chance to be Shocked, and water in the line carries the charge.',
+      'Lightning along a line of five tiles out from you, striking everyone in it. Wet targets take double, and each has a 60% chance to be Shocked.',
     flavor: 'Separate the energies. Then let them find each other again.',
     fx: 'fx.fire.chain',
     tags: ['attack', 'control'],

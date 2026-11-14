@@ -30,7 +30,10 @@ export function topdownStructures(
   for (const pos of view.raisedWalls ?? []) {
     const tile = grid.tiles[pos.y * grid.width + pos.x];
     if (!tile || tile.terrain !== 'wall' || !tile.blocked || scenery.has(key(pos))) continue;
-    out.push(structure(`wall:${key(pos)}`, 'earth_wall', pos, 'Earth wall'));
+    const wall = structure(`wall:${key(pos)}`, 'earth_wall', pos, 'Earth wall');
+    out.push(
+      pos.rise === undefined ? wall : { ...wall, pos: { x: pos.x, y: pos.y }, rise: pos.rise },
+    );
   }
   const painted = new Set((view.scene?.paintedRubble ?? []).map(key));
   grid.tiles.forEach((tile, i) => {

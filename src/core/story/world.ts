@@ -92,30 +92,21 @@ export function backgroundFigures(
   return roles;
 }
 
-/** One objective for the banner and journal, derived from the current story and world state. */
-export function worldObjective(content: ContentIndex, state: GameState): string | null {
+/** Text and target always come from the same first-matching objective source. */
+function activeObjective(content: ContentIndex, state: GameState) {
   const map = content.maps.get(state.location.mapId);
   const node = state.story.nodeId ? content.story.get(state.story.nodeId) : undefined;
-  if (node?.kind === 'explore' && node.mapId === map?.id)
-    return (
-      node.objectiveVariants?.find((variant) => evaluate(state, variant.when))?.text ??
-      node.objective
-    );
-  if (!map) return null;
-  return (
-    map.objectiveVariants?.find((variant) => evaluate(state, variant.when))?.text ??
-    map.objective ??
-    null
-  );
+  const source = node?.kind === 'explore' && node.mapId === map?.id ? node : map;
+  return source?.objectiveVariants?.find((variant) => evaluate(state, variant.when)) ?? source;
 }
 
-/** Structured target metadata paired with the same active objective source. */
-export function worldObjectiveNpcId(content: ContentIndex, state: GameState): string | null {
-  const map = content.maps.get(state.location.mapId);
-  const node = state.story.nodeId ? content.story.get(state.story.nodeId) : undefined;
-  if (node?.kind === 'explore' && node.mapId === map?.id) {
-    const variant = node.objectiveVariants?.find((candidate) => evaluate(state, candidate.when));
-    return variant ? (variant.objectiveNpcId ?? null) : (node.objectiveNpcId ?? null);
-  }
-  return null;
+/** One objective for the banner and journal, derived from the current story and world state. */
+export function worldObjective(content: ContentIndex, state: GameState): string | null {
+  const objective = activeObjective(content, state);
+  return (objective && ('text' in objective ? objective.text : objective.objective)) ?? null;
+}
+
+/** Unique authored npc/exit id paired with the active objective source. */
+export function worldObjectiveTargetId(content: ContentIndex, state: GameState): string | null {
+  return activeObjective(content, state)?.objectiveTargetId ?? null;
 }

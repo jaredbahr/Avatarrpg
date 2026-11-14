@@ -5,7 +5,7 @@ import type { PlacedNpc } from '../../core/story/world';
 import type { ContentIndex, GameState, MapDef, MapExit, Vec2 } from '../../core/types';
 
 /** How far the action bar reaches for a person or nearby world object. */
-const TALK_RANGE = 3;
+export const TALK_RANGE = 3;
 
 export type NearbyExploreTarget =
   | { readonly kind: 'exit'; readonly exit: MapExit; readonly destination: string }

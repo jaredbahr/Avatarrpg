@@ -1,3 +1,4 @@
+import type { MapEdgeSide } from '../core/types';
 import { TILE, type Camera } from './camera';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from './geometry/arc';
 import { contourLoops } from './geometry/contour';
@@ -147,7 +148,26 @@ export function koCrossMark(anchor: G1Point, width: number, alpha = 1): PixelOve
   );
 }
 
-export function exitMark(anchor: G1Point, alpha: number): PixelOverlayCue {
+const EXIT_ARROW = [
+  { x: -12, y: -16 },
+  { x: 10, y: 0 },
+  { x: -12, y: 16 },
+  { x: -5, y: 0 },
+];
+
+const EXIT_ARROW_ROTATION: Record<MapEdgeSide, readonly [number, number]> = {
+  east: [1, 0],
+  south: [0, 1],
+  west: [-1, 0],
+  north: [0, -1],
+};
+
+export function exitMark(
+  anchor: G1Point,
+  alpha: number,
+  direction: MapEdgeSide = 'east',
+): PixelOverlayCue {
+  const [cos, sin] = EXIT_ARROW_ROTATION[direction];
   return pixelMark(
     'exit',
     [
@@ -161,12 +181,7 @@ export function exitMark(anchor: G1Point, alpha: number): PixelOverlayCue {
       {
         kind: 'polygon',
         color: 'gold',
-        points: [
-          { x: -12, y: -16 },
-          { x: 10, y: 0 },
-          { x: -12, y: 16 },
-          { x: -5, y: 0 },
-        ],
+        points: EXIT_ARROW.map(({ x, y }) => ({ x: x * cos - y * sin, y: x * sin + y * cos })),
       },
     ],
     { gold: OVERLAY.markerGold },
@@ -358,7 +373,7 @@ export function pathPixelMarks(
       ),
     );
   } else {
-    const tangent = projectedTangent(end.tangent, camera);
+    const tangent = projectedTangent(end.tangent);
     const polygon = flatPolygonPoints(
       arrowheadPolygon({ x: 0, y: 0 }, tangent, TILE * OVERLAY.pathArrowScale),
     );
@@ -394,7 +409,7 @@ export function aimArcPixelMarks(arc: AimArc, camera: Camera): PixelOverlayCue[]
   ];
   const tip = boardPixelFromTile(camera, raw[raw.length - 1] ?? arc.to);
   const arrow = flatPolygonPoints(
-    arrowheadPolygon({ x: 0, y: 0 }, projectedTangent(arcHeading(raw), camera), TILE),
+    arrowheadPolygon({ x: 0, y: 0 }, projectedTangent(arcHeading(raw)), TILE),
   ).map(({ x, y }) => ({ x: x + tip.x, y: y + tip.y }));
   operations.push({
     kind: 'polygon',
@@ -461,12 +476,8 @@ function flatPolygonPoints(flat: readonly number[]): G1Point[] {
   return snapWorldPoints(points);
 }
 
-function projectedTangent(
-  tangent: { x: number; y: number },
-  camera: Camera,
-): { x: number; y: number } {
-  const x = camera.projection === 'oblique' ? tangent.x - tangent.y : tangent.x;
-  const y = camera.projection === 'oblique' ? (tangent.x + tangent.y) / 2 : tangent.y;
+function projectedTangent(tangent: { x: number; y: number }): { x: number; y: number } {
+  const { x, y } = tangent;
   const length = Math.hypot(x, y) || 1;
   return { x: x / length, y: y / length };
 }

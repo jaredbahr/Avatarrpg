@@ -17,8 +17,13 @@ function start(): GameState {
   });
   return apply(CONTENT, state, { type: 'enterNode', nodeId: 'village_explore' }).state;
 }
-const walk = (state: GameState, x: number, y: number) =>
-  apply(CONTENT, state, { type: 'walkTo', pos: { x, y } });
+/** A walk plays through the Cutting's culvert scene (C-29) on its way, as a player taps through it. */
+function walk(state: GameState, x: number, y: number): ReturnType<typeof apply> {
+  const result = apply(CONTENT, state, { type: 'walkTo', pos: { x, y } });
+  return result.state.story.nodeId === 'cutting_culvert'
+    ? walk(finishDialogue(result.state), x, y)
+    : result;
+}
 function finishDialogue(state: GameState): GameState {
   for (let guard = 0; guard < 40 && state.screen === 'dialogue'; guard++) {
     if (CONTENT.story.get(state.story.nodeId ?? '')?.kind !== 'dialogue') return state;
@@ -208,7 +213,9 @@ describe('connected world traversal', () => {
       state = walk(state, 19, 4).state;
       state = finishDialogue(walk(state, 17, 5).state);
       state = resolve(state, loss === 'boss');
-      expect(state.screen).toBe('ended');
+      // A win frees the workers (a beat, then the walk home); losing the Driller ends the act.
+      if (loss !== 'boss') state = finishDialogue(state);
+      expect(state.screen).toBe(loss === 'boss' ? 'ended' : 'explore');
       expect(state.flags[loss === 'boss' ? 'act1_lost' : 'act1_complete']).toBe(true);
       expect(state.world.cleared).not.toContain(
         {
@@ -266,8 +273,10 @@ describe('connected world traversal', () => {
         expect(state.party.map((unit) => unit.xp)).toEqual(before);
         state = finishDialogue(walk(state, 17, 5).state);
         expect(state.battle?.encounterId).toBe('enc_grumbler');
-        state = resolve(state);
-        expect(state.screen).toBe('ended');
+        state = finishDialogue(resolve(state));
+        expect(state.screen).toBe('explore');
+        expect(state.location.mapId).toBe('quarry_floor');
+        expect(state.world.clock.phase).toBe('evening');
         expect(state.flags.act1_complete).toBe(true);
       });
     }

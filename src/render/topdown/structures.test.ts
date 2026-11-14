@@ -1,7 +1,7 @@
 /**
  * The Earth Wall and rubble on top-down boards (#577): which cells stand a drawing (a raised wall,
  * not authored masonry nor an expired one; a rubble surface, not the scene's painted heaps), the
- * wall's depth among the figures, both backends, and the oblique board untouched.
+ * wall's depth among the figures, both backends, and the orthographic board untouched.
  */
 import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -156,7 +156,7 @@ const unit = (id: string, pos: Vec2): RenderUnit =>
     sprite: 'unit.fire.kaya',
   }) as unknown as RenderUnit;
 
-function frame(projection: 'topdown' | 'oblique', units: RenderUnit[] = []) {
+function frame(projection: 'topdown' | 'orthographic', units: RenderUnit[] = []) {
   const drawn: { what: string; args: number[] }[] = [];
   const ctx = new Proxy({ globalAlpha: 1 } as Record<string, unknown>, {
     get(target, k: string) {
@@ -255,9 +255,9 @@ describe('Canvas 2D stands the wall and the heap', () => {
     expect(order).toEqual(['unit:north', WALL_URL, 'unit:south']);
   });
 
-  it('leaves the oblique board as it was', () => {
+  it('leaves the orthographic board as it was', () => {
     fakeDocument();
-    const { drawn } = frame('oblique');
+    const { drawn } = frame('orthographic');
     expect(drawn.some(({ what }) => what === WALL_URL || what === RUBBLE_URL)).toBe(false);
   });
 });
@@ -269,5 +269,51 @@ describe('Pixi stands them through the same path', () => {
     expect(source).toMatch(
       /else if \(!prop\.sprite\) \{\s*\/\/[^\n]*\n\s*sprite\.visible = false;/,
     );
+  });
+});
+
+describe('a rising Earth Wall (#590)', () => {
+  const at = (rise?: number) =>
+    propLayer.topdownPropArt({
+      kind: 'earth_wall',
+      pos: RAISED,
+      ...(rise === undefined ? {} : { rise }),
+    });
+
+  it('carries how far the wall is out of the ground onto its prop', () => {
+    const [wall] = topdownStructures(base({ raisedWalls: [{ ...RAISED, rise: 0.5 }] }));
+    expect(wall).toMatchObject({ kind: 'earth_wall', pos: RAISED, rise: 0.5 });
+    expect(topdownStructures(base())[0]).not.toHaveProperty('rise');
+  });
+
+  it('stands its top rows on its base in eighths, hidden until it starts', () => {
+    fakeDocument();
+    expect(at(0)).toBeNull();
+    const half = at(0.5);
+    expect(half?.url).toBe(`${WALL_URL}#4`);
+    expect(half?.image).toMatchObject({ width: 44, height: 34 });
+    expect(half?.box).toEqual(at()?.box);
+    expect(at(0.01)?.url).toBe(`${WALL_URL}#1`);
+    expect(at(0.8)?.url).toBe(`${WALL_URL}#7`);
+    expect(at(0.9)?.url).toBe(WALL_URL);
+  });
+
+  it('is the standing drawing, and seats on the same shadow, on its final frame', () => {
+    fakeDocument();
+    const whole = at();
+    expect(at(1)).toEqual(whole);
+    expect(at(1)?.url).toBe(WALL_URL);
+    const props = (rise?: number) =>
+      withStructures({
+        grid: board(),
+        raisedWalls: [rise === undefined ? RAISED : { ...RAISED, rise }],
+        props: [],
+      } as unknown as MapView).props;
+    propLayer.resetPropShadows();
+    const rising = propLayer.propShadows(props(0.5), undefined).key;
+    const final = propLayer.propShadows(props(1), undefined).key;
+    expect(rising).toContain(`${WALL_URL}#4@`);
+    expect(final).toBe(propLayer.propShadows(props(), undefined).key);
+    expect(final).not.toContain('#');
   });
 });

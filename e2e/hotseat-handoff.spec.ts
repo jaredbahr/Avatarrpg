@@ -42,6 +42,7 @@ async function observe(page: Page) {
       story: state.story,
       flags: state.flags,
       players: app.session.players,
+      participants: app.session.participants,
       party: state.party.map(({ id, characterId, name }) => ({ id, characterId, name })),
       battle,
       active: battle?.units.find((unit) => unit.id === activeId) ?? null,
@@ -70,13 +71,15 @@ async function setupNamedParty(page: Page, size: number) {
   await page.getByRole('button', { name: /^Settings$/ }).click();
   const reducedMotion = page.getByRole('switch', { name: 'Reduce motion', exact: true });
   if ((await reducedMotion.getAttribute('aria-checked')) !== 'true') await reducedMotion.click();
+  // This spec is about the rotating decider itself; the table vote has its own.
+  await page.getByRole('radio', { name: 'Take turns', exact: true }).click();
   await page.getByRole('button', { name: /^Done$/ }).click();
 
   await page.getByRole('button', { name: /new game/i }).click();
   await page
     .getByRole('button', { name: `${size} player${size === 1 ? '' : 's'}`, exact: true })
     .click();
-  await page.getByRole('button', { name: /^Continue$/ }).click();
+  await page.getByRole('button', { name: 'Choose your own', exact: true }).click();
   const configured = roster.slice(0, size);
   for (const [index, member] of configured.entries()) {
     const handoff = page.getByRole('button', { name: "I've got it", exact: true });
@@ -87,6 +90,14 @@ async function setupNamedParty(page: Page, size: number) {
     }
     await page.getByRole('textbox', { name: 'Your name', exact: true }).fill(member.name);
     await page.getByRole('button', { name: /^Next$/ }).click();
+  }
+  const heroes = roster.slice(0, 3);
+  for (const [index, member] of heroes.entries()) {
+    const ownerIndex = index % size;
+    const owner = configured[ownerIndex];
+    if (!owner) throw new Error('Missing configured hero owner');
+    const handoff = page.getByRole('button', { name: "I've got it", exact: true });
+    if (size > 1) await handoff.click();
     await page.locator(`.pick-card.element-${member.element}`).click();
     await page.getByRole('button', { name: /^Next$/ }).click();
     await page
@@ -97,25 +108,29 @@ async function setupNamedParty(page: Page, size: number) {
   }
   await expect(page.getByRole('heading', { name: 'The party', exact: true })).toBeVisible();
   await expect(page.locator('.party-summary-card .tagline')).toHaveText(
-    configured.map((member) => member.name),
+    heroes.map((_, index) => configured[index % size]!.name),
   );
   await expect(page.locator('.party-summary-card h3')).toHaveText(
-    configured.map((member) => member.character),
+    heroes.map((member) => member.character),
   );
   await page.getByRole('button', { name: /^Begin$/ }).click();
   await settled(page);
   const started = await observe(page);
   expect(started.party.map((member) => member.characterId)).toEqual(
-    configured.map((member) => member.characterId),
+    heroes.map((member) => member.characterId),
   );
-  const expectedPlayers = configured.map((member, index) => {
+  const expectedPlayers = heroes.map((member, index) => {
     const unit = started.party[index];
-    if (!unit) throw new Error(`Missing setup character for ${member.name}`);
-    return { name: member.name, unitId: unit.id };
+    const owner = configured[index % size];
+    if (!unit || !owner) throw new Error(`Missing setup character for ${member.name}`);
+    return { name: owner.name, unitId: unit.id, participantId: `player-${(index % size) + 1}` };
   });
   expect(started.players).toEqual(expectedPlayers);
+  expect(started.participants).toEqual(
+    configured.map((person, index) => ({ id: `player-${index + 1}`, name: person.name })),
+  );
   expect(started.story.deciderIndex).toBe(0);
-  return { configured, expectedPlayers };
+  return { configured, heroes, expectedPlayers };
 }
 
 async function assertChoiceOwner(page: Page, size: number, index: number): Promise<void> {
@@ -205,7 +220,7 @@ for (const size of [1, 2, 4, 6]) {
   test(`${size} named players keep story ownership through refusal, a wrap and reload`, async ({
     page,
   }, info) => {
-    const { expectedPlayers } = await setupNamedParty(page, size);
+    const { configured, expectedPlayers } = await setupNamedParty(page, size);
     await atChoice(page, 'gate_parley', size, 0);
     const locked = page.locator('.choice-option').nth(1);
     await expect(locked).toBeDisabled();
@@ -234,6 +249,9 @@ for (const size of [1, 2, 4, 6]) {
     expect(loaded.flags).toEqual(saved.flags);
     expect(loaded.party).toEqual(saved.party);
     expect(loaded.players).toEqual(expectedPlayers);
+    expect(loaded.participants).toEqual(
+      configured.map((person, index) => ({ id: `player-${index + 1}`, name: person.name })),
+    );
     await assertChoiceOwner(page, size, 1);
     await evidence(page, info, 'story-midrotation-loaded');
 
@@ -270,7 +288,7 @@ for (const size of [1, 2, 4, 6]) {
   test(`${size} named players receive their own combat turns before and after reload`, async ({
     page,
   }, info) => {
-    const { configured, expectedPlayers } = await setupNamedParty(page, size);
+    const { configured, heroes, expectedPlayers } = await setupNamedParty(page, size);
     // Earn a nonzero story rotation before entering the combat fixture, so a
     // combat save must preserve both kinds of ownership at once.
     await atChoice(page, 'plant_chair', size, 0);
@@ -280,7 +298,8 @@ for (const size of [1, 2, 4, 6]) {
 
     const witnessed = new Set<string>();
     let reloaded = false;
-    for (let turn = 0; turn <= size; turn++) {
+    let acknowledgedOwner: string | null = null;
+    for (let turn = 0; turn <= 3; turn++) {
       await partyTurn(page);
       const before = await observe(page);
       const actor = before.active;
@@ -289,19 +308,22 @@ for (const size of [1, 2, 4, 6]) {
       }
       expect(actor.hp).toBeGreaterThan(0);
       expect(before.battle.round).toBeLessThanOrEqual(2);
-      const member = configured.find((candidate) => candidate.characterId === actor.characterId);
+      const member = heroes.find((candidate) => candidate.characterId === actor.characterId);
       if (!member) throw new Error(`Unexpected party character ${actor.characterId}`);
-      const owner = expectedPlayers.find((candidate) => candidate.name === member.name);
+      const owner = expectedPlayers.find((candidate) => candidate.unitId === actor.id);
       expect(owner?.unitId).toBe(actor.id);
+      const ownerIndex = Number(owner?.participantId?.slice('player-'.length)) - 1;
+      expect(owner?.name).toBe(configured[ownerIndex]?.name);
       expect(before.players).toEqual(expectedPlayers);
       expect(before.story.deciderIndex).toBe(1);
       witnessed.add(member.name);
 
       const banner = page.locator('.handoff-banner');
-      if (size === 1) {
+      const needsHandoff = size > 1 && acknowledgedOwner !== owner?.participantId;
+      if (!needsHandoff) {
         await expect(banner).toHaveCount(0);
       } else {
-        await expect(banner.getByRole('heading')).toHaveText(member.name);
+        await expect(banner.getByRole('heading')).toHaveText(owner?.name ?? '');
         await expect(banner).toContainText(`Playing ${member.character}`);
         await expect(page.locator('.action-bar')).toHaveCount(0);
         const map = await page.locator('.map-canvas').boundingBox();
@@ -311,17 +333,19 @@ for (const size of [1, 2, 4, 6]) {
         await page.touchscreen.tap(map.x + map.width * 0.15, map.y + map.height * 0.15);
         const afterGroundTap = await observe(page);
         expect(afterGroundTap.battle).toEqual(before.battle);
-        await expect(banner.getByRole('heading')).toHaveText(member.name);
+        await expect(banner.getByRole('heading')).toHaveText(owner?.name ?? '');
       }
 
       // Capture the actual owner card, then the actionable turn for that same
       // unit. These screenshots wait for the public curtain/animator state.
       if (turn <= 1) await evidence(page, info, `combat-turn-${turn}-before-ready`);
-      if (size > 1) await banner.getByRole('button', { name: "I'm ready", exact: true }).click();
+      if (needsHandoff)
+        await banner.getByRole('button', { name: "I'm ready", exact: true }).click();
+      acknowledgedOwner = owner?.participantId ?? null;
       await expect(banner).toHaveCount(0);
       await expect(page.locator('.action-bar')).toBeVisible();
       await expect(page.locator('.end-turn')).toBeEnabled();
-      await assertHudOwner(page, member.character, member.name);
+      await assertHudOwner(page, member.character, owner?.name ?? '');
       const ready = await observe(page);
       expect(ready.battle).toEqual(before.battle);
       if (turn <= 1) await evidence(page, info, `combat-turn-${turn}-after-ready`);
@@ -334,14 +358,18 @@ for (const size of [1, 2, 4, 6]) {
         expect(loaded.battle).toEqual(ready.battle);
         expect(loaded.story).toEqual(ready.story);
         expect(loaded.players).toEqual(expectedPlayers);
+        expect(loaded.participants).toEqual(
+          configured.map((person, index) => ({ id: `player-${index + 1}`, name: person.name })),
+        );
         expect(loaded.party).toEqual(ready.party);
         if (size > 1) {
-          await expect(banner.getByRole('heading')).toHaveText(member.name);
+          await expect(banner.getByRole('heading')).toHaveText(owner?.name ?? '');
           await evidence(page, info, 'combat-loaded-correct-owner');
           await banner.getByRole('button', { name: "I'm ready", exact: true }).click();
+          acknowledgedOwner = owner?.participantId ?? null;
         } else await expect(banner).toHaveCount(0);
         await expect(page.locator('.end-turn')).toBeEnabled();
-        await assertHudOwner(page, member.character, member.name);
+        await assertHudOwner(page, member.character, owner?.name ?? '');
         expect((await observe(page)).battle).toEqual(ready.battle);
         await evidence(page, info, 'combat-loaded-after-ready');
         reloaded = true;
@@ -366,7 +394,7 @@ for (const size of [1, 2, 4, 6]) {
         })
         .not.toBe(previousActivation);
     }
-    expect([...witnessed].sort()).toEqual(configured.map((member) => member.name).sort());
+    expect([...witnessed].sort()).toEqual(heroes.map((member) => member.name).sort());
     expect(reloaded).toBe(true);
   });
 }

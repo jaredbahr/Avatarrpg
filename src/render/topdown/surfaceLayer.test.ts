@@ -107,7 +107,7 @@ function fakeDocument(): void {
   });
 }
 
-function camera(projection: 'topdown' | 'oblique'): Camera {
+function camera(projection: 'topdown' | 'orthographic'): Camera {
   const out = new Camera({ width: 1000, height: 700, dpr: 1 }, { width: 9, height: 6 }, projection);
   out.integerZoom = true;
   out.fitExplore(projection === 'topdown' ? 120 : 96);
@@ -135,7 +135,7 @@ const ATLAS = flameAtlasFrom({
   meta: { image: 'vfx.webp' },
 });
 
-function canvasFrame(projection: 'topdown' | 'oblique', v: MapView) {
+function canvasFrame(projection: 'topdown' | 'orthographic', v: MapView) {
   const drawn: { what: string; args: number[] }[] = [];
   const ops: string[] = [];
   const ctx = new Proxy(
@@ -177,7 +177,9 @@ describe('which surfaces are organic', () => {
     expect(drawsOrganicSurfaces({ hatch: false, crispOverlays: false }, 'topdown')).toBe(true);
     expect(drawsOrganicSurfaces({ hatch: true, crispOverlays: false }, 'topdown')).toBe(false);
     expect(drawsOrganicSurfaces({ hatch: false, crispOverlays: true }, 'topdown')).toBe(false);
-    expect(drawsOrganicSurfaces({ hatch: false, crispOverlays: false }, 'oblique')).toBe(false);
+    expect(drawsOrganicSurfaces({ hatch: false, crispOverlays: false }, 'orthographic')).toBe(
+      false,
+    );
     expect(organicOwns(true, 'water')).toBe(true);
     // rubble is not painted into the layer, but its heap sprite replaces the cell drawing (#577)
     expect(organicOwns(true, 'rubble')).toBe(true);
@@ -207,9 +209,9 @@ describe('Canvas 2D draws the organic surfaces', () => {
     expect(painted.surfaces).toBe(0);
   });
 
-  it('not on the oblique board', () => {
+  it('not on the orthographic board', () => {
     fakeDocument();
-    const { drawn } = canvasFrame('oblique', view());
+    const { drawn } = canvasFrame('orthographic', view());
     expect(drawn.some(({ what }) => what === 'surfaces')).toBe(false);
     expect(painted.surfaces).toBeGreaterThan(0);
   });

@@ -115,7 +115,7 @@ export class LocalMapDialog extends Dialog {
     private positions: readonly Vec2[],
     private walk: (pos: Vec2) => void,
     private recenter: () => void,
-    private objectiveNpcId: string | null = null,
+    private objectiveTargetId: string | null = null,
   ) {
     super();
   }
@@ -134,9 +134,9 @@ export class LocalMapDialog extends Dialog {
       class: 'stack',
       attrs: { role: 'navigation', 'aria-label': 'Routes from this area' },
     });
-    const target = this.objectiveNpcId
+    const target = this.objectiveTargetId
       ? visibleNpcs(this.content, this.map, this.state).find(
-          (npc) => npc.id === this.objectiveNpcId,
+          (npc) => npc.id === this.objectiveTargetId,
         )
       : undefined;
     if (target) {

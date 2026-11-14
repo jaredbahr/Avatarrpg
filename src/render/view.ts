@@ -6,9 +6,9 @@
  * that is what lets the Canvas 2D and WebGL backends be interchangeable.
  */
 
-import type { Grid, MapBackdrop, MapScene, StatusId, Vec2 } from '../core/types';
+import type { Grid, MapBackdrop, MapExit, MapScene, StatusId, Vec2 } from '../core/types';
 import { tileAt } from '../core/rules/grid';
-import type { ClipName, Heading, MeleeDirection } from '../content/assets/clips';
+import type { ClipName, MeleeDirection } from '../content/assets/clips';
 import type { EmitterDef } from '../content/fx';
 import { FLOATING_NUMBER } from './palettes';
 
@@ -54,12 +54,6 @@ export interface RenderUnit {
   readonly alpha?: number;
   /** 0..1 white flash on a hit. */
   readonly flash?: number;
-  /**
-   * A bend cel to draw in place of the clip (ADR 0055): the heading and play
-   * index `SheetStore.bendFrame` resolves, drawn as authored, never mirrored.
-   * A cel that does not resolve draws the clip instead.
-   */
-  readonly bend?: { readonly heading: Heading; readonly index: number };
 }
 
 /** How far the fallen fade takes a standing pose: nearly a ghost, under its cross. */
@@ -83,15 +77,10 @@ export function fallenAlpha(unit: Pick<RenderUnit, 'fallen' | 'clip'>): number {
  * stay on the logical ground point. Elevation is applied in actor space for
  * both rendering backends.
  */
-export function unitMarkerGroundPoint(
-  base: Vec2,
-  tileSize: number,
-  elevationLift: number,
-  contactOffset?: Vec2,
-): Vec2 {
+export function unitMarkerGroundPoint(base: Vec2, tileSize: number, contactOffset?: Vec2): Vec2 {
   return {
     x: base.x + (contactOffset?.x ?? 0) * tileSize,
-    y: base.y + ((contactOffset?.y ?? 0) - elevationLift) * tileSize,
+    y: base.y + (contactOffset?.y ?? 0) * tileSize,
   };
 }
 
@@ -172,6 +161,8 @@ export interface ActorAttachment {
   readonly facing: 1 | -1;
   readonly scale: number;
   readonly offset: Vec2;
+  /** The top-down action the caster is drawing (ADR 0104), whose measured `hand` a cast socket is. */
+  readonly clip?: ClipName;
 }
 
 export interface EmitterAttachments {
@@ -199,11 +190,11 @@ export interface EmitterInstance {
 }
 
 /**
- * One painted bend-effect cel, resolved (ADR 0055): the page rectangle, where
- * its pivot lands, and its turn, size, opacity and flash. The caller samples
- * these from its own clock (`sampleBendFx`); both backends draw them as they
- * are and never time, turn, mirror or shake anything themselves. The board
- * shake is the view's `cameraNudge`.
+ * One painted effect cel, resolved: the page rectangle, where its pivot lands,
+ * and its turn, size and opacity. The top-down shots (#588) sample these from
+ * their own clock (`shotSprite`); both backends draw them as they are and never
+ * time, turn, mirror or shake anything themselves. The board shake is the
+ * view's `cameraNudge`.
  */
 export interface BendFxSprite {
   /** The page image, relative to the site root. */
@@ -232,8 +223,6 @@ export interface BendFxSprite {
   readonly alpha: number;
   /** `add` lights what is under the cel instead of covering it. */
   readonly blend: 'normal' | 'add';
-  /** 0..1: the cel added onto itself, its colour times `1 + flash`; not a white flash. */
-  readonly flash: number;
   /** `ground` and `underActor` draw under the upright actors, `overActor` over them. */
   readonly z: 'ground' | 'underActor' | 'overActor';
 }
@@ -306,6 +295,8 @@ export function placeFloaters(
 export interface NpcMarker {
   /** Stable per person (resident, role, NpcDef or trigger), so a walk keeps one sprite. */
   readonly id: string;
+  /** The map-owned NpcDef represented by a resident-bound marker, when any. */
+  readonly npcId?: string;
   readonly pos: Vec2;
   readonly sprite: string;
   readonly name: string;
@@ -357,6 +348,8 @@ export interface RenderProp {
   readonly maxHp: number;
   /** Fuel rounds remaining; present only while this prop is burning. */
   readonly burning?: number;
+  /** How far a rising Earth Wall is out of the ground, 0..1 (#590); absent is whole. */
+  readonly rise?: number;
   /** Suppress a baked shadow, or keep only a faint runtime extension. */
   readonly castShadow?: false | 'reduced';
 }
@@ -393,7 +386,7 @@ export interface MapView {
   readonly npcs: readonly NpcMarker[];
   readonly props: readonly RenderProp[];
   /** Cells the rules raised as walls this fight (`BattleState.temporaryWalls`), still standing. */
-  readonly raisedWalls?: readonly Vec2[];
+  readonly raisedWalls?: readonly (Vec2 & { readonly rise?: number })[];
   readonly path: readonly Vec2[];
   /** Where `path` starts (the walker's tile), so it can be drawn as one curve. */
   readonly pathFrom: Vec2 | null;
@@ -413,8 +406,8 @@ export interface MapView {
   readonly activeUnitId: string | null;
   readonly selectedUnitId: string | null;
   readonly hoverTile: Vec2 | null;
-  readonly exit: { readonly pos: Vec2; readonly label: string } | null;
-  readonly exits?: readonly { readonly pos: Vec2; readonly label: string }[];
+  readonly exit: Pick<MapExit, 'pos' | 'label' | 'direction'> | null;
+  readonly exits?: readonly Pick<MapExit, 'pos' | 'label' | 'direction'>[];
   /** Colourblind hatch patterns on surfaces. */
   readonly hatch: boolean;
   /** Tile lines over the ground. Off by default; a setting, and High contrast, turn them on. */

@@ -21,9 +21,9 @@ function flat(w: number, h: number): ReturnType<typeof newImage> {
 }
 
 describe('validateImages', () => {
-  it('passes a 512 px portrait and any texture-sized image of another kind', () => {
+  it('passes a 160 px portrait and any texture-sized image of another kind', () => {
     const dir = site();
-    writePng(join(dir, 'art', 'portraits', 'kaya.png'), flat(512, 512));
+    writePng(join(dir, 'art', 'portraits', 'kaya.png'), flat(160, 160));
     mkdirSync(join(dir, 'art', 'units'));
     writePng(join(dir, 'art', 'units', 'kaya.png'), flat(64, 96));
     const entries: Record<string, AssetEntry> = {
@@ -37,7 +37,7 @@ describe('validateImages', () => {
   it('names a missing file, the wrong size, a JPEG, a misnamed format and an absolute url', () => {
     const dir = site();
     writePng(join(dir, 'art', 'portraits', 'small.png'), flat(300, 300));
-    writePng(join(dir, 'art', 'portraits', 'named.webp'), flat(512, 512));
+    writePng(join(dir, 'art', 'portraits', 'named.webp'), flat(160, 160));
     writeFileSync(
       join(dir, 'art', 'portraits', 'photo.png'),
       Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0, 16]),
@@ -52,7 +52,7 @@ describe('validateImages', () => {
     const problems = validateImages(dir, entries);
     expect(problems).toHaveLength(5);
     expect(problems.join('\n')).toMatch(/gone.png is missing/);
-    expect(problems.join('\n')).toMatch(/small.png is 300x300, expected 512x512/);
+    expect(problems.join('\n')).toMatch(/small.png is 300x300, expected 160x160/);
     expect(problems.join('\n')).toMatch(/named.webp is a png named as something else/);
     expect(problems.join('\n')).toMatch(/photo.png must be a PNG or a WebP/);
     expect(problems.join('\n')).toMatch(/must be relative to the site root/);
@@ -69,7 +69,7 @@ describe('validateImages', () => {
     }
     writePng(join(dir, 'art', 'portraits', 'noise.png'), noisy);
     const problems = validateImages(dir, {
-      'portrait.noise': { kind: 'image', url: 'art/portraits/noise.png' },
+      'world.noise': { kind: 'image', url: 'art/portraits/noise.png' },
     });
     expect(problems.join('\n')).toMatch(new RegExp(`the limit is ${MAX_IMAGE_BYTES / 1024} KB`));
   });

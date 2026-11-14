@@ -43,6 +43,34 @@ test.describe('offline', () => {
     });
     await expect(page.getByRole('button', { name: /new game/i })).toBeVisible();
 
+    // Top-down is the default (ADR 0104 T6) and precached: its boards draw with no network.
+    await page.evaluate(() => {
+      window.fnt?.app.newGame([{ name: 'Sam', unitId: '' }], [{ characterId: 'kaya' }], 'offline');
+      window.fnt?.app.dispatch({ type: 'enterNode', nodeId: 'village_explore' });
+    });
+    await page.locator('.explore-scene .map-canvas').waitFor();
+    await expect
+      .poll(() => page.evaluate(() => window.fnt?.app.rendererCamera()?.projection))
+      .toBe('topdown');
+    expect(
+      await page.evaluate(
+        () => window.fnt?.app.content.maps.get('ba_dan_village')?.scene?.ground[0]?.url,
+      ),
+    ).toMatch(/^art\/topdown\/ba-dan\//);
+    // Every image the board asked for came from the cache.
+    const missing = await page.evaluate(async () => {
+      const urls = performance
+        .getEntriesByType('resource')
+        .map((entry) => entry.name)
+        .filter((url) => url.includes('/art/topdown/'));
+      const absent: string[] = [];
+      for (const url of urls)
+        if (!(await caches.match(url, { ignoreSearch: true }))) absent.push(url);
+      return { checked: urls.length, absent };
+    });
+    expect(missing.checked).toBeGreaterThan(0);
+    expect(missing.absent).toEqual([]);
+
     await context.setOffline(false);
   });
 

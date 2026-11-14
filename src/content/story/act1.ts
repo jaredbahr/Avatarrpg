@@ -23,6 +23,33 @@ const RETURNING_PROFILES = Object.fromEntries(
 ) as Readonly<Record<(typeof RETURNEE_IDS)[number], ResidentProfile>>;
 
 export const ACT1_NODES: readonly StoryNode[] = [
+  /* --------------------------------------------------------------- Prologue */
+  /*
+   * The flash-forward (saga outline, decision 3; story bible C-28): a storm
+   * inside a machine, long after Act I. No names and no faces, and nothing
+   * that names the place or the woman at the valve (the reveal ladder). The
+   * final battle replays it with names. Its stills are placeholder cards
+   * until the art batch (`interludes.ts`); the last line cuts to Ba Dan.
+   */
+  {
+    id: 'prologue_storm',
+    kind: 'dialogue',
+    speaker: 'The Storm',
+    portrait: 'portrait.narrator',
+    lines: [
+      'Rain hammers on an iron roof, somewhere far overhead.',
+      'Below the roof, water comes in under a steel door. Ankle-deep. Then deeper. A lantern swings on its hook and throws the shadows around.',
+      'Somewhere in the dark a turbine is screaming. The sound climbs past anything a machine is meant to make.',
+      'Red lamps flash down a gallery, one after another. A gauge needle leans hard against its pin and shivers there.',
+      'A hand closes on a valve wheel. A woman’s hand, the knuckles scraped, a ring of grease worn into the thumb.',
+      'She leans her whole weight on the wheel. It does not move.',
+      'A drop falls from a pipe into the water at her feet. The water ripples once. A breath later, it ripples again.',
+      'Then only the rain.',
+      'Morning, far from there. In Ba Dan, someone has set bowls along an outdoor table, more than anyone will eat from today.',
+    ],
+    next: 'act1_open',
+  },
+
   /* ---------------------------------------------------------------- Opening */
   {
     id: 'act1_open',
@@ -43,17 +70,17 @@ export const ACT1_NODES: readonly StoryNode[] = [
     kind: 'explore',
     mapId: 'ba_dan_village',
     objective: 'Talk to Elder Mira, then take the east road to the quarry.',
-    objectiveNpcId: 'elder_mira',
+    objectiveTargetId: 'elder_mira',
     objectiveVariants: [
       {
         when: RETURNEES_HOME,
         text: 'The workers are home. Talk with Mira, Pella, Gao or Dorin, or visit the river.',
-        objectiveNpcId: null,
+        objectiveTargetId: null,
       },
       {
         when: { kind: 'visited', nodeId: 'mira_intro' },
         text: 'Take the east road to the quarry. You can speak with the neighbors before you leave.',
-        objectiveNpcId: null,
+        objectiveTargetId: 'forest_road',
       },
     ],
     next: 'road_depart',
@@ -82,7 +109,6 @@ export const ACT1_NODES: readonly StoryNode[] = [
       'Bo-shan and all four messengers are home. I have counted everyone twice. They keep telling me to stop.',
       'You can stay as long as you need. Leave your washing by the door.',
     ],
-    next: 'village_return_explore',
     variants: [
       {
         when: { kind: 'flag', key: 'ruon_spared', op: 'set' },
@@ -101,6 +127,39 @@ export const ACT1_NODES: readonly StoryNode[] = [
         ],
       },
     ],
+    next: 'mira_rubbing',
+  },
+  /*
+   * The rubbing from the driller's plate changes hands (#628). Mira routes to
+   * `mira_rubbing_kept` once she has it, so a second visit never asks again.
+   */
+  {
+    id: 'mira_rubbing',
+    kind: 'dialogue',
+    speaker: 'Elder Mira',
+    portrait: 'portrait.mira',
+    lines: [
+      'Is that the rubbing? Hold that corner flat for me.',
+      'Republic City. Somebody paid to bring that machine a long way. It goes in the report, and the province can tell me who.',
+    ],
+    next: 'mira_rubbing_given',
+  },
+  {
+    id: 'mira_rubbing_given',
+    kind: 'flags',
+    set: { rubbing_given: true },
+    next: 'village_return_explore',
+  },
+  {
+    id: 'mira_rubbing_kept',
+    kind: 'dialogue',
+    speaker: 'Elder Mira',
+    portrait: 'portrait.mira',
+    lines: [
+      'The rubbing is folded into the province report. Dorin asked to copy the maker’s mark into his watch book first.',
+      'Go and eat. Gao has kept bowls for you.',
+    ],
+    next: 'village_return_explore',
   },
   {
     id: 'gao_friendly',
@@ -144,7 +203,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     lines: [
       "You're going to the quarry? I can show you the way. I know it. Mira keeps saying I'm too little.",
       'My brother took vegetables up before Mira sent the others. Bo-shan. That makes five missing. He was supposed to be back on Tuesday.',
-      'He says a lightning strike can go right across a puddle. He saw it happen to a whole crew. He also says he can lift an ostrich-horse, so I would ask someone else.',
+      'He says a lightning strike can go right across a puddle. He saw it happen to a whole crew. He also says he can lift an ostrich horse, so I would ask someone else.',
       'Mira says “the missing people” every time. She could say his name. She knows his name.',
       "Look for the cart with cabbages piled above the seat. Tell him I'm not doing his chores again this week.",
     ],
@@ -154,7 +213,8 @@ export const ACT1_NODES: readonly StoryNode[] = [
     id: 'pella_asked',
     kind: 'flags',
     set: { pella_asked: true },
-    next: 'village_explore',
+    // SQ-01's entry: Pella hands over her copy of his packing list.
+    next: 'sq01_packing_list',
   },
   {
     id: 'pella_again',
@@ -486,6 +546,18 @@ export const ACT1_NODES: readonly StoryNode[] = [
     ],
     next: 'cutting_after_explore',
   },
+  {
+    // Ruon waits in the Cutting after the ambush (#628); tapping him gets this.
+    id: 'ruon_cutting',
+    kind: 'dialogue',
+    speaker: 'Captain Ruon',
+    portrait: 'portrait.ruon',
+    lines: [
+      'The quarry floor is east, past the ore cart. I’ll keep to the back.',
+      'If Jin sends anyone else, they reach me first. That was the arrangement.',
+    ],
+    next: 'cutting_after_explore',
+  },
 
   /* ------------------------------------------------------ Branch B: trade */
   /*
@@ -576,8 +648,10 @@ export const ACT1_NODES: readonly StoryNode[] = [
     lines: [
       'Stone carts leave the quarry again. At the fork, each one takes the coast road past Ba Dan.',
       'Mira stretches the evening rice with broth. Families still come to her door asking for news from the galleries.',
-      'A worker gets a note to Dorin: Bo-shan, the four messengers and the crews are alive. Grumbler is still holding them in the quarry.',
+      'Grumbler’s crew rolls Bo-shan’s cart down to the fork, emptied, one wheel split, and leaves it there. Under the seat, a worker has tucked a note for Dorin: Bo-shan, the four messengers and the crews are alive.',
       'The driller is still down there. Its parts came from Republic City; someone paid to bring them all this way.',
+      'Gao patches the wheel with what he has in the shop. Pella watches every nail. “His deliveries are still waiting,” she tells you. “Take the cart for him. Bring it back with him on it.”',
+      'Dorin writes himself a travel permit, signs it, reads it twice and stamps it. Then he climbs up and takes the reins.',
     ],
     teaser:
       'Across the bay, lamps burn in a Fire Nation outpost closed nine years ago. A supply boat ties up at its jetty.',
@@ -587,21 +661,33 @@ export const ACT1_NODES: readonly StoryNode[] = [
     kind: 'flags',
     set: { act1_complete: true },
     residentProfiles: RETURNING_PROFILES,
-    phase: 'evening',
     next: 'act1_epilogue',
   },
   {
+    /*
+     * The workers are free: a beat, not the ending. The walk home follows, and
+     * the demo closes in Ba Dan (`welcome_home_mira` in return.ts).
+     */
     id: 'act1_epilogue',
-    kind: 'end',
-    title: 'The Quarry of Ba Dan',
+    kind: 'dialogue',
+    speaker: 'The Quarry',
+    portrait: 'portrait.narrator',
     lines: [
       'The drill jams in the quarry floor. Grumbler tries the lever twice, then climbs out with his hands raised.',
       'You pull the bars from the gallery doors. Mira’s four messengers are there. Bo-shan follows them out and asks where Pella is.',
       'The driller bears a Republic City maker’s plate. You take a rubbing for Mira’s report to the province.',
       'The workers help each other up the ramp and start down the west road. It is time to take the news home to Ba Dan.',
     ],
-    teaser:
-      'Across the bay, lamps burn in a Fire Nation outpost closed nine years ago. A supply boat ties up at its jetty.',
+    // The cart's delivery book, the party-neutral reason to keep going (reasons.ts).
+    next: 'quarry_ledger',
+  },
+  {
+    // Evening falls as the walk home begins. A phase change rests at an explore
+    // node, never in a conversation, so it follows the beat rather than leading it.
+    id: 'act1_evening',
+    kind: 'flags',
+    set: {},
+    phase: 'evening',
     next: 'quarry_after_explore',
   },
 ];

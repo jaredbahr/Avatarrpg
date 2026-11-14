@@ -10,12 +10,18 @@ const PROGRESS_CASES = [
   { id: 'level-9-start', level: 9, xp: 2200, text: 'Level 9 — 0% to level 10 (500 XP to go)' },
   { id: 'level-9-halfway', level: 9, xp: 2450, text: 'Level 9 — 50% to level 10 (250 XP to go)' },
   { id: 'level-10-cap', level: 10, xp: 2700, text: 'Level 10 — Maximum level' },
+  {
+    id: 'level-3-near-threshold',
+    level: 3,
+    xp: 449,
+    text: 'Level 3 — 99% to level 4 (1 XP to go)',
+  },
 ] as const;
 
 /**
  * Explicit supported-save fixtures, not levels earned in the Act 1 campaign.
  * createGame supplies learned choices and the default discipline; XP is then
- * set to a consistent level boundary or halfway point before normal save
+ * set to a consistent XP value within its level band before normal save
  * validation. A high-level newGame starts at zero XP and is not this fixture.
  */
 function supportedSave(level: number, xp: number) {

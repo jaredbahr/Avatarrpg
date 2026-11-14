@@ -195,6 +195,10 @@ function fixtures() {
       expected: ['won'],
     },
     screenChanged: { event: { type: 'screenChanged', screen: 'explore' }, expected: null },
+    comboDiscovered: {
+      event: { type: 'comboDiscovered', comboId: 'fire-into-oil' },
+      expected: null,
+    },
     phaseChanged: {
       event: { type: 'phaseChanged', from: 'night', to: 'dawn', day: 2 },
       expected: ['dawn'],

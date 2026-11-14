@@ -17,6 +17,8 @@ import type { ContentIndex } from '../../core/types';
 import type { ForecastEntry } from '../../core/rules/reactions';
 import { describeFooting } from '../../core/rules/reactions';
 import { el } from './dom';
+import { comboHint } from './comboText';
+import type { ComboReveal } from './comboText';
 
 /** "Kaya (6 damage, Shocked)" — who a chain reaches and what it does to them. */
 function describeCaught(content: ContentIndex, entry: ForecastEntry): HTMLElement | null {
@@ -59,10 +61,32 @@ function describeResult(content: ContentIndex, entry: ForecastEntry): string {
 export function reactionNotes(
   content: ContentIndex,
   reactions: readonly ForecastEntry[],
+  reveal: ComboReveal = 'all',
 ): HTMLElement[] {
   const notes: HTMLElement[] = [];
+  const hinted = new Set<string>();
 
   for (const entry of reactions) {
+    /*
+     * #622: a combo nobody at the table has seen yet is a hint, not a recipe.
+     * It still appears only because the forecast found it, so it never lies;
+     * the "hits your own side" warning below the notes still shows in full.
+     */
+    const hint = comboHint(content, entry, reveal);
+    if (hint !== null) {
+      if (hinted.has(hint)) continue;
+      hinted.add(hint);
+      notes.push(
+        el(
+          'div',
+          { class: 'reaction-note reaction-hint' },
+          el('strong', { class: 'reaction-label', text: hint }),
+          el('span', { class: 'tiny reaction-result', text: 'Try it and see what happens!' }),
+        ),
+      );
+      continue;
+    }
+
     const chains = entry.chainTiles > 0;
     const classes = ['reaction-note'];
     if (entry.kind === 'reaction') classes.push('reaction-fires');

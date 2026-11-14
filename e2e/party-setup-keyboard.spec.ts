@@ -58,29 +58,29 @@ for (const size of [1, 2]) {
     await resetStorage(page, '?renderer=canvas');
     await activate(page, button(page, 'New game'));
     // Assert before the next Tab: a recovery tab must not mask a body focus loss.
-    await visibleFocus(button(page, '2 players'));
+    await visibleFocus(button(page, '1 player'));
     const count = button(page, size === 1 ? '1 player' : '2 players');
     await activate(page, count, 'Space', size === 1);
     await visibleFocus(count);
-    await activate(page, button(page, 'Continue'));
+    await activate(page, button(page, 'Choose your own'));
 
     if (size === 1) {
       await visibleFocus(page.getByRole('textbox', { name: 'Your name', exact: true }));
       await activate(page, button(page, 'Back'));
       await visibleFocus(count);
-      await activate(page, button(page, 'Continue'));
+      await activate(page, button(page, 'Choose your own'));
     } else {
       await visibleFocus(button(page, "I've got it"));
     }
 
-    const players =
+    const people =
       size === 1
-        ? [{ name: '', stored: 'Player 1', element: 'nonbender', character: 'Riko' }]
+        ? [{ name: '', stored: 'Player 1' }]
         : [
-            { name: 'Jared', stored: 'Jared', element: 'fire', character: 'Kaya' },
-            { name: 'Morgan', stored: 'Morgan', element: 'water', character: 'Nilak' },
+            { name: 'Jared', stored: 'Jared' },
+            { name: 'Morgan', stored: 'Morgan' },
           ];
-    for (const player of players) {
+    for (const [index, player] of people.entries()) {
       if (size > 1) {
         await visibleFocus(button(page, "I've got it"));
         await activate(page, button(page, "I've got it"));
@@ -91,15 +91,35 @@ for (const size of [1, 2]) {
       await page.keyboard.press('Backspace');
       if (player.name) await page.keyboard.type(player.name);
       await page.keyboard.press('Enter');
+      if (index + 1 < people.length) await visibleFocus(button(page, "I've got it"));
+    }
+
+    const heroes =
+      size === 1
+        ? [
+            { element: 'nonbender', character: 'Riko', owner: 0 },
+            { element: 'fire', character: 'Kaya', owner: 0 },
+            { element: 'earth', character: 'Bo', owner: 0 },
+          ]
+        : [
+            { element: 'nonbender', character: 'Riko', owner: 0 },
+            { element: 'fire', character: 'Kaya', owner: 1 },
+            { element: 'earth', character: 'Bo', owner: 0 },
+          ];
+    for (const [index, hero] of heroes.entries()) {
+      if (size > 1) {
+        await visibleFocus(button(page, "I've got it"));
+        await activate(page, button(page, "I've got it"));
+      }
       await visibleFocus(page.locator('.pick-card.element-fire'));
-      const element = page.locator(`.pick-card.element-${player.element}`);
+      const element = page.locator(`.pick-card.element-${hero.element}`);
       await activate(page, element, 'Space');
       await visibleFocus(element);
       await expect(element).toHaveAttribute('aria-pressed', 'true');
-      if (player.element === 'nonbender')
+      if (hero.element === 'nonbender')
         await page.screenshot({ path: info.outputPath('last-path-focus.png') });
       await activate(page, button(page, 'Next'));
-      const selected = character(page, player.character);
+      const selected = character(page, hero.character);
       await visibleFocus(page.locator('.character-card:not([disabled])').first());
       await activate(page, selected, 'Space');
       await visibleFocus(selected);
@@ -109,11 +129,13 @@ for (const size of [1, 2]) {
       await activate(page, button(page, 'Next'));
       await visibleFocus(selected);
       await activate(page, button(page, 'Confirm'));
-      await visibleFocus(button(page, player === players.at(-1) ? 'Begin' : "I've got it"));
+      if (index === heroes.length - 1) await visibleFocus(button(page, 'Begin'));
+      else if (size > 1) await visibleFocus(button(page, "I've got it"));
+      else await visibleFocus(page.locator('.pick-card.element-fire'));
     }
     await activate(page, button(page, 'Back'), 'Enter', true);
-    const last = players.at(-1);
-    if (!last) throw new Error('No setup player');
+    const last = heroes.at(-1);
+    if (!last) throw new Error('No setup hero');
     await visibleFocus(character(page, last.character));
     await activate(page, button(page, 'Confirm'));
     await visibleFocus(button(page, 'Begin'));
@@ -122,13 +144,13 @@ for (const size of [1, 2]) {
     const actual = await page.evaluate(() => {
       const app = window.fnt?.app;
       return {
-        names: app?.session.players.map((player) => player.name),
+        names: app?.session.participants.map((player) => player.name),
         characters: app?.state?.party.map((unit) => unit.characterId),
         screen: app?.state?.screen,
       };
     });
-    expect(actual.names).toEqual(players.map((player) => player.stored));
-    expect(actual.characters).toEqual(players.map((player) => player.character.toLowerCase()));
+    expect(actual.names).toEqual(people.map((person) => person.stored));
+    expect(actual.characters).toEqual(heroes.map((hero) => hero.character.toLowerCase()));
     expect(actual.screen).toBe('dialogue');
   });
 }
@@ -147,18 +169,31 @@ test('pointer setup keeps selections usable without a forced keyboard ring', asy
   expect(
     await button(page, '1 player').evaluate((element) => element.matches(':focus-visible')),
   ).toBe(false);
-  await press(button(page, 'Continue'));
+  await press(button(page, 'Choose your own'));
   await page.getByRole('textbox', { name: 'Your name', exact: true }).fill('Pointer');
   await press(button(page, 'Next'));
-  const element = page.locator('.pick-card.element-fire');
-  await press(element);
-  await expect(element).toBeFocused();
-  expect(await element.evaluate((node) => node.matches(':focus-visible'))).toBe(false);
-  await press(button(page, 'Next'));
-  await press(character(page, 'Kaya'));
-  await press(button(page, 'Confirm'));
+  const choices = [
+    ['fire', 'Kaya'],
+    ['water', 'Nilak'],
+    ['earth', 'Bo'],
+  ] as const;
+  for (const [index, [elementName, heroName]] of choices.entries()) {
+    if (index > 0) {
+      const handoff = button(page, "I've got it");
+      await expect(handoff).toHaveCount(0);
+    }
+    const element = page.locator(`.pick-card.element-${elementName}`);
+    await press(element);
+    if (index === 0) {
+      await expect(element).toBeFocused();
+      expect(await element.evaluate((node) => node.matches(':focus-visible'))).toBe(false);
+    }
+    await press(button(page, 'Next'));
+    await press(character(page, heroName));
+    await press(button(page, 'Confirm'));
+  }
   await press(button(page, 'Begin'));
   expect(
-    await page.evaluate(() => window.fnt?.app.session.players.map((player) => player.name)),
+    await page.evaluate(() => window.fnt?.app.session.participants.map((player) => player.name)),
   ).toEqual(['Pointer']);
 });

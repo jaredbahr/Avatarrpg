@@ -1,0 +1,3 @@
+// Korra here is a source comment, not player-facing copy.
+const Korra = 'Sokkata is an original name';
+export const planted = 'sOkKa visits the bazaar';

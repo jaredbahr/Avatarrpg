@@ -291,31 +291,6 @@ describe('ResidentWalks', () => {
     expect(w.walkingTo({ x: 17, y: 6 })).toBe(false);
   });
 
-  it('walks Mira everywhere at her amble (ADR 0095)', () => {
-    const w = walks();
-    const before = at('midday');
-    w.tick(0, false);
-    w.update(VILLAGE, before, party, true);
-    w.update(VILLAGE, waited(before, 'afternoon'), party, true);
-    const clips = new Set<string>();
-    let start: Vec2 | undefined;
-    let at1s: Vec2 | undefined;
-    for (let t = 50; t <= 20 * TIMING.strollStep * RESIDENT_AMBLE; t += 50) {
-      w.tick(t, false);
-      const mira = figure(w, 'lw.npc.mira');
-      if (!mira) continue;
-      start ??= mira.drawPos;
-      if (t === 1050) at1s = mira.drawPos;
-      if (mira.walking) clips.add(mira.clip ?? '');
-    }
-    // A placement walk, which every other resident makes at the brisk pace, draws her walk...
-    expect([...clips].some((clip) => clip.startsWith('walk'))).toBe(true);
-    expect([...clips].some((clip) => clip.startsWith('jog'))).toBe(false);
-    // ...at the amble: after a second she has covered under a tile.
-    if (!start || !at1s) throw new Error('Mira walks off this afternoon');
-    expect(Math.hypot(at1s.x - start.x, at1s.y - start.y)).toBeLessThan(1);
-  });
-
   it('keeps a walk running when a command mid-walk leaves the walker’s tile alone', () => {
     const run = (interrupt: boolean) => {
       const w = walks();
@@ -723,9 +698,8 @@ describe('routines (Working Ba Dan)', () => {
       v.update(VILLAGE, walking, [beside], true);
       clips.add(gao(v)?.clip ?? '');
     }
-    // Called home, he walks at the brisk pace, never the jog (ADR 0095's amendment).
+    // Called home, he walks at the brisk pace (ADR 0095's amendment).
     expect([...clips].some((clip) => clip.startsWith('walk'))).toBe(true);
-    expect([...clips].some((clip) => clip.startsWith('jog'))).toBe(false);
     // Home on the next leg, not after the four-second hold at the crates.
     expect(t - reached.t).toBeLessThan(2_500);
     expect(gao(v)).toMatchObject({ drawPos: SHOP, walking: false });

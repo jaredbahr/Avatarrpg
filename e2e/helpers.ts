@@ -69,12 +69,18 @@ export async function snapshot(page: Page): Promise<AppSnapshot> {
 /**
  * Clears saved games and settings so each spec starts from nothing.
  *
- * `query` is kept across the reload, which is how a spec forces a renderer
+ * Storage is cleared on a same-origin page that does not boot the game, and
+ * the game then boots once. Booting it first and reloading aborted its
+ * startup fetches (the top-down scenes), and WebKit reports an aborted fetch
+ * as `TypeError: Load failed`, which the game logs as a console error that
+ * every spec collecting errors then failed on (explore.spec, intermittently).
+ *
+ * `query` is passed to that one boot, which is how a spec forces a renderer
  * (`?renderer=webgl`) or the frame-time readout (`?stats=1`): both are read
  * from `location.search` when the app boots.
  */
 export async function resetStorage(page: Page, query = ''): Promise<void> {
-  await page.goto(`/${query}`);
+  await page.goto('/robots.txt');
   await page.evaluate(() => {
     try {
       localStorage.clear();
@@ -82,7 +88,7 @@ export async function resetStorage(page: Page, query = ''): Promise<void> {
       /* private window: nothing to clear */
     }
   });
-  await page.reload();
+  await page.goto(`/${query}`);
   await page.waitForFunction(() => Boolean(window.fnt?.app));
 }
 
@@ -93,6 +99,17 @@ export interface StartOptions {
    * round. A spec about motion turns it off.
    */
   readonly reduceMotion?: boolean;
+  /**
+   * Story choices are taken in turns by default here, so a spec that taps an
+   * option sees it chosen at any table size. `e2e/table-vote.spec.ts` owns the
+   * shipped default, the table vote (#621).
+   */
+  readonly storyChoices?: 'vote' | 'turns';
+  /**
+   * A new game opens on the flash-forward prologue (C-28). The suite starts on
+   * Ba Dan's opening, as Skip scene would, unless a spec is about the prologue.
+   */
+  readonly prologue?: boolean;
 }
 
 /** Starts a game without walking the whole setup flow. */
@@ -104,17 +121,26 @@ export async function startGame(
   options: StartOptions = {},
 ): Promise<void> {
   await page.evaluate(
-    ({ players, characterIds, seed, reduceMotion }) => {
+    ({ players, characterIds, seed, reduceMotion, storyChoices, prologue }) => {
       const app = window.fnt?.app;
       if (!app) throw new Error('The game has not finished booting.');
-      app.updateSettings({ reduceMotion });
+      app.updateSettings({ reduceMotion, storyChoices });
       app.newGame(
         players.map((name) => ({ name, unitId: '' })),
         characterIds.map((characterId) => ({ characterId })),
         seed,
       );
+      if (!prologue && app.state?.story.nodeId === 'prologue_storm')
+        app.dispatch({ type: 'enterNode', nodeId: 'act1_open' });
     },
-    { players, characterIds, seed, reduceMotion: options.reduceMotion ?? true },
+    {
+      players,
+      characterIds,
+      seed,
+      reduceMotion: options.reduceMotion ?? true,
+      storyChoices: options.storyChoices ?? 'turns',
+      prologue: options.prologue ?? false,
+    },
   );
 }
 
@@ -335,7 +361,7 @@ export async function waitForIdle(page: Page, timeout = 20_000): Promise<void> {
   try {
     await page.waitForFunction(
       () =>
-        window.fnt?.app.animator.busy(performance.now()) === false &&
+        window.fnt?.app.boardBusy() === false &&
         document.querySelector('.combat-scene')?.getAttribute('data-camera-glide') !== 'active',
       undefined,
       { timeout },

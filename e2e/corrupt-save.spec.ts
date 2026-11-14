@@ -82,9 +82,9 @@ test('a corrupt combat cursor cannot replace a playable game; a valid import sti
     body: Buffer.from(JSON.stringify(observed, null, 2)),
     contentType: 'application/json',
   });
-  await expect(page.locator('.toast').last()).toContainText(
-    'This save looks damaged (state.battle.turnIndex).',
-  );
+  const warning = page.locator('.toast.toast-warn').last();
+  await expect(warning).toHaveText('This save looks damaged. Try another save file.');
+  await expect(warning).toBeVisible();
   await expect(menu).toBeVisible();
   expect(await game(page)).toEqual(before);
   await page.screenshot({ path: testInfo.outputPath('corrupt-import.png') });

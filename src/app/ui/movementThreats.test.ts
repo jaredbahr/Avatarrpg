@@ -51,8 +51,11 @@ describe('next-activation resource estimate', () => {
 
   it('uses actual banked AP rather than depleted current AP and obeys the shared cap', () => {
     const { enemy } = fixture();
-    expect(nextActivationThreatBudget(CONTENT, { ...enemy, ap: 0, bankedAp: 0 }).ap).toBe(4);
-    expect(nextActivationThreatBudget(CONTENT, { ...enemy, ap: 0, bankedAp: 1 }).ap).toBe(5);
+    const maxAp = enemy.base.maxAp;
+    expect(nextActivationThreatBudget(CONTENT, { ...enemy, ap: 0, bankedAp: 0 }).ap).toBe(maxAp);
+    expect(nextActivationThreatBudget(CONTENT, { ...enemy, ap: 0, bankedAp: 1 }).ap).toBe(
+      maxAp + 1,
+    );
     expect(
       nextActivationThreatBudget(CONTENT, {
         ...enemy,
@@ -86,7 +89,8 @@ describe('next-activation resource estimate', () => {
       { id: 'shocked', duration: 1, stacks: 1 },
       { id: 'slowed', duration: 1, stacks: 1 },
     ]);
-    expect(budget.ap).toBe(3);
+    // Shocked costs one AP and Slowed two move, off the deserter's own stat block.
+    expect(budget.ap).toBe(enemy.base.maxAp - 1);
     expect(budget.move).toBe(2);
   });
 

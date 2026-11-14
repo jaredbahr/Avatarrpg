@@ -3,16 +3,9 @@ import type { MapDef } from '../../core/types';
 import { LEGEND } from './legend';
 import { RETURNEE_PRESENTATIONS } from '../residents/returnees';
 
-export const RIVERSIDE_ID = 'ba_dan_riverside';
-export const RIVERSIDE_ENTRY = 'riverside_explore';
-export const RIVERSIDE_SPOTS = {
-  mira: { x: 15, y: 9 },
-  canopy: { x: 13, y: 9 },
-  otter: { x: 17, y: 15 },
-  tea: { x: 8, y: 18 },
-  practice: { x: 30, y: 13 },
-  shrine: { x: 31, y: 5 },
-} as const;
+import { RIVERSIDE_ID, RIVERSIDE_SPOTS } from './riversideIds';
+
+export { RIVERSIDE_ENTRY, RIVERSIDE_ID, RIVERSIDE_SPOTS } from './riversideIds';
 
 // Ground footprints, not canopy silhouettes: the shaded lane west of the
 // banyan is open. Only its trunk/stone planter blocks passage. Coordinates

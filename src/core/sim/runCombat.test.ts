@@ -1,9 +1,28 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
+import { createCombatCasePool } from '../../../scripts/test-support/runCombatCases';
 import { DEFAULT_MAX_ROUNDS, SOLO_PARTY, STANDARD_PARTY, runCombat, seedFor } from './runCombat';
 import { partyOfSize, runBalanceReport } from './balance';
 import { encounterRoster } from '../state/createGame';
 import type { ContentIndex, EncounterDef } from '../types';
+import type { TestContext } from 'vitest';
+
+const combatCases = createCombatCasePool();
+// Bundling the worker and loading the content into every lane is pool
+// start-up, not a test's work: pay it here, under the hook's own deadline.
+beforeAll(() => combatCases.warm(), 30_000);
+afterAll(async () => {
+  await combatCases.close();
+});
+
+function runTimedCases(cases: Parameters<typeof combatCases.run>[0], ctx: TestContext) {
+  const run = combatCases.run(cases, ctx.signal);
+  // Vitest can finish a timed-out test before the workers finish terminating.
+  ctx.onTestFinished(async () => {
+    await Promise.allSettled([run]);
+  });
+  return run;
+}
 
 /**
  * These are the tests that would catch a rules bug before a family does.
@@ -17,20 +36,33 @@ describe('combat simulation', () => {
     expect(encounterIds.length).toBeGreaterThan(0);
   });
 
-  it.each(encounterIds)('terminates cleanly: %s', (encounterId) => {
-    for (let trial = 0; trial < 12; trial++) {
-      const result = runCombat(CONTENT, {
+  for (const encounterId of encounterIds) {
+    /*
+     * The boss runs through the worker pool and is its first batch, so it
+     * pays each lane's JIT warm-up on twelve six-player fights (3.4-5.4 s of
+     * CPU in one thread, warm to cold). Hosted runs on the 5 s default (13-14
+     * Nov 2026): 3.2-3.7 s on the faster runner type, 4.3-5.0 s on the slower
+     * one, where it timed out once. Ten seconds is twice the slowest run.
+     */
+    const timeout = encounterId === 'enc_grumbler' ? 10_000 : undefined;
+    it(`terminates cleanly: ${encounterId}`, { timeout }, async (ctx) => {
+      const cases = Array.from({ length: 12 }, (_, trial) => ({
         seed: seedFor(`terminate-${encounterId}`, trial),
         encounterId,
         party: STANDARD_PARTY,
-      });
-
-      expect(result.anomalies, `${encounterId} trial ${trial}`).toEqual([]);
-      expect(result.outcome).not.toBe('stalemate');
-      expect(result.rounds).toBeLessThanOrEqual(DEFAULT_MAX_ROUNDS);
-      expect(result.rounds).toBeGreaterThan(0);
-    }
-  });
+      }));
+      const results =
+        encounterId === 'enc_grumbler'
+          ? await runTimedCases(cases, ctx)
+          : cases.map((options) => runCombat(CONTENT, options));
+      for (const [trial, result] of results.entries()) {
+        expect(result.anomalies, `${encounterId} trial ${trial}`).toEqual([]);
+        expect(result.outcome).not.toBe('stalemate');
+        expect(result.rounds).toBeLessThanOrEqual(DEFAULT_MAX_ROUNDS);
+        expect(result.rounds).toBeGreaterThan(0);
+      }
+    });
+  }
 
   it.each(encounterIds)('is deterministic for a given seed: %s', (encounterId) => {
     const run = () =>
@@ -65,18 +97,18 @@ describe('combat simulation', () => {
     expect(signatures.size).toBeGreaterThan(1);
   });
 
-  it('never leaves a unit with impossible HP or AP', () => {
-    for (const encounterId of encounterIds) {
-      for (let trial = 0; trial < 6; trial++) {
-        const result = runCombat(CONTENT, {
-          seed: seedFor(`sanity-${encounterId}`, trial),
-          encounterId,
-          party: STANDARD_PARTY,
-        });
-        expect(result.anomalies).toEqual([]);
-        expect(result.partyHpRemaining).toBeGreaterThanOrEqual(0);
-        expect(result.partyHpRemaining).toBeLessThanOrEqual(result.partyHpTotal);
-      }
+  it('never leaves a unit with impossible HP or AP', async (ctx) => {
+    const cases = encounterIds.flatMap((encounterId) =>
+      Array.from({ length: 6 }, (_, trial) => ({
+        seed: seedFor(`sanity-${encounterId}`, trial),
+        encounterId,
+        party: STANDARD_PARTY,
+      })),
+    );
+    for (const result of await runTimedCases(cases, ctx)) {
+      expect(result.anomalies).toEqual([]);
+      expect(result.partyHpRemaining).toBeGreaterThanOrEqual(0);
+      expect(result.partyHpRemaining).toBeLessThanOrEqual(result.partyHpTotal);
     }
   });
 
@@ -93,29 +125,56 @@ describe('combat simulation', () => {
     }
   });
 
-  it('keeps the quarry winnable with every character in a three-person party', () => {
-    for (const character of CONTENT.characters.values()) {
+  /*
+   * Eighty boss fights are the work here, and they need more than the default
+   * 5 s on a slow hosted runner even with every worker started and warm. Hosted
+   * 4-vCPU runs of this test on the 5 s default (13-14 Nov 2026): 2.9-3.8 s on
+   * the faster runner type, 4.6-5.0 s on the slower one, where it timed out on
+   * six PR runs. The same 80 fights take 7.4-8 s of warmed CPU in one thread,
+   * so four lanes cannot honestly bring the slow runner under 4 s. Ten seconds
+   * is twice the slowest run; pool start-up is not in it (`beforeAll`).
+   */
+  it('keeps the quarry winnable with every character in a three-person party', async (ctx) => {
+    const cases = [...CONTENT.characters.values()].map((character) => {
       const companions =
         character.element === 'air'
           ? ['kaya', 'bo']
           : ['nilak', 'bo', 'kaya'].includes(character.id)
             ? ['nilak', 'bo', 'kaya'].filter((id) => id !== character.id)
             : ['kaya', 'nilak'];
-      const roster = [character.id, ...companions].map((characterId) => ({ characterId }));
+      const party = [character.id, ...companions].map((characterId) => ({ characterId }));
+      return { id: character.id, party };
+    });
+    // Rotate the roster each trial so slow character combinations do not
+    // keep falling on the same worker. Restore roster order for assertions.
+    const trials = Array.from({ length: 8 }, (_, trial) =>
+      cases.map((_, offset) => {
+        const index = (offset + cases.length - (trial % cases.length)) % cases.length;
+        const { id, party } = cases[index]!;
+        return {
+          resultIndex: index * 8 + trial,
+          options: { seed: seedFor(`quarry-${id}`, trial), encounterId: 'enc_grumbler', party },
+        };
+      }),
+    ).flat();
+    const results = await runTimedCases(
+      trials.map(({ options }) => options),
+      ctx,
+    );
+    expect(results).toHaveLength(trials.length);
+    const ordered: typeof results = [];
+    for (const [index, { resultIndex }] of trials.entries()) ordered[resultIndex] = results[index]!;
+    for (const [index, { id }] of cases.entries()) {
       let victories = 0;
       for (let trial = 0; trial < 8; trial++) {
-        const result = runCombat(CONTENT, {
-          seed: seedFor(`quarry-${character.id}`, trial),
-          encounterId: 'enc_grumbler',
-          party: roster,
-        });
-        expect(result.anomalies, `${character.id} trial ${trial}`).toEqual([]);
-        expect(result.outcome, `${character.id} trial ${trial}`).not.toBe('stalemate');
+        const result = ordered[index * 8 + trial]!;
+        expect(result.anomalies, `${id} trial ${trial}`).toEqual([]);
+        expect(result.outcome, `${id} trial ${trial}`).not.toBe('stalemate');
         if (result.outcome === 'victory') victories++;
       }
-      expect(victories, `${character.id} in the quarry`).toBeGreaterThan(0);
+      expect(victories, `${id} in the quarry`).toBeGreaterThan(0);
     }
-  });
+  }, 10_000);
 });
 
 describe('encounter rosters', () => {

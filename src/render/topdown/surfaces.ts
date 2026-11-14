@@ -4,12 +4,13 @@
  * grid. Each surface's cells become one organic shape (`organic.ts`), painted as a material in
  * opaque pixels:
  *
- * - **mud** and **oil**: `mudPx` and `oilPx`, ported as they are (their twinkling glints are left
- *   out: a glint that never twinkles reads as a stuck pixel);
+ * - **mud**: `mudPx`, ported as it is (its twinkling glints are left out);
+ * - **oil**: an opaque brown-olive body above the quarry's pit tones, a one-pixel upper-left
+ *   rim and a few still, low-contrast streaks (#598), rather than the prototype's near-black oil;
  * - **water** and **ice**: the prototype's were translucent, which `art-lessons.md` records as
  *   reading like a shadow, so both are repainted opaque: water dark at the rim with a pale catch
  *   on its upper-left inside and highlights at two scales; ice pale, opaque and cracked;
- * - **fire**: charred ground, a glow mask laid 'lighter' at 0.12–0.20, and flame sites on a
+ * - **fire**: opaque ash and ember-speckled char (#590), a glow mask laid 'lighter' at 0.12–0.20, and flame sites on a
  *   jittered lattice for the PixelLab ground flames;
  * - **steam**: the narrow mask (`organicMask(..., 161, 0.42)`), as puff sites every 9 px.
  *
@@ -124,7 +125,7 @@ function mudPx(
   put(i, r, g, b, 255);
 }
 
-/** `oilPx`, as it is. */
+/** Oil sits on the ground, distinct from a pit, with one lit pixel at its upper-left rim. */
 function oilPx(
   m: Uint8Array,
   D: Uint8Array,
@@ -135,13 +136,10 @@ function oilPx(
   e: boolean,
   put: Put,
 ) {
-  const d = at(D, i),
-    lit = litEdge(m, BW, x, y, 7);
-  if (e) return put(i, 66, 50, 40, 255);
-  if (d === 2) return put(i, 38, 29, 27, 255);
-  if (lit && d >= 3 && d <= 6 && vnoise(x, y, 157, 14) > -0.2) {
-    const [r, g, b] = d === 3 || d === 6 ? [70, 62, 58] : [136, 126, 114];
-    return put(i, r, g, b, 255);
+  const d = at(D, i);
+  if (e) {
+    if (!at(m, i - 1) || !at(m, i - BW)) return put(i, 111, 102, 69, 255);
+    return put(i, 57, 49, 30, 255);
   }
   if (
     d >= 5 &&
@@ -149,13 +147,11 @@ function oilPx(
     vnoise(x, y, 159, 30) > 0.5 &&
     vnoise(x, y, 171, 9) > 0.1
   ) {
-    const t = vnoise(x, y, 161, 40);
-    const [r, g, b] = t < 0 ? [84, 104, 100] : [110, 94, 112];
-    return put(i, r, g, b, 255);
+    return put(i, 94, 86, 54, 255);
   }
   const w = vnoise(x, y, 141, 18),
     w2 = vnoise(x, y, 143, 7);
-  const [r, g, b] = w > 0.25 ? [38, 30, 28] : w2 > 0.3 ? [31, 25, 24] : [24, 19, 19];
+  const [r, g, b] = w > 0.25 ? [77, 69, 43] : w2 > 0.3 ? [71, 64, 39] : [66, 59, 35];
   put(i, r, g, b, 255);
 }
 
@@ -210,14 +206,14 @@ function icePx(
   put(i, 192 + h * 14 + frost, 222 + h * 10 + frost / 2, 234, 255);
 }
 
-/** The fire's charred ground, as the prototype paints it. */
+/** Opaque ash covers the paving; the prototype's ember sites and colours remain. */
 function firePx(x: number, y: number, i: number, e: boolean, h: number, put: Put) {
   const v = vnoise(x, y, 113, 4),
     ember = h < 0.035 && !e;
-  if (ember) return put(i, 242, 140 + h * 1500, 60, 235);
-  if (e) return put(i, 50, 33, 37, 150);
-  if (v > 0.35) return put(i, 92, 38, 26, 200);
-  put(i, 40 + v * 20, 28, 26, 205);
+  if (ember) return put(i, 242, 140 + h * 1500, 60, 255);
+  if (e) return put(i, 43, 39, 37, 255);
+  if (v > 0.35) return put(i, 65, 57, 48, 255);
+  put(i, 45 + v * 12, 43 + v * 9, 40 + v * 8, 255);
 }
 
 /* ------------------------------------------------------------------ */

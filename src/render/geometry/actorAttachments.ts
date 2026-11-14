@@ -1,20 +1,16 @@
-import type { Grid, Vec2 } from '../../core/types';
-import { SQUARE_FOOTPRINTS } from '../../core/rules/footprint';
+import type { Vec2 } from '../../core/types';
+import { SQUARE_FOOTPRINTS, footprintFoot } from '../../core/rules/footprint';
 import type { ActorAttachment, EmitterInstance } from '../view';
-import { projectGround, unprojectGround } from '../projection';
-import type { Projection } from '../projection';
 import { FOOT_LINE } from '../sheets/bake';
 import { sheets } from '../sheets/store';
 import type { ResolvedFrame } from '../sheets/store';
 import { BUILDS, FOOT, figureScale, poseFor, solve } from '../painters/figure';
-import { liftAt } from './elevation';
-import { renderFoot } from '../renderFoot';
 
 type FrameGeometry = Pick<ResolvedFrame, 'frame' | 'anchor' | 'pixelsPerTile' | 'placeholder'>;
 
 // Track-owned keys disappear with playback. Loading a sheet or changing zoom
 // during flight must not move an already presented endpoint.
-const presented = new WeakMap<ActorAttachment, { projection: Projection; point: Vec2 }>();
+const presented = new WeakMap<ActorAttachment, Vec2>();
 
 /** Measured palm centres in the existing 128x192 cast cels, facing right. */
 const CAST_HANDS: Readonly<Record<string, readonly [Vec2, Vec2]>> = {
@@ -57,12 +53,14 @@ const CAST_HANDS: Readonly<Record<string, readonly [Vec2, Vec2]>> = {
 };
 
 /** Upright offset from the foot anchor, in unscaled tile units. */
-export function socketOffset(actor: ActorAttachment, frame?: FrameGeometry): Vec2 {
+export function socketOffset(actor: ActorAttachment, frame?: FrameGeometry, measured?: Vec2): Vec2 {
   if (actor.socket === 'ground') return { x: 0, y: 0 };
   const hand = actor.socket !== 'torso';
   const index = actor.socket === 'cast-release' ? 1 : 0;
   const point =
-    actor.socket === 'waterskin' ? { x: 53, y: 100 } : CAST_HANDS[actor.sprite]?.[index];
+    actor.socket === 'waterskin'
+      ? { x: 53, y: 100 }
+      : (measured ?? CAST_HANDS[actor.sprite]?.[index]);
   if (hand && point && frame && !frame.placeholder) {
     return {
       x: (point.x - frame.anchor.x * frame.frame.w) / frame.pixelsPerTile,
@@ -101,36 +99,31 @@ export function socketOffset(actor: ActorAttachment, frame?: FrameGeometry): Vec
 
 export function attachmentPoint(
   actor: ActorAttachment,
-  projection: Projection,
-  lift: number,
   frame?: FrameGeometry,
   square = SQUARE_FOOTPRINTS,
+  hand?: Vec2,
 ): Vec2 {
-  const ground = projectGround(renderFoot(actor.pos, actor.size, square, projection), projection);
-  const socket = socketOffset(actor, frame);
-  // Orthographic sprites have a foot line below their cell centre. Oblique
-  // sprites stand at it (Camera.spriteBox uses 0.86, and the sheet uses 0.85).
-  const foot = projection === 'oblique' ? FOOT_LINE - 0.86 : FOOT_LINE - 0.5;
-  return unprojectGround(
-    {
-      x: ground.x + actor.offset.x + socket.x * actor.facing * actor.scale,
-      y: ground.y + foot + actor.offset.y - lift + socket.y * actor.scale,
-    },
-    projection,
-  );
+  const ground = footprintFoot(actor.pos, actor.size, square);
+  const socket = socketOffset(actor, frame, hand);
+  // Sprites have a foot line below their cell centre.
+  const foot = FOOT_LINE - 0.5;
+  return {
+    x: ground.x + actor.offset.x + socket.x * actor.facing * actor.scale,
+    y: ground.y + foot + actor.offset.y + socket.y * actor.scale,
+  };
 }
 
-/** Resolve into the existing ground-space FX pipeline using the inverse projection. */
+/** Resolve into the existing ground-space FX pipeline. */
 export function resolveActorEmitters(
   emitters: readonly EmitterInstance[],
-  grid: Grid,
-  projection: Projection,
   pixelsPerTile: number,
 ): readonly EmitterInstance[] {
   const point = (actor: ActorAttachment) => {
     const existing = presented.get(actor);
-    if (existing?.projection === projection) return existing.point;
-    const clip = actor.socket === 'torso' ? 'idle' : 'cast';
+    if (existing) return existing;
+    // A drawn top-down action's hand is measured on its own cels (ADR 0104); the legacy cast's otherwise.
+    const drawn = actor.socket === 'torso' ? undefined : actor.clip;
+    const clip = actor.socket === 'torso' ? 'idle' : (drawn ?? 'cast');
     const frame = sheets.frame(
       actor.sprite,
       clip,
@@ -141,11 +134,11 @@ export function resolveActorEmitters(
     );
     const resolved = attachmentPoint(
       actor,
-      projection,
-      liftAt(grid, actor.pos, projection),
       frame ?? undefined,
+      SQUARE_FOOTPRINTS,
+      drawn && sheets.clips(actor.sprite)?.[drawn]?.hand,
     );
-    presented.set(actor, { projection, point: resolved });
+    presented.set(actor, resolved);
     return resolved;
   };
   return emitters.map((emitter) => {

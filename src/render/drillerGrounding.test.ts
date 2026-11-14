@@ -343,6 +343,13 @@ describe('Driller static tread grounding', () => {
     expect(drillerGroundingPose('cast', true)).toEqual({ heading: 'east', mirror: true });
     expect(drillerGroundingPose('idleWest', true)).toEqual({ heading: 'west', mirror: false });
     expect(drillerGroundingPose('walkNorth', true)).toEqual({ heading: 'north', mirror: false });
+    // Its eight-heading actions and hits stand on their own heading's tread, never mirrored (#587).
+    expect(drillerGroundingPose('cast@southWest', true)).toEqual({
+      heading: 'southWest',
+      mirror: false,
+    });
+    expect(drillerGroundingPose('ko@north', true)).toEqual({ heading: 'north', mirror: false });
+    expect(drillerGroundingPose('hitWest', true)).toEqual({ heading: 'west', mirror: false });
   });
 });
 

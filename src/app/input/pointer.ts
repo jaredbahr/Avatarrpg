@@ -46,6 +46,19 @@ const kindOf = (event: PointerEvent): PointerKind =>
 
 export function attachPointer(target: HTMLElement, handlers: PointerHandlers): () => void {
   const recognizer = new GestureRecognizer(handlers, DEFAULT_GESTURE_CONFIG);
+  // A touch click is synthesized after pointerup. Some browsers hit-test that
+  // click again after releasing capture, so a board tap can activate a HUD
+  // button that happens to overlap the same screen point. Keep only the
+  // canvas-started touch/pen contacts long enough to reject that retargeted
+  // click; controls pressed directly never enter this map.
+  const activeCanvasPointers = new Set<number>();
+  const pendingCanvasClicks = new Map<number, ReturnType<typeof globalThis.setTimeout>>();
+
+  const clearPendingCanvasClick = (pointerId: number) => {
+    const timer = pendingCanvasClicks.get(pointerId);
+    if (timer !== undefined) globalThis.clearTimeout(timer);
+    pendingCanvasClicks.delete(pointerId);
+  };
 
   const local = (event: { clientX: number; clientY: number }): GesturePoint => {
     const rect = target.getBoundingClientRect();
@@ -75,6 +88,10 @@ export function attachPointer(target: HTMLElement, handlers: PointerHandlers): (
     // use `contextmenu` below; the pen eraser must not act as a tap.
     if ((event.pointerType === 'mouse' || event.pointerType === 'pen') && event.button !== 0)
       return;
+    if (event.pointerType === 'touch' || event.pointerType === 'pen') {
+      clearPendingCanvasClick(event.pointerId);
+      activeCanvasPointers.add(event.pointerId);
+    }
     capture(event);
     recognizer.down(event.pointerId, local(event), kindOf(event));
   };
@@ -84,17 +101,52 @@ export function attachPointer(target: HTMLElement, handlers: PointerHandlers): (
   };
 
   const onPointerUp = (event: PointerEvent) => {
-    release(event);
+    const trackCanvasClick = activeCanvasPointers.delete(event.pointerId);
     recognizer.up(event.pointerId, local(event));
+    release(event);
+    if (trackCanvasClick) {
+      const timer = globalThis.setTimeout(() => clearPendingCanvasClick(event.pointerId), 1000);
+      pendingCanvasClicks.set(event.pointerId, timer);
+    }
   };
 
   const onPointerCancel = (event: PointerEvent) => {
     release(event);
     recognizer.cancel(event.pointerId);
+    activeCanvasPointers.delete(event.pointerId);
+    clearPendingCanvasClick(event.pointerId);
+  };
+
+  const onClick = (event: MouseEvent) => {
+    // Keyboard activation has detail 0 and is never a synthesized pointer tap.
+    const pointer = event as PointerEvent;
+    const pointerId = pointer.pointerId;
+    if (
+      event.detail === 0 ||
+      (pointer.pointerType !== 'touch' && pointer.pointerType !== 'pen') ||
+      !pendingCanvasClicks.has(pointerId)
+    )
+      return;
+    const clicked = event.target;
+    if (clicked && target.contains(clicked as Node)) {
+      clearPendingCanvasClick(pointerId);
+      return;
+    }
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    clearPendingCanvasClick(pointerId);
+  };
+
+  const onDocumentPointerDown = (event: PointerEvent) => {
+    // Pointer IDs are reusable. A fresh contact anywhere in the document ends
+    // the prior gesture's click window before its ID can be assigned again.
+    activeCanvasPointers.delete(event.pointerId);
+    clearPendingCanvasClick(event.pointerId);
   };
 
   const onLostPointerCapture = (event: PointerEvent) => {
     // A release outside the canvas may no longer reach us once capture is lost.
+    activeCanvasPointers.delete(event.pointerId);
     recognizer.cancel(event.pointerId);
   };
 
@@ -126,9 +178,13 @@ export function attachPointer(target: HTMLElement, handlers: PointerHandlers): (
   target.addEventListener('pointerleave', onPointerLeave);
   target.addEventListener('contextmenu', onContextMenu);
   target.addEventListener('wheel', onWheel, { passive: false });
+  target.ownerDocument.addEventListener('pointerdown', onDocumentPointerDown, true);
+  target.ownerDocument.addEventListener('click', onClick, true);
 
   return () => {
     recognizer.reset();
+    for (const pointerId of pendingCanvasClicks.keys()) clearPendingCanvasClick(pointerId);
+    activeCanvasPointers.clear();
     target.removeEventListener('pointerdown', onPointerDown);
     target.removeEventListener('pointermove', onPointerMove);
     target.removeEventListener('pointerup', onPointerUp);
@@ -137,5 +193,7 @@ export function attachPointer(target: HTMLElement, handlers: PointerHandlers): (
     target.removeEventListener('pointerleave', onPointerLeave);
     target.removeEventListener('contextmenu', onContextMenu);
     target.removeEventListener('wheel', onWheel);
+    target.ownerDocument.removeEventListener('pointerdown', onDocumentPointerDown, true);
+    target.ownerDocument.removeEventListener('click', onClick, true);
   };
 }

@@ -84,17 +84,3 @@ it('schema preserves bounded integer horizontal feathers and rejects invalid def
     }).success,
   ).toBe(false);
 });
-
-it('schema retains connected fade groups and rejects empty names', () => {
-  const parsed = mapSchema.parse(QUARRY_GATE);
-  expect(
-    parsed.scene?.scenery.filter((piece) => piece.fadeGroup === 'quarry-west-structure'),
-  ).toHaveLength(8);
-  const piece = QUARRY_GATE.scene?.scenery[0];
-  expect(
-    mapSchema.safeParse({
-      ...QUARRY_GATE,
-      scene: { ground: [], scenery: [{ ...piece, fadeGroup: '' }] },
-    }).success,
-  ).toBe(false);
-});

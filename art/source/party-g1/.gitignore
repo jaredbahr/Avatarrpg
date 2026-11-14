@@ -1,7 +1,0 @@
-# regenerable: extract.py cuts these from the shipped atlases
-ref/
-tools/cmu/
-tools/__pycache__/
-ledger.json.lock
-ledger.json.tmp
-design/*/prev/

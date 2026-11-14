@@ -1,0 +1,39 @@
+{
+  "canonNames": [
+    "Aang",
+    "Katara",
+    "Sokka",
+    "Toph",
+    "Zuko",
+    "Azula",
+    "Iroh",
+    "Ozai",
+    "Suki",
+    "Korra",
+    "Mako",
+    "Bolin",
+    "Asami",
+    "Tenzin",
+    "Jinora",
+    "Lin Beifong",
+    "Avatar: The Last Airbender",
+    "The Legend of Korra"
+  ],
+  "allowedGenericWords": {
+    "$comment": "These are ordinary element, terrain, or UI words. Canon place names and nations may also be used as setting references under the owner’s era rule.",
+    "air": "An element and terrain term.",
+    "earth": "An element and terrain term.",
+    "fire": "An element and terrain term.",
+    "water": "An element and terrain term.",
+    "avatar": "A common software term; the exact show title is denied."
+  },
+  "allowedContext": {
+    "src/app/scenes/TitleScene.ts": {
+      "Play alone or pass the iPad around. A tactical RPG set after Korra.": "Era reference in the title tagline.",
+      "A non-commercial fan project. Avatar: The Last Airbender and The Legend of Korra are the property of Nickelodeon / Paramount. Original characters only.": "On-screen ownership attribution."
+    },
+    "vite.config.ts": {
+      "A hot-seat turn-based tactical RPG set after Korra. Non-commercial fan work.": "Era reference in the generated PWA description."
+    }
+  }
+}

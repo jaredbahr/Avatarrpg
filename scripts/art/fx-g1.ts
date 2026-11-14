@@ -1,7 +1,8 @@
 /**
- * The effects at the world's grain (G1, ADR 0085; ADR 0055 and ADR 0021
- * amended by ADR 0086): the painted bend effects page and the element cel
- * sheets, redrawn as pixel art and packed reproducibly.
+ * The effects at the world's grain (G1, ADR 0085; ADR 0021 amended by ADR
+ * 0086): the element cel sheets, redrawn as pixel art and packed
+ * reproducibly. (The painted bend effects page this also packed went with the
+ * bends, ADR 0104 T7.)
  *
  * Usage:
  *   node --import tsx scripts/art/fx-g1.ts           # write the shipped files
@@ -10,9 +11,8 @@
  *
  * Sources, all under `art/source/fx-g1/` and pinned by SHA-256 in its
  * `pins.json`:
- * - `inputs/<sheet>.png`: the painted art, reduced 2:1 to world px (bend
- *   cels: the page is 128 px a tile, the world 64) or to the 96 px master
- *   (element cels), by `tools/inputs.py` from the files this script replaced;
+ * - `inputs/<sheet>.png`: the painted art, reduced to the 96 px master by
+ *   `tools/inputs.py` from the files this script replaced;
  * - `generated/<sheet>.png`: the accepted PixelLab Pro Flash clean-up of each
  *   input sheet (`tools/generate.py`, every job in `ledger.json`);
  * - `layout.json`: where each cel sits on its sheet.
@@ -29,10 +29,7 @@
  *    to eighths, so a cel the painting faded (the crack's last cels, the
  *    burst's tail) still fades, with hard edges.
  *
- * Bend cels are written onto the page at 2 x 2 page px an art px, at exactly
- * the frames, pivots and turns the page JSON already carries, so the effect
- * data, sockets and timing are untouched; the page is lossless WebP. The
- * element cel sheets are 96 px a cel (a 192 px cel was 2 art px a world px at
+ * The element cel sheets are 96 px a cel (a 192 px cel was 2 art px a world px at
  * its largest use). Two runs write byte-identical files.
  */
 
@@ -41,17 +38,12 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { CEL_FRAMES, CEL_SIZE, FX_CEL_SHEETS } from '../../src/content/fxCels';
 import { dropOrphanPixels } from '../../src/render/fx/celResample';
-import { parseAtlasJson } from '../../src/render/sheets/atlasJson';
 import type { Image } from './lib/image';
 import { newImage, parseHex, readPng, writePng } from './lib/image';
 import { MARGIN } from './lib/align';
-import { decodeWebp, encodeWebp } from './lib/webp';
 
 export const G1_DIR = 'art/source/fx-g1';
 export const G1_PINS = `${G1_DIR}/pins.json`;
-export const BEND_PAGE_JSON = 'public/art/fx/bend-fx.json';
-export const BEND_PAGE = 'public/art/fx/bend-fx.webp';
-export const BEND_PINS = 'art/source/bend-effects/pins.json';
 
 /** The art bible's ink, the darkest any effect outline gets. */
 export const INK = '#1b1410';
@@ -79,9 +71,6 @@ export type Ramp = keyof typeof RAMPS;
 
 /** Which ramp each generated sheet snaps to. */
 export const SHEET_RAMP: Readonly<Record<string, Ramp>> = {
-  'bend-fire-0': 'fire',
-  'bend-earth-0': 'stone',
-  'bend-water-0': 'water',
   'cel-flame': 'fire',
   'cel-fire-burst': 'fire',
   'cel-lightning': 'lightning',
@@ -117,7 +106,6 @@ export interface LayoutCel {
   readonly h: number;
 }
 export interface Layout {
-  readonly bend: readonly LayoutCel[];
   readonly cels: readonly LayoutCel[];
 }
 
@@ -205,19 +193,7 @@ const crop = (image: Image, c: LayoutCel): Image => {
  * `generated` the same rectangle of the accepted PixelLab sheet. `margin`
  * keeps the result that many px clear of every edge.
  */
-export function cleanCel(
-  painted: Image,
-  generated: Image,
-  ramp: Ramp,
-  margin: number,
-  /** The cel is drawn at `factor` x `factor` px an art px, into a frame this big: keep the margin there too. */
-  drawn?: {
-    readonly factor: number;
-    readonly w: number;
-    readonly h: number;
-    readonly margin: number;
-  },
-): Image {
+export function cleanCel(painted: Image, generated: Image, ramp: Ramp, margin: number): Image {
   const { width: w, height: h } = painted;
   const alpha = (image: Image, x: number, y: number) =>
     x < 0 || y < 0 || x >= w || y >= h ? 0 : (image.data[(y * w + x) * 4 + 3] ?? 0);
@@ -277,10 +253,8 @@ export function cleanCel(
       ? 0
       : Math.max(-MAX_SHIFT, Math.min(MAX_SHIFT, before - after));
   const out = newImage(w, h);
-  const xEnd = drawn ? Math.floor((drawn.w - drawn.margin) / drawn.factor) : w - margin;
-  const yEnd = drawn ? Math.floor((drawn.h - drawn.margin) / drawn.factor) : h - margin;
-  for (let y = margin; y < Math.min(yEnd, h - margin); y++)
-    for (let x = margin; x < Math.min(xEnd, w - margin); x++) {
+  for (let y = margin; y < h - margin; y++)
+    for (let x = margin; x < w - margin; x++) {
       const i = (y * w + x) * 4;
       const fromGenerated = !thin && alpha(generated, x, y) >= 128 && near(x, y);
       const fromPainted = !fromGenerated && (thin ? strand(x, y) : solid(x, y));
@@ -296,13 +270,6 @@ export function cleanCel(
   dropOrphans(out);
   return out;
 }
-
-/**
- * Sequences whose generated drawing is not used: Pro Flash redrew the earth
- * crack's dark fissure as pale raised rays, so its five cels are the painting
- * itself, reduced and snapped like the rest.
- */
-export const PAINTED_ONLY: readonly string[] = ['fx.earth.rock/crack/'];
 
 /**
  * Ramps of light: fire, lightning, water, ice and air glow or catch the light
@@ -392,20 +359,6 @@ export function interruptInk(cel: Image, ramp: Ramp): void {
   }
 }
 
-/** Each art px as `factor` x `factor` px, cropped or padded to `w` x `h`. */
-export function upscale(image: Image, factor: number, w: number, h: number): Image {
-  const out = newImage(w, h);
-  for (let y = 0; y < h; y++)
-    for (let x = 0; x < w; x++) {
-      const sx = Math.floor(x / factor);
-      const sy = Math.floor(y / factor);
-      if (sx >= image.width || sy >= image.height) continue;
-      const from = (sy * image.width + sx) * 4;
-      out.data.set(image.data.subarray(from, from + 4), (y * w + x) * 4);
-    }
-  return out;
-}
-
 function blit(target: Image, cel: Image, x0: number, y0: number): void {
   for (let y = 0; y < cel.height; y++)
     target.data.set(
@@ -415,15 +368,13 @@ function blit(target: Image, cel: Image, x0: number, y0: number): void {
 }
 
 export interface G1Build {
-  /** The bend page's pixels, at the page JSON's size. */
-  readonly page: Image;
   /** Each element cel sheet's pixels, by its public url. */
   readonly sheets: ReadonlyMap<string, Image>;
   /** Per cel: its colours (ink included) and how many of its pixels are ink. */
   readonly report: readonly { name: string; colours: number; ink: number; pixels: number }[];
 }
 
-export function buildG1(dir = G1_DIR, pageJson = readFileSync(BEND_PAGE_JSON, 'utf8')): G1Build {
+export function buildG1(dir = G1_DIR): G1Build {
   const layout = JSON.parse(readFileSync(join(dir, 'layout.json'), 'utf8')) as Layout;
   const images = new Map<string, { input: Image; generated: Image }>();
   const sheet = (name: string) => {
@@ -451,33 +402,12 @@ export function buildG1(dir = G1_DIR, pageJson = readFileSync(BEND_PAGE_JSON, 'u
     }
     report.push({ name, colours: colours.size, ink, pixels });
   };
-  const clean = (c: LayoutCel, margin: number, drawn?: Parameters<typeof cleanCel>[4]) => {
+  const clean = (c: LayoutCel, margin: number) => {
     const ramp = SHEET_RAMP[c.sheet];
     if (!ramp) throw new Error(`Sheet ${c.sheet} has no ramp.`);
     const { input, generated } = sheet(c.sheet);
-    const painted = crop(input, c);
-    // A sequence the generator misread is quantised from the painting alone.
-    const redrawn = PAINTED_ONLY.some((prefix) => c.name.startsWith(prefix))
-      ? painted
-      : crop(generated, c);
-    return cleanCel(painted, redrawn, ramp, margin, drawn);
+    return cleanCel(crop(input, c), crop(generated, c), ramp, margin);
   };
-
-  const atlas = parseAtlasJson(JSON.parse(pageJson) as unknown);
-  const raw = JSON.parse(pageJson) as { meta: { size: { w: number; h: number } } };
-  const page = newImage(raw.meta.size.w, raw.meta.size.h);
-  const bendCels = new Map(layout.bend.map((c) => [c.name, c]));
-  for (const [name, frame] of atlas.frames) {
-    const c = bendCels.get(name);
-    if (!c) throw new Error(`The layout has no cel "${name}".`);
-    if (c.w !== Math.ceil(frame.w / 2) || c.h !== Math.ceil(frame.h / 2))
-      throw new Error(`Cel "${name}" is laid out at ${c.w}x${c.h}, not half its frame.`);
-    const cel = clean(c, MARGIN / 2, { factor: 2, w: frame.w, h: frame.h, margin: MARGIN });
-    note(name, cel);
-    blit(page, upscale(cel, 2, frame.w, frame.h), frame.x, frame.y);
-  }
-  if (bendCels.size !== atlas.frames.size)
-    throw new Error('The layout has cels the page does not.');
 
   const sheets = new Map<string, Image>();
   const elementCels = new Map(layout.cels.map((c) => [c.name, c]));
@@ -497,30 +427,7 @@ export function buildG1(dir = G1_DIR, pageJson = readFileSync(BEND_PAGE_JSON, 'u
     });
     sheets.set(`public/${def.url}`, image);
   }
-  return { page, sheets, report };
-}
-
-/** The page as shipped: lossless WebP, method 6, exact alpha. */
-export const encodePage = (page: Image): Promise<Uint8Array> =>
-  encodeWebp(page, 100, true, { lossless: 1, method: 6, exact: 1 });
-
-/** SHA-256 of a cel's RGBA, as `celHash` in validate.ts computes it from the decoded page. */
-function celPins(page: Image, pageJson: string): Record<string, string> {
-  const atlas = parseAtlasJson(JSON.parse(pageJson) as unknown);
-  const pins: Record<string, string> = {};
-  for (const [name, f] of atlas.frames) {
-    const cel = newImage(f.w, f.h);
-    for (let y = 0; y < f.h; y++)
-      cel.data.set(
-        page.data.subarray(
-          ((f.y + y) * page.width + f.x) * 4,
-          ((f.y + y) * page.width + f.x + f.w) * 4,
-        ),
-        y * f.w * 4,
-      );
-    pins[name] = sha256(cel.data);
-  }
-  return pins;
+  return { sheets, report };
 }
 
 async function main(): Promise<void> {
@@ -536,24 +443,10 @@ async function main(): Promise<void> {
   const problems = checkG1Sources();
   if (problems.length > 0)
     throw new Error(`The G1 effect sources do not match their pins:\n${problems.join('\n')}`);
-  const pageJson = readFileSync(BEND_PAGE_JSON, 'utf8');
-  const build = buildG1(G1_DIR, pageJson);
+  const build = buildG1(G1_DIR);
   const check = args.includes('--check');
   const mismatches: string[] = [];
-  const page = await encodePage(build.page);
-  const decoded = await decodeWebp(page);
-  if (sha256(decoded.data) !== sha256(build.page.data))
-    throw new Error('The page did not round-trip exactly.');
-  const bendPins = JSON.parse(readFileSync(BEND_PINS, 'utf8')) as {
-    sources: Record<string, string>;
-    frames: Record<string, string>;
-  };
-  const frames = celPins(build.page, pageJson);
-  const pinsText = `${JSON.stringify({ ...bendPins, frames }, null, 2)}\n`;
-  const outputs: [string, Uint8Array | string][] = [
-    [BEND_PAGE, page],
-    [BEND_PINS, pinsText],
-  ];
+  const outputs: [string, Uint8Array | string][] = [];
   for (const [url, image] of build.sheets) {
     const tmp = `${url}.g1.tmp`;
     writePng(tmp, image);
@@ -576,7 +469,6 @@ async function main(): Promise<void> {
   const worst = build.report.reduce((m, r) => Math.max(m, r.colours), 0);
   console.log(
     JSON.stringify({
-      page: { bytes: page.length },
       sheets: [...build.sheets.keys()].map((url) => ({ url, bytes: readFileSync(url).length })),
       cels: build.report.length,
       mostColours: worst,

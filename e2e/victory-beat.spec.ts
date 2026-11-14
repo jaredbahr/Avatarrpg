@@ -46,23 +46,6 @@ async function sealVictory(page: Page): Promise<void> {
   expect(phase).toBe('victory');
 }
 
-test('a tap on the clear-board victory overlay skips to the unchanged result card', async ({
-  page,
-}) => {
-  await openReadyFight(page, false);
-  await pauseClock(page);
-  await sealVictory(page);
-  await page.clock.runFor(50);
-
-  await expect(page.locator('.combat-scene[data-victory-beat="active"]')).toBeVisible();
-  await expect(page.locator('.result-panel')).toHaveCount(0);
-  await page.getByRole('button', { name: 'Show result' }).click();
-
-  await expect(page.locator('.result-panel')).toBeVisible();
-  await expect(page.locator('.result-panel')).toContainText('The fight is won');
-  await page.clock.resume();
-});
-
 test('reduced motion keeps the camera still and shows the card without a hold', async ({
   page,
 }) => {

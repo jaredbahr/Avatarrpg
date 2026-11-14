@@ -148,7 +148,14 @@ async function readAll(page: Page, panel: Locator) {
   const samples = [first];
   await page.screenshot({ path: test.info().outputPath('reading-start.png') });
   // Use physical wheel input at the panel, with overlapping viewfuls. Neither
-  // DOM scroll assignment nor forced focus can make an obscured line pass.
+  // DOM scroll assignment nor forced focus can make an obscured line pass:
+  // each viewful is still sampled for what is really visible. Mobile WebKit
+  // has no Playwright wheel input, so there the panel scrolls by the same step,
+  // as setup-footer-overlap does; the overflow check above still applies.
+  const wheel = !(
+    page.context().browser()?.browserType().name() === 'webkit' && test.info().project.use.isMobile
+  );
+  const stepPx = Math.max(48, Math.floor(first.panel.height / 3));
   await page.mouse.move(
     (first.panel.left + first.panel.right) / 2,
     (first.panel.top + first.panel.bottom) / 2,
@@ -156,7 +163,8 @@ async function readAll(page: Page, panel: Locator) {
   for (let step = 0; step < 80; step++) {
     const previous = samples[samples.length - 1]!;
     if (previous.panel.scrollHeight - previous.panel.height - previous.panel.scrollTop <= 1) break;
-    await page.mouse.wheel(0, Math.max(48, Math.floor(first.panel.height / 3)));
+    if (wheel) await page.mouse.wheel(0, stepPx);
+    else await panel.evaluate((element, dy) => element.scrollBy(0, dy), stepPx);
     await expect
       .poll(() => panel.evaluate((element) => element.scrollTop))
       .toBeGreaterThan(previous.panel.scrollTop);

@@ -67,7 +67,6 @@ function rosterRow(
       attrs: {
         role: 'button',
         tabindex: '0',
-        'aria-label': `${unit.name}${player ? `, played by ${player.name}` : ''}, level ${unit.level}, ${unit.hp} of ${unit.base.maxHp} health`,
       },
       onClick: () => onPick(unit),
       onKeyDown: (event) => {

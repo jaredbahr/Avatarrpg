@@ -3,8 +3,8 @@
  * prototype's look (`prototypes/topdown/src/b3/surfvis.js` `bakePreview`, `footsteps`, `ring`; its
  * draw order in `draw.js` `drawPreviews`), drawn from the game's own rules through the view model:
  *
- * - **Reach**: the move overlay's cells (the reducer's 8-way reachable set) as a warm wash with a
- *   dithered rim; shown only while no ability is armed.
+ * - **Reach**: the move overlay's cells (the reducer's 8-way reachable set) as a warm tinted wash with
+ *   a solid 1 px rim on its edge (#699); shown only while no ability is armed.
  * - **Targets**: units on a valid target tile get a small ring; a ground target with nobody on it
  *   gets the target wash, so a wall or a blast aimed at open ground still shows where it may land.
  *   Height reach (`rangeBonus`) washes its cells in the party's cream.
@@ -145,16 +145,15 @@ function over(d: Uint8ClampedArray, i: number, c: Rgb, a: number): void {
   d[i + 3] = oa * 255;
 }
 
-/** `bakePreview`: the dithered rim (190/60 on an (x + y) checker), its second px (0/90), inside 46. */
+/**
+ * The wash (#699): a 1 px solid rim traced on the mask's edge over a brighter tinted fill, so the
+ * reachable ground reads at a glance on every top-down ground.
+ */
 function layWash(d: Uint8ClampedArray, BW: number, BH: number, m: Uint8Array, c: Rgb): void {
   for (let y = 1; y < BH - 1; y++)
     for (let x = 1; x < BW - 1; x++) {
       const i = y * BW + x;
-      if (!m[i]) continue;
-      const edge = !m[i - 1] || !m[i + 1] || !m[i - BW] || !m[i + BW];
-      const edge2 = !m[i - 2] || !m[i + 2] || !m[i - 2 * BW] || !m[i + 2 * BW];
-      const a = edge ? ((x + y) % 2 ? 190 : 60) : edge2 ? ((x + y) % 2 ? 0 : 90) : 46;
-      if (a) over(d, i * 4, c, a);
+      if (m[i]) over(d, i * 4, c, m[i - 1] && m[i + 1] && m[i - BW] && m[i + BW] ? 96 : 255);
     }
 }
 

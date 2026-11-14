@@ -2,18 +2,6 @@
   "$comment": "The one art style (ADR 0102, amended 2026-11-06). Every asset listed here has hard alpha and holds the colours recorded for it, never more than its cap; no cap passes the ceiling. scripts/art/style-contract.test.ts holds it. Add an asset when it ships; never remove one to get green. Update a count in the change that repacks the asset; raise a cap only in review, with a reason.",
   "ceiling": 1024,
   "assets": {
-    "public/art/units/world/kaya.webp": {
-      "colours": 64,
-      "cap": 64
-    },
-    "public/art/units/world/kaya-2.webp": {
-      "colours": 63,
-      "cap": 64
-    },
-    "public/art/units/world/kaya-bend-page.webp": {
-      "colours": 64,
-      "cap": 64
-    },
     "public/art/topdown/bo.webp": {
       "colours": 366,
       "cap": 366

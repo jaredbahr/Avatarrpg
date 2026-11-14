@@ -111,13 +111,5 @@ export class DisciplineDialog extends Dialog {
   private pick(disciplineId: string): void {
     this.app.dispatch({ type: 'chooseDiscipline', unitId: this.choice.unitId, disciplineId });
     this.close();
-    // Dispatch replaces the dialogue control remembered as this dialog's previous focus.
-    // Let the next reward keep focus; restore dialogue only after the queue closes.
-    if (document.activeElement === document.body && !document.querySelector('[role="dialog"]')) {
-      const target =
-        document.querySelector<HTMLElement>('.dialogue-scene [data-conversation-control="next"]') ??
-        document.querySelector<HTMLElement>('.dialogue-scene .choice-option:not(:disabled)');
-      target?.focus({ preventScroll: true });
-    }
   }
 }

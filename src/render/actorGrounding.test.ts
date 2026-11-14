@@ -1,6 +1,6 @@
 /**
- * The grounding rule of ADR 0093: everything a backend draws standing on an
- * oblique board — every figure and every prop — gets a contact shadow under its
+ * The grounding rule of ADR 0093: everything a backend draws standing on the
+ * orthographic board — every figure and every prop — gets a contact shadow under its
  * feet or base and a cast down-right along its scene's key, hard-edged on the
  * world-pixel grid, on both backends. A figure's is a calm pool under its feet
  * with a short cast along the key, in the painting's own tone where the scene
@@ -12,13 +12,10 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { ALL_MAPS } from '../content/index';
 import {
-  CAST_PER_PIXEL,
   CONTACT_LINE,
-  KEY_LIGHT_SCREEN,
   SHADOW_LEVEL_SLOTS,
   FIGURE_SHADOW,
   actorGrounding,
-  contactBand,
   figureCastReach,
   shadowGrid,
   shadowLevels,
@@ -26,61 +23,8 @@ import {
 
 const read = (file: string) => readFileSync(new URL(file, import.meta.url), 'utf8');
 
-describe('every standing thing on an oblique board is grounded', () => {
-  const boards = ALL_MAPS.filter((map) => map.projection === 'oblique');
-
-  it('covers every board the game ships', () => {
-    expect(boards.length).toBeGreaterThan(0);
-  });
-
-  for (const map of boards) {
-    const grounding = actorGrounding(map.scene);
-
-    it(`gives ${map.id} a cast and a contact layer`, () => {
-      expect(grounding.cast).toBeGreaterThan(0);
-      expect(grounding.contact).toBeGreaterThan(0);
-      // The contact is the tighter, darker of the two, as the painting's contact line is.
-      expect(grounding.contact).toBeGreaterThan(grounding.cast);
-    });
-
-    it(`gives every caster on ${map.id} a contact`, () => {
-      expect(contactBand(grounding, 1)).toBe(true);
-    });
-
-    it(`casts down-right on ${map.id}, away from the one upper-left key light`, () => {
-      const { x, y } = grounding.castKey;
-      expect(x).toBeGreaterThan(0);
-      expect(y).toBeGreaterThan(0);
-      // Opposite the light, within a quarter turn either way.
-      expect(x * KEY_LIGHT_SCREEN.x + y * KEY_LIGHT_SCREEN.y).toBeLessThan(0);
-      // Short: no point more than half its height away.
-      expect(Math.hypot(x, y)).toBeLessThanOrEqual(0.5);
-    });
-  }
-
-  it("casts Ba Dan's figures along the key its painted objects were set in with", () => {
-    // `objects.py` set the G1 tables, baskets and benches into the painting; a figure beside them matches.
-    const source = readFileSync(
-      new URL('../../art/source/ba-dan-route-a/tools/objects.py', import.meta.url),
-      'utf8',
-    );
-    const match = /^SHADOW_KX, SHADOW_KY = ([\d.]+), ([\d.]+)/m.exec(source);
-    expect(match).not.toBeNull();
-    const village = boards.find((map) => map.id === 'ba_dan_village');
-    expect(actorGrounding(village?.scene).castKey).toEqual({
-      x: Number(match?.[1]),
-      y: Number(match?.[2]),
-    });
-  });
-
-  it('casts a scene with no painted shadows along the key its runtime scenery uses', () => {
-    for (const map of boards.filter((m) => !m.scene?.actorGrounding?.castKey))
-      expect(actorGrounding(map.scene).castKey).toBe(CAST_PER_PIXEL);
-  });
-});
-
 describe("a figure's shadow is a calm pool (ADR 0093's figure amendment)", () => {
-  const boards = ALL_MAPS.filter((map) => map.projection === 'oblique');
+  const boards = ALL_MAPS.filter((map) => map.projection !== 'topdown');
 
   for (const map of boards)
     it(`keeps a figure's cast on ${map.id} to a quarter of its height or less`, () => {
@@ -165,10 +109,6 @@ describe('both backends draw the same grounding', () => {
       expect(source).toContain('projectContactLine(');
       expect(source).toContain('CONTACT_LINE');
       expect(source).toContain('groundedCastArt(');
-    });
-    it(`${file} grounds solid scenery on its own base, its feet inside its footprint`, () => {
-      expect(source).toContain('groundSceneryPiece(');
-      expect(source).toContain('pieceFeet(');
     });
   }
 

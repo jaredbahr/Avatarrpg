@@ -26,7 +26,8 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         { state: loaded, session: parsed.blob.session },
       );
       expect(await page.evaluate(() => window.fnt!.app.state)).toEqual(fixture.state);
-      await expect(page.locator('.dialogue-layer .stage[data-kind="dialogue"]')).toBeVisible();
+      await expect(page.locator('.dialogue-layer .stage[data-kind="dialogue"]')).toBeHidden();
+      await expect(page.locator('.dialogue-layer')).toHaveAttribute('aria-hidden', 'true');
 
       for (const [index, choice] of fixture.state.pendingChoices.entries()) {
         const dialog = page.getByRole('dialog');

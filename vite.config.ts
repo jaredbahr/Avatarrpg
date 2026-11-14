@@ -74,8 +74,20 @@ export default defineConfig({
     // Vite passes terser `safari10: true` by default. That Safari 10/11 workaround
     // costs 0.7 KB gzipped and cannot matter: an es2022 target needs Safari 15.
     terserOptions: { compress: { passes: 2 }, safari10: false },
-    // The whole game is one bundle; 350 KB gzipped is the budget we verify in CI.
+    // The boot chunk is checked against its own budget in CI (`scripts/check-bundle-size.mjs`).
     chunkSizeWarningLimit: 900,
+    rollupOptions: {
+      output: {
+        // Each region's data is a chunk of its own (ADR 0111 §2), named after its folder so the
+        // budget gate and the service worker can tell which region a chunk belongs to.
+        chunkFileNames: (chunk) => {
+          const region = /[/\\]src[/\\]content[/\\]regions[/\\]([^/\\]+)[/\\]content\.ts$/.exec(
+            chunk.facadeModuleId ?? '',
+          )?.[1];
+          return region ? `assets/region-${region}-[hash].js` : 'assets/[name]-[hash].js';
+        },
+      },
+    },
   },
   server: {
     host: true,
@@ -343,11 +355,14 @@ export default defineConfig({
     },
     VitePWA({
       registerType: 'autoUpdate',
-      injectRegister: 'auto',
+      injectRegister: 'script-defer',
       // No includeAssets or manifest icons: globPatterns already precaches every
       // icon, and listing them again put each one in the manifest twice.
       includeManifestIcons: false,
       workbox: {
+        // The fixed registration mode needs the autoUpdate worker settings explicitly.
+        skipWaiting: true,
+        clientsClaim: true,
         /*
          * Sound effects precache: the whole set is well under a tenth of a
          * megabyte, and a footstep that arrives on the second walk is worse
@@ -356,9 +371,9 @@ export default defineConfig({
          * a breath (ADR 0012).
          */
         globPatterns: ['**/*.{js,css,html,svg,png,webp,json,woff2,ogg}'],
-        // ADR 0104: the top-down family (sheets, boards, VFX) is fetched only under
-        // ?style=topdown until T6 switches the default; it stays in dist for that request but
-        // is not precached (`scripts/precache.mjs`, which the asset budget reads too).
+        // ADR 0104 T6: top-down is the default and precached; the oblique art of the maps that
+        // draw a top-down scene is requested only under ?style=oblique, so it stays in dist for
+        // that request but is not precached (`scripts/precache.mjs`, which the asset budget reads too).
         globIgnores: [...PRECACHE_IGNORES],
         /*
          * The precache manifest is inlined in sw.js, which the JavaScript gate

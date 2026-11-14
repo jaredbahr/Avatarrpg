@@ -19,29 +19,21 @@ import type { ClipName } from '../render/view';
 import { hashSeed, mulberry32 } from '../render/fx/rng';
 import type { Projection } from '../render/projection';
 import { integrateAlong, sampleAt } from '../render/geometry/curve';
-import { choreograph, STROLL_REFERENCE_MS, TIMING } from './anim/choreography';
-import { bendFxAt, bendNudge, bendPoseAt } from './anim/bendChoreo';
-import type { BendPlan } from './anim/bendChoreo';
-import type { BendFxIndex } from '../render/fx/bendFx';
-import type { HealthChange, SoundCue } from './anim/choreography';
+import { choreograph, DEFAULT_PRESENTATION_TIMING } from './anim/choreography';
+import type { HealthChange, PresentationTimingProfile, SoundCue } from './anim/choreography';
 import { partyScale } from './anim/actorScale';
 import { Timeline } from './anim/timeline';
+import { easeOutQuad } from './anim/easing';
 import type { MoveTrack, PoseTrack } from './anim/timeline';
 import { motionReduced } from './ui/dom';
-import {
-  directionalClip,
-  walkDirection,
-  walkHeading,
-  verticalClip,
-  screenDirection,
-} from './anim/direction';
+import { directionalClip, walkDirection, walkHeading, verticalClip } from './anim/direction';
 import type { WalkDirection } from './anim/direction';
-import { headingClip, HEADINGS, hitClip, koClip } from '../content/assets/clips';
+import { topdownVfx } from '../content/assets/topdownVfx';
+import { shotSprite } from '../render/topdown/shots';
+import { actionClip, headingClip, HEADINGS, hitClip, koClip } from '../content/assets/clips';
 import type { Heading, LocomotionDef, MeleeDirection } from '../content/assets/clips';
 import { sheetLocomotion } from '../content/assets/manifest';
 import type { SheetClips } from '../render/sheets/store';
-import type { BendSources } from './anim/bendHandoff';
-import { headingDeg } from './anim/bendChoreo';
 
 /** A clip time past the end of any clip: an unlooped clip shows its last frame. */
 const HELD = 3_600_000;
@@ -56,14 +48,6 @@ const BOB = 0.05;
  * their declared stride.
  */
 export const WALK_MS_PER_TILE = 475;
-
-/**
- * Wall ms each walk cel holds at the brisk stroll on a native-G1 sheet (ADR
- * 0095's amendment: 70 ms at the reference 750 ms/tile). Scale with the live
- * stroll pace to retain that choice's phase per distance and foot slide,
- * including combat's unchanged cadence, when exploration speeds up.
- */
-export const BRISK_WALK_CEL_MS = (70 * TIMING.strollStep) / STROLL_REFERENCE_MS;
 
 /**
  * How long a finished walk holds its settled pose before the ready stance is
@@ -104,13 +88,16 @@ export interface UnitHealthPresentation {
 }
 
 export interface AnimatorOptions {
+  /** Scene-specific timings; the default is unchanged for shared App playback. */
+  readonly timingProfile?: PresentationTimingProfile;
+  /** Opt in to action-ready queueing for the private top-down combat Animator. */
+  readonly actionQueue?: boolean;
   /** Overrides the reduce-motion lookup, so tests can run without a document. */
   readonly motionReduced?: () => boolean;
   /**
-   * Every walk this animator plays ambles (a routine errand, Mira: ADR 0095),
-   * so a G sheet keeps the clip time a tile fitted to its drawn feet rather
-   * than the brisk cadence. Its base walk schedule also stays at the reference
-   * pace, so the residents' slowed clock preserves ramps and settling too.
+   * Every walk this animator plays ambles (a routine errand, ADR 0095): its walk
+   * schedule stays at the reference pace, so the residents' slowed clock
+   * preserves ramps and settling too.
    */
   readonly amble?: boolean;
   /**
@@ -126,15 +113,6 @@ export interface AnimatorOptions {
    * the sheet is in, a knockout is the legacy pose and keeps its timing.
    */
   readonly sheetClips?: (sprite: string) => SheetClips | undefined;
-  /**
-   * The bends a push can play (ADR 0055, step 7), asked once a push:
-   * undefined until the painted effects and their pages are in, and each
-   * lookup answers only for a bend that has loaded. Without it every cast is
-   * the legacy one.
-   */
-  readonly bends?: () => BendSources | undefined;
-  /** How far the ground lifts a unit's drawing at a tile, in tiles, so a bend aims from and at the drawn feet. */
-  readonly liftOf?: (pos: Vec2) => number;
 }
 
 /** Everything the renderer needs to draw a unit mid-playback. */
@@ -235,6 +213,19 @@ export class Animator {
     return this.timeline.finishesAt;
   }
 
+  /** Action horizon; visual-only tracks may remain live after this. */
+  get actionReadyAt(): number {
+    return this.timeline.actionReadyAt;
+  }
+
+  actionBusy(now: number): boolean {
+    return this.timeline.actionBusy(now);
+  }
+
+  actorFinishesAt(unitId: string): number {
+    return this.timeline.actorFinishesAt(unitId);
+  }
+
   /**
    * Schedules playback for a batch of events.
    *
@@ -255,32 +246,41 @@ export class Animator {
       delayMs?: number;
       /** Stable fraction of the authored walk loop; presentation only. */
       walkPhase?: number;
-      /** Open water a water bend in this push draws from, by unit id (see `choreograph`). */
-      waterSources?: Readonly<Record<string, Vec2>>;
     } = {},
   ): void {
-    const base = options.alongside
-      ? Math.max(now, this.lastCursor)
-      : Math.max(now, this.timeline.finishesAt);
+    const actionActors = this.options.actionQueue
+      ? events.flatMap((event) =>
+          event.type === 'unitMoved' || event.type === 'partyWalked' || event.type === 'abilityUsed'
+            ? [event.unitId]
+            : [],
+        )
+      : [];
+    const actorSettle = actionActors.reduce(
+      (end, unitId) => Math.max(end, this.timeline.actorFinishesAt(unitId)),
+      0,
+    );
+    const queueEnd = this.options.actionQueue
+      ? Math.max(this.timeline.actionReadyAt, actorSettle)
+      : this.timeline.finishesAt;
+    const base = options.alongside ? Math.max(now, this.lastCursor) : Math.max(now, queueEnd);
     // Followers each delay from the same batch anchor, never from the previous delay.
     this.lastCursor = base;
     const rate = this.rate;
     const cursor = base + Math.max(0, options.delayMs ?? 0) * rate;
-    const bends = this.options.bends?.();
     const result = choreograph({
       content: this.content,
       events,
       unitsBefore,
       cursor,
       rate,
+      timingProfile: this.options.timingProfile ?? DEFAULT_PRESENTATION_TIMING,
       pushIndex: this.pushes++,
       silentSteps: options.silentSteps ?? options.alongside,
       amble: this.options.amble,
       projection: this.projection,
       ...(this.options.sheetClips ? { clipsOf: this.options.sheetClips } : {}),
-      ...(bends ? { bends } : {}),
-      ...(this.options.liftOf ? { liftOf: this.options.liftOf } : {}),
-      ...(options.waterSources ? { waterSources: options.waterSources } : {}),
+      headingOf: (unitId) => this.headingAfterCues(unitId),
+      shots: topdownVfx() !== null,
     });
     for (const event of events) {
       if (event.type === 'partyWalked')
@@ -304,19 +304,9 @@ export class Animator {
       this.healthCues.push({ ...change, order: this.healthOrder++ });
     this.healthCues.sort((a, b) => a.at - b.at || a.order - b.order);
     for (const track of result.tracks) {
-      // Every track, a bend's too, starts exactly where the choreography laid
-      // it: the damage, flash and floater were timed from that start.
+      // Every track starts exactly where the choreography laid it: the damage,
+      // flash and floater were timed from that start.
       this.timeline.add(track);
-      if (track.kind === 'bend') {
-        // The stance keeps the heading the bend threw toward.
-        const deg = (headingDeg(track.plan.heading) * Math.PI) / 180;
-        this.pendingHeadings.push({
-          unitId: track.unitId,
-          at: track.start,
-          tangent: { x: Math.cos(deg), y: Math.sin(deg) },
-          screenSpace: true,
-        });
-      }
       if (track.kind === 'move') {
         if (track.gait === 'slide') {
           // A push takes the stance over: the struck figure does not settle
@@ -332,49 +322,43 @@ export class Animator {
           });
         }
       }
-      if (track.kind === 'pose' && track.facing !== undefined)
+      if (track.kind === 'pose' && (track.heading || track.facing !== undefined)) {
+        // A top-down action turns the unit to the heading it is drawn in (ADR 0104).
+        const rad = (HEADINGS.indexOf(track.heading ?? 'east') * Math.PI) / 4;
         this.pendingHeadings.push({
           unitId: track.unitId,
           at: track.start,
-          tangent: { x: track.facing, y: 0 },
+          tangent: track.heading
+            ? { x: Math.cos(rad), y: Math.sin(rad) }
+            : { x: track.facing ?? 1, y: 0 },
           screenSpace: true,
         });
+      }
     }
     this.pendingHeadings.sort((a, b) => a.at - b.at);
+    this.timeline.holdActionUntil(result.actionReadyAt);
     this.timeline.holdUntil(result.cursor);
     // The cues carry animator-clock times; `now` lets the sink convert them to
     // its own clock, which for Web Audio is the only one that schedules exactly.
     if (result.sounds.length > 0) this.options.onSounds?.(result.sounds, now);
   }
 
-  /**
-   * Plays one attack of a character's bend (ADR 0055, step 6), queued after
-   * whatever is playing, and returns the scene time it starts at: the plan's
-   * times are from there (`bendSceneAt`), which is how the struck unit's pose
-   * and the damage are laid out round its holds. The track lasts the plan's
-   * whole scene duration, every hold included.
-   */
-  pushBend(now: number, unitId: string, plan: BendPlan, fx: BendFxIndex): number {
-    const start = Math.max(now, this.timeline.finishesAt);
-    this.timeline.add({ kind: 'bend', unitId, plan, fx, start, duration: plan.duration });
-    return start;
-  }
-
-  /** The bend cel a unit draws at `now`, by play index, or undefined when it is not bending. */
-  bendPose(now: number, unitId: string): ReturnType<typeof bendPoseAt> | undefined {
-    for (const track of this.timeline.active(now, 'bend')) {
-      if (track.unitId !== unitId) continue;
-      const pose = bendPoseAt(track.plan, now - track.start);
-      if (pose) return pose;
-    }
-    return undefined;
-  }
-
-  /** Every live bend's painted effect at `now`, in play order. */
+  /** The top-down shots in flight at `now` (#588), as painted cels, in play order. */
   bendFx(now: number): BendFxSprite[] {
     return this.timeline
-      .active(now, 'bend')
-      .flatMap((track) => bendFxAt(track.fx, track.plan, now - track.start));
+      .active(now, 'shot')
+      .flatMap((track) => shotSprite(track, now, topdownVfx()));
+  }
+
+  /**
+   * How far a top-down Earth Wall on `pos` is out of the ground at `now` (#590): 0 until its rise
+   * plays, eased to 1; undefined when no rise is queued or playing there.
+   */
+  wallRise(now: number, pos: Vec2): number | undefined {
+    const track = this.timeline
+      .unfinished(now, 'rise')
+      .find((t) => t.pos.x === pos.x && t.pos.y === pos.y);
+    return track && easeOutQuad(Math.max(0, Timeline.progress(track, now)));
   }
 
   /** Drops finished tracks. Called once a frame so memory stays flat. */
@@ -432,8 +416,15 @@ export class Animator {
     if (count > 0) this.pendingHeadings.splice(0, count);
   }
 
+  /** The heading a unit will face once every queued turn has played: what a new push starts from. */
+  private headingAfterCues(unitId: string): Heading | undefined {
+    const cue = this.pendingHeadings.filter((each) => each.unitId === unitId).pop();
+    if (!cue) return this.headings.get(unitId);
+    return walkHeading(cue.screenSpace ? cue.tangent : cue.tangent);
+  }
+
   private rememberDirection(unitId: string, tangent: Vec2, screenSpace = false): void {
-    const screen = screenSpace ? tangent : screenDirection(tangent, this.projection);
+    const screen = screenSpace ? tangent : tangent;
     this.directions.set(unitId, walkDirection(screen, this.directions.get(unitId)));
     this.headings.set(unitId, walkHeading(screen, this.headings.get(unitId)));
     if (Math.abs(screen.x) > TURN_THRESHOLD) this.facings.set(unitId, screen.x > 0 ? 1 : -1);
@@ -459,7 +450,7 @@ export class Animator {
   locomotion(
     now: number,
     unitId: string,
-    resting: 'idle' | 'rest' | 'stance' = 'idle',
+    resting: 'idle' | 'rest' = 'idle',
     sprite?: string,
     restFacing: 1 | -1 = 1,
   ): { clip: ClipName; facing: 1 | -1 } {
@@ -480,9 +471,7 @@ export class Animator {
     const base = plant
       ? 'idle'
       : travel || planted
-        ? gait?.jog
-          ? 'jog'
-          : 'walk'
+        ? 'walk'
         : stop
           ? gait
             ? 'idle'
@@ -529,12 +518,10 @@ export class Animator {
     if (cached) return cached;
     const curve = track.curve;
     const turns: number[] = [];
-    let anchor = walkHeading(screenDirection(sampleAt(curve, 0).tangent, this.projection));
+    let anchor = walkHeading(sampleAt(curve, 0).tangent);
     for (let i = 1; i < curve.points.length; i++) {
       const at = curve.cumulative[i - 1] ?? 0;
-      const heading = walkHeading(
-        screenDirection(sampleAt(curve, at + 1e-6).tangent, this.projection),
-      );
+      const heading = walkHeading(sampleAt(curve, at + 1e-6).tangent);
       const steps = Math.abs(HEADINGS.indexOf(anchor) - HEADINGS.indexOf(heading));
       if (Math.min(steps, 8 - steps) < 2) continue;
       turns.push(at);
@@ -601,21 +588,15 @@ export class Animator {
     // The sheet's clip time a tile is fitted to its art at one art px a world px
     // (ADR 0095). Drawn larger, its feet cover more ground a loop, so the loop
     // plays over more of it and the planted foot stays planted at any figure scale.
-    const scale = partyScale(this.projection);
-    // At the brisk stroll a native-G1 walk plays at BRISK_WALK_CEL_MS a cel,
-    // never slower than its fitted rate; an amble keeps the fit (ADR 0095).
-    const brisk =
-      gait.walkCelMs && !this.options.amble
-        ? (gait.walkCelMs * TIMING.strollStep) / BRISK_WALK_CEL_MS
-        : Infinity;
+    const scale = partyScale();
     return (
       gait.walkStartMs +
       (this.walkPhaseFractions.get(travel.track.unitId) ?? 0) * gait.walkCycleMs +
-      integrateAlong(travel.track.curve, travel.distance, (tangent) => {
-        const fitted =
-          gait.walkMsPerTile[walkHeading(screenDirection(tangent, this.projection))] / scale;
-        return Math.min(fitted, brisk);
-      })
+      integrateAlong(
+        travel.track.curve,
+        travel.distance,
+        (tangent) => gait.walkMsPerTile[walkHeading(tangent)] / scale,
+      )
     );
   }
 
@@ -754,8 +735,12 @@ export class Animator {
     if ((clip !== 'ko' && clip !== 'hit') || !sprite || sheetLocomotion(sprite)?.headings !== 8)
       return clip;
     const heading = this.heading(unitId, restFacing) ?? 'east';
-    const authored = clip === 'ko' ? koClip(heading) : hitClip(heading);
-    return this.options.sheetClips?.(sprite)?.[authored] ? authored : clip;
+    const clips = this.options.sheetClips?.(sprite);
+    // A top-down sheet falls in its own heading (ADR 0104); a G sheet on the diagonal `koClip` gives.
+    const authored = (
+      clip === 'ko' ? [actionClip('ko', heading), koClip(heading)] : [hitClip(heading)]
+    ).find((name) => clips?.[name]);
+    return authored ?? clip;
   }
 
   /**
@@ -811,8 +796,7 @@ export class Animator {
 
   /**
    * How far the camera is knocked at `now`, in tiles: every live shake picks
-   * a fresh direction every few frames, seeded, and dies off over its track;
-   * a bend's kicks add theirs, on its own frozen clock.
+   * a fresh direction every few frames, seeded, and dies off over its track.
    */
   cameraNudge(now: number): Vec2 {
     let x = 0;
@@ -824,11 +808,6 @@ export class Animator {
       const strength = track.amplitude * (1 - Timeline.progress(track, now));
       x += Math.cos(angle) * strength;
       y += Math.sin(angle) * strength;
-    }
-    for (const track of this.timeline.active(now, 'bend')) {
-      const kick = bendNudge(track.plan, now - track.start);
-      x += kick.x;
-      y += kick.y;
     }
     return { x, y };
   }

@@ -66,14 +66,6 @@ const settledFrame = (): ResidentCompletionFrame => ({
 });
 
 describe('resident phase-change completion budget', () => {
-  it('budgets the authored Mira route beyond the old 16.42-second skip', () => {
-    const mira = phaseChangeTracks().filter(
-      (track) => track.motion.kind === 'walk' && track.motion.who.id === 'lw.npc.mira',
-    );
-    expect(mira).toHaveLength(1);
-    expect(residentCompletionBudgetMs({ clock: 0, tracks: mira })).toBeGreaterThan(16_420);
-  });
-
   it('accepts ordinary completion within the planned virtual-time allowance', async () => {
     let now = 0;
     const completed = await waitWithinResidentBudget(

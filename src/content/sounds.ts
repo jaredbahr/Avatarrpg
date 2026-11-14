@@ -123,10 +123,10 @@ const voice = (
  * knobs for how bending sounds; they are meant to be edited by ear.
  */
 export const SOUND_FAMILIES: Readonly<Record<string, SoundDefInput>> = {
-  // A rush of air catching, falling away as the flame lets go.
-  fire: voice(2600, 320, { q: 1.1, attack: 18, decay: 420, gain: 0.9 }),
-  // Lower and rounder, bending down the way a body of water moves.
-  water: voice(1500, 240, { noise: 'brown', q: 2.2, attack: 30, decay: 380, gain: 0.85 }),
+  // A burst of flame thrown from the fist: ignition crackle into a roar that cuts off.
+  fire: sample('audio/sfx-fire.ogg', { gain: 0.85 }),
+  // A rope of water lashing out and slapping down.
+  water: sample('audio/sfx-water.ogg', { gain: 0.85 }),
   // Brittle and high: the sound lives at the top where ice cracks.
   ice: voice(5200, 1800, {
     filter: 'highpass',
@@ -135,26 +135,12 @@ export const SOUND_FAMILIES: Readonly<Record<string, SoundDefInput>> = {
     decay: 300,
     crack: true,
   }),
-  // Weight. Nearly all of it under the voice, with a strike at the head.
-  earth: voice(420, 90, {
-    noise: 'brown',
-    filter: 'lowpass',
-    q: 1.4,
-    attack: 4,
-    decay: 520,
-    gain: 1.1,
-    crack: true,
-  }),
-  // Wide and breathy, rising then gone.
-  air: voice(900, 3200, { q: 0.8, attack: 60, decay: 340, gain: 0.75 }),
-  // Almost no attack, a crack, and a short bright tail.
-  lightning: voice(7000, 2200, {
-    q: 4,
-    attack: 2,
-    decay: 240,
-    gain: 0.95,
-    crack: true,
-  }),
+  // Stone torn out of the ground: a short grind and a heavy thud.
+  earth: sample('audio/sfx-earth.ogg', { gain: 0.85 }),
+  // A sharp gust from open palms, rushing away.
+  air: sample('audio/sfx-air.ogg', { gain: 0.85 }),
+  // A small bolt from the fingertips: a bright crackling snap.
+  lightning: sample('audio/sfx-lightning.ogg', { gain: 0.85 }),
   // A chi strike: no element, just the snap of the blow.
   non: voice(1800, 600, { q: 2.5, attack: 4, decay: 150, gain: 0.7, crack: true }),
   // Enemy techniques read as effort, not element.
@@ -190,38 +176,10 @@ const note = (hz: number, to: number, gain: number, decay: number) =>
  */
 export const SOUND_CUES: Readonly<Record<string, SoundDefInput>> = {
   /* Slice materials: release only; hit/miss remains a separate cue. -- */
-  // A compact ignition and a lower flame body, rather than a full blast hiss.
-  'fx.fire.jab': {
-    kind: 'layers',
-    voices: [
-      voice(2300, 650, { attack: 8, decay: 110, gain: 0.3, q: 0.7 }),
-      voice(700, 260, {
-        noise: 'brown',
-        filter: 'lowpass',
-        attack: 18,
-        decay: 270,
-        body: 0.45,
-        gain: 0.65,
-        q: 0.8,
-      }),
-    ],
-  },
-  // Low weight plus audible stone grit; no crack that would imply a landed hit.
-  'fx.earth.rock': {
-    kind: 'layers',
-    voices: [
-      voice(460, 130, {
-        noise: 'brown',
-        filter: 'lowpass',
-        attack: 12,
-        decay: 360,
-        body: 0.5,
-        gain: 0.7,
-        q: 0.9,
-      }),
-      voice(1900, 620, { attack: 9, decay: 210, body: 0.25, gain: 0.18, q: 0.7 }),
-    ],
-  },
+  // Kaya's jab is the fire family's burst; it stays its own row so a later take can differ.
+  'fx.fire.jab': sample('audio/sfx-fire.ogg', { gain: 0.8, rate: 1.08 }),
+  // A thrown stone: a short whoosh and a crack.
+  'fx.earth.rock': sample('audio/sfx-rock.ogg', { gain: 0.85 }),
   /* Weapons and machinery ------------------------------------------- */
   // These play at release. A club's swish must not claim a hit before the
   // separately scheduled hit/miss cue; only the crossbow's mechanism cracks.
@@ -231,12 +189,7 @@ export const SOUND_CUES: Readonly<Record<string, SoundDefInput>> = {
     decay: 190,
     gain: 0.55,
   }),
-  'fx.enemy.sling': voice(3200, 850, {
-    q: 1.4,
-    attack: 10,
-    decay: 135,
-    gain: 0.38,
-  }),
+  'fx.enemy.sling': sample('audio/sfx-sling.ogg', { gain: 0.8 }),
   'fx.enemy.rush': voice(360, 1150, {
     noise: 'brown',
     q: 0.7,
@@ -263,13 +216,7 @@ export const SOUND_CUES: Readonly<Record<string, SoundDefInput>> = {
     decay: 165,
     gain: 0.4,
   }),
-  'fx.enemy.crossbow': voice(2600, 650, {
-    q: 2.4,
-    attack: 2,
-    decay: 115,
-    gain: 0.4,
-    crack: true,
-  }),
+  'fx.enemy.crossbow': sample('audio/sfx-crossbow.ogg', { gain: 0.9 }),
   'fx.enemy.slam': voice(320, 65, {
     noise: 'brown',
     filter: 'lowpass',

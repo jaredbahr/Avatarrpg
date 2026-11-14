@@ -107,6 +107,11 @@ export class UnitInspector extends Dialog {
     const unit = this.unit;
     const stats = effectiveStats(this.app.content, unit);
     const portraitKey = portraitKeyFor(this.app.content, unit);
+    const xpRemaining = xpToNextLevel(unit.level, unit.xp);
+    const xpPercent = Math.min(
+      Math.round(levelProgress(unit.level, unit.xp) * 100),
+      xpRemaining > 0 ? 99 : 100,
+    );
 
     body.appendChild(
       el(
@@ -141,7 +146,7 @@ export class UnitInspector extends Dialog {
                 text:
                   unit.level >= MAX_LEVEL
                     ? `Level ${unit.level} — Maximum level`
-                    : `Level ${unit.level} — ${Math.round(levelProgress(unit.level, unit.xp) * 100)}% to level ${unit.level + 1} (${xpToNextLevel(unit.level, unit.xp)} XP to go)`,
+                    : `Level ${unit.level} — ${xpPercent}% to level ${unit.level + 1} (${xpRemaining} XP to go)`,
               })
             : null,
         ),

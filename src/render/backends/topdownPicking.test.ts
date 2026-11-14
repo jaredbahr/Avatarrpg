@@ -216,7 +216,7 @@ describe('top-down depth key: foot screen y, then x', () => {
   });
 
   it('leaves the oblique and orthographic keys as the foot y alone', () => {
-    for (const projection of ['oblique', 'orthographic'] as const)
+    for (const projection of ['orthographic'] as const)
       expect(boardDepth({ x: 812.5, y: 412.25 }, projection)).toBe(412.25);
   });
 });

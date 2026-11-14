@@ -60,6 +60,7 @@ import type {
   WorldAnchor,
 } from '../core/types';
 import { SQUARE_FOOTPRINT_CONTENT_DEFAULT } from './footprint';
+import { STORY_ENTRY, STORY_PROLOGUE } from './entry';
 import { STORY_PRESENTATIONS, validateStoryPresentations } from './story/presentations';
 import {
   FORBIDDEN_BINDINGS,
@@ -233,7 +234,7 @@ export const statusSchema = z.object({
     move: z.number(),
     ap: z.number(),
     accuracy: z.number(),
-    incomingMultiplier: z.record(z.number().positive()),
+    incomingMultiplier: z.record(z.string(), z.number().positive()),
   }),
   clears: z.array(statusId),
   upgradeFrom: z.array(statusId).nullable(),
@@ -536,7 +537,7 @@ export const mapSchema = z
     width: z.number().int().min(4).max(64),
     height: z.number().int().min(4).max(64),
     rows: z.array(z.string()).min(1),
-    legend: z.record(tileTemplate),
+    legend: z.record(z.string(), tileTemplate),
     partySpawns: z.array(vec2).min(1),
     npcs: z.array(
       z
@@ -546,6 +547,7 @@ export const mapSchema = z
           pos: vec2.optional(),
           sprite: z.string().min(1),
           interaction: z.literal('route-sign').optional(),
+          faces: z.enum(HEADINGS).optional(),
           when: conditionSchema.optional(),
           node: id,
           routes: z.array(z.object({ when: conditionSchema, node: id })).optional(),
@@ -560,8 +562,15 @@ export const mapSchema = z
     ambience: z.string().min(1),
     exit: z.object({ pos: vec2, label: z.string().min(1) }).optional(),
     objective: z.string().min(1).optional(),
+    objectiveTargetId: id.optional(),
     objectiveVariants: z
-      .array(z.object({ when: conditionSchema, text: z.string().min(1) }))
+      .array(
+        z.object({
+          when: conditionSchema,
+          text: z.string().min(1),
+          objectiveTargetId: id.nullable().optional(),
+        }),
+      )
       .optional(),
     exits: z
       .array(
@@ -605,7 +614,7 @@ export const mapSchema = z
     cameraCentreMargin: z.number().finite().optional(),
     // A painting under the grid (ADR 0009). Between 32 px a tile (the probe) and
     // 256, so a 24-wide map stays inside the 2048 px texture every iPad takes.
-    projection: z.enum(['oblique', 'topdown']).optional(),
+    projection: z.literal('topdown').optional(),
     scene: z
       .object({
         paintedWater: z.boolean().optional(),
@@ -635,9 +644,6 @@ export const mapSchema = z
               .optional(),
           })
           .strict()
-          .optional(),
-        reliefLift: z
-          .union([z.number().min(0).max(0.5), z.array(z.number().min(0).max(0.5))])
           .optional(),
         // The rectangle the art covers, in projected world pixels: the camera
         // keeps its whole view inside it.
@@ -721,7 +727,6 @@ export const mapSchema = z
       .object({
         url: z.string().min(1),
         pixelsPerTile: z.number().int().min(32).max(256),
-        projection: z.literal('oblique').optional(),
         padding: z
           .object({
             left: z.number().nonnegative(),
@@ -837,6 +842,16 @@ export const encounterSchema = z.object({
   ),
   reinforcements: z.array(placement),
   weather: encounterWeatherSchema.optional(),
+  hard: z
+    .object({
+      hp: z.number().min(1).max(3),
+      bossHp: z.number().min(1).max(3),
+      power: z.number().int().min(0).max(10),
+      ap: z.number().int().min(0).max(4),
+    })
+    .partial()
+    .strict()
+    .optional(),
   expectedLevel: z.number().int().min(1).max(10),
   intro: z.string().min(1),
   tip: z.string().min(1),
@@ -864,6 +879,15 @@ const standingAdjust = z
   })
   .partial();
 
+const nodePresentation = z
+  .object({
+    mapId: id,
+    stage: z
+      .union([z.object({ npc: id }).strict(), z.object({ tiles: z.array(vec2) }).strict()])
+      .optional(),
+  })
+  .strict();
+
 export const storyNodeSchema = z.discriminatedUnion('kind', [
   z.object({
     id,
@@ -873,6 +897,7 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     lines: z.array(z.string().min(1)).min(1),
     next: id,
     variants: z.array(dialogueVariant).optional(),
+    presentation: nodePresentation.optional(),
   }),
   z.object({
     id,
@@ -880,13 +905,14 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     speaker: z.string().min(1),
     portrait: z.string().min(1),
     prompt: z.string().min(1),
+    presentation: nodePresentation.optional(),
     options: z
       .array(
         z.object({
           label: z.string().min(1),
           detail: z.string().min(1),
           next: id,
-          setFlags: z.record(flagValue).optional(),
+          setFlags: z.record(z.string(), flagValue).optional(),
           requires: conditionSchema.optional(),
           speaker: z
             .object({ element: elementId.optional(), characterId: id.optional() })
@@ -905,13 +931,13 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     kind: z.literal('explore'),
     mapId: id,
     objective: z.string().min(1),
-    objectiveNpcId: id.optional(),
+    objectiveTargetId: id.optional(),
     objectiveVariants: z
       .array(
         z.object({
           when: conditionSchema,
           text: z.string().min(1),
-          objectiveNpcId: id.nullable().optional(),
+          objectiveTargetId: id.nullable().optional(),
         }),
       )
       .optional(),
@@ -920,8 +946,8 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
   z.object({
     id,
     kind: z.literal('flags'),
-    set: z.record(flagValue),
-    residentProfiles: z.record(z.enum(RESIDENT_PROFILES)).optional(),
+    set: z.record(z.string(), flagValue),
+    residentProfiles: z.record(z.string(), z.enum(RESIDENT_PROFILES)).optional(),
     grantXp: z.number().int().min(0).max(2000).optional(),
     phase: dayPhaseId.optional(),
     next: id,
@@ -934,6 +960,13 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     lines: z.array(z.string().min(1)).min(1),
     teaser: z.string().min(1),
     next: id.optional(),
+    recap: z
+      .object({
+        label: z.string().min(1),
+        thanks: z.string().min(1),
+        choices: z.array(z.object({ when: conditionSchema, text: z.string().min(1) })).min(1),
+      })
+      .optional(),
   }),
 ]);
 
@@ -1072,6 +1105,13 @@ export const assetEntrySchema = z.discriminatedUnion('kind', [
     actions: z
       .string()
       .regex(/\.json$/, 'must point at the actions JSON')
+      .optional(),
+    actionMap: z
+      .object({
+        cast: z.string().min(1),
+        idle: z.string().min(1).optional(),
+        abilities: z.record(z.string(), z.string().min(1)).optional(),
+      })
       .optional(),
     // 80 is the 2x2 Driller sheet: a 160 px cel across a two-tile body. 64 is
     // the world's native G1 grid, one art pixel a world pixel (ADR 0089). 40 is
@@ -1922,17 +1962,6 @@ export function validateContent(
     const eightWayClips = HEADINGS.flatMap((heading) =>
       (['idle', 'walk', 'rest'] as const).map((base) => headingClip(base, heading)),
     );
-    // A fighting stance is optional, but a sheet that authors one authors it
-    // for every heading of its eight-way locomotion (ADR 0052).
-    const stanceClips = HEADINGS.map((heading) => headingClip('stance', heading));
-    const stances = stanceClips.filter((clip) => entry.clips[clip]);
-    if (stances.length > 0 && !entry.locomotion) {
-      problems.push(`asset ${key}: a stance needs declared eight-way locomotion`);
-    } else if (stances.length > 0 && stances.length < stanceClips.length) {
-      for (const clip of stanceClips) {
-        if (!entry.clips[clip]) problems.push(`asset ${key}: has a stance but no ${clip} clip`);
-      }
-    }
     if (entry.locomotion) {
       for (const clip of eightWayClips) {
         if (!entry.clips[clip]) {
@@ -2076,6 +2105,30 @@ export function validateContent(
   const statusIds = new Set(bundle.statuses.map((s) => s.id));
   const surfaceIds = new Set(bundle.surfaces.map((s) => s.id));
   const propIds = new Set(bundle.props.map((p) => p.id));
+
+  const checkObjectiveTarget = (
+    map: MapDef,
+    source: {
+      readonly objectiveTargetId?: string | null;
+    },
+    label: string,
+  ): void => {
+    const targetId = source.objectiveTargetId;
+    if (!targetId) return;
+    const matches =
+      map.npcs.filter((npc) => npc.id === targetId).length +
+      (map.exits ?? []).filter((exit) => exit.toMapId === targetId).length;
+    if (matches === 0)
+      problems.push(`${label} targets unknown npc or exit "${targetId}" on map "${map.id}"`);
+    else if (matches > 1)
+      problems.push(`${label} target "${targetId}" is ambiguous on map "${map.id}"`);
+  };
+
+  for (const map of bundle.maps) {
+    checkObjectiveTarget(map, map, `map "${map.id}" objective`);
+    for (const [index, variant] of (map.objectiveVariants ?? []).entries())
+      checkObjectiveTarget(map, variant, `map "${map.id}" objective variant ${index}`);
+  }
 
   /* --- abilities reference real statuses and surfaces --------------- */
   for (const a of bundle.abilities) {
@@ -2588,21 +2641,10 @@ export function validateContent(
       const map = bundle.maps.find((candidate) => candidate.id === node.mapId);
       if (!map) {
         problems.push(`story node "${node.id}" uses unknown map "${node.mapId}"`);
-      } else if (node.objectiveNpcId && !map.npcs.some((npc) => npc.id === node.objectiveNpcId)) {
-        problems.push(
-          `story node "${node.id}" targets unknown npc "${node.objectiveNpcId}" on map "${node.mapId}"`,
-        );
       } else {
-        for (const variant of node.objectiveVariants ?? []) {
-          if (
-            variant.objectiveNpcId &&
-            !map.npcs.some((npc) => npc.id === variant.objectiveNpcId)
-          ) {
-            problems.push(
-              `story node "${node.id}" objective variant targets unknown npc "${variant.objectiveNpcId}" on map "${node.mapId}"`,
-            );
-          }
-        }
+        checkObjectiveTarget(map, node, `story node "${node.id}"`);
+        for (const variant of node.objectiveVariants ?? [])
+          checkObjectiveTarget(map, variant, `story node "${node.id}" objective variant`);
       }
     }
   }
@@ -2709,12 +2751,14 @@ export function validateContent(
   );
 
   /* --- reachability: every node must be reachable from the entry ----- */
-  const entry = 'act1_open';
+  const entry = STORY_ENTRY;
   if (!storyIds.has(entry)) {
     problems.push(`story has no entry node "${entry}"`);
   } else {
-    const reachable = new Set<string>([entry]);
-    const queue = [entry];
+    // A new game from the title opens on the prologue, which leads into the entry.
+    const roots = storyIds.has(STORY_PROLOGUE) ? [STORY_PROLOGUE, entry] : [entry];
+    const reachable = new Set<string>(roots);
+    const queue = [...roots];
     while (queue.length > 0) {
       const current = queue.shift();
       if (!current) break;
@@ -2724,10 +2768,11 @@ export function validateContent(
         queue.push(to);
       }
     }
-    // NPC nodes are entered by tapping, not by a link, so they count as roots.
+    // NPC and trigger nodes are entered by tapping or walking, not by a link, so they count as roots.
     for (const m of bundle.maps) {
-      for (const npc of m.npcs) {
-        for (const nodeId of [npc.node, ...(npc.routes ?? []).map((r) => r.node)]) {
+      for (const npc of [...m.npcs, ...(m.triggers ?? [])]) {
+        const routes = 'routes' in npc ? (npc.routes ?? []) : [];
+        for (const nodeId of [npc.node, ...routes.map((r) => r.node)]) {
           if (!nodeId || reachable.has(nodeId)) continue;
           reachable.add(nodeId);
           queue.push(nodeId);

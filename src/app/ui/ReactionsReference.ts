@@ -14,28 +14,18 @@
  */
 
 import type { App } from '../App';
-import type { ComboRule, ContentIndex, DamageType, SurfaceId } from '../../core/types';
+import type { ComboRule, ContentIndex } from '../../core/types';
 import { describeFooting } from '../../core/rules/reactions';
 import { Dialog } from './Dialog';
 import type { DialogOptions } from './Dialog';
 import { button, el } from './dom';
-
-/** 'lightning' has no surface of its own; 'fire' has both and shares a name. */
-function appliedName(content: ContentIndex, applied: DamageType | SurfaceId): string {
-  const surface = content.surfaces.get(applied as SurfaceId);
-  if (surface) return surface.name;
-  return applied.charAt(0).toUpperCase() + applied.slice(1);
-}
-
-function surfaceName(content: ContentIndex, id: SurfaceId | null): string {
-  if (!id) return 'bare ground';
-  return content.surfaces.get(id)?.name ?? id;
-}
+import { appliedName, comboRevealed, surfaceName } from './comboText';
+import type { ComboReveal } from './comboText';
 
 export class ReactionsReference extends Dialog {
   protected options: DialogOptions = {
     title: 'How the elements react',
-    subtitle: 'Terrain is a weapon. This is the whole table — go and break it.',
+    subtitle: 'Terrain is a weapon — go and break it.',
     dismissable: true,
     wide: true,
   };
@@ -46,6 +36,16 @@ export class ReactionsReference extends Dialog {
 
   protected build(body: HTMLElement): void {
     const content = this.app.content;
+    const reveal = this.app.comboReveal();
+    if (reveal !== 'all') {
+      const found = content.combos.filter((rule) => reveal.includes(rule.id)).length;
+      body.appendChild(
+        el('p', {
+          class: 'reaction-found',
+          text: `Combos found: ${found} of ${content.combos.length}. The rest are ??? until you see them happen.`,
+        }),
+      );
+    }
 
     body.appendChild(
       el('p', {
@@ -55,7 +55,7 @@ export class ReactionsReference extends Dialog {
     );
 
     body.appendChild(el('h3', { text: 'When elements meet' }));
-    body.appendChild(this.comboTable(content));
+    body.appendChild(this.comboTable(content, reveal));
 
     body.appendChild(el('h3', { text: 'Standing in it' }));
     body.appendChild(this.footingList(content));
@@ -72,7 +72,7 @@ export class ReactionsReference extends Dialog {
 
   /** Grouped by what you are applying, because that is how a player thinks:
    *  "I have a fireball — what can I aim it at?" */
-  private comboTable(content: ContentIndex): HTMLElement {
+  private comboTable(content: ContentIndex, reveal: ComboReveal): HTMLElement {
     const groups = new Map<string, ComboRule[]>();
     for (const rule of content.combos) {
       const key = String(rule.applied);
@@ -97,7 +97,19 @@ export class ReactionsReference extends Dialog {
       );
 
       for (const rule of rules) {
-        section.appendChild(this.comboRow(content, rule));
+        section.appendChild(
+          comboRevealed(reveal, rule.id)
+            ? this.comboRow(content, rule)
+            : el(
+                'div',
+                { class: 'reaction-row reaction-row-unfound' },
+                el('span', {
+                  class: 'reaction-row-arrow',
+                  text: `${surfaceName(content, rule.existing)} → ???`,
+                }),
+                el('span', { class: 'tiny reaction-row-label', text: 'Not found yet.' }),
+              ),
+        );
       }
       wrap.appendChild(section);
     }

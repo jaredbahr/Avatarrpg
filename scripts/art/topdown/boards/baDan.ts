@@ -961,12 +961,15 @@ export function bridgeCast(p: Placed, classes: Uint8Array, off = { x: 6, y: 4 })
   return { width: W, height: H, alpha, pad: 0, base: p.h - 1, reach: undefined, color: SHADOW };
 }
 
-/** The east road's cobbles run on over the lip to the walkway's deck, which goes out into the dark. */
+/** The east road reaches a complete bridge deck, whose far cap marks the packed map edge. */
 function walkway(g: RgbaImage, o: Placed, src: Sources): void {
   const pureC = src.wang.gc.get('1111');
   if (!pureC) throw new Error('missing cobble');
+  // Carry the complete deck to the plate's east edge. The layout's centre-based x left a dark gap
+  // after the far cap, and the void fade below obscured the end of the bridge.
+  const deckX = Math.max(o.x, g.width - o.w);
   const x0 = rightV(16) * T - 10,
-    x1 = o.x + 6,
+    x1 = deckX + 6,
     w = x1 - x0,
     y0 = o.y - 10;
   for (let yy = 0; yy < o.h + 20; yy++)
@@ -1003,10 +1006,11 @@ function walkway(g: RgbaImage, o: Placed, src: Sources): void {
       g.data[j + 2] = at(pureC.data, k + 2);
     }
   }
-  fill(g, o.x + 6, o.base - 2, o.w - 6, 12, [8, 5, 6], 0.7);
-  draw(g, o.img, o.x, o.y);
+  fill(g, deckX + 6, o.base - 2, o.w - 6, 12, [8, 5, 6], 0.7);
+  // Keep the void-edge fade on the backing ground; fading the deck itself hides its terminal cap.
   for (let k = 0; k < 4; k++)
     fill(g, g.width - 44 + k * 11, o.y - 2, 11, o.h + 14, [24, 18, 20], 0.2 + k * 0.2);
+  draw(g, o.img, deckX, o.y);
 }
 
 /**

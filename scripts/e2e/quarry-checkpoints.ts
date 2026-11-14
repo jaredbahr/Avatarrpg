@@ -5,6 +5,9 @@
  * combat transient fields diverge. The shared boundary compares party identity,
  * level, XP and abilities, plus the full story, world, flags and location;
  * the fixture's full state and command transcript are pinned separately.
+ * Flags under `guidance.` are left out of the boundary: the App writes them
+ * (a new game's first-fight eligibility, each combat tip once it has shown),
+ * never the reducer, so a headless replay cannot and should not carry them.
  */
 import { CONTENT, STORY_ENTRY } from '../../src/content';
 import { INTERLUDES } from '../../src/content/story/interludes';
@@ -29,6 +32,9 @@ import { exitCells } from '../../src/core/story/world';
 import type { BattleState, Command, GameState, Vec2 } from '../../src/core/types';
 
 export type QuarryCustody = 'trade' | 'escort';
+/** Walk-on scenes that interrupt a walk and give the map back, never a fight or a choice. */
+const SCENERY_TRIGGERS = new Set(['cutting_culvert']);
+
 export const QUARRY_ROUTES = {
   trade: {
     seed: 'quarry-return-trade-route',
@@ -62,6 +68,11 @@ export interface QuarryBoundary {
   readonly battle: GameState['battle'];
 }
 
+/** The flags the story reducer owns; the App's `guidance.` bookkeeping is presentation. */
+function storyFlags(flags: GameState['flags']): GameState['flags'] {
+  return Object.fromEntries(Object.entries(flags).filter(([key]) => !key.startsWith('guidance.')));
+}
+
 export function quarryRouteBoundary(state: GameState): QuarryBoundary {
   const stage = state.flags.act1_complete === true ? 'afterDriller' : 'gate';
   const custody: QuarryCustody = state.flags.ruon_traded === true ? 'trade' : 'escort';
@@ -80,7 +91,7 @@ export function quarryRouteBoundary(state: GameState): QuarryBoundary {
       xp: unit.xp,
       abilities: unit.abilities,
     })),
-    flags: state.flags,
+    flags: storyFlags(state.flags),
     world: state.world,
     story: state.story,
     location: state.location,
@@ -200,20 +211,25 @@ export function generateQuarryCheckpoints(custody: QuarryCustody): QuarryCheckpo
     for (const cell of exitCells(exit))
       if (distance(state.location.pos, cell) < distance(state.location.pos, nearest))
         nearest = cell;
-    const cells = [nearest];
-    for (const cell of cells) {
+    // A scenery trigger on the way (the Cutting's culvert) plays its scene and
+    // hands the map back; the walk then carries on to the same mouth.
+    for (let attempt = 0; attempt < 3; attempt++) {
       const before = state;
-      const result = apply(CONTENT, state, { type: 'walkTo', pos: cell });
+      const result = apply(CONTENT, state, { type: 'walkTo', pos: nearest });
       if (result.state.location.mapId === destination) {
         state = result.state;
-        transcript.push({ type: 'walkTo', pos: cell });
+        transcript.push({ type: 'walkTo', pos: nearest });
         return;
       }
-      if (result.state !== before && result.state.screen !== 'explore') {
-        state = result.state;
-        transcript.push({ type: 'walkTo', pos: cell });
+      if (result.state === before || result.state.screen === 'explore') break;
+      state = result.state;
+      transcript.push({ type: 'walkTo', pos: nearest });
+      const scenery = state.screen === 'dialogue' && SCENERY_TRIGGERS.has(state.story.nodeId ?? '');
+      if (!scenery)
         throw new Error(`Interrupted while travelling to ${destination}: ${state.story.nodeId}`);
-      }
+      story();
+      if (state.screen !== 'explore' || state.location.mapId !== map?.id)
+        throw new Error(`The ${destination} walk did not return to ${map?.id}`);
     }
     throw new Error(`Could not reach ${destination} from ${map?.id}`);
   };
@@ -328,10 +344,8 @@ export function generateQuarryCheckpoints(custody: QuarryCustody): QuarryCheckpo
   walk({ x: 17, y: 5 });
   story();
   fight('enc_grumbler');
-  if (state.screen === 'ended' && state.story.nodeId === 'act1_epilogue') {
-    // The end summary's Continue exploring control enters its authored next node.
-    issue({ type: 'enterNode', nodeId: 'quarry_after_explore' });
-  }
+  // The workers-are-free beat reads through to the walk home on the quarry floor.
+  if (state.story.nodeId === 'act1_epilogue') story();
   const afterDriller = checkpoint('afterDriller');
   return { gate, afterDriller };
 }

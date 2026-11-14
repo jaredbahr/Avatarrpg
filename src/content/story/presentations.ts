@@ -7,22 +7,56 @@
  * and therefore keep their illustrated presentation.
  */
 
-import type { ContentIndex, GameState, MapDef, StoryNode } from '../../core/types';
+import type {
+  ContentIndex,
+  GameState,
+  MapDef,
+  NodePresentation,
+  StoryNode,
+  Vec2,
+} from '../../core/types';
 import { INTERLUDES } from './interludes';
 import { DISCOVERIES } from '../maps/discoveries';
+import { REASON_FINDS } from './reasons';
+
+/**
+ * What the camera keeps above the dialogue panel while the conversation is
+ * open (#628): a person standing on the map (an NpcDef id there), or the tiles
+ * the line talks about. Without one, a tapped NPC's own figure is framed.
+ */
+export type WorldStage = NonNullable<NodePresentation['stage']>;
 
 export interface WorldPresentation {
   readonly kind: 'world';
   readonly mapId: string;
+  readonly stage?: WorldStage;
 }
 
 export type StoryPresentation = WorldPresentation;
 
-const NPC_PRESENTATIONS: readonly (readonly [string, string])[] = [
+/** The gate's curtain wall and gatehouse: the top rows either side of the gate (`quarry.topdown.ts`). */
+const GATE_WALL: readonly Vec2[] = [
+  { x: 6, y: 0 },
+  { x: 13, y: 0 },
+  { x: 6, y: 1 },
+  { x: 13, y: 1 },
+];
+
+/** The Cutting's pool and the culvert mouth on its east side (`AMBUSH_ROAD` in `maps/combat.ts`). */
+const CULVERT: readonly Vec2[] = [
+  { x: 9, y: 5 },
+  { x: 9, y: 6 },
+  { x: 10, y: 5 },
+  { x: 10, y: 6 },
+];
+
+const NPC_PRESENTATIONS: readonly (readonly [string, string, WorldStage?])[] = [
   // Ba Dan Village.
   ['riverside_invitation', 'ba_dan_village'],
   ['mira_intro', 'ba_dan_village'],
   ['mira_epilogue', 'ba_dan_village'],
+  ['mira_rubbing', 'ba_dan_village'],
+  ['mira_rubbing_kept', 'ba_dan_village'],
   ['gao_friendly', 'ba_dan_village'],
   ['gao_cold', 'ba_dan_village'],
   ['gao_home', 'ba_dan_village'],
@@ -44,6 +78,39 @@ const NPC_PRESENTATIONS: readonly (readonly [string, string])[] = [
   ['handover_float', 'ba_dan_village'],
   ['hanru_watch', 'ba_dan_village'],
   ['school_notice', 'ba_dan_village'],
+  // SQ-01 (sq01Cabbages.ts): Pella's packing list, and her corrected list after the rescue.
+  ['sq01_packing_list', 'ba_dan_village'],
+  ['sq01_pella_list', 'ba_dan_village'],
+  // SQ-02 (sq02OfficialGate.ts): every conversation node, so the scene keeps its map.
+  ['sq02_hook', 'ba_dan_village'],
+  ['sq02_ask', 'ba_dan_village'],
+  ['sq02_register', 'ba_dan_village'],
+  ['sq02_hen', 'ba_dan_village'],
+  ['sq02_choice', 'ba_dan_village'],
+  ['sq02_quiet', 'ba_dan_village'],
+  ['sq02_public', 'ba_dan_village'],
+  ['sq02_public_after', 'ba_dan_village'],
+  ['sq02_mocked', 'ba_dan_village'],
+  ['sq02_mocked_after', 'ba_dan_village'],
+  ['sq02_shortcut', 'ba_dan_village'],
+  ['sq02_after', 'ba_dan_village'],
+  ['sq02_return', 'ba_dan_village'],
+  ['sq02_return_gate', 'ba_dan_village'],
+  // SQ-03 (sq03GaosLedger.ts): every conversation node, so the scene keeps its map.
+  ['sq03_hook', 'ba_dan_village'],
+  ['sq03_ask', 'ba_dan_village'],
+  ['sq03_deliver', 'ba_dan_village'],
+  ['sq03_counter', 'ba_dan_village'],
+  ['sq03_truth', 'ba_dan_village'],
+  ['sq03_choice', 'ba_dan_village'],
+  ['sq03_extension', 'ba_dan_village'],
+  ['sq03_extension_after', 'ba_dan_village'],
+  ['sq03_fund', 'ba_dan_village'],
+  ['sq03_fund_after', 'ba_dan_village'],
+  ['sq03_praised', 'ba_dan_village'],
+  ['sq03_praised_after', 'ba_dan_village'],
+  ['sq03_jar', 'ba_dan_village'],
+  ['sq03_jar_label', 'ba_dan_village'],
 
   // Riverside.
   ['riverside_mira', 'ba_dan_riverside'],
@@ -58,22 +125,39 @@ const NPC_PRESENTATIONS: readonly (readonly [string, string])[] = [
   ['forest_dema_again', 'forest_road'],
   ['dema_home', 'forest_road'],
   ['forest_return_arrival', 'forest_road'],
+  // SQ-01: Bo-shan's tipped sled, east of the roadblock.
+  ['sq01_sled', 'forest_road'],
+  ['sq01_note', 'forest_road'],
+  ['sq01_choice', 'forest_road'],
+  ['sq01_families', 'forest_road'],
+  ['sq01_crew', 'forest_road'],
+  ['sq01_leverage', 'forest_road'],
+  ['sq01_sled_again', 'forest_road'],
 
-  // The watch speaks at the gate before the party chooses its approach.
-  ['gate_parley', 'quarry_gate'],
+  // The watch speaks at the gate before the party chooses its approach, and
+  // the camera rises to the curtain wall the workers watch from (#628).
+  ['gate_parley', 'quarry_gate', { tiles: GATE_WALL }],
 
   // The marker's brief assessment follows the staged descent, but still
   // belongs over the quarry floor where the party is standing.
   ['quarry_assessment', 'quarry_floor'],
+  // Bo-shan's delivery book turns up in the Driller's cab after the rescue (reasons.ts).
+  ['quarry_ledger', 'quarry_floor'],
 
   // The cutting.
-  ['after_ambush', 'ambush_road'],
+  // Ruon stands in the Cutting while he speaks after the ambush (#628).
+  ['after_ambush', 'ambush_road', { npc: 'ruon_cutting' }],
+  ['ruon_cutting', 'ambush_road'],
+  // The culvert under the road, where the pool drains east (C-29).
+  ['cutting_culvert', 'ambush_road', { tiles: CULVERT }],
+  ['cutting_culvert_ripple', 'ambush_road', { tiles: CULVERT }],
   ['cutting_tea', 'ambush_road'],
   ['cutting_tea_again', 'ambush_road'],
   ['sen_home', 'ambush_road'],
 ] as const;
 
-const world = (mapId: string): WorldPresentation => ({ kind: 'world', mapId });
+const world = (mapId: string, stage?: WorldStage): WorldPresentation =>
+  stage ? { kind: 'world', mapId, stage } : { kind: 'world', mapId };
 
 /** Discovery nodes are derived from the same authored map list as their markers. */
 const DISCOVERY_PRESENTATIONS: Readonly<Record<string, WorldPresentation>> = Object.fromEntries(
@@ -83,10 +167,21 @@ const DISCOVERY_PRESENTATIONS: Readonly<Record<string, WorldPresentation>> = Obj
   ]),
 );
 
+/** Each hero's find (reasons.ts) is spoken where its marker stands. */
+const REASON_PRESENTATIONS: Readonly<Record<string, WorldPresentation>> = Object.fromEntries(
+  REASON_FINDS.map((find) => [
+    'reason_' + find.hero,
+    world(find.map, { npc: 'reason_' + find.hero }),
+  ]),
+);
+
 /** Explicitly reviewed ordinary NPC conversations plus generated discoveries. */
 export const STORY_PRESENTATIONS: Readonly<Record<string, StoryPresentation>> = Object.freeze({
-  ...Object.fromEntries(NPC_PRESENTATIONS.map(([nodeId, mapId]) => [nodeId, world(mapId)])),
+  ...Object.fromEntries(
+    NPC_PRESENTATIONS.map(([nodeId, mapId, stage]) => [nodeId, world(mapId, stage)]),
+  ),
   ...DISCOVERY_PRESENTATIONS,
+  ...REASON_PRESENTATIONS,
 });
 
 /** Alias for callers that only need the world subset. */
@@ -94,6 +189,32 @@ export const WORLD_PRESENTATIONS = STORY_PRESENTATIONS;
 
 export function presentationFor(nodeId: string | null | undefined): StoryPresentation | undefined {
   return nodeId ? STORY_PRESENTATIONS[nodeId] : undefined;
+}
+
+/**
+ * A node's presentation: the registry's entry, or the one the node declares itself
+ * (`StoryNode.presentation`, how a new region's conversations name their map).
+ */
+export function presentationOf(node: StoryNode | undefined): StoryPresentation | undefined {
+  if (!node) return undefined;
+  const registered = STORY_PRESENTATIONS[node.id];
+  if (registered) return registered;
+  if ((node.kind === 'dialogue' || node.kind === 'choice') && node.presentation)
+    return world(node.presentation.mapId, node.presentation.stage);
+  return undefined;
+}
+
+/** `registry` with every presentation the nodes declare themselves added. */
+function withNodePresentations(
+  registry: Readonly<Record<string, StoryPresentation>>,
+  story: readonly StoryNode[],
+): Readonly<Record<string, StoryPresentation>> {
+  const declared = story.flatMap((node) =>
+    (node.kind === 'dialogue' || node.kind === 'choice') && node.presentation
+      ? [[node.id, world(node.presentation.mapId, node.presentation.stage)] as const]
+      : [],
+  );
+  return declared.length ? { ...registry, ...Object.fromEntries(declared) } : registry;
 }
 
 function isConversationNode(
@@ -114,7 +235,7 @@ export function worldConversationFor(
   if (!state || state.screen !== 'dialogue' || state.battle) return undefined;
   const node = state.story.nodeId ? content.story.get(state.story.nodeId) : undefined;
   if (!isConversationNode(node) || INTERLUDES[node.id]) return undefined;
-  const presentation = presentationFor(node.id);
+  const presentation = presentationOf(node);
   return presentation?.kind === 'world' && presentation.mapId === state.location.mapId
     ? presentation
     : undefined;
@@ -131,6 +252,15 @@ export function validateStoryPresentations(
   maps: readonly MapDef[],
 ): string[] {
   const problems: string[] = [];
+  for (const node of story) {
+    if (
+      (node.kind === 'dialogue' || node.kind === 'choice') &&
+      node.presentation &&
+      registry[node.id]
+    )
+      problems.push('story presentation "' + node.id + '" is declared on the node and registered');
+  }
+  registry = withNodePresentations(registry, story);
   const storyById = new Map(story.map((node) => [node.id, node]));
   const mapById = new Map(maps.map((map) => [map.id, map]));
   const explorationMapIds = new Set(
@@ -168,7 +298,27 @@ export function validateStoryPresentations(
       problems.push(
         'story presentation "' + nodeId + '" uses unknown map "' + presentation.mapId + '"',
       );
-    } else if (!explorationMapIds.has(map.id)) {
+    } else if (presentation.stage && 'npc' in presentation.stage) {
+      const npcId = presentation.stage.npc;
+      if (!map.npcs.some((npc) => npc.id === npcId))
+        problems.push(
+          'story presentation "' +
+            nodeId +
+            '" stages unknown npc "' +
+            npcId +
+            '" on "' +
+            map.id +
+            '"',
+        );
+    } else if (
+      presentation.stage?.tiles.some(
+        (tile) => tile.x < 0 || tile.y < 0 || tile.x >= map.width || tile.y >= map.height,
+      ) ||
+      presentation.stage?.tiles.length === 0
+    ) {
+      problems.push('story presentation "' + nodeId + '" stages tiles outside "' + map.id + '"');
+    }
+    if (map && !explorationMapIds.has(map.id)) {
       problems.push(
         'story presentation "' +
           nodeId +
