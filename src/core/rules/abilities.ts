@@ -132,8 +132,6 @@ export function affectedTiles(
   target: Vec2,
   squareFootprints: boolean = SQUARE_FOOTPRINTS,
 ): Vec2[] {
-  const origin =
-    validatingOrigin(content, grid, caster, ability, target, true, squareFootprints) ?? caster.pos;
   switch (ability.targeting.shape) {
     case 'self':
       return occupiedCells(caster, squareFootprints);
@@ -143,9 +141,14 @@ export function affectedTiles(
     case 'blast':
       return blastTiles(grid, target, ability.targeting.radius);
     case 'line':
-      return lineTiles(grid, origin, target, ability.targeting.length);
-    case 'cone':
-      return coneTiles(grid, origin, target, ability.targeting.length);
+    case 'cone': {
+      const origin =
+        validatingOrigin(content, grid, caster, ability, target, true, squareFootprints) ??
+        caster.pos;
+      return ability.targeting.shape === 'line'
+        ? lineTiles(grid, origin, target, ability.targeting.length)
+        : coneTiles(grid, origin, target, ability.targeting.length);
+    }
   }
 }
 
