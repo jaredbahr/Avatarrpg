@@ -34,7 +34,7 @@ import type { AnimatorOptions } from './animator';
 import { Session } from './session';
 import { resetBallot } from './tableVote';
 import type { Participant, Player } from './session';
-import type { Settings, SlotId } from './storage/localSaves';
+import type { LoadedSave, Settings, SlotId } from './storage/localSaves';
 import {
   AUTOSAVE_ID,
   applySettings,
@@ -50,8 +50,8 @@ import {
   reconcileWorld,
 } from '../core/save/reconcile';
 import { applyIdAliases } from '../core/save/aliases';
-import { applyFlagBackfills } from '../core/save/backfill';
-import { FLAG_BACKFILLS } from '../content/story/flagBackfills';
+import { applyBackfills } from '../core/save/backfill';
+import { FLAG_BACKFILLS, HISTORY_REV } from '../content/story/flagBackfills';
 import { ID_ALIASES } from '../content/idAliases';
 import type { SessionMeta } from '../core/save/serialize';
 import { announce, clear, el } from './ui/dom';
@@ -792,13 +792,22 @@ export class App {
     if (!this.previewActive) this.saveTo(AUTOSAVE_ID, `Autosave — ${this.placeLabel()}`);
   }
 
-  /** Installs a loaded save, replacing everything. */
-  adoptSave(saved: GameState, session: SessionMeta | undefined): void {
+  /** Installs a save read from a slot or a file, at the history revision the file records. */
+  adoptLoaded(save: LoadedSave): void {
+    this.adoptSave(save.state, save.session, save.blob.history);
+  }
+
+  /**
+   * Installs a loaded save, replacing everything. `history` is the file's history revision
+   * (`SaveBlob.history`); a game that never left this build's memory is at the current one.
+   */
+  adoptSave(saved: GameState, session: SessionMeta | undefined, history = HISTORY_REV): void {
     // Content ids are forever: a retired id is renamed before anything reads it, the region
     // lookup below included (`core/save/aliases.ts`). Idempotent, so the wait's re-entry is safe.
-    // Then a flag added after the save was written gets the answer its registry entry
-    // declares for a save already past its setter (#773, `core/save/backfill.ts`).
-    const state = applyFlagBackfills(applyIdAliases(saved, ID_ALIASES), FLAG_BACKFILLS);
+    // Then a file older than a backfill rule gets that rule's answer for the history it could
+    // not record (ADR 0112, `core/save/backfill.ts`). The wait re-enters at the current
+    // revision, so a rule is never applied twice.
+    const state = applyBackfills(applyIdAliases(saved, ID_ALIASES), history, FLAG_BACKFILLS);
     // A save from another region loads that region before it is reconciled against content.
     const wait = this.regionsPending([
       this.regions?.pendingForMap(state.location.mapId),
@@ -1125,6 +1134,7 @@ export class App {
       label: label ?? this.placeLabel(),
       summary: this.saveSummary(),
       session: this.session.toMeta(),
+      history: HISTORY_REV,
     });
     if (!result.ok && result.error) this.toasts.show(result.error, 'warn');
     if (result.ok) void this.savePersistence.afterSave();
@@ -1139,6 +1149,7 @@ export class App {
       label: this.placeLabel(),
       summary: this.saveSummary(),
       session: this.session.toMeta(),
+      history: HISTORY_REV,
     });
     this.toasts.show(
       result.ok ? 'Save file downloaded.' : (result.error ?? 'Export failed.'),

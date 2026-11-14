@@ -212,6 +212,13 @@ export const saveBlobSchema = z.object({
   label: z.string(),
   /** Human-readable summary shown on the slot button. */
   summary: z.string(),
+  /*
+   * The history revision of the content that wrote the file (ADR 0112,
+   * `backfill.ts`): which flag backfills it has already been given. Additive,
+   * like `difficulty`: a file from before revisions existed has had none, which
+   * is 0, so it needs no format bump.
+   */
+  history: z.number().int().min(0).default(0),
   state: gameState,
   session: sessionMeta,
 });
@@ -232,18 +239,28 @@ export interface SaveMeta {
   /** Milliseconds since the epoch. Passed in — core has no clock. */
   readonly savedAt: number;
   readonly session: SessionMeta;
+  /**
+   * The writer's history revision (`backfill.ts`). The app's save path passes
+   * the content's current one; omitted, the file is stamped 0, which is only
+   * right for a fixture that never meets a backfill rule.
+   */
+  readonly history?: number;
 }
 
 export function toBlob(state: GameState, meta: SaveMeta): SaveBlob {
-  return {
+  const blob = {
     magic: SAVE_MAGIC,
     format: SAVE_FORMAT_VERSION,
     savedAt: meta.savedAt,
     label: meta.label,
     summary: meta.summary,
+    // Left out at 0, which is what a reader takes a missing key to mean, so a
+    // file from before any backfill rule existed is written exactly as it was.
+    ...(meta.history ? { history: meta.history } : {}),
     state: state as DeepMutable<GameState>,
     session: meta.session,
   };
+  return blob as SaveBlob;
 }
 
 export function serialize(state: GameState, meta: SaveMeta): string {
