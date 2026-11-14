@@ -49,6 +49,7 @@ export const FLAG_ARCS = [
   'Demo · Walk home',
   'Demo · Riverside',
   'Demo · A Ba Dan day',
+  'Side story · SQ-03 Gao’s Other Ledger',
   'Saga · Nation standing',
   'Saga · Disciplines',
   'App · Guidance',
@@ -270,6 +271,8 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'story:plant_chair',
       'story:plant_chair_decline_home',
       'story:plant_chair_decline_road',
+      'story:sq03_hook',
+      'story:sq03_jar',
       'journal:gate_wages',
     ],
   },
@@ -414,6 +417,19 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     status: 'live',
     setBy: ['story:handover_done'],
     readBy: ['map:ba_dan_village', 'app:app/world/barks'],
+  },
+
+  /* ---------------------------------------- SQ-03 Gao’s Other Ledger */
+  {
+    key: 'sq03.ledger',
+    type: 'string',
+    values: ['extension', 'fund', 'praised'],
+    meaning:
+      'How the party helped Gao carry his neighbours’ debts: a quiet letter for more time, a shared food jar, or praise in the square he asked them not to give.',
+    arc: 'Side story · SQ-03 Gao’s Other Ledger',
+    status: 'live',
+    setBy: ['story:sq03_choice'],
+    readBy: ['map:ba_dan_village', 'story:demo_complete', 'story:sq03_jar', 'story:sq03_jar_label'],
   },
 
   /* ----------------------------------------------- Nation standing (reserved prefix) */

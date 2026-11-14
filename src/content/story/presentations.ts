@@ -62,6 +62,21 @@ const NPC_PRESENTATIONS: readonly (readonly [string, string, WorldStage?])[] = [
   ['handover_float', 'ba_dan_village'],
   ['hanru_watch', 'ba_dan_village'],
   ['school_notice', 'ba_dan_village'],
+  // SQ-03 (sq03GaosLedger.ts): every conversation node, so the scene keeps its map.
+  ['sq03_hook', 'ba_dan_village'],
+  ['sq03_ask', 'ba_dan_village'],
+  ['sq03_deliver', 'ba_dan_village'],
+  ['sq03_counter', 'ba_dan_village'],
+  ['sq03_truth', 'ba_dan_village'],
+  ['sq03_choice', 'ba_dan_village'],
+  ['sq03_extension', 'ba_dan_village'],
+  ['sq03_extension_after', 'ba_dan_village'],
+  ['sq03_fund', 'ba_dan_village'],
+  ['sq03_fund_after', 'ba_dan_village'],
+  ['sq03_praised', 'ba_dan_village'],
+  ['sq03_praised_after', 'ba_dan_village'],
+  ['sq03_jar', 'ba_dan_village'],
+  ['sq03_jar_label', 'ba_dan_village'],
 
   // Riverside.
   ['riverside_mira', 'ba_dan_riverside'],

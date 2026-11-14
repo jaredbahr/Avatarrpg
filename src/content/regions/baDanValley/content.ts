@@ -12,6 +12,7 @@ import { WORLD_STORY } from '../../story/world';
 import { DISCOVERY_STORY } from '../../story/discoveries';
 import { RETURN_STORY } from '../../story/return';
 import { BA_DAN_DAY_STORY } from '../../story/baDanDay';
+import { SQ03_STORY } from '../../story/sq03GaosLedger';
 import { withPartyVoices } from '../../story/partyVoices';
 import { BA_DAN_ANCHORS, BA_DAN_BACKGROUND_ROLES, BA_DAN_RESIDENTS } from '../../residents/baDan';
 
@@ -22,6 +23,12 @@ const STORY_GROUPS: readonly StoryGroup[] = [
   { slug: 'discoveries', title: 'Discoveries', source: 'discoveries.ts', nodes: DISCOVERY_STORY },
   { slug: 'return', title: 'Return', source: 'return.ts', nodes: RETURN_STORY },
   { slug: 'ba-dan-day', title: 'Ba Dan day', source: 'baDanDay.ts', nodes: BA_DAN_DAY_STORY },
+  {
+    slug: 'sq03-gaos-ledger',
+    title: 'SQ-03 Gao’s Other Ledger',
+    source: 'sq03GaosLedger.ts',
+    nodes: SQ03_STORY,
+  },
 ];
 
 export const BA_DAN_VALLEY_CONTENT: RegionContent = {

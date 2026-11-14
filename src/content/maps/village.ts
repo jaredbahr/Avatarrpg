@@ -17,6 +17,7 @@ import {
   BA_DAN_DRESSING_FOOTPRINTS,
 } from './baDanLayout';
 import { RETURNEE_PRESENTATIONS } from '../residents/returnees';
+import { SQ03_RESOLVED } from '../story/sq03GaosLedger';
 
 export const BA_DAN_VILLAGE: MapDef = {
   id: 'ba_dan_village',
@@ -151,6 +152,45 @@ export const BA_DAN_VILLAGE: MapDef = {
             ],
           },
           node: 'plant_chair',
+        },
+        // SQ-03, before the rescue only: once Gao has given his first word (`gao_friendly`) and,
+        // after the trade, his objection (`gao_cold`), the parcels.
+        {
+          when: {
+            kind: 'all',
+            of: [
+              { kind: 'not', of: SQ03_RESOLVED },
+              { kind: 'flag', key: 'act1_complete', op: 'unset' },
+              { kind: 'visited', nodeId: 'gao_friendly' },
+              {
+                kind: 'any',
+                of: [
+                  { kind: 'flag', key: 'ruon_traded', op: 'unset' },
+                  { kind: 'visited', nodeId: 'gao_cold' },
+                ],
+              },
+            ],
+          },
+          node: 'sq03_hook',
+        },
+        // SQ-03's return detail, once, after his homecoming: the jar.
+        {
+          when: {
+            kind: 'all',
+            of: [
+              SQ03_RESOLVED,
+              { kind: 'flag', key: 'act1_complete', op: 'set' },
+              {
+                kind: 'any',
+                of: [
+                  { kind: 'visited', nodeId: 'gao_home' },
+                  { kind: 'visited', nodeId: 'gao_home_cold' },
+                ],
+              },
+              { kind: 'not', of: { kind: 'visited', nodeId: 'sq03_jar' } },
+            ],
+          },
+          node: 'sq03_jar',
         },
         {
           when: {
