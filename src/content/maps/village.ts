@@ -17,6 +17,7 @@ import {
   BA_DAN_DRESSING_FOOTPRINTS,
 } from './baDanLayout';
 import { RETURNEE_PRESENTATIONS } from '../residents/returnees';
+import { SQ01_RESOLVED } from '../story/sq01Cabbages';
 import { SQ02_RESOLVED } from '../story/sq02OfficialGate';
 
 export const BA_DAN_VILLAGE: MapDef = {
@@ -174,6 +175,18 @@ export const BA_DAN_VILLAGE: MapDef = {
       sprite: 'npc.kid',
       node: 'pella_tips',
       routes: [
+        // SQ-01: once her homecoming is heard, the corrected list of helpers.
+        {
+          when: {
+            kind: 'all',
+            of: [
+              { kind: 'flag', key: 'act1_complete', op: 'set' },
+              { kind: 'visited', nodeId: 'pella_home' },
+              SQ01_RESOLVED,
+            ],
+          },
+          node: 'sq01_pella_list',
+        },
         { when: { kind: 'flag', key: 'act1_complete', op: 'set' }, node: 'pella_home' },
         { when: { kind: 'flag', key: 'pella_asked', op: 'set' }, node: 'pella_again' },
       ],

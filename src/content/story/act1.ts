@@ -186,7 +186,8 @@ export const ACT1_NODES: readonly StoryNode[] = [
     id: 'pella_asked',
     kind: 'flags',
     set: { pella_asked: true },
-    next: 'village_explore',
+    // SQ-01's entry: Pella hands over her copy of his packing list.
+    next: 'sq01_packing_list',
   },
   {
     id: 'pella_again',

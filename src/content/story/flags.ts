@@ -49,6 +49,7 @@ export const FLAG_ARCS = [
   'Demo · Walk home',
   'Demo · Riverside',
   'Demo · A Ba Dan day',
+  'Side story · SQ-01 Too Many Cabbages',
   'Side story · SQ-02 A Very Official Gate',
   'Saga · Nation standing',
   'Saga · Disciplines',
@@ -115,6 +116,7 @@ const ACT1_COMPLETE_READERS = [
   'story:hanru_watch_leave',
   'story:school_notice',
   'story:village_leave',
+  'story:sq01_leave',
   'resident:lw.npc.mira',
   'resident:lw.npc.gao',
   'resident:lw.npc.pella',
@@ -414,6 +416,26 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     status: 'live',
     setBy: ['story:handover_done'],
     readBy: ['map:ba_dan_village', 'app:app/world/barks'],
+  },
+
+  /* ------------------------------------------- SQ-01 Too Many Cabbages */
+  {
+    key: 'sq01.cabbages',
+    type: 'string',
+    values: ['families', 'crew', 'leverage'],
+    meaning:
+      'Where the party sent Bo-shan’s tipped load: home to Ba Dan, partly to the trapped crews, or hidden to bargain with.',
+    arc: 'Side story · SQ-01 Too Many Cabbages',
+    status: 'live',
+    setBy: ['story:sq01_choice'],
+    readBy: [
+      'map:ba_dan_village',
+      'map:forest_road',
+      'story:demo_complete',
+      'story:pella_home',
+      'story:sq01_sled_again',
+      'story:sq01_pella_list',
+    ],
   },
 
   /* -------------------------------------- SQ-02 A Very Official Gate */

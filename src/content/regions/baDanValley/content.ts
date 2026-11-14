@@ -12,6 +12,7 @@ import { WORLD_STORY } from '../../story/world';
 import { DISCOVERY_STORY } from '../../story/discoveries';
 import { RETURN_STORY } from '../../story/return';
 import { BA_DAN_DAY_STORY } from '../../story/baDanDay';
+import { SQ01_STORY } from '../../story/sq01Cabbages';
 import { SQ02_STORY } from '../../story/sq02OfficialGate';
 import { withPartyVoices } from '../../story/partyVoices';
 import { BA_DAN_ANCHORS, BA_DAN_BACKGROUND_ROLES, BA_DAN_RESIDENTS } from '../../residents/baDan';
@@ -23,6 +24,12 @@ const STORY_GROUPS: readonly StoryGroup[] = [
   { slug: 'discoveries', title: 'Discoveries', source: 'discoveries.ts', nodes: DISCOVERY_STORY },
   { slug: 'return', title: 'Return', source: 'return.ts', nodes: RETURN_STORY },
   { slug: 'ba-dan-day', title: 'Ba Dan day', source: 'baDanDay.ts', nodes: BA_DAN_DAY_STORY },
+  {
+    slug: 'sq01-cabbages',
+    title: 'SQ-01 Too Many Cabbages',
+    source: 'sq01Cabbages.ts',
+    nodes: SQ01_STORY,
+  },
   {
     slug: 'sq02-official-gate',
     title: 'SQ-02 A Very Official Gate',

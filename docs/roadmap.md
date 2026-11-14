@@ -429,7 +429,7 @@ below remains open.
 ## Governance
 
 - **ADRs** in `docs/adr/` for any decision that changes an engine, a contract or a budget.
-- **Budgets checked in CI:** 410 KB gzipped JavaScript (`scripts/check-bundle-size.mjs`, ADR 0074, raised by ADR 0094, the ADR 0104 amendments and ADR 0109); 4 MB per art family (units 8.5 MiB: ADR 0082; maps 6 MiB: ADR 0076, amended for ADR 0088; topdown 6 MiB: ADR 0104 amendment) and 25 MB precached (`scripts/check-asset-budget.mjs`); every sheet the manifest names validated against its files (`npm run art:validate`).
+- **Budgets checked in CI:** 410 KB gzipped JavaScript for the boot JS plus the largest region chunk, and 40 KB per region chunk (`scripts/check-bundle-size.mjs`, ADR 0074, raised by ADR 0094, the ADR 0104 amendments and ADR 0109, split per region by ADR 0111); 4 MB per art family (units 8.5 MiB: ADR 0082; maps 6 MiB: ADR 0076, amended for ADR 0088), with top-down art at 4.5 MiB shared plus 1.5 MiB of boards per region and audio at 0.5 MiB of sound effects, 0.75 MiB of shared music and 2.75 MiB of music per region (ADR 0111), and 25 MB precached (`scripts/check-asset-budget.mjs`); every sheet the manifest names validated against its files (`npm run art:validate`).
 - **Prompt hygiene:** nothing under `docs/art` names the franchise, a character or a faction, and every hex a pack quotes is a palette value (`src/content/prompts.test.ts`).
 - **Parity:** anything the rules care about is drawn on both backends (ADR 0002).
 - **Determinism:** presentation randomness (particles) is seeded per instance and never touches the game RNG.
