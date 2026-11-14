@@ -618,9 +618,9 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     type: 'number',
     meaning: 'How the Fire Nation feels about the party, from -5 (hostile) to 5 (trusted).',
     arc: 'Saga · Nation standing',
-    status: 'pending',
-    note: 'Raised by the firebender’s bluff at the gate. No Condition reads standing yet.',
-    setBy: ['story:gate_parley'],
+    status: 'reserved',
+    note: 'Nothing moves it since the gate bluff stopped trading on a nation (owner, 2026-11-14; C-09). Community trust replaces it (C-25).',
+    setBy: [],
     readBy: [],
   },
   {
