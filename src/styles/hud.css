@@ -1262,21 +1262,23 @@ html[data-contrast='high'] .title-card .tagline {
   margin-top: var(--sp-2);
 }
 
-/* A landscape tablet has room beside the vote heading, and beside each
- * answer heading, for the hand-off controls and the revealed names. Keep the
- * selected text size and every answer visible instead of stacking those into
- * a second screenful (#664). Narrow screens retain the scrolling layout. */
-@media (min-width: 60rem) and (min-height: 35rem) and (orientation: landscape) {
-  .choice-panel[data-vote] {
+/* A tablet, either way up, has room beside the vote or decider heading, and
+ * beside each answer heading, for the hand-off controls and the revealed
+ * names. Keep the selected text size and every answer visible instead of
+ * stacking those into a second screenful (#664, #627). Phones retain the
+ * scrolling layout. Every choice panel is a conversation panel; naming both
+ * classes keeps these rules ahead of the general world-conversation ones. */
+@media (min-width: 42.0625rem) and (min-height: 35rem) {
+  .choice-panel.conversation-panel {
     gap: var(--sp-1);
     padding: var(--sp-3);
   }
 
-  .choice-panel[data-vote] .choice-options {
+  .choice-panel.conversation-panel .choice-options {
     gap: var(--sp-2);
   }
 
-  .choice-panel[data-vote] .vote-banner {
+  .choice-panel.conversation-panel .decider-banner {
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: space-between;
@@ -1284,43 +1286,83 @@ html[data-contrast='high'] .title-card .tagline {
     padding: var(--sp-1) var(--sp-2);
   }
 
-  .choice-panel[data-vote] .vote-banner .btn-large {
+  .choice-panel.conversation-panel .decider-banner .btn-large {
     margin: 0;
   }
 
-  .choice-panel[data-vote] .choice-option {
+  .choice-panel.conversation-panel .choice-option {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
     column-gap: var(--sp-2);
     padding: var(--sp-2);
   }
 
-  .choice-panel[data-vote] .choice-option > strong {
+  .choice-panel.conversation-panel .choice-option > strong {
     grid-column: 1 / 3;
     grid-row: 1;
   }
 
-  .choice-panel[data-vote] .choice-option > span {
+  .choice-panel.conversation-panel .choice-option > span {
     grid-column: 1 / -1;
   }
 
-  .choice-panel[data-vote] .choice-option > .speaker-tag {
+  .choice-panel.conversation-panel .choice-option > .speaker-tag {
     grid-column: 1;
     grid-row: 1;
   }
 
-  .choice-panel[data-vote] .choice-option:has(> .speaker-tag) > strong {
+  .choice-panel.conversation-panel .choice-option:has(> .speaker-tag) > strong {
     grid-column: 2;
   }
 
-  .choice-panel[data-vote] .choice-option > .vote-names {
+  .choice-panel.conversation-panel .choice-option > .vote-names {
     grid-column: 3;
     grid-row: 1;
     align-self: center;
   }
 
-  .stage:has(.choice-panel[data-vote]) {
+  /* Reuse the compact portrait/header arrangement from narrow dialogue for
+   * every choice. The answers can then use the whole card, while the speaker
+   * and prompt share its first row, in view, instead of the portrait sitting
+   * at the foot of an empty column below the fold (#627). No portrait or
+   * wording is removed. */
+  .explore-conversation .choice-panel.conversation-panel {
+    --conversation-portrait: 5rem;
+    grid-template-columns: max-content minmax(0, 1fr);
+    max-height: calc(100% - 2 * var(--sp-2));
+    row-gap: var(--sp-1);
+    padding: var(--sp-2);
+    padding-block: var(--sp-1);
+  }
+
+  .explore-conversation .choice-panel.conversation-panel > .conversation-compact-head {
+    grid-column: 1;
+    grid-row: 1;
+    flex-direction: row;
+    align-self: center;
+    gap: var(--sp-2);
+  }
+
+  .explore-conversation .choice-panel.conversation-panel .conversation-compact-speaker {
+    width: auto;
+    text-align: left;
+  }
+
+  .explore-conversation .choice-panel.conversation-panel > .decider-banner,
+  .explore-conversation .choice-panel.conversation-panel > .choice-options,
+  .explore-conversation .choice-panel.conversation-panel > .center {
+    grid-column: 1 / -1;
+  }
+}
+
+/* The landscape stage sets its panel beside the speaker, in one row. */
+@media (min-width: 60rem) and (min-height: 35rem) and (orientation: landscape) {
+  .stage:has(.choice-panel.conversation-panel) {
     grid-template-rows: minmax(0, 1fr);
+  }
+
+  .stage .choice-panel.conversation-panel {
+    max-height: 100%;
   }
 
   /* Give the longest staged votes more room beside the speaker at Largest. */
@@ -1338,37 +1380,7 @@ html[data-contrast='high'] .title-card .tagline {
     height: auto;
   }
 
-  .stage .choice-panel[data-vote] {
-    max-height: 100%;
-  }
-
-  /* Reuse the compact portrait/header arrangement from narrow dialogue, only
-   * for a vote. The answers can then use the whole card, while the speaker
-   * and prompt share its first row. No portrait or wording is removed. */
-  .explore-conversation .choice-panel[data-vote] {
-    --conversation-portrait: 5rem;
-    grid-template-columns: max-content minmax(0, 1fr);
-    max-height: calc(100% - 2 * var(--sp-2));
-    row-gap: var(--sp-1);
-    padding: var(--sp-2);
-    padding-block: var(--sp-1);
-  }
-
-  .explore-conversation .choice-panel[data-vote] > .conversation-compact-head {
-    grid-column: 1;
-    grid-row: 1;
-    flex-direction: row;
-    align-self: center;
-    gap: var(--sp-2);
-  }
-
-  .explore-conversation .choice-panel[data-vote] .conversation-compact-speaker {
-    width: auto;
-    text-align: left;
-  }
-
-  /* Keep wrapped answers inside the world card when the system font is wide.
-   * The buttons retain their minimum heights and the chosen text size. */
+  /* Allow wrapped answers to fit without reducing the selected text size. */
   :is(.stage, .explore-conversation) .choice-panel[data-vote] .choice-options {
     gap: var(--sp-1);
   }
@@ -1383,12 +1395,6 @@ html[data-contrast='high'] .title-card .tagline {
 
   .explore-conversation .choice-panel[data-vote] .vote-banner .btn-large {
     min-height: var(--tap);
-  }
-
-  .explore-conversation .choice-panel[data-vote] > .vote-banner,
-  .explore-conversation .choice-panel[data-vote] > .choice-options,
-  .explore-conversation .choice-panel[data-vote] > .center {
-    grid-column: 1 / -1;
   }
 }
 
@@ -1671,7 +1677,8 @@ html[data-contrast='high'] .map-wrap {
 }
 
 /* The wider speaker column keeps Shopkeeper whole in portrait; long names can
-   still wrap here instead of spilling into the dialogue. */
+   still wrap here instead of spilling into the dialogue. Phones wrap too: an
+   ellipsis cut "The Quarry Gate" to "The Quarr…" (#627). */
 .conversation-compact-speaker strong {
   overflow-wrap: break-word;
   text-wrap: balance;
@@ -1749,12 +1756,6 @@ html[data-contrast='high'] .map-wrap {
     flex: 1 1 auto;
     width: auto;
     text-align: left;
-  }
-
-  .conversation-compact-speaker strong {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
   .explore-conversation .conversation-panel .dialogue-line,
