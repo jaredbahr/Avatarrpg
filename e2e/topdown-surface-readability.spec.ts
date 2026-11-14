@@ -61,6 +61,20 @@ async function snapshot(page: Page) {
 }
 
 async function capture(page: Page, info: TestInfo, cells: readonly Vec2[], name: string) {
+  // Current approved pacing starts at follow zoom 2. Obtain an overview by
+  // actual player control, retaining all original sampling and rules assertions.
+  if (!(await page.evaluate(() => window.fnt!.app.rendererCamera()!.fitted))) {
+    const beforeOverview = await state(page);
+    await page.getByRole('button', { name: /^Recentre$/ }).click();
+    await settleLayout(page);
+    const overview = await snapshot(page);
+    expect(overview.camera.fitted).toBe(true);
+    expect(overview.state).toEqual(beforeOverview);
+    await info.attach(`${name}-actual-overview-control`, {
+      body: JSON.stringify({ before: beforeOverview, after: overview }),
+      contentType: 'application/json',
+    });
+  }
   const drawn = await snapshot(page);
   expect(drawn.camera.projection).toBe('topdown');
   expect(drawn.dpr).toBeGreaterThan(0);
