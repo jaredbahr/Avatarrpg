@@ -1,14 +1,19 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
-import { runCombatCases } from '../../../scripts/test-support/runCombatCases';
+import { createCombatCasePool } from '../../../scripts/test-support/runCombatCases';
 import { DEFAULT_MAX_ROUNDS, SOLO_PARTY, STANDARD_PARTY, runCombat, seedFor } from './runCombat';
 import { partyOfSize, runBalanceReport } from './balance';
 import { encounterRoster } from '../state/createGame';
 import type { ContentIndex, EncounterDef } from '../types';
 import type { TestContext } from 'vitest';
 
-function runTimedCases(cases: Parameters<typeof runCombatCases>[0], ctx: TestContext) {
-  const run = runCombatCases(cases, ctx.signal);
+const combatCases = createCombatCasePool();
+afterAll(async () => {
+  await combatCases.close();
+});
+
+function runTimedCases(cases: Parameters<typeof combatCases.run>[0], ctx: TestContext) {
+  const run = combatCases.run(cases, ctx.signal);
   // Vitest can finish a timed-out test before the workers finish terminating.
   ctx.onTestFinished(async () => {
     await Promise.allSettled([run]);
