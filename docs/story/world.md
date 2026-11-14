@@ -24,12 +24,12 @@ flowchart TD
   n14["cutting_culvert<br/>The Cutting: The pool drains under the road through a culvert, …"]:::entry
   n15["cutting_culvert_ripple<br/>The Cutting: The water ripples once. A breath later, it ripples…"]
   n16["cutting_explore<br/>Explore ambush_road: Explore the cutting with Ruon. Jin’s peopl…"]:::entry
-  n18["cutting_tea<br/>Sen: Cup? Mind the handle on the blue one. It comes off."]:::entry
-  n19["cutting_tea_again<br/>Sen: Back already? I've put fresh water on."]:::entry
+  n18["cutting_tea<br/>Kuan: Cup? Mind the handle on the blue one. It comes off."]:::entry
+  n19["cutting_tea_again<br/>Kuan: Back already? I've put fresh water on."]:::entry
   n20["cutting_tea_shared<br/>Set flags"]
   n33["forest_after_explore<br/>Explore forest_road: The road is open. Continue east to the qua…"]:::entry
-  n34["forest_dema<br/>Dema: Mind your feet. There are ducklings under that fern. Yes,…"]:::entry
-  n35["forest_dema_again<br/>Dema: She has brought the ducklings over. I suppose the washing…"]:::entry
+  n34["forest_dema<br/>Lanfen: Mind your feet. There are ducklings under that fern. Ye…"]:::entry
+  n35["forest_dema_again<br/>Lanfen: She has brought the ducklings over. I suppose the washi…"]:::entry
   n36["forest_ducks_seen<br/>Set flags"]
   n37["forest_explore<br/>Explore forest_road: Follow the road east to the quarry gate, p…"]:::entry
   n46["gate_escort_explore<br/>Explore quarry_gate: Ruon walks with you. Explore the east path…"]:::entry

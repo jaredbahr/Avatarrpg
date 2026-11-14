@@ -153,7 +153,7 @@ export const SQ01_STORY: readonly StoryNode[] = [
         when: outcome('leverage'),
         lines: [
           'The ferns over the sled have started to wilt. So has the round cabbage.',
-          'A turtle-duck is standing on it.',
+          'A turtle duck is standing on it.',
         ],
       },
     ],

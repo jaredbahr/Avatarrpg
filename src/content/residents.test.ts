@@ -182,11 +182,8 @@ describe('validateContent: resident records (ADR 0047 W4a)', () => {
     );
   });
 
-  it('never binds `dema` to lw.npc.dema_cook or `rest_keeper` to lw.npc.sen_tea (FORBIDDEN_BINDINGS)', () => {
-    const cases = [
-      { map: 'forest_road', npcId: 'dema', resident: 'lw.npc.dema_cook' },
-      { map: 'rest_stop', npcId: 'rest_keeper', resident: 'lw.npc.sen_tea' },
-    ];
+  it('never binds `dema` (Lanfen) to lw.npc.dema_cook (FORBIDDEN_BINDINGS)', () => {
+    const cases = [{ map: 'forest_road', npcId: 'dema', resident: 'lw.npc.dema_cook' }];
     for (const { map, npcId, resident } of cases) {
       const owner = CONTENT_BUNDLE.maps.find((m) => m.npcs.some((n) => n.id === npcId));
       expect(owner, `${npcId} is a real NpcDef`).toBeDefined();
@@ -208,8 +205,8 @@ describe('validateContent: resident records (ADR 0047 W4a)', () => {
     const owner = CONTENT_BUNDLE.maps.find((m) => m.npcs.some((n) => n.id === 'dema'));
     const record: ResidentDef = {
       ...ELDER,
-      id: 'lw.npc.dema_roadkeeper',
-      name: 'Dema, road keeper',
+      id: 'lw.npc.lanfen_roadkeeper',
+      name: 'Lanfen, road keeper',
       source: { runtimeNpcIds: ['dema'] },
     };
     const problems = problemsOf(

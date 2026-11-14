@@ -14,9 +14,9 @@
  * going home there steps from the front wall. See the W5c anchor table in the
  * slice report for the tile-by-tile reasoning.
  *
- * The schedule is the ADR's §8 table, itself the guide's §05.1 workday with
- * the recorded adaptations. The guide's §05.2 states are applied first, as it
- * asks, and in Slice A they reduce to four things:
+ * The schedule is the ADR's §8 table, a workday with the recorded
+ * adaptations. The ADR's story states are applied first, and in Slice A they
+ * reduce to four things:
  *
  * - **The five returnees** (Bo-shan, Leto, Amri, Hesra, Senn) are composed
  *   below from Slice B's profile-backed records. An absent key reads as
@@ -26,8 +26,8 @@
  *   a resolver-only state today) changes nobody's place, only the visible
  *   evidence: `variants` on the slots (short stock, a road watched for
  *   returnees, a shared household table).
- * - **Return** (`act1_complete` before every homecoming is heard, the guide's
- *   "first safe night"): the `mission` holds keep each owner of a homecoming
+ * - **Return** (`act1_complete` before every homecoming is heard, the first
+ *   safe night): the `mission` holds keep each owner of a homecoming
  *   at a public anchor in every phase until it is visited, and the evening
  *   slots show the returnees' supper.
  * - **Recovery** (every homecoming heard): the ordinary schedule, unchanged.
@@ -115,7 +115,7 @@ export const BA_DAN_ANCHORS: readonly WorldAnchor[] = [
   door('home.pella', 'BD04', 8, 14),
   // No school on any map (§3): Pella goes to class down the south lane.
   door('bd05.school', 'BD05', 11, 15),
-  // Dorin's home is "off the gate lane" (guide NPC-04) and Hanru's is BD16:
+  // Dorin's home is near the gate (ADR 0047 §3) and Hanru's is BD16:
   // interim doors on open grass at the tree line just south of the gate,
   // clear of the rim tree's painted trunk at (22,11), never an exit.
   door('home.dorin', 'DORIN-HOME', 21, 12),
@@ -297,7 +297,7 @@ const DORIN: ResidentDef = {
   ],
 };
 
-/** Bounded (guide §19.7): the evening and night watch, and the dawn handover. Never in daylight. */
+/** Bounded (ADR 0047 §8): the evening and night watch, and the dawn handover. Never in daylight. */
 const HANRU: ResidentDef = {
   id: 'lw.npc.hanru',
   name: 'Hanru',

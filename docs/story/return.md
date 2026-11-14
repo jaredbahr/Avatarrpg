@@ -22,7 +22,7 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 flowchart TD
   n12["cart_departure<br/>Ba Dan: Bo-shan’s cart comes down from the quarry floor with on…"]
   n17["cutting_return_explore<br/>Explore ambush_road: The workers are returning to Ba Dan. Ba Da…"]:::entry
-  n25["dema_home<br/>Dema: The crews came past. A few stopped to ask about the strea…"]:::entry
+  n25["dema_home<br/>Lanfen: The crews came past. A few stopped to ask about the str…"]:::entry
   n26(["demo_complete<br/>Home to Ba Dan"])
   n31["dorin_home<br/>Gate Guard Dorin: I saw them coming round the bend. Pella was t…"]:::entry
   n38["forest_return_arrival<br/>The West Road: The west road reaches the edge of Ba Dan."]:::entry
@@ -34,7 +34,7 @@ flowchart TD
   n71["pella_home<br/>Pella: My brother is home. Bo-shan. He came through the gate an…"]:::entry
   n83["quarry_after_explore<br/>Explore quarry_floor: The five workers are returning with you. …"]:::entry
   n96["riverside_mira_home<br/>Elder Mira: I spent the morning moving beds. Everyone wants the…"]:::entry
-  n105["sen_home<br/>Sen: They came through just ahead of you. Filled this bench and…"]:::entry
+  n105["sen_home<br/>Kuan: They came through just ahead of you. Filled this bench an…"]:::entry
   n134["village_return_explore<br/>Explore ba_dan_village: The workers are home. Talk with Mira, P…"]:::entry
   n135["welcome_home_dorin<br/>Gate Guard Dorin: The crew says you knocked on the quarry gate …"]
   n136["welcome_home_gao<br/>Gao the Shopkeeper: Bowls are on the table, and there’s more in…"]
