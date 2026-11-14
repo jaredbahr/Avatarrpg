@@ -40,6 +40,7 @@
     "docs:content": "node --import tsx scripts/docs/content-reference.ts",
     "docs:story": "node --import tsx scripts/docs/story-graph.ts",
     "ids:ledger": "node --import tsx scripts/content/id-ledger.ts",
+    "new:region": "node --import tsx scripts/content/new-region.ts",
     "soak": "node --import tsx scripts/soak.ts",
     "replay": "node --import tsx scripts/replay.ts",
     "bench:core": "node --import tsx scripts/perf/core-bench.ts",
