@@ -525,6 +525,11 @@ html:is([data-large-text='on'], [data-large-text='huge']) .combat-bar .title-pla
   margin: 0;
 }
 
+/* The one line a child may have to read aloud to a parent: body size, not fine print. */
+.storage-note {
+  font-size: var(--fs-md);
+}
+
 /* The storage check (#772): label over answer, sized to be read off the iPad. */
 .storage-check {
   display: flex;
