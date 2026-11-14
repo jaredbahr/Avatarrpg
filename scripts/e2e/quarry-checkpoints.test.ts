@@ -3,7 +3,6 @@ import { CONTENT, RETURNEE_IDS, STORY_ENTRY } from '../../src/content';
 import { createGame } from '../../src/core/state/createGame';
 import { apply } from '../../src/core/state/reducer';
 import { deserialize, serialize, stateFromBlob } from '../../src/core/save/serialize';
-import { DEFAULT_MAX_ROUNDS } from '../../src/core/sim/runCombat';
 import {
   CUSTODIES,
   STAGES,
@@ -34,7 +33,25 @@ const checkpoints = {
   trade: generateQuarryCheckpoints('trade'),
   escort: generateQuarryCheckpoints('escort'),
 };
+// A second, independent run. Both are made while the file loads, so no test
+// here has a deadline that a busy machine could miss.
+const again = {
+  trade: generateQuarryCheckpoints('trade'),
+  escort: generateQuarryCheckpoints('escort'),
+};
 const facts = quarryCheckpointFacts((custody) => checkpoints[custody]);
+/**
+ * Work bounds, not clocks, and not pins: about twice what each route takes
+ * today (59, 145, 88 and 385 commands; the longest fight runs 8 rounds). An AI
+ * retune moves the counts freely underneath them. A route that needs twice the
+ * commands, or a fight past 20 rounds, has stopped being the route these were
+ * written for: fights are meant to end in about six minutes at the table.
+ */
+const COMMAND_BUDGET = {
+  trade: { gate: 120, afterDriller: 300 },
+  escort: { gate: 180, afterDriller: 800 },
+} as const;
+const CANONICAL_FIGHT_ROUND_CAP = 20;
 const pinned = readPinnedFacts() as Partial<QuarryCheckpointFacts>;
 
 /** Fails with the moved facts by path and the one command that re-pins them. */
@@ -77,10 +94,11 @@ for (const custody of CUSTODIES) {
     });
 
     it('generates the same saves and transcripts every time', () => {
-      const again = generateQuarryCheckpoints(custody);
       for (const stage of STAGES) {
-        expect(again[stage].transcript, stage).toEqual(checkpoints[custody][stage].transcript);
-        expect(again[stage].json, stage).toBe(checkpoints[custody][stage].json);
+        expect(again[custody][stage].transcript, stage).toEqual(
+          checkpoints[custody][stage].transcript,
+        );
+        expect(again[custody][stage].json, stage).toBe(checkpoints[custody][stage].json);
       }
     });
 
@@ -128,13 +146,21 @@ for (const custody of CUSTODIES) {
         );
       });
 
-      it(`wins every fight on the way to ${stage} inside the round cap`, () => {
+      it(`wins every fight on the way to ${stage} inside its work budget`, () => {
         const fights = fightSummaries(custody, fixture.transcript);
+        const budget = COMMAND_BUDGET[custody][stage];
+        if (fixture.transcript.length > budget)
+          expect.fail(
+            `The ${custody} route needs ${fixture.transcript.length} commands to reach ${stage}; ` +
+              `its budget is ${budget}. Fights by commands and rounds: ` +
+              fights.map((f) => `${f.encounterId} ${f.commands}/${f.rounds}`).join(', ') +
+              '. Compare with `npm run checkpoints -- --diff` against a dump from main.',
+          );
         expect(fights.map((fight) => fight.encounterId)).toEqual(fixture.projection.world.cleared);
         for (const fight of fights) {
           expect(fight.rounds, `${fight.encounterId} rounds`).toBeGreaterThan(0);
           expect(fight.rounds, `${fight.encounterId} rounds`).toBeLessThanOrEqual(
-            DEFAULT_MAX_ROUNDS,
+            CANONICAL_FIGHT_ROUND_CAP,
           );
           expect(fight.partyHpLeft, `${fight.encounterId} party HP`).toBeGreaterThan(0);
         }
