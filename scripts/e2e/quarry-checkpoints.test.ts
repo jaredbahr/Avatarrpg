@@ -14,7 +14,7 @@ import {
 const PINS = {
   trade: {
     gate: {
-      save: '967d1dd78dd8df5eff7563426af4cafdba1ae0aa5c515e62ddbcf6c7429ba14e',
+      save: 'd5cd391b9e9bd151be84a98164c800f721d8acdcb8fc39dd309fe9f12c6e1dbd',
       commands: '493a58a78e29c0218253bd9d7bed082ed0c147f06bdd32501e8e19db4a91addc',
       count: 63,
       node: 'gate_trade_explore',
@@ -24,7 +24,7 @@ const PINS = {
       cleared: ['enc_forest_road'],
     },
     afterDriller: {
-      save: '149d74fe06369d9b70371b7b32753954be64b1798712f47d4a2e2021f740cedc',
+      save: '73a91512aa88da96d39ef239c93adbcebd10e6297e198d8f7e869558f1de0054',
       commands: 'f08772603d3595c5d726c0bca1978cfe9b43cbc8fc5001b2d091c621f1946606',
       count: 161,
       node: 'quarry_after_explore',
@@ -92,6 +92,8 @@ for (const custody of ['trade', 'escort'] as const) {
         expect(fixture.projection.flags.ruon_respects_you).toBe(true);
         expect(fixture.projection.flags.ruon_traded === true).toBe(custody === 'trade');
         expect(fixture.projection.flags.ruon_paid === true).toBe(custody === 'trade');
+        // Jin takes the satchel with Ruon on the trade; a won ambush keeps it (C-10).
+        expect(fixture.projection.flags.jin_has_satchel === true).toBe(custody === 'trade');
         expect(fixture.projection.flags.ruon_spared === true).toBe(custody === 'escort');
         expect(fixture.projection.flags.act1_complete === true).toBe(stage === 'afterDriller');
         expect(fixture.projection.screen).toBe('explore');
