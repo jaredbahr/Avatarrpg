@@ -385,6 +385,8 @@ describe('progression', () => {
         npcRoots.add(npc.node);
         for (const route of npc.routes ?? []) npcRoots.add(route.node);
       }
+      // A walk-on scene is entered by stepping on its crossing, as the validator counts it.
+      for (const trigger of map.triggers ?? []) npcRoots.add(trigger.node);
     }
 
     const optionalRoots = new Set(npcRoots);

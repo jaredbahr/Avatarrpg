@@ -349,6 +349,17 @@ export function connectAct1(map: MapDef): MapDef {
             kind: 'all',
             of: [{ kind: 'flag', key: 'ruon_spared', op: 'set' }, unvisited('after_ambush')],
           }),
+          // The culvert (C-29): column 10 is the only dry crossing east of the pool, so
+          // either branch passes it once on the way down. Until the art batch draws a
+          // culvert mouth, the runoff measuring stone stands in for it.
+          crossing(map, 10, 6, 'cutting_culvert', 'The culvert', 'world.runoff_marker', {
+            kind: 'all',
+            of: [
+              { kind: 'any', of: [visited('after_ambush'), visited('trade_chosen')] },
+              unvisited('cutting_culvert'),
+              { kind: 'not', of: rescued },
+            ],
+          }),
         ],
         npcs: [
           ...map.npcs,

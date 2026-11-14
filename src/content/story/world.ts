@@ -2,6 +2,48 @@ import type { StoryNode } from '../../core/types';
 
 /** Explore nodes keep legacy story saves and the exact XP audit compatible. Routes live on maps. */
 export const WORLD_STORY: readonly StoryNode[] = [
+  /*
+   * The culvert (saga outline, decision 23; story bible C-29). One stone, two
+   * ripples, and nobody explains it. The trigger (`maps/world.ts`) watches the
+   * only crossing east of the pool, so every party on either branch sees it
+   * once on the way to the quarry floor. Sura, if present, hears it first
+   * (the outline's reason for her to keep going; PQ-04). No line names what
+   * lives in the water: the reveal ladder holds that until Act III.
+   */
+  {
+    id: 'cutting_culvert',
+    kind: 'dialogue',
+    speaker: 'The Cutting',
+    portrait: 'portrait.narrator',
+    lines: [
+      'The pool drains under the road through a culvert, a square mouth of cut stone furred with green.',
+      'A pebble rolls off the verge and drops into the water at the culvert mouth.',
+    ],
+    variants: [
+      {
+        when: { kind: 'partyHas', characterId: 'sura' },
+        speaker: 'Sura',
+        portrait: 'portrait.sura',
+        lines: [
+          'Hang on. Quiet a second. There is a culvert under the road; the pool drains through it.',
+          'Something just went in. I heard it hit the water.',
+          'Then I heard it go in again.',
+        ],
+      },
+    ],
+    next: 'cutting_culvert_ripple',
+  },
+  {
+    id: 'cutting_culvert_ripple',
+    kind: 'dialogue',
+    speaker: 'The Cutting',
+    portrait: 'portrait.narrator',
+    lines: [
+      'The water ripples once. A breath later, it ripples again.',
+      'Then the pool is still, and the road runs on east.',
+    ],
+    next: 'cutting_after_explore',
+  },
   {
     id: 'gate_escort_explore',
     kind: 'explore',

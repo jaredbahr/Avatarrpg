@@ -34,6 +34,14 @@ const GATE_WALL: readonly Vec2[] = [
   { x: 13, y: 1 },
 ];
 
+/** The Cutting's pool and the culvert mouth on its east side (`AMBUSH_ROAD` in `maps/combat.ts`). */
+const CULVERT: readonly Vec2[] = [
+  { x: 9, y: 5 },
+  { x: 9, y: 6 },
+  { x: 10, y: 5 },
+  { x: 10, y: 6 },
+];
+
 const NPC_PRESENTATIONS: readonly (readonly [string, string, WorldStage?])[] = [
   // Ba Dan Village.
   ['riverside_invitation', 'ba_dan_village'],
@@ -115,6 +123,9 @@ const NPC_PRESENTATIONS: readonly (readonly [string, string, WorldStage?])[] = [
   // Ruon stands in the Cutting while he speaks after the ambush (#628).
   ['after_ambush', 'ambush_road', { npc: 'ruon_cutting' }],
   ['ruon_cutting', 'ambush_road'],
+  // The culvert under the road, where the pool drains east (C-29).
+  ['cutting_culvert', 'ambush_road', { tiles: CULVERT }],
+  ['cutting_culvert_ripple', 'ambush_road', { tiles: CULVERT }],
   ['cutting_tea', 'ambush_road'],
   ['cutting_tea_again', 'ambush_road'],
   ['sen_home', 'ambush_road'],
