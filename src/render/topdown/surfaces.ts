@@ -253,6 +253,9 @@ function reachRect(board: Board, cells: Iterable<number>): Region | null {
   };
 }
 
+/** The area of a region in px. */
+const px = (r: Region): number => (r.x1 - r.x0) * (r.y1 - r.y0);
+
 function intersect(a: Region, b: Region): Region | null {
   const r = {
     x0: Math.max(a.x0, b.x0),
@@ -390,6 +393,12 @@ export class TopdownSurfaces {
   private versionNo = 0;
   /** The px the last update recomputed (its dirty rectangle), for the tests and the timing budget. */
   lastDirty: Region | null = null;
+  /**
+   * The work of the last update, in px: the area each mask was computed over (a changed material's
+   * reach plus its 4 px margin, three masks for fire) plus the area repainted. The tests bound this
+   * count instead of a wall-clock time, so the bound means the same on every machine (#796).
+   */
+  lastWorkPx = 0;
   /** The layout key: the board's size and blocked/ground cells. */
   readonly layout: string;
 
@@ -433,45 +442,37 @@ export class TopdownSurfaces {
     const isBlocked = (x: number, y: number): boolean =>
       at(this.blocked, y * this.board.w + x) === 1;
     let dirty: Region | null = null;
+    let work = 0;
     for (const m of MATERIALS) {
       const was = this.cells.get(m),
         now = next.get(m);
       if (sameSet(was, now)) continue;
       const rect = reachRect(this.board, changed(was, now));
       if (!rect) continue;
-      const mask = this.masks.get(m) as Uint8Array;
-      maskInto(mask, this.board, now ?? new Set(), SEED[m], EDGE(m), this.ground, isBlocked, rect);
+      const on = now ?? new Set<number>();
+      const mask = (out: Uint8Array, seed: number, edge: number): void => {
+        maskInto(out, this.board, on, seed, edge, this.ground, isBlocked, rect);
+        work += px(grow(rect, 4, this.BW, this.BH));
+      };
+      mask(this.masks.get(m) as Uint8Array, SEED[m], EDGE(m));
       if (m === 'fire') {
-        maskInto(
-          this.glowMask,
-          this.board,
-          now ?? new Set(),
-          109,
-          0.38,
-          this.ground,
-          isBlocked,
-          rect,
-        );
-        maskInto(
-          this.coreMask,
-          this.board,
-          now ?? new Set(),
-          109,
-          0.62,
-          this.ground,
-          isBlocked,
-          rect,
-        );
+        mask(this.glowMask, 109, 0.38);
+        mask(this.coreMask, 109, 0.62);
       }
       dirty = union(dirty, rect);
     }
     const fireChanged = !sameSet(this.cells.get('fire'), next.get('fire'));
     const steamChanged = !sameSet(this.cells.get('steam'), next.get('steam'));
     this.cells = next;
-    if (dirty) this.paint(grow(dirty, 9, this.BW, this.BH));
+    if (dirty) {
+      const painted = grow(dirty, 9, this.BW, this.BH);
+      this.paint(painted);
+      work += px(painted);
+    }
     if (fireChanged) this.siteFlames();
     if (steamChanged) this.siteSteam();
     this.lastDirty = dirty;
+    this.lastWorkPx = work;
     if (dirty || steamChanged) this.versionNo++;
     return Boolean(dirty || steamChanged);
   }
