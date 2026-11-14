@@ -283,4 +283,6 @@ Each act ends on a quiet meal and a view (canon tone rule: follow intensity with
 
 1. Draft Ba Dan's side stories SQ-01 to SQ-03 against this outline (the agreed first story work).
 2. Act I's additions (the prologue, the culvert echo, the boot, per-hero reasons, the cart and Bo-shan's
-   departure) join the Demo vs canon work list. Each gets a theme card.
+   departure, and the messengers' backgrounds) are on the Demo vs canon work list now, ahead of Emberwatch, as
+   rows C-28 to C-33 in PR group I, after group A
+   ([story-bible.md](story-bible.md#suggested-pr-groups)). Each is a draft story PR with a theme card.
