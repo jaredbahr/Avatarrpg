@@ -22,12 +22,12 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 flowchart TD
   n12["cutting_after_explore<br/>Explore ambush_road: Follow the east path down to the quarry fl…"]:::entry
   n13["cutting_explore<br/>Explore ambush_road: Explore the cutting with Ruon. Jin’s peopl…"]:::entry
-  n15["cutting_tea<br/>Sen: Cup? Mind the handle on the blue one. It comes off."]:::entry
-  n16["cutting_tea_again<br/>Sen: Back already? I've put fresh water on."]:::entry
+  n15["cutting_tea<br/>Kuan: Cup? Mind the handle on the blue one. It comes off."]:::entry
+  n16["cutting_tea_again<br/>Kuan: Back already? I've put fresh water on."]:::entry
   n17["cutting_tea_shared<br/>Set flags"]
   n30["forest_after_explore<br/>Explore forest_road: The road is open. Continue east to the qua…"]:::entry
-  n31["forest_dema<br/>Dema: Mind your feet. There are ducklings under that fern. Yes,…"]:::entry
-  n32["forest_dema_again<br/>Dema: She has brought the ducklings over. I suppose the washing…"]:::entry
+  n31["forest_dema<br/>Lanfen: Mind your feet. There are ducklings under that fern. Ye…"]:::entry
+  n32["forest_dema_again<br/>Lanfen: She has brought the ducklings over. I suppose the washi…"]:::entry
   n33["forest_ducks_seen<br/>Set flags"]
   n34["forest_explore<br/>Explore forest_road: Follow the road east to the quarry gate, p…"]:::entry
   n43["gate_escort_explore<br/>Explore quarry_gate: Ruon walks with you. Explore the east path…"]:::entry
