@@ -50,16 +50,31 @@ export function placeParty(
   count: number,
   options: SeatingOptions = {},
 ): Vec2[] {
-  const placed: Vec2[] = [spawn];
-  const taken = new Set<string>([posKey(spawn), ...(options.avoid ?? []).map(posKey)]);
+  return extendLine(grid, [spawn], count, options);
+}
+
+/**
+ * Seats members on the end of a line already standing, as `placeParty` seats
+ * them: each beside the one before it, or on the nearest free tile.
+ */
+function extendLine(
+  grid: Grid,
+  line: readonly Vec2[],
+  count: number,
+  options: SeatingOptions,
+): Vec2[] {
+  const placed: Vec2[] = [...line];
+  const first = placed[0];
+  if (!first) return placed;
+  const taken = new Set<string>([...placed, ...(options.avoid ?? [])].map(posKey));
   while (placed.length < count) {
-    const tail = placed[placed.length - 1] ?? spawn;
+    const tail = placed[placed.length - 1] ?? first;
     const next = seatBeside(grid, tail, taken, options.awayFrom) ?? nearestFree(grid, tail, taken);
     if (!next) break;
     taken.add(posKey(next));
     placed.push(next);
   }
-  while (placed.length < count) placed.push(placed[placed.length - 1] ?? spawn);
+  while (placed.length < count) placed.push(placed[placed.length - 1] ?? first);
   return placed;
 }
 
@@ -138,6 +153,24 @@ export class PartyTrail {
   /** The leader's tile. */
   get head(): Vec2 | undefined {
     return this.line[0];
+  }
+
+  /** How many members the line seats. */
+  get size(): number {
+    return this.line.length;
+  }
+
+  /**
+   * Someone joins the end of the line or leaves it (a follower, #696) without
+   * anyone else moving: a newcomer is seated beside the last member as
+   * `placeParty` would seat it, and a leaver's tile is simply let go.
+   */
+  resize(count: number, grid: Grid, avoid: readonly Vec2[] = []): void {
+    if (count < 1 || count === this.line.length) return;
+    this.line =
+      count < this.line.length
+        ? this.line.slice(0, count)
+        : extendLine(grid, this.line, count, { avoid });
   }
 
   /** Where each of `count` members stands, leader first. */
