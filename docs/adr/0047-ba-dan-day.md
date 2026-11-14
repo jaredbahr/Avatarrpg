@@ -701,7 +701,9 @@ is their no-regression guard.
 | A1  | Art requests (Consequences)                                                                                                                                                        | —    | **Opus/SOL only**                                                            |
 
 **W6 and the story bible.** The guide defers voice to the story bible (Part 07 of
-`Avatar-RPG-The-Common-Current-Story-Bible-v1.0.md`) and its expansion, and neither is available.
+`Avatar-RPG-The-Common-Current-Story-Bible-v1.0.md`, now in the repo as
+[docs/story/the-common-current-bible.md](../story/the-common-current-bible.md)) and its expansion
+(now [docs/story/living-world-expansion.md](../story/living-world-expansion.md)), and neither is available.
 Jared has authorized Opus to write, or rewrite, the story material Slice A needs, so W6 no longer
 waits on them: Opus writes the lines against `docs/writing-guide.md` and the existing Ba Dan scenes,
 and Hanru's voice is set there. If the bible arrives later, W6's lines are reconciled with it.

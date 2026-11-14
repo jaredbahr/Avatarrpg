@@ -6,7 +6,11 @@ remain distinct when the nameplates are hidden.
 
 This guide applies to runtime dialogue, narration, biographies, incidental
 discoveries, and future story drafts. It accompanies the Common Current story
-bible and its living-world expansion. The owner's direction takes priority.
+bible ([docs/story/the-common-current-bible.md](story/the-common-current-bible.md))
+and its living-world expansion
+([docs/story/living-world-expansion.md](story/living-world-expansion.md)); the
+[story bible index](story-bible.md) says how they rank. The owner's direction
+takes priority.
 
 ## Build the situation first
 
