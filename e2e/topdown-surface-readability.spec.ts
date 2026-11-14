@@ -61,6 +61,20 @@ async function snapshot(page: Page) {
 }
 
 async function capture(page: Page, info: TestInfo, cells: readonly Vec2[], name: string) {
+  // Current approved pacing starts at follow zoom 2. Obtain an overview by
+  // actual player control, retaining all original sampling and rules assertions.
+  if (!(await page.evaluate(() => window.fnt!.app.rendererCamera()!.fitted))) {
+    const beforeOverview = await state(page);
+    await page.getByRole('button', { name: /^Recentre$/ }).click();
+    await settleLayout(page);
+    const overview = await snapshot(page);
+    expect(overview.camera.fitted).toBe(true);
+    expect(overview.state).toEqual(beforeOverview);
+    await info.attach(`${name}-actual-overview-control`, {
+      body: JSON.stringify({ before: beforeOverview, after: overview }),
+      contentType: 'application/json',
+    });
+  }
   const drawn = await snapshot(page);
   expect(drawn.camera.projection).toBe('topdown');
   expect(drawn.dpr).toBeGreaterThan(0);
@@ -176,10 +190,10 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       expect(await takeTurn(page)).toBe(true);
       await waitForIdle(page);
       expect(await page.evaluate(() => window.fnt!.app.rendererBackend())).toBe(renderer);
-      // Top-down combat opens on the follow camera at N = 2 around the actor,
-      // which leaves part of the oil off screen; Recentre is the real control
-      // for the whole-board overview, where every sampled oil cell is drawn.
-      await page.getByRole('button', { name: 'Recentre', exact: true }).click();
+      // Some viewports already fit the board when combat opens.
+      if (!(await page.evaluate(() => window.fnt!.app.rendererCamera()?.fitted))) {
+        await page.getByRole('button', { name: 'Recentre', exact: true }).click();
+      }
       await waitForIdle(page);
       expect(await page.evaluate(() => window.fnt!.app.rendererCamera()?.fitted)).toBe(true);
       const before = await state(page);
