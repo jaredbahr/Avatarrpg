@@ -14,7 +14,10 @@ import { fileURLToPath } from 'node:url';
 // ADR 0109 (410, owner, 2026-11-12): the victory card (#630) and the guided first fight (#625).
 // ADR 0104 amendment (404, owner, 2026-11-11, permanent): the rest of the demo (#500, #587, #588, #590).
 // ADR 0094 had set 380 (2026-10-28); ADR 0074 had raised it to 360, ADR 0066 from 320 to 350.
+// ADR 0111 §4 (accepted by the owner, 2026-11-14): since regions load on demand, 410 is what one session
+// holds at most, the boot JS plus the largest region chunk, and each region chunk has its own cap.
 const BUDGET_KB = 410;
+const REGION_CHUNK_BUDGET_KB = 40;
 const dist = resolve(dirname(fileURLToPath(import.meta.url)), '../dist');
 
 function walk(dir) {
@@ -51,12 +54,11 @@ for (const [name, gz] of rows) {
 }
 
 const totalKb = total / 1024;
-console.log(`\nTotal JS: ${totalKb.toFixed(1)} KB gzipped (budget ${BUDGET_KB} KB)`);
+console.log(`\nTotal JS shipped: ${totalKb.toFixed(1)} KB gzipped (reported; ADR 0111 §4)`);
 
 /*
- * Each region's data is a chunk of its own (ADR 0111 §2), named `assets/region-<folder>-*.js`.
- * Reported here; the gate stays the total above until the owner agrees the per-chunk budgets of
- * ADR 0111 §4. A region folder without its chunk means a shipped module imported the region's data
+ * Each region's data is a chunk of its own (ADR 0111 §2), named `assets/region-<folder>-*.js`. A
+ * region folder without its chunk means a shipped module imported the region's data
  * directly and the bundler pulled it back into the boot chunk.
  */
 const regionRows = rows.filter(([name]) => /^assets\/region-/.test(name));
@@ -105,8 +107,20 @@ if (shipped.includes('ZodError')) {
   process.exit(1);
 }
 
-if (totalKb > BUDGET_KB) {
-  console.error(`\nOver budget by ${(totalKb - BUDGET_KB).toFixed(1)} KB.`);
+const largestRegionKb = Math.max(0, ...regionRows.map(([, gz]) => gz / 1024));
+const sessionKb = bootKb + largestRegionKb;
+console.log(
+  `Boot plus the largest region: ${sessionKb.toFixed(1)} KB gzipped (budget ${BUDGET_KB} KB); each region chunk budget ${REGION_CHUNK_BUDGET_KB} KB`,
+);
+const fatRegions = regionRows.filter(([, gz]) => gz / 1024 > REGION_CHUNK_BUDGET_KB);
+if (fatRegions.length > 0) {
+  console.error(
+    `\nRegion chunk over ${REGION_CHUNK_BUDGET_KB} KB: ${fatRegions.map(([name]) => name).join(', ')}`,
+  );
+  process.exit(1);
+}
+if (sessionKb > BUDGET_KB) {
+  console.error(`\nOver budget by ${(sessionKb - BUDGET_KB).toFixed(1)} KB.`);
   process.exit(1);
 }
 
