@@ -117,6 +117,15 @@ describe('combat simulation', () => {
     }
   });
 
+  /*
+   * Eighty boss fights are the work here, and they need more than the default
+   * 5 s on a slow hosted runner even with every worker started and warm. Hosted
+   * 4-vCPU runs of this test on the 5 s default (13-14 Nov 2026): 2.9-3.8 s on
+   * the faster runner type, 4.6-5.0 s on the slower one, where it timed out on
+   * six PR runs. The same 80 fights take 7.4-8 s of warmed CPU in one thread,
+   * so four lanes cannot honestly bring the slow runner under 4 s. Ten seconds
+   * is twice the slowest run; pool start-up is not in it (`beforeAll`).
+   */
   it('keeps the quarry winnable with every character in a three-person party', async (ctx) => {
     const cases = [...CONTENT.characters.values()].map((character) => {
       const companions =
@@ -157,7 +166,7 @@ describe('combat simulation', () => {
       }
       expect(victories, `${id} in the quarry`).toBeGreaterThan(0);
     }
-  });
+  }, 10_000);
 });
 
 describe('encounter rosters', () => {
