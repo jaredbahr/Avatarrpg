@@ -17,7 +17,6 @@ import type { SlotId } from '../storage/localSaves';
 import {
   AUTOSAVE_ID,
   clearSlot,
-  exportToFile,
   importFromFile,
   listSlots,
   loadFromSlot,
@@ -59,6 +58,8 @@ export class SaveMenu extends Dialog {
           text: blockedStorageNote(this.app.state !== null),
         }),
       );
+    } else if (this.app.savePersistence.warning) {
+      body.appendChild(el('p', { class: 'storage-note', text: this.app.savePersistence.warning }));
     }
 
     const slots = listSlots();
@@ -153,17 +154,7 @@ export class SaveMenu extends Dialog {
   }
 
   private exportSave(): void {
-    const state = this.app.state;
-    if (!state) return;
-    const result = exportToFile(state, {
-      label: this.app.placeLabel(),
-      summary: this.app.saveSummary(),
-      session: this.app.session.toMeta(),
-    });
-    this.app.toasts.show(
-      result.ok ? 'Save file downloaded.' : (result.error ?? 'Export failed.'),
-      result.ok ? 'info' : 'warn',
-    );
+    this.app.exportSave();
   }
 
   private async importSave(): Promise<void> {

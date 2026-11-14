@@ -38,6 +38,7 @@ import type { Settings, SlotId } from './storage/localSaves';
 import {
   AUTOSAVE_ID,
   applySettings,
+  exportToFile,
   loadSettings,
   saveSettings,
   saveToSlot,
@@ -58,6 +59,7 @@ import { setUiSink } from './audio/ui';
 import { MusicPlayer, musicFor } from './audio/music';
 import { WHEEL_LINES_SVG } from './ui/marks';
 import { Toasts } from './ui/Toasts';
+import { SavePersistence, runningStandalone, storageProbe } from './storage/persistence';
 import { Stats } from './ui/Stats';
 import { Curtain } from './ui/Curtain';
 import { PauseMenu } from './ui/PauseMenu';
@@ -201,6 +203,13 @@ export class App {
   readonly session = new Session();
   readonly toasts: Toasts;
   /**
+   * Whether the browser keeps the saves (#772): asked after the first save
+   * written, and the title and Save menu warn while it does not.
+   */
+  readonly savePersistence = new SavePersistence(storageProbe(), runningStandalone, () => {
+    if (this.scene?.name === 'title') this.scene.sync();
+  });
+  /**
    * The watch (day and phase) whose handover bark has been shown (ADR 0047
    * §8). Held here rather than on the scene, so leaving the map and coming
    * back in the same watch does not say it again.
@@ -329,6 +338,7 @@ export class App {
     this.toasts = new Toasts(this.overlayHost);
     this.stats = Stats.enabled() ? new Stats(this.overlayHost) : null;
     this.curtain = new Curtain(this.overlayHost);
+    void this.savePersistence.check();
 
     window.addEventListener('resize', () => this.requestResize());
     window.addEventListener('orientationchange', () => this.requestResize());
@@ -1113,6 +1123,23 @@ export class App {
       session: this.session.toMeta(),
     });
     if (!result.ok && result.error) this.toasts.show(result.error, 'warn');
+    if (result.ok) void this.savePersistence.afterSave();
+    return result.ok;
+  }
+
+  /** Downloads the running game as a save file, and says whether it worked. */
+  exportSave(): boolean {
+    const state = this.state;
+    if (!state) return false;
+    const result = exportToFile(state, {
+      label: this.placeLabel(),
+      summary: this.saveSummary(),
+      session: this.session.toMeta(),
+    });
+    this.toasts.show(
+      result.ok ? 'Save file downloaded.' : (result.error ?? 'Export failed.'),
+      result.ok ? 'info' : 'warn',
+    );
     return result.ok;
   }
 
