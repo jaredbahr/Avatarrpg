@@ -9,8 +9,8 @@ import { walkHeading } from './direction';
 
 const content = { abilities: new Map() } as unknown as ContentIndex;
 const KAYA = 'unit.fire.kaya';
-/** A four-way sheet: a fixed near-authored clip phase per tile. */
-const FOUR_WAY = 'unit.earth.linmei';
+/** A four-way sheet (the committed probe atlas): a fixed near-authored clip phase per tile. */
+const FOUR_WAY = 'unit.test.probe';
 function locomotion() {
   const sheet = ASSETS[KAYA];
   if (sheet?.kind !== 'sheet' || !sheet.locomotion) throw new Error('Kaya is eight-way');
@@ -115,7 +115,7 @@ describe('eight-way walk phase across a turn', () => {
     for (const projection of ['orthographic'] as const) {
       const path = tiles(FROM, E, E, E, N, N, N);
       const a = walker(projection, FROM, path);
-      for (const sprite of [FOUR_WAY, 'unit.water.nilak', undefined]) {
+      for (const sprite of [FOUR_WAY, 'npc.hanru', undefined]) {
         let travelled = 0;
         let previous: Vec2 | undefined;
         for (let t = 1; t < a.finishesAt; t++) {

@@ -66,7 +66,8 @@ scenes at boot (`src/content/topdown.ts`); the riverside stays on its orthograph
 style switch, the oblique map scenes, their art pipelines and their art; its second half removed the `'oblique'`
 projection from the renderer (the lift pass, the diamond camera and its painted-ring and hull clamps, the runtime scene
 grounding); a last pass retired the G1 sheets, their bends, fighting stance, jog and brisk walk cadence, and their art
-pipelines. The keys those sheets held now hold their top-down sheet in `ASSETS` itself.
+pipelines, and then the older four-way hero sheets, the 128 px quarry and Cutting sheets and the old Driller (all of
+`public/art/units/`). Every `unit.*` key now holds its top-down sheet in `ASSETS` itself.
 
 - **Read `docs/art-lessons.md` first.** It records every failed attempt (isometric painting with AI-redrawn
   characters, the cel-shaded test, 3D-to-pixel, #411's walk, the code motion layer) so nobody repeats them.
