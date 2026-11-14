@@ -43,8 +43,18 @@ async function exposeByWheel(page: Page, dialog: Locator, target: Locator) {
     const port = await body.boundingBox();
     if (!port) throw new Error('Missing map scrollport');
     const previous = await body.evaluate((node) => node.scrollTop);
-    await page.mouse.move(port.x + port.width / 2, port.y + Math.min(port.height / 2, 100));
-    await page.mouse.wheel(0, port.height * 0.65);
+    // Mobile WebKit has no Playwright wheel input: there the scrollport moves by
+    // the same step (as setup-footer-overlap does), and the checks above still
+    // require the control to be fully visible and hit-testable.
+    const mobileWebkit =
+      page.context().browser()?.browserType().name() === 'webkit' &&
+      test.info().project.use.isMobile;
+    if (mobileWebkit) {
+      await body.evaluate((node, dy) => node.scrollBy(0, dy), port.height * 0.65);
+    } else {
+      await page.mouse.move(port.x + port.width / 2, port.y + Math.min(port.height / 2, 100));
+      await page.mouse.wheel(0, port.height * 0.65);
+    }
     await expect.poll(() => body.evaluate((node) => node.scrollTop)).toBeGreaterThan(previous);
   }
   throw new Error('Actual wheel input did not expose the complete map control');
