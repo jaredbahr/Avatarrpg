@@ -11,6 +11,9 @@
  *
  * The lists in `index.ts`, `content.ts` and `layouts.ts` beside this file register a region; nothing
  * else in the game names one (`regions.test.ts` holds that).
+ *
+ * `npm run new:region -- <id> "<Name>"` (`scripts/content/new-region.ts`) writes a new region's folder
+ * from a template that already passes `validateContent`, and adds it to all three lists.
  */
 import type {
   BackgroundRole,

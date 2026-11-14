@@ -12,7 +12,10 @@
     "battle_forest_road",
     "battle_grumbler",
     "battle_quarry_gate",
+    "cart_departure",
     "cutting_after_explore",
+    "cutting_culvert",
+    "cutting_culvert_ripple",
     "cutting_explore",
     "cutting_return_explore",
     "cutting_tea",
@@ -168,7 +171,8 @@
     "village_return_explore",
     "welcome_home_dorin",
     "welcome_home_gao",
-    "welcome_home_mira"
+    "welcome_home_mira",
+    "welcome_home_supper"
   ],
   "maps": [
     "ambush_road",
@@ -216,12 +220,14 @@
     "quarry_floor:reason_riko",
     "quarry_floor:reason_tenzo",
     "quarry_floor:reason_wen",
+    "quarry_gate:gate_watch_deserter",
     "quarry_gate:gate_watch_hauler",
     "quarry_gate:gate_watch_worker",
     "quarry_gate:reason_jinu"
   ],
   "triggers": [
     "ambush_road:battle_ambush",
+    "ambush_road:cutting_culvert",
     "ba_dan_village:welcome_home_mira",
     "forest_road:battle_forest_road",
     "forest_road:forest_return_arrival",

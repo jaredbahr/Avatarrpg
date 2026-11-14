@@ -181,6 +181,9 @@ test('three freed workers walk into Ba Dan for the welcome home', async ({ page 
     .poll(() => page.evaluate(() => window.fnt!.app.state!.location.mapId))
     .toBe('ba_dan_village');
   await waitForIdle(page);
+  // The logical map changes before lastNpcs receives the first village frame.
+  // Wait on that same cache: the old road also contains all three walkers.
+  await expect.poll(() => npcIds(page)).toContain('riverside_sign');
   const walkers = ['lw.npc.amri', 'lw.npc.bo_shan', 'lw.npc.leto'];
   await expect
     .poll(async () => (await npcIds(page)).filter((id) => id.startsWith('lw.npc.')).sort())

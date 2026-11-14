@@ -7,7 +7,14 @@
  * and therefore keep their illustrated presentation.
  */
 
-import type { ContentIndex, GameState, MapDef, StoryNode, Vec2 } from '../../core/types';
+import type {
+  ContentIndex,
+  GameState,
+  MapDef,
+  NodePresentation,
+  StoryNode,
+  Vec2,
+} from '../../core/types';
 import { INTERLUDES } from './interludes';
 import { DISCOVERIES } from '../maps/discoveries';
 import { REASON_FINDS } from './reasons';
@@ -17,7 +24,7 @@ import { REASON_FINDS } from './reasons';
  * open (#628): a person standing on the map (an NpcDef id there), or the tiles
  * the line talks about. Without one, a tapped NPC's own figure is framed.
  */
-export type WorldStage = { readonly npc: string } | { readonly tiles: readonly Vec2[] };
+export type WorldStage = NonNullable<NodePresentation['stage']>;
 
 export interface WorldPresentation {
   readonly kind: 'world';
@@ -33,6 +40,14 @@ const GATE_WALL: readonly Vec2[] = [
   { x: 13, y: 0 },
   { x: 6, y: 1 },
   { x: 13, y: 1 },
+];
+
+/** The Cutting's pool and the culvert mouth on its east side (`AMBUSH_ROAD` in `maps/combat.ts`). */
+const CULVERT: readonly Vec2[] = [
+  { x: 9, y: 5 },
+  { x: 9, y: 6 },
+  { x: 10, y: 5 },
+  { x: 10, y: 6 },
 ];
 
 const NPC_PRESENTATIONS: readonly (readonly [string, string, WorldStage?])[] = [
@@ -133,6 +148,9 @@ const NPC_PRESENTATIONS: readonly (readonly [string, string, WorldStage?])[] = [
   // Ruon stands in the Cutting while he speaks after the ambush (#628).
   ['after_ambush', 'ambush_road', { npc: 'ruon_cutting' }],
   ['ruon_cutting', 'ambush_road'],
+  // The culvert under the road, where the pool drains east (C-29).
+  ['cutting_culvert', 'ambush_road', { tiles: CULVERT }],
+  ['cutting_culvert_ripple', 'ambush_road', { tiles: CULVERT }],
   ['cutting_tea', 'ambush_road'],
   ['cutting_tea_again', 'ambush_road'],
   ['sen_home', 'ambush_road'],
@@ -173,6 +191,32 @@ export function presentationFor(nodeId: string | null | undefined): StoryPresent
   return nodeId ? STORY_PRESENTATIONS[nodeId] : undefined;
 }
 
+/**
+ * A node's presentation: the registry's entry, or the one the node declares itself
+ * (`StoryNode.presentation`, how a new region's conversations name their map).
+ */
+export function presentationOf(node: StoryNode | undefined): StoryPresentation | undefined {
+  if (!node) return undefined;
+  const registered = STORY_PRESENTATIONS[node.id];
+  if (registered) return registered;
+  if ((node.kind === 'dialogue' || node.kind === 'choice') && node.presentation)
+    return world(node.presentation.mapId, node.presentation.stage);
+  return undefined;
+}
+
+/** `registry` with every presentation the nodes declare themselves added. */
+function withNodePresentations(
+  registry: Readonly<Record<string, StoryPresentation>>,
+  story: readonly StoryNode[],
+): Readonly<Record<string, StoryPresentation>> {
+  const declared = story.flatMap((node) =>
+    (node.kind === 'dialogue' || node.kind === 'choice') && node.presentation
+      ? [[node.id, world(node.presentation.mapId, node.presentation.stage)] as const]
+      : [],
+  );
+  return declared.length ? { ...registry, ...Object.fromEntries(declared) } : registry;
+}
+
 function isConversationNode(
   node: StoryNode | undefined,
 ): node is Extract<StoryNode, { kind: 'dialogue' | 'choice' }> {
@@ -191,7 +235,7 @@ export function worldConversationFor(
   if (!state || state.screen !== 'dialogue' || state.battle) return undefined;
   const node = state.story.nodeId ? content.story.get(state.story.nodeId) : undefined;
   if (!isConversationNode(node) || INTERLUDES[node.id]) return undefined;
-  const presentation = presentationFor(node.id);
+  const presentation = presentationOf(node);
   return presentation?.kind === 'world' && presentation.mapId === state.location.mapId
     ? presentation
     : undefined;
@@ -208,6 +252,15 @@ export function validateStoryPresentations(
   maps: readonly MapDef[],
 ): string[] {
   const problems: string[] = [];
+  for (const node of story) {
+    if (
+      (node.kind === 'dialogue' || node.kind === 'choice') &&
+      node.presentation &&
+      registry[node.id]
+    )
+      problems.push('story presentation "' + node.id + '" is declared on the node and registered');
+  }
+  registry = withNodePresentations(registry, story);
   const storyById = new Map(story.map((node) => [node.id, node]));
   const mapById = new Map(maps.map((map) => [map.id, map]));
   const explorationMapIds = new Set(

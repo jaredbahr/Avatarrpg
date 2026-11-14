@@ -56,11 +56,15 @@ new angle adds nothing. New scenes should earn their interruption.
 
 These are player-invited observations, not forced interruptions on every visit.
 
-- **Dorin and Deputy (SQ-31 / DLG-13):** in safe Ba Dan, show Dorin's board,
-  the turtle duck beside it, then Dorin making room for its chin. Preserve the
-  companion's short exchange: Pella calls it Deputy; Dorin calls it a turtle
-  duck; she says it can be two things; he accidentally addresses it as Deputy.
-  Return to the offered conversation or road. Nothing implies the rescue is over.
+- **Dorin and Deputy (SQ-31 / DLG-13, revision 1.2):** in safe Ba Dan, show
+  Dorin's board, the turtle duck settling beside it in the patch of sun, then
+  its chin on the board's edge. Pella is the one who calls it Deputy ("Deputy's
+  asleep again"); Dorin says it does not work here, then addresses the duck as
+  Deputy himself and tells it to move its head. Take the exact lines from
+  `docs/story/living-world-expansion.md` (DLG-13), not from companion draft 1.0.
+  Return to the offered conversation or road. Nothing implies the rescue is
+  over; no claim the quarry is already freed. Open: the camera and the staging
+  of Pella's reaction are not set in canon, so they are decided in the scene PR.
 - **The Bent Ladle (DLG-14):** two views from Pemi's boat show why the best table
   changes with the berth. Keep her menu joke optional for a selected Tenzo.
   Return to a meal, the view or departure; no hidden emergency behind hospitality.
@@ -69,10 +73,12 @@ These are player-invited observations, not forced interruptions on every visit.
   The party's kindness does not force the animal to stand or earn ownership.
 - **The cutting (SQ-32):** tracks, distant badgermole, newly shifted earth. Hold
   distance and scale. No taming montage, bending lesson or secret plot clue.
-- **The distant wake (SQ-35):** optional after safe post-campaign travel, under
-  every ending. Horizon; immense living contour; water falling; an empty sea.
-  Let the pictures hold for 30–45 seconds with little text. No prophecy, new
-  power, mandatory boarding or repeatable sightseeing promise.
+- **SQ-35 is retired; stage nothing for it.** The earlier "distant wake" (a
+  living lion-turtle contour on the horizon) is withdrawn: its post-Korra
+  placement was unsupported (`docs/story/living-world-expansion.md`, SQ-35
+  entry; `docs/story/the-common-current-bible.md`, lion turtles). Keep the ID
+  retired so no older reference authorises production. Historical lion-turtle
+  imagery is a separate reference task, not a substitute scene.
 
 ## Authoring constraints
 

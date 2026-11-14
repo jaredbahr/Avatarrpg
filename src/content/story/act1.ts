@@ -648,8 +648,10 @@ export const ACT1_NODES: readonly StoryNode[] = [
     lines: [
       'Stone carts leave the quarry again. At the fork, each one takes the coast road past Ba Dan.',
       'Mira stretches the evening rice with broth. Families still come to her door asking for news from the galleries.',
-      'A worker gets a note to Dorin: Bo-shan, the four messengers and the crews are alive. Grumbler is still holding them in the quarry.',
+      'Grumbler’s crew rolls Bo-shan’s cart down to the fork, emptied, one wheel split, and leaves it there. Under the seat, a worker has tucked a note for Dorin: Bo-shan, the four messengers and the crews are alive.',
       'The driller is still down there. Its parts came from Republic City; someone paid to bring them all this way.',
+      'Gao patches the wheel with what he has in the shop. Pella watches every nail. “His deliveries are still waiting,” she tells you. “Take the cart for him. Bring it back with him on it.”',
+      'Dorin writes himself a travel permit, signs it, reads it twice and stamps it. Then he climbs up and takes the reins.',
     ],
     teaser:
       'Across the bay, lamps burn in a Fire Nation outpost closed nine years ago. A supply boat ties up at its jetty.',

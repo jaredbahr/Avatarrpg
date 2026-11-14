@@ -612,6 +612,25 @@ export const mapSchema = z
       .optional(),
     edgeContract: z.literal('enforce').optional(),
     cameraCentreMargin: z.number().finite().optional(),
+    soundscape: z.literal('courtyard').optional(),
+    practice: z
+      .object({
+        label: z.string().min(1),
+        anchor: vec2,
+        reach: z.number().int().min(0),
+        mark: vec2,
+      })
+      .strict()
+      .optional(),
+    arrivalShot: z
+      .object({
+        at: vec2,
+        unlessVisited: id,
+        rows: z.number().positive(),
+        centreY: z.number().finite(),
+      })
+      .strict()
+      .optional(),
     // A painting under the grid (ADR 0009). Between 32 px a tile (the probe) and
     // 256, so a 24-wide map stays inside the 2048 px texture every iPad takes.
     projection: z.literal('topdown').optional(),
@@ -879,6 +898,15 @@ const standingAdjust = z
   })
   .partial();
 
+const nodePresentation = z
+  .object({
+    mapId: id,
+    stage: z
+      .union([z.object({ npc: id }).strict(), z.object({ tiles: z.array(vec2) }).strict()])
+      .optional(),
+  })
+  .strict();
+
 export const storyNodeSchema = z.discriminatedUnion('kind', [
   z.object({
     id,
@@ -888,6 +916,7 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     lines: z.array(z.string().min(1)).min(1),
     next: id,
     variants: z.array(dialogueVariant).optional(),
+    presentation: nodePresentation.optional(),
   }),
   z.object({
     id,
@@ -895,6 +924,7 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     speaker: z.string().min(1),
     portrait: z.string().min(1),
     prompt: z.string().min(1),
+    presentation: nodePresentation.optional(),
     options: z
       .array(
         z.object({
@@ -2706,6 +2736,22 @@ export function validateContent(
   for (const [from, to] of links) {
     if (!storyIds.has(to)) {
       problems.push(`story node "${from}" links to "${to}", which does not exist`);
+    }
+  }
+
+  /* --- map presentation data (#767): the app reads it, so it must point at real things --- */
+  for (const map of bundle.maps) {
+    const inside = (pos: { x: number; y: number }) =>
+      pos.x >= 0 && pos.y >= 0 && pos.x < map.width && pos.y < map.height;
+    if (map.practice && !(inside(map.practice.anchor) && inside(map.practice.mark)))
+      problems.push(`map "${map.id}" practice anchor or mark is off the map`);
+    if (map.arrivalShot) {
+      if (!inside(map.arrivalShot.at))
+        problems.push(`map "${map.id}" arrival shot stands off the map`);
+      if (!storyIds.has(map.arrivalShot.unlessVisited))
+        problems.push(
+          `map "${map.id}" arrival shot names unknown story node "${map.arrivalShot.unlessVisited}"`,
+        );
     }
   }
 

@@ -149,14 +149,14 @@ describe('map and signal contract', () => {
     );
     expect(index).toBeGreaterThanOrEqual(0);
     const listener = { x: index % grid.width, y: Math.floor(index / grid.width) };
-    expect(courtyardEnvironment(BA_DAN_VILLAGE.id, grid, listener).pond).toBe(1);
-    expect(courtyardEnvironment('road', grid, listener).courtyard).toBe(false);
+    expect(courtyardEnvironment(BA_DAN_VILLAGE, grid, listener).pond).toBe(1);
+    expect(courtyardEnvironment({}, grid, listener).courtyard).toBe(false);
     const dry = {
       ...grid,
       tiles: grid.tiles.map((tile) => ({ ...tile, terrain: 'stone' as const, surface: null })),
     };
-    expect(courtyardEnvironment(BA_DAN_VILLAGE.id, dry, listener).pond).toBe(0);
-    expect(courtyardEnvironment(BA_DAN_VILLAGE.id, grid, { x: -100, y: -100 }).pond).toBe(0);
+    expect(courtyardEnvironment(BA_DAN_VILLAGE, dry, listener).pond).toBe(0);
+    expect(courtyardEnvironment(BA_DAN_VILLAGE, grid, { x: -100, y: -100 }).pond).toBe(0);
   });
   it.each(['air', 'pond'] as const)(
     '%s source is deterministic, bounded and has quiet loop seams',

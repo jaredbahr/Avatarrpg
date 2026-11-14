@@ -23,9 +23,11 @@ import {
  * has a painting pack and a layout image (`scripts/art/lib/maps.test.ts`
  * holds them to what the content generates). Every hex a pack quotes is a
  * palette value, so a pack cannot drift from the colours the game draws
- * with. And no pack, note or checklist names the franchise or a character
- * from it: the art bible forbids it, and a generator steered by a name
- * produces a likeness the disclaimer in the README promises we do not use.
+ * with. And no pack, note or checklist names a canon character, faction or
+ * place: the art bible forbids it, and a generator steered by a name produces
+ * a likeness the disclaimer in the README promises we do not use. The one
+ * allowance (owner, 2026-11-14) is a style reference: a prompt may say "the
+ * animated Avatar style". No canon character ever appears.
  */
 
 const ART = join(process.cwd(), 'docs', 'art');
@@ -145,6 +147,17 @@ const DENYLIST = [
   'omashu',
 ];
 
+/**
+ * The only franchise wording a prompt may use: the animated series' style as a
+ * reference. It is removed before the denylist runs, so "avatar" anywhere else
+ * (a character, the title on its own) still fails.
+ */
+const STYLE_REFERENCE = /\banimated\s+avatar(?:\s+series)?(?:'s)?\s+style\b/gi;
+
+function withoutStyleReference(text: string): string {
+  return text.replace(STYLE_REFERENCE, ' ');
+}
+
 function markdownFiles(dir: string): string[] {
   const out: string[] = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -187,14 +200,26 @@ describe('portrait prompt packs', () => {
     }
   });
 
-  it('never name the franchise, its characters or its factions', () => {
+  it('never name a canon character, faction or place; only the animated style may be cited', () => {
     for (const file of markdownFiles(ART)) {
-      const text = readFileSync(file, 'utf8').toLowerCase();
+      const text = withoutStyleReference(readFileSync(file, 'utf8')).toLowerCase();
       for (const term of DENYLIST) {
         const pattern = new RegExp(`\\b${term.replace(/ /g, '\\s+')}\\b`, 'i');
         expect(pattern.test(text), `${file} contains "${term}"`).toBe(false);
       }
     }
+  });
+
+  it('allow the animated style as a reference and nothing else from the franchise', () => {
+    const blocked = (text: string) =>
+      DENYLIST.filter((term) =>
+        new RegExp(`\\b${term.replace(/ /g, '\\s+')}\\b`, 'i').test(withoutStyleReference(text)),
+      );
+    expect(blocked('Flat cel shading in the animated Avatar style.')).toEqual([]);
+    expect(blocked('In the animated Avatar series style, warm light.')).toEqual([]);
+    expect(blocked('A portrait of Katara with a braid.')).toEqual(['katara']);
+    expect(blocked('The animated Avatar style, with Zuko scowling.')).toEqual(['zuko']);
+    expect(blocked('Make it look like Avatar.')).toEqual(['avatar']);
   });
 
   it('ship the shared notes beside the packs', () => {

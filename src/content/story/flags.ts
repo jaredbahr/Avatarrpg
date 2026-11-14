@@ -544,6 +544,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     readBy: [
       'map:ba_dan_village',
       'map:forest_road',
+      'story:cart_departure',
       'story:demo_complete',
       'story:pella_home',
       'story:sq01_sled_again',
