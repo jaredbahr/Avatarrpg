@@ -99,6 +99,9 @@ jobs:
       - name: Check generated story graphs
         run: npm run docs:story -- --check
 
+      - name: Check generated save history report
+        run: npm run docs:saves -- --check
+
       - name: Unit + content-validation + simulator tests
         run: npm test
 
