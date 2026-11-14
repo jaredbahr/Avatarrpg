@@ -158,9 +158,7 @@ function dialoguePanel(
       ]
         .filter(Boolean)
         .join(' '),
-      attrs: compact
-        ? { role: 'button', tabindex: '0', 'aria-label': 'Continue conversation' }
-        : { role: 'button', tabindex: '0', 'aria-label': 'Continue' },
+      attrs: { role: 'group', tabindex: '-1', 'aria-label': 'Conversation' },
       onClick: (event) => {
         // The nested Next button already committed the line. Its click bubbles
         // through this panel even after dispatch has rebuilt the DOM.
