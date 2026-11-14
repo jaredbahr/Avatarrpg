@@ -33,6 +33,7 @@ import type { BakedSheet } from './bake';
 import { bakeSheet, frameHeadroom, headroomFromPixels } from './bake';
 import { frameIndex, resolveClip } from './resolveClip';
 import { feetFromPixels, plantAnchor, standsOnSoles, type FrameFeet } from './feet';
+import { cropPixels, readPagePixels, type PagePixels } from './pagePixels';
 
 export interface ResolvedFrame {
   readonly source: HTMLCanvasElement | HTMLImageElement;
@@ -107,20 +108,14 @@ export function atlasHeadroom(
     for (const name of clip?.frames ?? []) names.set(name, clip?.anchor?.y ?? entry.anchor.y);
   for (const frames of Object.values(entry.meleeDirections ?? {}))
     for (const name of frames ?? []) names.set(name, entry.anchor.y);
-  const scratch = typeof document === 'undefined' ? null : document.createElement('canvas');
-  const ctx = scratch?.getContext('2d');
+  const page = readPagePixels(image, atlas.width, atlas.height);
   let envelope = 0;
   for (const [name, anchorY] of names) {
     const frame = atlas.frames.get(name);
     if (!frame || frame.w === 0 || frame.h === 0) continue;
-    let height = frameHeadroom(frame, anchorY, entry.pixelsPerTile);
-    if (scratch && ctx) {
-      scratch.width = frame.w;
-      scratch.height = frame.h;
-      ctx.drawImage(image, frame.x, frame.y, frame.w, frame.h, 0, 0, frame.w, frame.h);
-      const data = ctx.getImageData(0, 0, frame.w, frame.h).data;
-      height = headroomFromPixels(data, frame.w, frame.h, entry.pixelsPerTile, anchorY);
-    }
+    const height = page
+      ? headroomFromPixels(cropPixels(page, frame), frame.w, frame.h, entry.pixelsPerTile, anchorY)
+      : frameHeadroom(frame, anchorY, entry.pixelsPerTile);
     envelope = Math.max(envelope, height);
   }
   return envelope;
@@ -137,25 +132,25 @@ export function atlasFeet(
   clips: SheetClips = entry.clips,
 ): Map<string, FrameFeet> {
   const feet = new Map<string, FrameFeet>();
-  const scratch = typeof document === 'undefined' ? null : document.createElement('canvas');
-  const ctx = scratch?.getContext('2d', { willReadFrequently: true });
-  if (!scratch || !ctx) return feet;
+  let page: PagePixels | null;
+  try {
+    page = readPagePixels(image, atlas.width, atlas.height);
+  } catch {
+    return feet;
+  }
+  if (!page) return feet;
   for (const [clip, def] of Object.entries(clips))
     if (def && standsOnSoles(clip))
       for (const name of def.frames) {
         const frame = atlas.frames.get(name);
         if (feet.has(name) || !frame || frame.w === 0 || frame.h === 0) continue;
-        scratch.width = frame.w;
-        scratch.height = frame.h;
-        ctx.clearRect(0, 0, frame.w, frame.h);
-        try {
-          ctx.drawImage(image, frame.x, frame.y, frame.w, frame.h, 0, 0, frame.w, frame.h);
-          const data = ctx.getImageData(0, 0, frame.w, frame.h).data;
-          const found = feetFromPixels(data, frame.w, frame.h, entry.pixelsPerTile);
-          if (found) feet.set(name, found);
-        } catch {
-          return feet;
-        }
+        const found = feetFromPixels(
+          cropPixels(page, frame),
+          frame.w,
+          frame.h,
+          entry.pixelsPerTile,
+        );
+        if (found) feet.set(name, found);
       }
   return feet;
 }
