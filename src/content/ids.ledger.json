@@ -266,6 +266,7 @@
     "quarry_gate:gate_parley"
   ],
   "anchors": [
+    "bd01.bench",
     "bd01.table",
     "bd02.shopfront",
     "bd03.handover",
