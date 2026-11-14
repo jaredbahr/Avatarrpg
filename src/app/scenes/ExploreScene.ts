@@ -1177,9 +1177,16 @@ export class ExploreScene implements Scene {
         : button(
             'Look around',
             () => {
+              // Departure playback may still draw the area the party has already left.
+              const current = this.app.state;
+              if (current?.screen !== 'explore' || current.location.mapId !== this.map?.id) return;
               new NearbyPlaces(this.app, (pos) => this.requestWalk(pos)).open(this.overlayHost());
             },
-            { class: 'action-button', title: 'Find nearby people and places along this path' },
+            {
+              class: 'action-button',
+              title: 'Find nearby people and places along this path',
+              disabled: state.screen !== 'explore' || state.location.mapId !== this.map?.id,
+            },
           );
     look.prepend(mark(seat ? UI_MARKS.wait : ground ? ABILITY_MARKS.gust : UI_MARKS.talk));
     if (seat) look.appendChild(el('span', { class: 'action-sub', text: seat.label }));
