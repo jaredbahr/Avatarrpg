@@ -1,7 +1,10 @@
 # Illustrated story breaks — The Common Current
 
 Reviewed against the 17 September 2026 Story Bible v1.0, its main campaign and
-reveal ladder, and A World Worth Wandering companion draft 1.0. The current
+reveal ladder, and A World Worth Wandering companion draft 1.0. Both are now in
+the repo, at later revisions:
+[docs/story/the-common-current-bible.md](story/the-common-current-bible.md) and
+[docs/story/living-world-expansion.md](story/living-world-expansion.md). The current
 repository implements the quarry adventure only. This document separates the
 scenes wired into that adventure from placements for later missions.
 

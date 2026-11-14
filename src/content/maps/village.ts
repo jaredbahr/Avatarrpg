@@ -17,6 +17,8 @@ import {
   BA_DAN_DRESSING_FOOTPRINTS,
 } from './baDanLayout';
 import { RETURNEE_PRESENTATIONS } from '../residents/returnees';
+import { SQ01_RESOLVED } from '../story/sq01Cabbages';
+import { SQ02_RESOLVED } from '../story/sq02OfficialGate';
 import { SQ03_RESOLVED } from '../story/sq03GaosLedger';
 
 export const BA_DAN_VILLAGE: MapDef = {
@@ -213,6 +215,18 @@ export const BA_DAN_VILLAGE: MapDef = {
       sprite: 'npc.kid',
       node: 'pella_tips',
       routes: [
+        // SQ-01: once her homecoming is heard, the corrected list of helpers.
+        {
+          when: {
+            kind: 'all',
+            of: [
+              { kind: 'flag', key: 'act1_complete', op: 'set' },
+              { kind: 'visited', nodeId: 'pella_home' },
+              SQ01_RESOLVED,
+            ],
+          },
+          node: 'sq01_pella_list',
+        },
         { when: { kind: 'flag', key: 'act1_complete', op: 'set' }, node: 'pella_home' },
         { when: { kind: 'flag', key: 'pella_asked', op: 'set' }, node: 'pella_again' },
       ],
@@ -223,7 +237,47 @@ export const BA_DAN_VILLAGE: MapDef = {
       resident: 'lw.npc.dorin',
       sprite: 'npc.dorin',
       node: 'dorin_directions',
-      routes: [{ when: { kind: 'flag', key: 'act1_complete', op: 'set' }, node: 'dorin_home' }],
+      routes: [
+        // The homecoming comes first after the rescue.
+        {
+          when: {
+            kind: 'all',
+            of: [
+              { kind: 'flag', key: 'act1_complete', op: 'set' },
+              { kind: 'not', of: { kind: 'visited', nodeId: 'dorin_home' } },
+            ],
+          },
+          node: 'dorin_home',
+        },
+        // SQ-02: once he has given the directions, before the rescue, the side gate.
+        {
+          when: {
+            kind: 'all',
+            of: [
+              { kind: 'visited', nodeId: 'dorin_directions' },
+              { kind: 'flag', key: 'act1_complete', op: 'unset' },
+              { kind: 'not', of: SQ02_RESOLVED },
+            ],
+          },
+          node: 'sq02_hook',
+        },
+        {
+          when: {
+            kind: 'all',
+            of: [SQ02_RESOLVED, { kind: 'flag', key: 'act1_complete', op: 'unset' }],
+          },
+          node: 'sq02_after',
+        },
+        // After the rescue, once: how he brought the crews in.
+        {
+          when: {
+            kind: 'all',
+            of: [SQ02_RESOLVED, { kind: 'not', of: { kind: 'visited', nodeId: 'sq02_return' } }],
+          },
+          node: 'sq02_return',
+        },
+        { when: { kind: 'flag', key: 'act1_complete', op: 'set' }, node: 'dorin_home' },
+      ],
     },
     {
       // D7: a placeholder sprite, distinct from both of Dorin's.

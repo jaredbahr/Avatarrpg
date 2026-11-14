@@ -1,5 +1,6 @@
 import type { Condition, ResidentProfile, StoryNode } from '../../core/types';
 import { RETURNEE_IDS } from '../residents/returnees';
+import { SQ01_FLAG, SQ01_RESOLVED } from './sq01Cabbages';
 
 const profilesAre = (...profiles: ResidentProfile[]): Condition => ({
   kind: 'all',
@@ -235,6 +236,34 @@ export const RETURN_STORY: readonly StoryNode[] = [
           text: 'You listened to Pella, and her brother’s cabbage cart helped on the quarry floor.',
         },
         {
+          when: {
+            kind: 'any',
+            of: [
+              { kind: 'flag', key: SQ01_FLAG, op: 'eq', value: 'families' },
+              { kind: 'flag', key: SQ01_FLAG, op: 'eq', value: 'crew' },
+            ],
+          },
+          text: 'You found Bo-shan’s tipped sled and sent his cabbages where they were needed.',
+        },
+        {
+          when: { kind: 'flag', key: SQ01_FLAG, op: 'eq', value: 'leverage' },
+          text: 'You found Bo-shan’s tipped sled and hid his cabbages to bargain with.',
+        },
+        {
+          when: {
+            kind: 'any',
+            of: [
+              { kind: 'flag', key: 'sq02.gate', op: 'eq', value: 'quiet' },
+              { kind: 'flag', key: 'sq02.gate', op: 'eq', value: 'public' },
+            ],
+          },
+          text: 'You helped Dorin find out why the side gate never opened.',
+        },
+        {
+          when: { kind: 'flag', key: 'sq02.gate', op: 'eq', value: 'mocked' },
+          text: 'You laughed the side gate open. Dorin wrote something down.',
+        },
+        {
           when: { kind: 'flag', key: 'sq03.ledger', op: 'eq', value: 'extension' },
           text: 'You helped Gao ask the wholesaler for more time, and kept his neighbours’ names out of it.',
         },
@@ -283,6 +312,15 @@ export const RETURN_STORY: readonly StoryNode[] = [
       'Thank you for finding him.',
     ],
     variants: [
+      {
+        // SQ-01: the party found his sled. Her list of helpers waits for the next talk.
+        when: SQ01_RESOLVED,
+        lines: [
+          'You found him. I hugged him so hard his hat came off. Then I told him about the sled.',
+          'He says the cabbages were only a little bit high. You saw them. They were not a little bit high.',
+          'He is asleep now. I am making a list while he cannot argue.',
+        ],
+      },
       {
         // The return lands in the evening (D2); this hold lasts until she is heard.
         when: {
