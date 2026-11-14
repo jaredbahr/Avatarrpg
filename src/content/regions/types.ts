@@ -52,6 +52,11 @@ export interface RegionManifest {
   readonly music: Readonly<Record<string, MusicTrackId>>;
   /** Map id to its top-down scene asset (ADR 0104); a map not listed draws its bare board. */
   readonly scenes: Readonly<Record<string, TopDownSceneSource>>;
+  /**
+   * The region's data, as a dynamic `import()` of its `content.ts` (ADR 0111 §2), so the bundler
+   * gives each region a chunk of its own and the app fetches it only when the region is needed.
+   */
+  readonly load: () => Promise<RegionContent>;
 }
 
 /** The data a region adds to the content index. */

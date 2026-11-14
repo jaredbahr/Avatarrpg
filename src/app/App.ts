@@ -61,7 +61,9 @@ import { Curtain } from './ui/Curtain';
 import { PauseMenu } from './ui/PauseMenu';
 import { LevelUpDialog } from './ui/LevelUpDialog';
 import { DisciplineDialog } from './ui/DisciplineDialog';
-import { RIVERSIDE_ENTRY } from '../content/maps/riverside';
+import { RIVERSIDE_ENTRY, RIVERSIDE_ID } from '../content/maps/riversideIds';
+import { START_REGION_ID } from '../content/regions';
+import type { RegionLoader } from './regions';
 import { villagePreviewState } from './village/previewState';
 import { TitleScene } from './scenes/TitleScene';
 import { PartySetupScene } from './scenes/PartySetupScene';
@@ -285,6 +287,8 @@ export class App {
     readonly content: ContentIndex,
     root: HTMLElement,
     readonly storyEntry: string,
+    /** Fills `content` with regions as the party needs them (ADR 0111 §2); absent, it is complete. */
+    private readonly regions?: RegionLoader,
   ) {
     this.host = root;
     this.settings = loadSettings();
@@ -632,6 +636,29 @@ export class App {
     this.music.setDuck(battle !== null && (scene === 'combat' || scene === 'dialogue'));
   }
 
+  /**
+   * Null when every region in `pending` is loaded (each entry is a loader's answer, null when
+   * ready); otherwise one promise for them all, with a note on screen while the area loads.
+   */
+  private regionsPending(
+    pending: readonly (Promise<void> | null | undefined)[],
+  ): Promise<void> | null {
+    const waits = pending.filter((entry): entry is Promise<void> => entry instanceof Promise);
+    if (waits.length === 0) return null;
+    this.toasts.show('Loading the next area…');
+    return Promise.all(waits).then(() => undefined);
+  }
+
+  private readonly regionFailed = (error: unknown): void => {
+    console.error('A region did not load.', error);
+    this.toasts.show('That area could not load. Check the connection and try again.', 'warn');
+  };
+
+  /** Starts loading the party's region and its neighbours, if they are not loaded yet. */
+  private prefetchRegions(): void {
+    void this.regions?.pendingForMap(this.state?.location.mapId)?.catch(this.regionFailed);
+  }
+
   /** Discard the replaced state's queued animation and audio together. */
   private resetPlayback(): void {
     this.animator.clear();
@@ -641,6 +668,11 @@ export class App {
 
   startVillagePreview(): void {
     if (this.previewActive) return;
+    const wait = this.regionsPending([this.regions?.pendingForMap(RIVERSIDE_ID)]);
+    if (wait) {
+      void wait.then(() => this.startVillagePreview(), this.regionFailed);
+      return;
+    }
     this.cancelRoute();
     this.previewSnapshot = { state: this.state, session: this.session.toMeta() };
     this.state = villagePreviewState(this.content);
@@ -680,6 +712,14 @@ export class App {
     participants?: readonly Participant[],
     difficulty?: Difficulty,
   ): void {
+    const wait = this.regionsPending([this.regions?.pendingForRegion(START_REGION_ID)]);
+    if (wait) {
+      void wait.then(
+        () => this.newGame(players, slots, seed, participants, difficulty),
+        this.regionFailed,
+      );
+      return;
+    }
     if (this.previewActive) this.endVillagePreview();
     this.cancelRoute();
     this.freshCombatEntry = false;
@@ -726,6 +766,15 @@ export class App {
 
   /** Installs a loaded save, replacing everything. */
   adoptSave(state: GameState, session: SessionMeta | undefined): void {
+    // A save from another region loads that region before it is reconciled against content.
+    const wait = this.regionsPending([
+      this.regions?.pendingForMap(state.location.mapId),
+      this.regions?.pendingForMap(state.battle?.mapId),
+    ]);
+    if (wait) {
+      void wait.then(() => this.adoptSave(state, session), this.regionFailed);
+      return;
+    }
     if (this.previewActive) this.endVillagePreview();
     this.cancelRoute();
     this.freshCombatEntry = false;
@@ -769,10 +818,20 @@ export class App {
     this.cancelRoute();
     const state = this.state;
     if (!state) return [];
+    // No command runs until the party's region and its neighbours are in the index, so the rules
+    // read everything a command can reach (ADR 0111 §2). Loaded, as after boot, this never waits.
+    const wait = this.regionsPending([this.regions?.pendingForMap(state.location.mapId)]);
+    if (wait) {
+      void wait.then(() => {
+        if (this.state === state) this.dispatch(command);
+      }, this.regionFailed);
+      return [];
+    }
 
     const unitsBefore = state.battle?.units ?? [];
     const result = apply(this.content, state, command);
     this.state = result.state;
+    this.prefetchRegions();
     // A reward pick only counts when it consumed a pending choice; a refusal
     // returns the same list, untouched.
     const choiceConsumed =

@@ -7,7 +7,7 @@ import { VillageLayer } from '../../render/living/layer';
 import type { VillageActor } from '../../render/living/layer';
 import { FORM_DURATION, WAVE_DURATION } from '../../render/living/poses';
 import { hitsPebble, hitsVillager, riversideWalkTime } from '../../render/living/geometry';
-import { RIVERSIDE_ID, RIVERSIDE_SPOTS } from '../../content/maps/riverside';
+import { RIVERSIDE_ID, RIVERSIDE_SPOTS } from '../../content/maps/riversideIds';
 import type { ResidentFigure } from '../world/residentMotion';
 import { resolveResidents } from '../../core/story/residents';
 import { phaseLabel } from '../world/journal';
