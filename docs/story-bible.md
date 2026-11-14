@@ -57,7 +57,8 @@ Read with:
 ### Canon and scope
 
 - **The uploaded docs are canon.** Where they differ from the shipped demo, the uploaded docs win.
-- **Title: TBD.** "The Common Current" is a working title only. The game is Four Nations Tactics.
+- **Title: _Four Nations Tactics: Echoes of Stillwater_** (decided later the same day; see
+  [The saga outline](#the-saga-outline-2026-11-14)). "The Common Current" stays the network's in-world name.
 - **The demo is Act I**: MQ-01, The Quarry of Ba Dan (bible Part 04, "Act I — Stone").
 - **The next region is RG-02, Saltstep and Emberwatch (MQ-02).** Its story is placeholder until it is drafted
   through the story workflow below.
@@ -113,6 +114,30 @@ Read with:
   texture; and the PR group order. The list is under
   [Gap-fills approved 2026-11-14](#gap-fills-approved-2026-11-14).
 - **Hanru stays they/them** (ADR 0047 D7), as the demo and the shipped portrait have it.
+
+### The saga outline (2026-11-14)
+
+The owner shaped the saga's spine in an interactive review on 2026-11-14. The full record, with the reasoning and
+the beat-by-beat outline, is [story-outline.md](story-outline.md); it ranks with this list, under the owner's
+direct instructions and above the bible where they differ. In short:
+
+- **The writing standard:** a family game is not a lesser game. Full emotional range, antagonists with a real
+  case, unresolved endings allowed, subtext over explanation, ideas at full strength. Kid-friendliness lives in the
+  interface, never in softened writing.
+- **Shape:** title _Echoes of Stillwater_; a flash-forward prologue inside the Works; civic beats staged as
+  set-pieces with the arguments kept whole; a fixed low point after MQ-09 (the party branded saboteurs, the cart
+  impounded); three distinct endings by table vote; a multi-phase final battle against the Stillwater Engine, won
+  by opening the route and handing over control.
+- **The cart:** Bo-shan's cart, pulled by Parcel, is the party's spine, and Bo-shan drives it (on the Driller-loss
+  branch Dorin drives until MQ-11). Grumbler upgrades it once per act as supervised restitution; upgrades are story
+  and camp only. Latch rides the tailgate from MQ-07.
+- **People:** the party meets Veyra by name, not role, in MQ-02 and fights beside her once; the reveal ladder is
+  unchanged ("V. Sen, Director" at MQ-03). Her ending target is accountable, still useful. Rusk was the council
+  officer who held rescue equipment back in the Blackreed Flood. Jin is a recurring rival once per act. Mira's
+  flaw lands through the four messengers she sent. Ruon's arc is repair without rank. Each hero finds a personal
+  reason in Act I, paid off by their PQ, with a party-neutral reason always present.
+- **The spirit thread:** Act I seeds (the culvert water ripples twice; a boot returned with a shell), and the Still
+  Keeper heard only as echoes before Act III.
 
 ## Fan-work rule
 

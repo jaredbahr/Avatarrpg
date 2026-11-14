@@ -12,6 +12,16 @@ and its living-world expansion
 [story bible index](story-bible.md) says how they rank. The owner's direction
 takes priority.
 
+## Write at full strength
+
+A family game is not a lesser game (owner, 2026-11-14). Write to the standard of
+the best all-ages stories, the kind adults rewatch for themselves, and never
+soften a scene to appease younger players. Grief, guilt, betrayal and moral
+compromise get room to land; antagonists keep a real case; some things stay
+unresolved; subtext beats explanation. The game welcomes kids through its
+interface (big text, clear turns, forgiving difficulty), not through simpler
+writing. The full standard is in [story-outline.md](story-outline.md).
+
 ## Build the situation first
 
 Give someone an immediate want: serve dinner, finish a model, win a harmless

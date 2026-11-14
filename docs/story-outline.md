@@ -1,10 +1,10 @@
 # Four Nations Tactics: Echoes of Stillwater — saga outline
 
-**Status: decisions made with the owner in interactive review on 2026-11-14; the page as a whole awaits his final
-yes.** This page sharpens the approved canon ([`docs/story/the-common-current-bible.md`](story/the-common-current-bible.md),
+**Status: decided by the owner in interactive review on 2026-11-14 and recorded in
+[story-bible.md](story-bible.md#the-saga-outline-2026-11-14).** This page sharpens the approved canon ([`docs/story/the-common-current-bible.md`](story/the-common-current-bible.md),
 reconciled in [`docs/story-bible.md`](story-bible.md), both from PR #735). It keeps the canon's premise, regions,
-core cast, endings and reveal ladder, and adds the decisions below. Once approved, the decisions move into
-`docs/story-bible.md` as a dated "Owner decisions" list.
+core cast, endings and reveal ladder, and adds the decisions below. `docs/story-bible.md` lists them in short
+under its owner decisions; this page holds the full record.
 
 ## The story in one breath
 
@@ -271,8 +271,6 @@ Each act ends on a quiet meal and a view (canon tone rule: follow intensity with
 
 ## Next steps
 
-1. The owner gives the page a final yes or redirects.
-2. Approved decisions move into `docs/story-bible.md` as a dated list (after PR #735 merges), and the title is
-   recorded there.
-3. Act I's additions (the prologue, the culvert echo, the boot, per-hero reasons, the cart and Bo-shan's
+1. Draft Ba Dan's side stories SQ-01 to SQ-03 against this outline (the agreed first story work).
+2. Act I's additions (the prologue, the culvert echo, the boot, per-hero reasons, the cart and Bo-shan's
    departure) join the Demo vs canon work list. Each gets a theme card.
