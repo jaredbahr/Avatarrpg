@@ -354,6 +354,116 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     readBy: ['resident:lw.npc.mira', 'resident:lw.npc.gao'],
   },
 
+  // Each present hero's reason to keep going (reasons.ts; saga outline decision 22).
+  {
+    key: 'reason.kaya',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'Kaya found her old neighbour’s lantern-workshop stamp on a crate of lamp glass (C-31): a reason to keep going.',
+    arc: 'Demo · Quarry floor',
+    status: 'live',
+    note: 'Hides the find’s marker once seen. PQ-01 should read it when Kaya is in the party.',
+    setBy: ['story:reason_kaya_kept'],
+    readBy: ['map:quarry_floor'],
+  },
+  {
+    key: 'reason.tenzo',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'Tenzo found the workers’ ration crates, signed for and never opened (C-31): a reason to keep going.',
+    arc: 'Demo · Quarry floor',
+    status: 'live',
+    note: 'Hides the find’s marker once seen. PQ-02 should read it when Tenzo is in the party.',
+    setBy: ['story:reason_tenzo_kept'],
+    readBy: ['map:quarry_floor'],
+  },
+  {
+    key: 'reason.nilak',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'Nilak found his old healing house’s emblem on a “medical supplies” crate of restraints (C-31): a reason to keep going.',
+    arc: 'Demo · Quarry floor',
+    status: 'live',
+    note: 'Hides the find’s marker once seen. PQ-03 should read it when Nilak is in the party.',
+    setBy: ['story:reason_nilak_kept'],
+    readBy: ['map:quarry_floor'],
+  },
+  {
+    key: 'reason.nima',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'Nima found a sanctuary knot on a supply crate diverted from the mountain shelters (C-31): a reason to keep going.',
+    arc: 'Demo · Quarry floor',
+    status: 'live',
+    note: 'Hides the find’s marker once seen. PQ-07 should read it when Nima is in the party.',
+    setBy: ['story:reason_nima_kept'],
+    readBy: ['map:quarry_floor'],
+  },
+  {
+    key: 'reason.bo',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'Bo found Renn and his old crew on next month’s labour roster in the Driller’s cab (C-31): a reason to keep going.',
+    arc: 'Demo · Quarry floor',
+    status: 'live',
+    note: 'Hides the find’s marker once seen. PQ-05 should read it when Bo is in the party.',
+    setBy: ['story:reason_bo_kept'],
+    readBy: ['map:quarry_floor'],
+  },
+  {
+    key: 'reason.wen',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'Wen found her own regulator in the Driller, its manual release taken out (C-31): a reason to keep going.',
+    arc: 'Demo · Quarry floor',
+    status: 'live',
+    note: 'Hides the find’s marker once seen. PQ-10 should read it when Wen is in the party.',
+    setBy: ['story:reason_wen_kept'],
+    readBy: ['map:quarry_floor'],
+  },
+  {
+    key: 'reason.lin_mei',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'Lin Mei found her own survey mark on the gallery plan Grumbler drew through (C-31): a reason to keep going.',
+    arc: 'Demo · Quarry floor',
+    status: 'live',
+    note: 'Hides the find’s marker once seen. PQ-06 should read it when Lin Mei is in the party.',
+    setBy: ['story:reason_lin_mei_kept'],
+    readBy: ['map:quarry_floor'],
+  },
+  {
+    key: 'reason.riko',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'Riko found a hold her teacher taught her, chalked on the guards’ practice board (C-31): a reason to keep going.',
+    arc: 'Demo · Quarry floor',
+    status: 'live',
+    note: 'Hides the find’s marker once seen. PQ-09 should read it when Riko is in the party.',
+    setBy: ['story:reason_riko_kept'],
+    readBy: ['map:quarry_floor'],
+  },
+  {
+    key: 'reason.jinu',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'Jinu found the messengers’ undelivered letters in the gate office (C-31): a reason to keep going.',
+    arc: 'Demo · Walk home',
+    status: 'live',
+    note: 'Hides the find’s marker once seen. PQ-08 should read it when Jinu is in the party.',
+    setBy: ['story:reason_jinu_kept'],
+    readBy: ['map:quarry_gate'],
+  },
+
   /* ----------------------------------------------------------- Riverside */
   {
     key: 'riverside_shrine_found',

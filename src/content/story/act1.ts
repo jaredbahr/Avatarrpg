@@ -649,7 +649,8 @@ export const ACT1_NODES: readonly StoryNode[] = [
       'The driller bears a Republic City maker’s plate. You take a rubbing for Mira’s report to the province.',
       'The workers help each other up the ramp and start down the west road. It is time to take the news home to Ba Dan.',
     ],
-    next: 'act1_evening',
+    // The cart's delivery book, the party-neutral reason to keep going (reasons.ts).
+    next: 'quarry_ledger',
   },
   {
     // Evening falls as the walk home begins. A phase change rests at an explore

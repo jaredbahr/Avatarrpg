@@ -10,6 +10,7 @@
 import type { ContentIndex, GameState, MapDef, StoryNode, Vec2 } from '../../core/types';
 import { INTERLUDES } from './interludes';
 import { DISCOVERIES } from '../maps/discoveries';
+import { REASON_FINDS } from './reasons';
 
 /**
  * What the camera keeps above the dialogue panel while the conversation is
@@ -110,6 +111,8 @@ const NPC_PRESENTATIONS: readonly (readonly [string, string, WorldStage?])[] = [
   // The marker's brief assessment follows the staged descent, but still
   // belongs over the quarry floor where the party is standing.
   ['quarry_assessment', 'quarry_floor'],
+  // Bo-shan's delivery book turns up in the Driller's cab after the rescue (reasons.ts).
+  ['quarry_ledger', 'quarry_floor'],
 
   // The cutting.
   // Ruon stands in the Cutting while he speaks after the ambush (#628).
@@ -131,12 +134,21 @@ const DISCOVERY_PRESENTATIONS: Readonly<Record<string, WorldPresentation>> = Obj
   ]),
 );
 
+/** Each hero's find (reasons.ts) is spoken where its marker stands. */
+const REASON_PRESENTATIONS: Readonly<Record<string, WorldPresentation>> = Object.fromEntries(
+  REASON_FINDS.map((find) => [
+    'reason_' + find.hero,
+    world(find.map, { npc: 'reason_' + find.hero }),
+  ]),
+);
+
 /** Explicitly reviewed ordinary NPC conversations plus generated discoveries. */
 export const STORY_PRESENTATIONS: Readonly<Record<string, StoryPresentation>> = Object.freeze({
   ...Object.fromEntries(
     NPC_PRESENTATIONS.map(([nodeId, mapId, stage]) => [nodeId, world(mapId, stage)]),
   ),
   ...DISCOVERY_PRESENTATIONS,
+  ...REASON_PRESENTATIONS,
 });
 
 /** Alias for callers that only need the world subset. */
