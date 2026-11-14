@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { CONTENT } from '../src/content';
-import { resetStorage } from './helpers';
+import { resetStorage, waitForIdle } from './helpers';
 
 async function expectVisibleFocus(target: Locator): Promise<void> {
   await expect(target).toBeFocused();
@@ -63,9 +63,13 @@ async function advanceLines(page: Page, control: Locator, count: number): Promis
   }
 }
 
-test('the opening route uses the keyboard from title to a conversation on the Forest Road', async ({
+test('the opening route uses the keyboard from title through the first move of the Forest Road fight', async ({
   page,
 }) => {
+  // Title to a confirmed move and End turn, every step by keyboard: about 40 s
+  // to the roadblock in Chromium and the fight on top, so it takes three
+  // minutes of budget; each step keeps its own wait.
+  test.setTimeout(180_000);
   await resetStorage(page, '?renderer=canvas&titleArtHold=0');
   await pressControl(page, button(page, 'New game'));
   await expectVisibleFocus(button(page, '1 player'));
@@ -137,7 +141,11 @@ test('the opening route uses the keyboard from title to a conversation on the Fo
     .poll(() => page.evaluate(() => window.fnt?.app.state?.location.mapId))
     .toBe('forest_road');
   // Wait for the actual board arrival before asking to talk. Scene state
-  // can name the next map while the animated village exit is still playing.
+  // can name the next map while the animated village exit is still playing:
+  // from Gao to the east road that walk is about nine seconds of playback
+  // (measured), so wait for the playback to end rather than racing it with
+  // the 10 s assertion default, which CI's WebKit lost.
+  await waitForIdle(page);
   await expect(page.locator('.title-plate-name')).toHaveText('The Forest Road');
   await expect(page.locator('canvas.map-canvas')).toHaveAttribute(
     'aria-label',
@@ -149,14 +157,72 @@ test('the opening route uses the keyboard from title to a conversation on the Fo
   await expectNode(page, 'forest_explore');
   expect(await page.evaluate(() => window.fnt?.app.state?.flags['world.ducks_seen'])).toBe(true);
 
-  // The supported keyboard route stops at the roadblock: the route control
-  // stays locked until the party crosses a board trigger and resolves the fight.
+  // The route east stays locked until the roadblock is dealt with; the Local
+  // map offers the story crossings on the way as ordinary walks (#753).
   await pressControl(page, map);
   const localMap = page.getByRole('dialog', { name: 'Local map', exact: true });
   await expectVisibleFocus(localMap.getByRole('heading', { name: 'Local map' }));
   const east = localMap.getByRole('button', { name: 'East → Quarry Gate', exact: true });
   await expect(east).toBeDisabled();
   await expect(east).toHaveAttribute('title', /roadblock/);
+  const roadblock = localMap.getByRole('button', {
+    name: 'Walk to Quarry workers blocking the road',
+    exact: true,
+  });
+  const pineRoad = localMap.getByRole('button', { name: 'Walk to The pine road', exact: true });
+  if (await pineRoad.count()) {
+    // The pine road's beat comes first on the walk east.
+    await pressControl(page, pineRoad);
+    await expectNode(page, 'road_depart');
+    // Its scene is a staged interlude, advanced like the opening.
+    await advanceLines(page, opening, linesOf('road_depart'));
+    await expectNode(page, 'forest_explore');
+    await waitForIdle(page);
+    await pressControl(page, map);
+    await expectVisibleFocus(localMap.getByRole('heading', { name: 'Local map' }));
+  }
+  await pressControl(page, roadblock);
+  await expectNode(page, 'battle_forest_road');
+
+  // The fight (one player, so no hand-off card; the first-fight guidance stays
+  // on): Move, a tile chosen on the board by arrow keys, Enter, then End turn.
+  await expect(page.locator('.combat-scene')).toBeVisible();
+  await waitForIdle(page);
+  await expect(button(page, /^Move\b/)).toBeEnabled();
+  const before = await page.evaluate(() => {
+    const battle = window.fnt!.app.state!.battle!;
+    const unit = battle.units.find((candidate) => candidate.id === battle.order[battle.turnIndex])!;
+    return { id: unit.id, pos: unit.pos, move: unit.move };
+  });
+  await pressControl(page, button(page, /^Move\b/));
+  const board = page.locator('.combat-scene canvas.map-canvas');
+  await expectVisibleFocus(board);
+  const confirm = page.getByRole('button', { name: 'Confirm', exact: true });
+  await page.keyboard.press('ArrowRight');
+  await expect(confirm).toBeEnabled();
+  // Escape backs out of the pick and leaves the board choosing.
   await page.keyboard.press('Escape');
-  await expectVisibleFocus(map);
+  await expect(confirm).toHaveCount(0);
+  await expectVisibleFocus(board);
+  await page.keyboard.press('ArrowRight');
+  await expect(confirm).toBeEnabled();
+  await page.keyboard.press('Enter');
+  await waitForIdle(page);
+  const moved = await page.evaluate((id) => {
+    const unit = window.fnt!.app.state!.battle!.units.find((candidate) => candidate.id === id)!;
+    return { pos: unit.pos, move: unit.move };
+  }, before.id);
+  expect(moved.pos).toEqual({ x: before.pos.x + 1, y: before.pos.y });
+  expect(moved.move).toBeLessThan(before.move);
+  // Focus is back on the actions, so End turn is a Tab or two away.
+  const endTurn = button(page, /^End turn/);
+  await pressControl(page, endTurn);
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const battle = window.fnt!.app.state!.battle!;
+        return battle.order[battle.turnIndex];
+      }),
+    )
+    .not.toBe(before.id);
 });
