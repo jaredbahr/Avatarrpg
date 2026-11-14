@@ -35,6 +35,7 @@ export const BAKED_CLIP_NAMES = [
   ),
   'hitEast',
   ...sided('hit'),
+  'surrender',
 ] as const;
 /** Every clip a sheet can carry. */
 export const CLIP_NAMES = BAKED_CLIP_NAMES;
@@ -208,6 +209,7 @@ export const CLIP_FRAME_COUNTS: Readonly<Record<ClipName, { min: number; max: nu
   hitNorthWest: { min: 2, max: 8 },
   hitNorth: { min: 2, max: 8 },
   hitNorthEast: { min: 2, max: 8 },
+  surrender: { min: 1, max: 2 },
 };
 
 /**

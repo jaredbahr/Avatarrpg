@@ -3,9 +3,9 @@
  *
  * The top-down figure sheets (ADR 0104 T2): each sheet's pages, its locomotion frame and foot anchor
  * (idle, walk and rest share it), the idle and walk cels per heading (`HEADINGS` order), the walk timing
- * and the legacy cast, and the riverside's seated tea and wave where a sheet has them. The hits and knockouts
- * are in each sheet's clip file, the per-heading abilities in its actions file, both beside its atlas under
- * `public/art/topdown/`.
+ * and the legacy cast, and the riverside's seated tea and wave and Ruon's surrender where a sheet has them. The
+ * hits and knockouts are in each sheet's clip file, the per-heading abilities in its actions file, both beside
+ * its atlas under `public/art/topdown/`.
  */
 import type { ClipDef } from './clips';
 
@@ -58,6 +58,7 @@ export interface TopdownSheetData {
   readonly actions: boolean;
   readonly tea?: ClipDef;
   readonly wave?: ClipDef;
+  readonly surrender?: ClipDef;
   readonly treadGrounding?: readonly {
     readonly spanPx: number;
     readonly centerXFromAnchorPx: number;
@@ -441,6 +442,13 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     },
     clipData: true,
     actions: true,
+    surrender: {
+      frames: ['unit.ally.ruon/surrender/0'],
+      fps: 1,
+      loop: true,
+      frameSize: { w: 41, h: 49 },
+      anchor: { x: 0.317073, y: 0.959184 },
+    },
   },
   tenzo: {
     pages: 1,

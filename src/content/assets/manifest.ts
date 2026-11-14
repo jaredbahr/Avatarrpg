@@ -222,6 +222,8 @@ export function topdownSheet(name: TopdownName, key: string, palette: string): S
   // The riverside's seated tea and wave (Kaya and Sura), mirrored by facing like the cast.
   if (t.tea) clips.tea = t.tea;
   if (t.wave) clips.wave = t.wave;
+  // Ruon's surrender: his sabre at his feet, his hands open, for the gate's surrender and vote (follower poses).
+  if (t.surrender) clips.surrender = t.surrender;
   const eastWalk = t.walkCels[0] ?? 0;
   return {
     kind: 'sheet',
