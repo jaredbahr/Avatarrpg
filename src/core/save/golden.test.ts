@@ -17,6 +17,8 @@ import { backgroundFigures, visibleNpcs } from '../story/world';
 import { cachedGrid, DIRECTIONS, findPath, posKey, tileAt } from '../rules/grid';
 import { generateGoldenSaves } from '../../../scripts/saves/make-golden';
 import { deserialize, SAVE_FORMAT_VERSION, stateFromBlob } from './serialize';
+import { applyIdAliases } from './aliases';
+import { ID_ALIASES } from '../../content/idAliases';
 import { reconcileBattleResult, reconcileDisciplines, reconcileWorld } from './reconcile';
 
 const ROOT = fileURLToPath(new URL('./fixtures/golden/', import.meta.url));
@@ -50,7 +52,10 @@ function load(json: string): GameState {
   const parsed = deserialize(json);
   if (!parsed.ok) throw new Error(`Golden save did not deserialize: ${parsed.error}`);
   // Match App.adoptSave's real order. A lost battle/map is not silent success.
-  const battle = reconcileBattleResult(CONTENT, stateFromBlob(parsed.blob));
+  const battle = reconcileBattleResult(
+    CONTENT,
+    applyIdAliases(stateFromBlob(parsed.blob), ID_ALIASES),
+  );
   expect(battle.warnings).toEqual([]);
   return reconcileWorld(CONTENT, reconcileDisciplines(CONTENT, battle.state));
 }

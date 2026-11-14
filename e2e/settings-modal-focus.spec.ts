@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
+import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, startGame } from './helpers';
 
 async function gameState(page: Page): Promise<string> {
@@ -46,6 +47,9 @@ async function closeSettingsAndResume(page: Page, settings: Locator): Promise<vo
 for (const renderer of ['canvas', 'webgl'] as const) {
   test.describe(`settings keep modal focus (${renderer})`, () => {
     test.beforeEach(async ({ page }) => {
+      // Forced WebGL is a software rasteriser on a runner with no GPU (e2e/budget.ts):
+      // these cases took over a minute there and in a local container.
+      allowSoftwareWebgl(test, renderer);
       await resetStorage(page, `?renderer=${renderer}`);
       await startGame(page, ['Elias'], ['kaya']);
       await enterNode(page, 'village_explore');
