@@ -173,6 +173,26 @@ and above the bible where they differ. In short:
 23. Act I seeds: the culvert water ripples twice; a lost boot returns with a river shell inside.
 24. The Still Keeper is heard only as echoes before Act III; MQ-07 reveals it has been listening.
 
+### Owner decisions (2026-11-14, writing review)
+
+The owner answered a review of the shipped demo's writing on 2026-11-14. These rank with the lists above.
+
+- **The demo's ending plays both, in order** (owner, 2026-11-14, evening; this replaces his earlier answer the
+  same day that the departure should wait for Act II): the welcome home, the reunion at Mira's table, the supper
+  and the boot, then Bo-shan taking the reins the next morning while Pella watches through her shutter. The warm
+  scenes come first and the departure is the last scene before the card.
+- **The people the demo is about get to speak.** Staged scenes are approved for the reunion (C-14), Ruon's reply
+  when he is traded, Grumbler's surrender and the quarry workers. Bo-shan and Grumbler have no portrait yet; their
+  scenes use the narrator frame until the owner approves art, and each PR flags the portrait it needs.
+- **The core themes are the six under [Core themes](#core-themes).** The other lists (the outline's image table,
+  the bible's Part 01, `story-cutscenes.md`) are read as ways of carrying those six, and are brought into line
+  with them.
+- **The gate gets a route for every party now** (C-08), ahead of Emberwatch.
+- **How writing changes are approved:** a small sample of before-and-after lines first, then the full pass once
+  the owner has reacted. Story PRs wait for the owner's yes; they do not auto-merge.
+- **Scope of the writing pass:** existing lines, the scenes the story needs and lacks, and the story documents
+  where they disagree with each other.
+
 ## Fan-work rule
 
 Non-commercial fan work; keep the `README.md` disclaimer intact. **Original characters only:** no canon character
