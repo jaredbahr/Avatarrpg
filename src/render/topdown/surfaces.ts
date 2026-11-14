@@ -148,12 +148,18 @@ function oilSimpleEdge(m: Uint8Array, BW: number, x: number, y: number): boolean
   }
 }
 
-/** Keep priority peaks apart while their changing offsets let nearby cuts deepen. */
+/**
+ * Stagger the trim peaks, shifting their offset with the world-coordinate
+ * noise so flat banks do not acquire evenly spaced teeth.
+ */
 function oilTrimPriority(x: number, y: number, phase: number): number {
-  const offset = phase % 2;
-  const lattice = (x + offset) % 2 === 0 && (y + offset) % 2 === 0 ? 1 : 0;
-  const shape = 0.65 * vnoise(x, y, 181, 10) + 0.35 * vnoise(x, y, 183, 4);
-  return lattice + shape + 0.1 * hash2(x, y, 191 + phase);
+  const across = Math.floor((x + y) / 9);
+  const along = Math.floor((x - y) / 9);
+  const jitter = Math.floor(4 * hash2(across, along, 197));
+  const peakX = (x + phase + (jitter & 1)) % 2 === 0;
+  const peakY = (y + phase + (jitter >> 1)) % 2 === 0;
+  const shape = 0.65 * vnoise(x, y, 181, 11) + 0.35 * vnoise(x, y, 183, 4);
+  return (peakX && peakY ? 1 : 0) + shape + 0.22 * hash2(x, y, 191 + phase);
 }
 
 /**
