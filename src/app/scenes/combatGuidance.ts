@@ -15,6 +15,9 @@ export const FIRST_FIGHT_GUIDANCE = {
 } as const;
 
 export const COMBAT_TIP_COPY = {
+  // ADR 0116's 2026-11-15 amendment: the first fight with an objective.
+  objective:
+    'To win, be standing on the flag spot when a round ends. The top bar counts the rounds.',
   cover: 'Cover helps protect a fighter from attacks across the field.',
   prop: 'Some battlefield props can break when they take enough damage.',
   status: 'Statuses can change what a fighter can do. Check the mark by their name.',
@@ -106,7 +109,7 @@ export function nextFirstFightStage(
 export function combatTipFeatures(
   state: GameState,
   props: ReadonlyMap<string, PropDef>,
-  encounters: ReadonlyMap<string, Pick<EncounterDef, 'guidance'>>,
+  encounters: ReadonlyMap<string, Pick<EncounterDef, 'guidance' | 'objective'>>,
 ): readonly CombatTipFeature[] {
   const battle = state.battle;
   if (
@@ -117,6 +120,8 @@ export function combatTipFeatures(
   )
     return [];
   const found = new Set<CombatTipFeature>();
+  // First: a goal other than "defeat everyone" changes how the whole fight is played.
+  if (encounters.get(battle.encounterId)?.objective) found.add('objective');
   if (battle.grid.tiles.some((tile) => tile.cover)) found.add('cover');
   for (const tile of battle.grid.tiles) {
     if (tile.surface) found.add(`surface.${tile.surface.id}` as CombatTipFeature);

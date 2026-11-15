@@ -84,7 +84,11 @@ export function unitMarkerGroundPoint(base: Vec2, tileSize: number, contactOffse
   };
 }
 
-export type OverlayKind = 'move' | 'target' | 'area' | 'rangeBonus' | 'hover';
+/**
+ * `objective`: the encounter's objective cells (ADR 0116's 2026-11-15 amendment), shown all fight
+ * long under every other overlay. A rule the board must show, so both backends draw it.
+ */
+export type OverlayKind = 'move' | 'target' | 'area' | 'rangeBonus' | 'hover' | 'objective';
 
 export interface OverlayLayer {
   readonly kind: OverlayKind;

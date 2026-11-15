@@ -10,6 +10,7 @@
 
 import { advanceTurn, battleOutcome, endedOnTimeLimit } from '../rules/turnOrder';
 import { guestHasFallen, isGuest } from '../rules/guests';
+import { outOfRounds, roundEndOutcome } from '../rules/objectives';
 import { isAlive } from '../rules/stats';
 import type { BattleDraft } from './battleDraft';
 
@@ -22,6 +23,8 @@ export function settleOutcome(draft: BattleDraft): void {
   if (outcome === 'active') return;
   if (endedOnTimeLimit(battle)) {
     draft.message('The fight has gone on too long — the party pulls back to regroup.');
+  } else if (outcome === 'defeat' && outOfRounds(battle.round, encounter)) {
+    draft.message(OUT_OF_ROUNDS);
   } else if (outcome === 'defeat' && guestHasFallen(battle.units, encounter)) {
     // The one defeat a table might not see coming, so it is said out loud (ADR 0116).
     const fallen = battle.units.find((unit) => isGuest(unit) && !isAlive(unit));
@@ -31,10 +34,40 @@ export function settleOutcome(draft: BattleDraft): void {
   draft.emit({ type: 'battleEnded', outcome });
 }
 
+/** Said when the encounter's round limit ends the fight (ADR 0116's 2026-11-15 amendment). */
+export const OUT_OF_ROUNDS = 'Out of time. This fight is lost.';
+
+/**
+ * Settles what the end of the current round decides (an objective held, or the
+ * round limit reached), before the next round's upkeep runs. True when the
+ * battle ended. The round is left on the one that ended, so the result reads
+ * "round 6", not a round that never started.
+ */
+function settleRoundEnd(draft: BattleDraft): boolean {
+  const encounter = draft.content.encounters.get(draft.encounterId);
+  if (!encounter?.objective && encounter?.loseAfterRound === undefined) return false;
+  // A fight already decided (the party down, every enemy down) is settled by
+  // `settleOutcome` as ever: a guest on the brake never outranks a wiped party.
+  if (draft.phase !== 'active' || battleOutcome(draft.toBattle(), encounter) !== 'active')
+    return false;
+  const decided = roundEndOutcome(draft.units, draft.round, encounter, draft.squareFootprints);
+  if (!decided) return false;
+  draft.message(
+    decided.outcome === 'victory'
+      ? `${decided.holder.name} holds the objective. The fight is won!`
+      : OUT_OF_ROUNDS,
+  );
+  draft.phase = decided.outcome;
+  draft.emit({ type: 'battleEnded', outcome: decided.outcome });
+  return true;
+}
+
 export function advanceToNextTurn(draft: BattleDraft): void {
   for (let guard = 0; guard <= draft.order.length + 1; guard++) {
     const advance = advanceTurn(draft.toBattle());
     draft.turnIndex = advance.turnIndex;
+
+    if (advance.roundAdvanced && settleRoundEnd(draft)) return;
 
     if (advance.roundAdvanced) {
       draft.round = advance.round;

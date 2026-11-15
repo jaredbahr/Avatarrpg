@@ -151,6 +151,80 @@ describe('save round trip with guest allies', () => {
   });
 });
 
+/**
+ * A mid-battle save in an objective fight (ADR 0116's 2026-11-15 amendment): a
+ * party member on the placeholder objective cell part-way through round 1, with
+ * a round limit. The objective adds no save field (the hold is read off the
+ * board at the end of the round, the clock off `round`), so the round trip must
+ * be exact, and the loaded game must finish the round and win as the unsaved
+ * one does.
+ */
+function objectiveBattleState(): { content: ContentIndex; state: GameState } {
+  const base = CONTENT.encounters.get('enc_forest_road');
+  if (!base) throw new Error('missing the Forest Road');
+  const goal = { x: 5, y: 8 };
+  const content: ContentIndex = {
+    ...CONTENT,
+    encounters: new Map(CONTENT.encounters).set(base.id, {
+      ...base,
+      variants: [],
+      reinforcements: [],
+      objective: { kind: 'holdAtRoundEnd', cells: [goal], label: 'Placeholder objective' },
+      loseAfterRound: 6,
+    }),
+  };
+  const seeded = createGame(content, {
+    seed: 'save-round-trip-objective',
+    party: [
+      { characterId: 'kaya', level: 2, autoChoose: true },
+      { characterId: 'riko', level: 2, autoChoose: true },
+    ],
+    startNode: 'battle_forest_road',
+  });
+  const rng = new RngCursor(seeded.rng);
+  const built = createBattle(content, seeded, 'enc_forest_road', rng);
+  const battle = {
+    ...built,
+    units: built.units.map((u) => (u.characterId === 'kaya' ? { ...u, pos: goal } : u)),
+  };
+  let state: GameState = { ...seeded, screen: 'combat', rng: rng.state, battle };
+  for (let i = 0; i < 2 && state.battle?.phase === 'active'; i++) state = step(content, state);
+  return { content, state };
+}
+
+function step(content: ContentIndex, state: GameState): GameState {
+  const b = state.battle;
+  const actor = b?.units.find((unit) => unit.id === b.order[b.turnIndex]);
+  return apply(
+    content,
+    state,
+    actor && actor.ai === 'none' ? { type: 'endTurn', unitId: actor.id } : { type: 'runAiTurn' },
+  ).state;
+}
+
+describe('save round trip in an objective fight', () => {
+  it('survives a round trip unchanged and still wins at the end of the round', () => {
+    const { content, state: before } = objectiveBattleState();
+    expect(before.battle?.phase).toBe('active');
+    expect(before.battle?.round).toBe(1);
+
+    const result = deserialize(serialize(before, META));
+    if (!result.ok) throw new Error(result.error);
+    const after = stateFromBlob(result.blob);
+    expect(after).toEqual(before);
+    expect(reconcileBattleResult(content, after).state).toEqual(before);
+
+    let unsaved = before;
+    let loaded = after;
+    for (let i = 0; i < 40 && unsaved.battle?.phase === 'active'; i++) {
+      unsaved = step(content, unsaved);
+      loaded = step(content, loaded);
+    }
+    expect(unsaved.battle?.phase).toBe('victory');
+    expect(loaded).toEqual(unsaved);
+  });
+});
+
 describe('save round trip', () => {
   it('retains explicit participant identity metadata while legacy session rows remain valid', () => {
     const state = midBattleState();
