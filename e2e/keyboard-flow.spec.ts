@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { CONTENT } from '../src/content';
 import { resetStorage, waitForIdle } from './helpers';
+import { fightToTheEnd, keyboardDriver, playToFirstFight } from './input-play';
 
 async function expectVisibleFocus(target: Locator): Promise<void> {
   await expect(target).toBeFocused();
@@ -163,4 +164,31 @@ test('the opening route uses the keyboard from title to a conversation on the Fo
   await expect(east).toHaveAttribute('title', /roadblock/);
   await page.keyboard.press('Escape');
   await expectVisibleFocus(map);
+});
+
+test('arrow keys, Enter and Escape alone play from the title to the end of the first fight', async ({
+  page,
+}) => {
+  test.setTimeout(360_000);
+  await resetStorage(page, '?renderer=canvas&titleArtHold=0');
+  const keys = keyboardDriver(page);
+  await playToFirstFight(page, keys);
+
+  // The action bar's number keys are the keyboard's own shortcut: 1 is Move.
+  await expect.poll(() => page.evaluate(() => window.fnt?.app.boardBusy() === false)).toBe(true);
+  await expect(page.locator('.combat-scene .hud .action-row > button').first()).toBeFocused();
+  await page.keyboard.press('Digit1');
+  await expect(page.locator('.combat-scene .hud [data-slot="move"]')).toHaveClass(/selected/);
+  await expect(page.locator('.combat-scene canvas.map-canvas')).toBeFocused();
+  await expect(page.locator('.input-legend')).toContainText('Choose a tile');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.combat-scene .hud [data-slot="move"]')).toBeFocused();
+  await expect(page.locator('.combat-scene .hud [data-slot="move"]')).not.toHaveClass(/selected/);
+
+  const outcome = await fightToTheEnd(page, keys);
+  test.info().annotations.push({ type: 'fight outcome', description: outcome });
+  expect(await page.evaluate(() => window.fnt?.app.state?.battle ?? null)).toBeNull();
+  expect(await page.evaluate(() => window.fnt?.app.state?.story.visited)).toContain(
+    'battle_forest_road',
+  );
 });
