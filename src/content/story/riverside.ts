@@ -58,8 +58,8 @@ export const RIVERSIDE_STORY: readonly StoryNode[] = [
         when: rescued,
         lines: [
           'I have to stay where Mira can see me. Bo-shan says that is a good rule. He never followed it.',
-          'He is resting. Mira says to let him, so I am letting him.',
-          'The flat stone is still his turn. I am keeping it until he is rested.',
+          'He has gone down the coast road with the cart. Mira says he will write.',
+          'The flat stone is still his turn. I am keeping it until he gets back.',
         ],
       },
     ],

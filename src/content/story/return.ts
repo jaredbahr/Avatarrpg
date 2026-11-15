@@ -423,9 +423,11 @@ export const RETURN_STORY: readonly StoryNode[] = [
     kind: 'dialogue',
     speaker: 'Pella',
     portrait: 'portrait.pella',
+    // After the card: Bo-shan took the cart down to the coast road that morning.
     lines: [
-      'My brother is home. Bo-shan. He came through the gate and I ran so fast I lost a shoe.',
+      'My brother came home. Bo-shan. He came through the gate and I ran so fast I lost a shoe.',
       'He went back for it. I told him he was not allowed to go anywhere else.',
+      'Then he took the cart down to the coast road anyway.',
       'Thank you for finding him.',
     ],
     variants: [
@@ -435,22 +437,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
         lines: [
           'You found him. I hugged him so hard his hat came off. Then I told him about the sled.',
           'He says the cabbages were only a little bit high. You saw them. They were not a little bit high.',
-          'He is asleep now. I am making a list while he cannot argue.',
-        ],
-      },
-      {
-        // The return lands in the evening (D2); this hold lasts until she is heard.
-        when: {
-          kind: 'all',
-          of: [
-            { kind: 'flag', key: 'pella_asked', op: 'set' },
-            { kind: 'phase', in: ['dawn', 'morning', 'midday', 'afternoon'] },
-          ],
-        },
-        lines: [
-          'You found him. He came through the gate and I ran so fast I lost a shoe.',
-          'I told him about the chores. He said he would do them. All of them.',
-          'He said he would start straight away. He is still asleep.',
+          'When he left, he stacked the cart low. Then he put a cabbage on top. I am making a list while he cannot argue.',
         ],
       },
       {
@@ -458,7 +445,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
         lines: [
           'You found him. He came through the gate and I ran so fast I lost a shoe.',
           'I told him about the chores. He said he would do them. All of them.',
-          'He can start tomorrow. He is asleep now.',
+          'Then he took the cart down to the coast road. So I am doing them again.',
         ],
       },
     ],
