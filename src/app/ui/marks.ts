@@ -168,6 +168,8 @@ export const UI_MARKS = {
   ),
   // A sun on the horizon: letting the day move on (ADR 0047 §1).
   wait: svg('<path d="M3 18h18M6 18a6 6 0 0 1 12 0M12 5v3M5 9l2 2M19 9l-2 2"/>'),
+  // A pennant on a pole: a fight's objective (ADR 0116's 2026-11-15 amendment).
+  flag: svg('<path d="M6 21V4M6 4h11l-3 4 3 4H6"/>'),
   // Three dots: the phone header's folded buttons.
   more: svg(
     '<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
