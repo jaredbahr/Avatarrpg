@@ -128,7 +128,10 @@ describe('exploration walks around resolved people', () => {
     ['bg.relief_watch', { x: 17, y: 5 }, { x: 17, y: 7 }],
     ['bg.pella_household', { x: 11, y: 11 }, { x: 9, y: 14 }],
   ] as const)('routes a ground walk around the resolved %s background role', (id, from, target) => {
-    const state = at(from);
+    // After Mira's briefing: before it Pella sits at Mira's table (DLG-01) and her
+    // household stays indoors.
+    const fresh = at(from);
+    const state = { ...fresh, story: { ...fresh.story, visited: ['mira_intro'] } };
     expect(backgroundFigures(CONTENT, village, state).some((role) => role.id === id)).toBe(true);
     const result = walk(state, target);
     expectClearRoute(state, result.path);
