@@ -644,6 +644,53 @@ const ROSTER: readonly FigureSpec[] = [
     actions: {},
     timing: 'blow',
   },
+  // RG-02 (Saltstep and Emberwatch): Veyra, the guest ally, and the region's two enemies, made by
+  // `tools/rg02chars.py` like T5's sergeant: idle, walk, hit, knockout and a pose per ability.
+  {
+    name: 'veyra',
+    key: 'unit.ally.veyra',
+    folder: 'rg02_veyra',
+    idle: 'custom-standing at rest in a ready st@f524ff',
+    walk: 'walking-8-frames@ffa76d',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @1988d8',
+    // The second knockout group: the first (@883b0a) ended sitting up in the south, with a smear in the south-west.
+    ko: 'custom-knocked out: staggers back one@af94ca',
+    actions: {
+      lance: { anim: 'custom-a long spear-like thrust: grip@b7ebeb' },
+      flare: { anim: 'custom-a signal: raises the left arm @6a2f25' },
+    },
+    cast: 'lance',
+    timing: 'blow',
+  },
+  {
+    name: 'freighthandler',
+    key: 'unit.enemy.freighthandler',
+    folder: 'rg02_handler',
+    idle: 'custom-standing at rest in a ready st@6726e5',
+    walk: 'walking-8-frames@83cbd2',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @e01b6d',
+    ko: 'custom-knocked out: staggers back one@e1f789',
+    // The north knockout's seventh cel ghosts the hook beside the arm: it holds the sixth.
+    koCels: { north: 6 },
+    actions: { attack: { anim: 'custom-a heavy overhand swing: raises@76e231' } },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'rigger',
+    key: 'unit.enemy.rigger',
+    folder: 'rg02_rigger',
+    idle: 'custom-standing at rest in a ready st@435771',
+    walk: 'walking-8-frames@7c6def',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @727ef9',
+    ko: 'custom-knocked out: staggers back one@c3d146',
+    actions: { attack: { anim: 'custom-a quick two-handed lunge: step@64ddf1' } },
+    cast: 'attack',
+    timing: 'blow',
+  },
 ];
 
 /* ------------------------------------------------------------------ */

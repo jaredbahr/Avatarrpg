@@ -37,10 +37,11 @@ const PLACEHOLDER_SPRITE = {
   freightClerk: 'npc.shopkeeper',
   crates: 'prop.barrel',
   customsClerk: 'npc.sen',
-  veyra: 'npc.dema',
+  veyra: 'unit.ally.veyra',
   cook: 'npc.household',
   luli: 'npc.hanru',
-  sabi: 'unit.enemy.bruiser',
+  // Sabi leads the riggers and wears their sheet (the art list: she shares it).
+  sabi: 'unit.enemy.rigger',
 } as const;
 
 const ARRIVED = { kind: 'visited', nodeId: 'mq02_saltstep_arrival' } as const;

@@ -41,6 +41,9 @@ export type TopdownName =
   | 'guard'
   | 'dema'
   | 'sen'
+  | 'veyra'
+  | 'freighthandler'
+  | 'rigger'
   | 'driller';
 
 export interface TopdownSheetData {
@@ -645,6 +648,72 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     cast: null,
     clipData: false,
     actions: false,
+  },
+  veyra: {
+    pages: 1,
+    frame: { w: 36, h: 49 },
+    anchor: { x: 0.5, y: 0.938776 },
+    footprint: 1,
+    idleCels: [3, 3, 3, 3, 2, 3, 3, 2],
+    idleMs: 420,
+    walkCels: [8, 8, 8, 8, 8, 8, 8, 8],
+    walkCelMs: 26.923,
+    walkMsPerTile: 307.7,
+    cast: {
+      frames: castFrames('unit.ally.veyra/cast', 10),
+      fps: 10,
+      loop: false,
+      frameMs: [62, 62, 62, 62, 62, 62, 84, 46, 46, 46],
+      events: { hit: 6 },
+      frameSize: { w: 57, h: 46 },
+      anchor: { x: 0.421053, y: 0.978261 },
+    },
+    clipData: true,
+    actions: true,
+  },
+  freighthandler: {
+    pages: 1,
+    frame: { w: 44, h: 50 },
+    anchor: { x: 0.5, y: 0.94 },
+    footprint: 1,
+    idleCels: [3, 3, 3, 3, 3, 3, 3, 3],
+    idleMs: 420,
+    walkCels: [8, 8, 8, 8, 8, 8, 8, 8],
+    walkCelMs: 26.923,
+    walkMsPerTile: 307.7,
+    cast: {
+      frames: castFrames('unit.enemy.freighthandler/cast', 10),
+      fps: 10,
+      loop: false,
+      frameMs: [62, 62, 62, 62, 62, 62, 84, 46, 46, 46],
+      events: { hit: 6 },
+      frameSize: { w: 55, h: 55 },
+      anchor: { x: 0.418182, y: 0.963636 },
+    },
+    clipData: true,
+    actions: true,
+  },
+  rigger: {
+    pages: 1,
+    frame: { w: 50, h: 48 },
+    anchor: { x: 0.5, y: 0.9375 },
+    footprint: 1,
+    idleCels: [3, 3, 3, 3, 3, 3, 3, 3],
+    idleMs: 420,
+    walkCels: [8, 8, 8, 8, 8, 8, 8, 8],
+    walkCelMs: 26.923,
+    walkMsPerTile: 307.7,
+    cast: {
+      frames: castFrames('unit.enemy.rigger/cast', 10),
+      fps: 10,
+      loop: false,
+      frameMs: [62, 62, 62, 62, 62, 62, 84, 46, 46, 46],
+      events: { hit: 6 },
+      frameSize: { w: 35, h: 46 },
+      anchor: { x: 0.285714, y: 0.978261 },
+    },
+    clipData: true,
+    actions: true,
   },
   driller: {
     pages: 2,
