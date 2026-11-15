@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { CONTENT, RETURNEE_IDS, STORY_ENTRY } from '../../src/content';
 import { createGame } from '../../src/core/state/createGame';
 import { apply } from '../../src/core/state/reducer';
@@ -39,13 +39,26 @@ const again = {
   trade: generateQuarryCheckpoints('trade'),
   escort: generateQuarryCheckpoints('escort'),
 };
+/*
+ * A third run in a fresh module graph. Two runs in one graph share whatever a
+ * module computed when it loaded, so a salt drawn from `Math.random()` or the
+ * clock at import (in a rule or in content) gives both the same bytes. A fresh
+ * import of the whole tree draws it again.
+ */
+vi.resetModules();
+const reloaded = await import('./quarry-checkpoints');
+const fresh = {
+  trade: reloaded.generateQuarryCheckpoints('trade'),
+  escort: reloaded.generateQuarryCheckpoints('escort'),
+};
 const facts = quarryCheckpointFacts((custody) => checkpoints[custody]);
 /**
- * Work bounds, not clocks, and not pins: about twice what each route takes
- * today (59, 145, 88 and 385 commands; the longest fight runs 8 rounds). An AI
- * retune moves the counts freely underneath them. A route that needs twice the
- * commands, or a fight past 20 rounds, has stopped being the route these were
- * written for: fights are meant to end in about six minutes at the table.
+ * A runaway guard, in work and not in time: about twice what each route takes
+ * today (69, 155, 98 and 395 commands; the longest fight runs 8 rounds). An AI
+ * retune moves the counts freely underneath it. It does NOT hold the
+ * six-minute rule: a Driller at 130 HP, the fight #632 shortened for running
+ * past six minutes, stays inside these numbers. How long a fight runs is the
+ * balance report's to measure (mean rounds, in `npm run balance`).
  */
 const COMMAND_BUDGET = {
   trade: { gate: 120, afterDriller: 300 },
@@ -102,6 +115,15 @@ for (const custody of CUSTODIES) {
       }
     });
 
+    it('generates the same saves and transcripts after every module loads afresh', () => {
+      for (const stage of STAGES) {
+        expect(fresh[custody][stage].transcript, stage).toEqual(
+          checkpoints[custody][stage].transcript,
+        );
+        expect(fresh[custody][stage].json, stage).toBe(checkpoints[custody][stage].json);
+      }
+    });
+
     for (const stage of STAGES) {
       const fixture = checkpoints[custody][stage];
 
@@ -128,6 +150,8 @@ for (const custody of CUSTODIES) {
         expect(fixture.projection.flags.ruon_traded === true).toBe(custody === 'trade');
         expect(fixture.projection.flags.ruon_paid === true).toBe(custody === 'trade');
         expect(fixture.projection.flags.ruon_spared === true).toBe(custody === 'escort');
+        // Jin takes the satchel with Ruon on the trade; a won ambush keeps it (C-10).
+        expect(fixture.projection.flags.jin_has_satchel === true).toBe(custody === 'trade');
         expect(fixture.projection.flags.act1_complete === true).toBe(stage === 'afterDriller');
         expect(fixture.projection.world.cleared).toEqual([
           'enc_forest_road',
@@ -146,7 +170,7 @@ for (const custody of CUSTODIES) {
         );
       });
 
-      it(`wins every fight on the way to ${stage} inside its work budget`, () => {
+      it(`wins every fight on the way to ${stage} without running away`, () => {
         const fights = fightSummaries(custody, fixture.transcript);
         const budget = COMMAND_BUDGET[custody][stage];
         if (fixture.transcript.length > budget)

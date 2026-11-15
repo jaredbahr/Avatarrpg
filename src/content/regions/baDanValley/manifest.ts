@@ -20,6 +20,8 @@ export const BA_DAN_VALLEY: RegionManifest = {
     'quarry_floor',
   ],
   neighbours: [],
+  // PLACEHOLDER until the owner answers #784: 1-3 matches the demo's fights (levels 1, 2, 3, 3).
+  levelBand: { minLevel: 1, maxLevel: 3, placeholder: true },
   // Ba Dan and its riverside share the village theme, so the welcome-home ending plays it too; the
   // Forest Road plays the road theme both ways; the quarry gate, the Cutting and the Driller's floor
   // play the quarry theme, out and on the walk home, until the Forest Road takes over.

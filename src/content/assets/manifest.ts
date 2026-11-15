@@ -422,6 +422,7 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'portrait.mira': image('art/portraits/mira.png', 'earth'),
   'portrait.gao': image('art/portraits/gao.png', 'earth'),
   'portrait.hanru': image('art/portraits/hanru.png', 'nonbender'),
+  'portrait.bo_shan': image('art/portraits/bo_shan.png', 'earth'),
   'portrait.pella': image('art/portraits/pella.png', 'air'),
   'portrait.dorin': image('art/portraits/dorin.png', 'earth'),
   'portrait.ruon': image('art/portraits/ruon.png', 'neutral'),

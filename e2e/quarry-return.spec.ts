@@ -568,8 +568,7 @@ for (const custody of ['trade', 'escort'] as const) {
     expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe('mira_epilogue');
     await expect(page.locator('.dialogue-line')).toContainText('Bo-shan');
     await page.locator('.dialogue-panel button.btn-primary').click();
-    const custodyResponse =
-      custody === 'trade' ? 'where Jin delivered him' : 'taking Ruon’s statement';
+    const custodyResponse = custody === 'trade' ? 'where Jin took him' : 'taking Ruon’s statement';
     await expect(page.locator('.dialogue-line')).toContainText(custodyResponse);
     await page.locator('.dialogue-panel button.btn-primary').click();
     await page.locator('.dialogue-panel button.btn-primary').click();
