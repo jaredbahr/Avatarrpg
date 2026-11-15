@@ -27,28 +27,44 @@ async function fonts(page: Page, tag: string) {
   console.log('DIAG', tag, JSON.stringify(d));
 }
 
-for (const variant of ['base', 'bodyInherit', 'toggleBack'] as const)
+const raf = (page: Page) =>
+  page.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
+
+for (const variant of ['base', 'datasetOnly', 'rootFontDirect', 'epoch', 'displayToggle', 'noComputedRead'] as const)
   test(`diag ${variant}`, async ({ page }) => {
     await resetStorage(page, '?renderer=canvas');
     await startGame(page, ['Tala', 'Mina'], ['sura', 'riko'], 'long-conversation-layout');
-    if (variant === 'bodyInherit')
-      await page.addStyleTag({ content: 'body{font-size:inherit !important}' });
+    if (variant === 'rootFontDirect')
+      await page.addStyleTag({ content: "html[data-large-text='huge']{font-size:24px}" });
     await fonts(page, variant + ' before');
-    await setLargeText(page, 'huge');
+    if (variant === 'datasetOnly') {
+      await page.evaluate(() => (document.documentElement.dataset.largeText = 'huge'));
+      await raf(page);
+    } else if (variant === 'noComputedRead') {
+      await page.evaluate(() => {
+        const app = window.fnt!.app as unknown as { settings: Record<string, unknown> };
+        app.settings = { ...app.settings, largeText: 'huge' };
+        document.documentElement.dataset.largeText = 'huge';
+      });
+      await raf(page);
+    } else {
+      await setLargeText(page, 'huge');
+    }
+    if (variant === 'epoch')
+      await page.evaluate(() => document.documentElement.style.setProperty('--text-epoch', '1'));
+    if (variant === 'displayToggle')
+      await page.evaluate(() => {
+        const a = document.getElementById('app')!;
+        a.style.display = 'none';
+        void a.offsetHeight;
+        a.style.display = '';
+        void a.offsetHeight;
+      });
     await fonts(page, variant + ' afterHuge');
     await enterNode(page, 'gate_escort_explore');
     await enterNode(page, 'gate_parley');
     await page.locator('.conversation-panel .choice-option').nth(2).waitFor();
-    await page.evaluate(() => document.fonts.ready);
     await fonts(page, variant + ' panel');
-    for (let i = 1; i <= 6; i++) {
-      await page.waitForTimeout(250);
-      await fonts(page, variant + ' t' + i * 250);
-    }
-    if (variant === 'toggleBack') {
-      await setLargeText(page, 'off');
-      await fonts(page, variant + ' off');
-      await page.waitForTimeout(1500);
-      await fonts(page, variant + ' off+1.5s');
-    }
+    await page.waitForTimeout(1500);
+    await fonts(page, variant + ' +1.5s');
   });
