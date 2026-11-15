@@ -8,7 +8,8 @@
  * pipeline is proven (owner, 2026-11-15).
  *
  * SF-2.1 is optional and pays its XP on a win and on "Carry on" alike (the script's rule for every
- * side fight). Not wired yet (trial log): the in-fight lines for the first time a puddle sparks
+ * side fight). Its two outcomes ("the riggers put down their cutters", "they get away over the wall
+ * with one coil") are prose in the script and narrator lines here. Not wired yet (trial log): the in-fight lines for the first time a puddle sparks
  * (no hook for a line on a combo event), the fight at night after rain (the slice keeps the
  * clock as it is), and the live line's shock (needs a surface rule).
  */
@@ -173,9 +174,16 @@ const NODES: readonly StoryNode[] = [
     id: 'sf21_battle',
     kind: 'battle',
     encounterId: 'enc_sf21_wet_ground',
-    next: 'sf21_won',
+    next: 'sf21_cutters_down',
     onDefeat: 'sf21_lost',
   },
+  say(
+    'sf21_cutters_down',
+    'The Power Yard',
+    NARRATOR,
+    ['The riggers put down their cutters.'],
+    'sf21_won',
+  ),
   say(
     'sf21_won',
     LULI,
@@ -191,8 +199,17 @@ const NODES: readonly StoryNode[] = [
     kind: 'flags',
     set: {},
     grantXp: SF21_XP_PER_HEAD,
-    next: 'sf21_lost_luli',
+    next: 'sf21_over_the_wall',
   },
+  say(
+    'sf21_over_the_wall',
+    'The Power Yard',
+    NARRATOR,
+    [
+      'The riggers get away over the wall with one coil. Luli has to drop forty kitchens for an evening to make the spur safe.',
+    ],
+    'sf21_lost_luli',
+  ),
   say(
     'sf21_lost_luli',
     LULI,
