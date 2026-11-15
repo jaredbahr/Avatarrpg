@@ -32,7 +32,7 @@ export type SweepJobResult =
   | { readonly kind: 'discipline'; readonly report: DisciplineReport };
 
 /** BALANCE_WORKERS overrides the lane count; the default leaves no core idle up to four. */
-export function laneCount(): number {
+function laneCount(): number {
   const asked = Number(process.env.BALANCE_WORKERS);
   if (Number.isInteger(asked) && asked > 0) return asked;
   return Math.min(4, availableParallelism());

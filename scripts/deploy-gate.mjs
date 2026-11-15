@@ -36,7 +36,7 @@ const MAX_WALK = 50;
 const MAX_PAGES = 10;
 const PAGE_SIZE = 100;
 
-export class GateError extends Error {
+class GateError extends Error {
   constructor(message) {
     super(message);
     this.name = 'GateError';
@@ -45,7 +45,7 @@ export class GateError extends Error {
 
 // A commit whose CI is not (fully) green. `select` steps past these to an older
 // commit; everything else (API trouble, malformed data) still blocks deployment.
-export class NotGreenError extends GateError {
+class NotGreenError extends GateError {
   constructor(message) {
     super(message);
     this.name = 'NotGreenError';
@@ -497,7 +497,7 @@ async function findNewestGreen(context, client, workflow, head) {
   );
 }
 
-export async function selectEvidence(env, fetchImpl = globalThis.fetch) {
+async function selectEvidence(env, fetchImpl = globalThis.fetch) {
   const context = normalizedContext(env);
   if (context.event === 'workflow_dispatch' && context.ref !== 'refs/heads/main')
     fail('Manual Pages dispatch must target main.');
@@ -538,7 +538,7 @@ export async function selectEvidence(env, fetchImpl = globalThis.fetch) {
   };
 }
 
-export async function revalidateEvidence(env, expected, stage, fetchImpl = globalThis.fetch) {
+async function revalidateEvidence(env, expected, stage, fetchImpl = globalThis.fetch) {
   const context = normalizedContext(env);
   if (
     !isObject(expected) ||
@@ -620,12 +620,7 @@ export async function revalidateEvidence(env, expected, stage, fetchImpl = globa
   return current;
 }
 
-export async function verifyArtifactMetadata(
-  env,
-  expected,
-  artifactId,
-  fetchImpl = globalThis.fetch,
-) {
+async function verifyArtifactMetadata(env, expected, artifactId, fetchImpl = globalThis.fetch) {
   const context = normalizedContext(env);
   if (!validId(Number(artifactId))) fail('The Pages artifact ID is missing or invalid.');
   const client = makeClient(context, fetchImpl);

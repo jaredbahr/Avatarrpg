@@ -14,14 +14,14 @@ import type { Condition, Vec2 } from '../../core/types';
 import type { ClipName } from '../assets/clips';
 
 /** A tile a follower is staged on instead of walking in the line, while `when` holds on `mapId`. */
-export interface FollowerStation {
+interface FollowerStation {
   readonly when: Condition;
   readonly mapId: string;
   readonly pos: Vec2;
 }
 
 /** A clip a follower holds while it stands still and `when` holds, in place of its idle. */
-export interface FollowerPose {
+interface FollowerPose {
   readonly when: Condition;
   /** A sheet without the clip falls back to its idle (`resolveClip`). */
   readonly clip: ClipName;

@@ -15,7 +15,7 @@ import { isAlive } from './stats';
 type ObjectiveRules = Pick<EncounterDef, 'objective' | 'loseAfterRound'>;
 
 /** Whether `pos` is one of the objective's cells. */
-export function isObjectiveCell(objective: EncounterObjective | undefined, pos: Vec2): boolean {
+function isObjectiveCell(objective: EncounterObjective | undefined, pos: Vec2): boolean {
   return objective?.cells.some((cell) => cell.x === pos.x && cell.y === pos.y) ?? false;
 }
 

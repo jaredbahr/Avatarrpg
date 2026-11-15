@@ -57,7 +57,7 @@ const WELCOME_HOME: Vec2 = { x: 20, y: 7 };
 
 /** Past the last checkpoint, `playForward` reads on to the demo's ending card. */
 export const ROUTE_ENDING = 'ending';
-export type RoutePlace = GoldenCheckpoint | typeof ROUTE_ENDING;
+type RoutePlace = GoldenCheckpoint | typeof ROUTE_ENDING;
 
 export interface RouteStop {
   readonly checkpoint: RoutePlace;
@@ -65,7 +65,7 @@ export interface RouteStop {
 }
 
 /** A new game for the corpus: the same seed and party every time. */
-export function newGoldenGame(partySize: 1 | 4): GameState {
+function newGoldenGame(partySize: 1 | 4): GameState {
   const characterIds = CHARACTERS.slice(0, partySize);
   return createGame(CONTENT, {
     seed: `golden-save-corpus-486-party-${partySize}`,

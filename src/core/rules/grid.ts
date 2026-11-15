@@ -35,17 +35,8 @@ export const DIRECTIONS: readonly Vec2[] = [
 
 export const ORTHOGONAL: readonly Vec2[] = DIRECTIONS.slice(0, 4);
 
-export function vec(x: number, y: number): Vec2 {
-  return { x, y };
-}
-
 export function posKey(p: Vec2): string {
   return `${p.x},${p.y}`;
-}
-
-export function keyToPos(key: string): Vec2 {
-  const [x, y] = key.split(',');
-  return { x: Number(x), y: Number(y) };
 }
 
 export function samePos(a: Vec2, b: Vec2): boolean {

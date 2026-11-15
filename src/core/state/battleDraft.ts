@@ -79,7 +79,7 @@ function isDousingDamage(type: DamageType): type is DousingType {
 }
 
 /** A contact status described without choosing a chance branch. */
-export interface SurfaceContactStatusRecord {
+interface SurfaceContactStatusRecord {
   readonly requestedStatus: StatusId;
   readonly appliedStatus: StatusId | null;
   readonly chance: number;

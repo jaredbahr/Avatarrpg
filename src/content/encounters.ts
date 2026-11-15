@@ -259,7 +259,3 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     tip: 'Keep more than two tiles from the driller: its slam hits a cone and knocks people back, once a turn. It sprays oil and churns mud. Light its oil when your party is clear.',
   },
 ];
-
-export const ENCOUNTER_BY_ID: ReadonlyMap<string, EncounterDef> = new Map(
-  ENCOUNTERS.map((e) => [e.id, e]),
-);
