@@ -72,6 +72,12 @@ export class TitleScene implements Scene {
   private render(): void {
     const host = this.host;
     if (!host) return;
+    // A re-render (a setting, the storage check landing) rebuilds every button:
+    // the one that had focus is found again by its label, so a keyboard or
+    // gamepad player is not dropped to the page behind the menu.
+    const active = document.activeElement;
+    const focused =
+      active instanceof HTMLButtonElement && host.contains(active) ? active.textContent : null;
     clear(host);
 
     const auto = listSlots().find((slot) => slot.id === AUTOSAVE_ID);
@@ -144,6 +150,10 @@ export class TitleScene implements Scene {
     );
     this.scene = scene;
     host.append(art.element, scene);
+    if (focused !== null)
+      [...actions.querySelectorAll('button')]
+        .find((candidate) => candidate.textContent === focused)
+        ?.focus({ preventScroll: true });
 
     // Start fetching the first speaker's portrait, if it is a bitmap, so the
     // opening line is not a placeholder that pops into a face a beat later.

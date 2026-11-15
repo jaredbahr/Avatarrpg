@@ -30,6 +30,11 @@ export interface WheelGesture {
 
 export interface PointerHandlers extends GestureHandlers {
   onWheel?(gesture: WheelGesture): void;
+  /**
+   * A mouse right click (ADR 0112 §1): a scene with something to back out of
+   * cancels it. Without this handler a right click is a long press.
+   */
+  onSecondary?(point: GesturePoint): void;
 }
 
 /**
@@ -154,11 +159,16 @@ export function attachPointer(target: HTMLElement, handlers: PointerHandlers): (
     recognizer.leave(kindOf(event));
   };
 
-  // Stops the browser's own long-press menu fighting the inspector, and makes
-  // a mouse right-click the same thing as a long press.
+  // Stops the browser's own long-press menu fighting the inspector. A mouse
+  // right-click is `onSecondary` where the scene has one, else a long press.
   const onContextMenu = (event: Event) => {
     event.preventDefault();
-    if (event instanceof MouseEvent && handlers.onLongPress) handlers.onLongPress(local(event));
+    if (!(event instanceof MouseEvent)) return;
+    // A finger's long press raises this event too (button 0); only a mouse's right button cancels.
+    const type = (event as PointerEvent).pointerType;
+    const rightClick = type ? type === 'mouse' : event.button === 2;
+    if (rightClick && handlers.onSecondary) handlers.onSecondary(local(event));
+    else handlers.onLongPress?.(local(event));
   };
 
   const onWheel = (event: WheelEvent) => {

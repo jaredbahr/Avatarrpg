@@ -80,6 +80,8 @@ import { CombatScene } from './scenes/CombatScene';
 import { worldConversationFor } from '../content/story/presentations';
 import type { Projection } from '../render/projection';
 import { INTERLUDES } from '../content/story/interludes';
+import { InputRouter } from './input/InputRouter';
+import type { ActionEvent, InputHint } from './input/actions';
 
 /** What `rendererCamera()` reports: tile size and offset in CSS px, and whether the whole board is on screen. */
 export interface CameraInfo {
@@ -136,6 +138,13 @@ export interface Scene {
   /** Pause and resume timed scene presentation while the pause menu is open. */
   pausePresentation?(): void;
   resumePresentation?(): void;
+  /**
+   * A keyboard or gamepad action (ADR 0112). Return true when the scene took
+   * it; false leaves it to the controls on screen. Only board scenes need this.
+   */
+  handleAction?(event: ActionEvent): boolean;
+  /** What the buttons do now, for the legend drawn in the device's glyphs. */
+  inputHints?(): readonly InputHint[];
   /**
    * The events a command produced, before the scene may be swapped for the
    * one the new state calls for. Return true when the scene schedules the
@@ -227,6 +236,8 @@ export class App {
   readonly stats: Stats | null;
   /** The reveal-from-ink on every scene change. */
   private readonly curtain: Curtain;
+  /** Keyboard and gamepad actions, and the device last used (ADR 0112). */
+  readonly input: InputRouter;
 
   private previewSnapshot: { state: GameState | null; session: SessionMeta } | null = null;
   get previewActive(): boolean {
@@ -341,6 +352,13 @@ export class App {
     this.stats = Stats.enabled() ? new Stats(this.overlayHost) : null;
     this.curtain = new Curtain(this.overlayHost);
     void this.savePersistence.check();
+    this.input = new InputRouter({
+      sceneHost: this.sceneHost,
+      sceneAction: (event) => this.scene?.handleAction?.(event) ?? false,
+      sceneHints: () => this.scene?.inputHints?.() ?? null,
+      openMenu: () => this.openPauseFromInput(),
+    });
+    this.input.start();
 
     window.addEventListener('resize', () => this.requestResize());
     window.addEventListener('orientationchange', () => this.requestResize());
@@ -1051,6 +1069,23 @@ export class App {
       }
     });
     this.pause.open(this.overlayHost);
+  }
+
+  /** Escape or Start with nothing to back out of: the pause menu, wherever a game is running. */
+  private openPauseFromInput(): boolean {
+    const name = this.scene?.name;
+    if (
+      !this.state ||
+      this.pause ||
+      (name !== 'explore' && name !== 'combat' && name !== 'dialogue')
+    )
+      return false;
+    const previous = document.activeElement;
+    this.openPause(() => {
+      if (previous instanceof HTMLElement && previous.isConnected)
+        previous.focus({ preventScroll: true });
+    });
+    return this.pause !== null;
   }
 
   closePause(): void {

@@ -1,0 +1,93 @@
+/*
+ * Keyboard and gamepad (ADR 0112).
+ *
+ * `html[data-input]` is the device used last: touch, mouse, keyboard or gamepad.
+ * Nothing here draws for touch or mouse; a pointer needs no hints.
+ */
+
+/* The map is a tab stop. Its ring sits inside the canvas, where the frame cannot clip it. */
+.map-canvas:focus-visible,
+html[data-input='gamepad'] .map-canvas:focus {
+  outline: 3px solid var(--c-gold-hi);
+  outline-offset: -3px;
+}
+
+/* A browser shows a focus ring after a key press; a pad never presses one, so it is drawn here. */
+html[data-input='gamepad'] button:focus,
+html[data-input='gamepad'] [tabindex]:focus,
+html[data-input='gamepad'] input:focus {
+  outline: 3px solid var(--c-gold-deep);
+  outline-offset: 2px;
+}
+
+/* What the buttons do now, one line over the foot of the map. */
+.input-legend {
+  position: absolute;
+  left: var(--sp-2);
+  bottom: var(--sp-2);
+  z-index: var(--z-panel-footer);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-3);
+  max-width: calc(100% - var(--sp-4));
+  padding: var(--sp-1) var(--sp-3);
+  border-radius: var(--radius);
+  background: var(--scrim-strong);
+  color: var(--c-paper-light);
+  font-size: var(--fs-sm);
+  pointer-events: none;
+}
+
+.input-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  white-space: nowrap;
+}
+
+.input-legend kbd,
+html[data-input='keyboard'] .action-row > button::after,
+html:is([data-input='keyboard'], [data-input='gamepad'])
+  :is(
+    [data-input-default],
+    [data-conversation-control='next'],
+    [data-interlude-control='next'],
+    [data-vote-control]
+  )::after {
+  display: inline-block;
+  min-width: 1.4em;
+  padding: 0 0.35em;
+  border: var(--hairline) solid currentcolor;
+  border-radius: calc(var(--radius) / 2);
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* The way on carries the confirm glyph: Enter, A, or the pad's own mark. */
+html:is([data-input='keyboard'], [data-input='gamepad'])
+  :is(
+    [data-input-default],
+    [data-conversation-control='next'],
+    [data-interlude-control='next'],
+    [data-vote-control]
+  )::after {
+  content: var(--glyph-confirm);
+  margin-left: var(--sp-2);
+}
+
+/* On a keyboard the action bar's buttons are 1, 2, 3 … from the left. */
+html[data-input='keyboard'] .action-row {
+  counter-reset: slot;
+}
+
+html[data-input='keyboard'] .action-row > button::after {
+  counter-increment: slot;
+  content: counter(slot);
+  position: absolute;
+  top: 0.15rem;
+  left: 0.25rem;
+  opacity: 0.8;
+}

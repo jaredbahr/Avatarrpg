@@ -152,6 +152,32 @@ export function tip(node: HTMLElement, text: string, show: (text: string) => voi
   }
 }
 
+/** How long a hand-off control ignores a keyboard or gamepad press after it appears. */
+export const HANDOFF_HOLD_MS = 500;
+
+/**
+ * Keeps the last player's keys from answering for the next (ADR 0112 §5): a
+ * key or gamepad press on a hand-off control does nothing until the control
+ * has been up for `HANDOFF_HOLD_MS`, and a held key never presses it. A tap or
+ * a mouse click is a deliberate act on the control itself and is not delayed.
+ */
+export function guardHandoff<T extends HTMLElement>(control: T, shownAt = performance.now()): T {
+  control.addEventListener(
+    'click',
+    (event) => {
+      // `detail` counts pointer clicks; a key press or a pad's `click()` reports none.
+      if (event.detail !== 0 || performance.now() - shownAt >= HANDOFF_HOLD_MS) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    },
+    { capture: true },
+  );
+  control.addEventListener('keydown', (event) => {
+    if (event.repeat && (event.key === 'Enter' || event.key === ' ')) event.preventDefault();
+  });
+  return control;
+}
+
 /** Screen-reader announcement without moving focus. */
 export function announce(message: string): void {
   let region = document.getElementById('fnt-live');
