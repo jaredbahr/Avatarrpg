@@ -11,13 +11,13 @@
  */
 import type { Ability, ContentIndex } from '../../src/core/types';
 
-export interface DescriptionSpan {
+interface DescriptionSpan {
   readonly start: number;
   readonly end: number;
   readonly text: string;
 }
 
-export interface DescriptionClaim {
+interface DescriptionClaim {
   readonly abilityId: string;
   readonly kind: string;
   readonly span: DescriptionSpan;

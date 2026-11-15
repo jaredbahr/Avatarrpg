@@ -31,7 +31,7 @@ function shapeLabel(ability: Ability): string {
 }
 
 /** One short phrase per effect, in resolution order. */
-export function effectLines(content: ContentIndex, effects: readonly AbilityEffect[]): string[] {
+function effectLines(content: ContentIndex, effects: readonly AbilityEffect[]): string[] {
   const out: string[] = [];
   for (const effect of effects) {
     switch (effect.kind) {

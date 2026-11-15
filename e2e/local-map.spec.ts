@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import {
   enterNode,
+  finishConversation,
   resetStorage,
   setLargeText,
   settleLayout,
@@ -54,9 +55,7 @@ test('local map tracks a real walk and preserves the campaign when opened', asyn
   await expect
     .poll(async () => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
     .toBe('mira_intro');
-  const lines = page.locator('.dialogue-panel button');
-  const total = Number((await page.locator('.line-count').textContent())?.split(' of ')[1]);
-  for (let line = 0; line < total; line++) await lines.click();
+  await finishConversation(page);
   await expect(page.locator('.explore-scene')).toBeVisible();
   await expect(page.locator('.explore-objective')).toContainText(
     'Take the east road to the quarry.',

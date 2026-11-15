@@ -119,6 +119,27 @@ other region's chunk (`assets/region-<folder>-*`) and art are left out of the pr
 every region, which is simpler but grows the install with the saga. This is follow-up work; the
 demo, a single start region, needs none of it.
 
+**Implemented (2026-11-14).** `scripts/region-cache.mjs` derives everything from the region list, so a
+new region needs no edit: `PRECACHE_IGNORES` gains `assets/region-<folder>-*.js` (folder = the
+camelCased id) and `<scene folder>/**` for every region but the start region, workbox gets one
+`runtimeCaching` route (`CacheFirst`, matching those chunks and art folders) and the asset budget's
+precache total follows the same list. No message from `RegionStore` is needed: it imports the chunk
+and reads the scenes, and the worker caches what those fetches return, so the cache fills on the
+first visit. The cache is named for the build (`fnt-regions-<version>-<revision>`) and
+`region-cache-cleanup.js`, imported by the worker, deletes every older `fnt-regions-*` cache on
+activate; a hashed chunk would be safe alone, but scenes keep their names, so an update must not
+serve last build's. A later region is therefore fetched again once after an update. Music stays
+streamed: an `<audio>` element sends Range requests and a cached 206 cannot be kept. With one region
+the list is empty, so `sw.js` and the precache are unchanged.
+
+**Amended 2026-11-15 (RG-02, the pipeline trial; for the owner's review).** The start region's
+**neighbours are precached with it.** A region is ready only when its neighbours are loaded (§2), so
+once Ba Dan valley names Saltstep and Emberwatch (the coast-road link), a new game cannot run its
+first command until RG-02's chunk is in. Left to the runtime cache, which an update clears, the demo
+itself would not start offline after an update. `laterRegions` now leaves out the start region and
+its neighbours; RG-02's chunk (about 10 KB gz) and, later, its boards join the precache, inside the
+25 MB cap. Regions further out are still cached on their first visit, as decided.
+
 ### 4. Budgets (accepted by the owner, 2026-11-14)
 
 One total per kind grows with every region and would need raising each time. Instead: a budget for

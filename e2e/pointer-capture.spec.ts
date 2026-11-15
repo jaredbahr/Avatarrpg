@@ -99,10 +99,18 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       (id) => window.captureProtocol.filter((event) => event.id === id),
       pointerId,
     );
-    expect(interrupted).toEqual([
+    // The press and the release carry the button state the game reads. What
+    // `buttons` holds on the two capture notifications is the engine's choice:
+    // Chromium copies the held button, WebKit reports none. Their order, pointer
+    // and target are the contract, so those are compared on every engine.
+    const pressed = (event: CaptureEvent) =>
+      event.type === 'pointerdown' || event.type === 'pointerup'
+        ? event
+        : { ...event, buttons: null };
+    expect(interrupted.map(pressed)).toEqual([
       { type: 'pointerdown', id: pointerId, buttons: 1, trusted: true, onCanvas: true },
-      { type: 'gotpointercapture', id: pointerId, buttons: 1, trusted: true, onCanvas: true },
-      { type: 'lostpointercapture', id: pointerId, buttons: 1, trusted: true, onCanvas: true },
+      { type: 'gotpointercapture', id: pointerId, buttons: null, trusted: true, onCanvas: true },
+      { type: 'lostpointercapture', id: pointerId, buttons: null, trusted: true, onCanvas: true },
       { type: 'pointerup', id: pointerId, buttons: 0, trusted: true, onCanvas: false },
     ]);
     expect(await page.evaluate(() => window.fnt!.app.state)).toEqual(initialState);

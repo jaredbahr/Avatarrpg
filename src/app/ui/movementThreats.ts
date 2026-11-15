@@ -28,10 +28,10 @@ export function nextActivationThreatBudget(content: ContentIndex, unit: Unit): T
   };
 }
 
-export const MOVEMENT_THREAT_QUALIFICATION =
+const MOVEMENT_THREAT_QUALIFICATION =
   'Based on the current battlefield. Other actions and hazards can change this.';
 
-export interface MovementThreatEnemy {
+interface MovementThreatEnemy {
   readonly unitId: string;
   readonly name: string;
   readonly abilities: readonly {

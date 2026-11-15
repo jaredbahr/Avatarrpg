@@ -7,12 +7,12 @@
  *  1. **Correctness.** A fight that never terminates, produces NaN HP, or
  *     diverges between two runs of the same seed is a bug that would otherwise
  *     only show up on a Saturday with four kids watching.
- *  2. **Balance.** Win rate per encounter at the level the slice expects, so
- *     tuning is a number rather than a feeling.
+ *  2. **Balance.** Win rate, party HP left, rounds and deaths per encounter at
+ *     the level the slice expects, so tuning is a number rather than a feeling
+ *     (`balance.ts`, ADR 0114).
  *
  * The party is driven by the same AI as the enemies. That flatters neither
- * side: a real party plays better than this, which is why the target band is
- * 70-85% rather than 50%.
+ * side: a real party plays better than this, so the numbers are a floor.
  */
 
 import { RngCursor, seedFromString } from '../rng';
@@ -33,11 +33,12 @@ import { BattleDraft } from '../state/battleDraft';
 import { targetableTiles, usableAbilities } from '../rules/abilities';
 import { reachable } from '../rules/grid';
 import { canMove, isAlive } from '../rules/stats';
+import { isTableControlled } from '../rules/guests';
 
 export type SimOutcome = 'victory' | 'defeat' | 'stalemate';
 
 /** A headless policy executes one complete party activation through the reducer. */
-export type SimPartyTurn = (content: ContentIndex, state: GameState, unitId: string) => StepResult;
+type SimPartyTurn = (content: ContentIndex, state: GameState, unitId: string) => StepResult;
 
 export interface SimOptions {
   readonly seed: number | string;
@@ -103,7 +104,7 @@ export interface SimResult {
   readonly diagnostics?: SimDiagnostics;
 }
 
-export interface SimIdleTurn {
+interface SimIdleTurn {
   /** Zero-based activation index; each is one runAiTurn command by default. */
   readonly commandIndex: number;
   readonly round: number;
@@ -111,7 +112,7 @@ export interface SimIdleTurn {
   readonly faction: Unit['faction'];
 }
 
-export interface SimDiagnostics {
+interface SimDiagnostics {
   /** Activation-driver calls; one runAiTurn command each when no policy is supplied. */
   readonly commandCount: number;
   readonly idleTurns: readonly SimIdleTurn[];
@@ -155,11 +156,14 @@ function hasLegalAction(content: ContentIndex, state: GameState, actor: Unit): b
 
 export const DEFAULT_MAX_ROUNDS = 60;
 
-/** The AI has no party profile, so the sim lends the party one. */
+/**
+ * The AI has no party profile, so the sim lends the party one, and the same
+ * to a guest the table would control (ADR 0116): nobody at the table here.
+ */
 function drivePartyWithAi(state: GameState): GameState {
   if (!state.battle) return state;
   const units: Unit[] = state.battle.units.map((unit) =>
-    unit.faction === 'party' ? { ...unit, ai: pickProfile(unit) } : unit,
+    isTableControlled(unit) ? { ...unit, ai: pickProfile(unit) } : unit,
   );
   return { ...state, battle: { ...state.battle, units } };
 }

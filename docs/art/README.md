@@ -8,8 +8,10 @@ and the exact places files go.
 
 Before generating anything that will be committed, check that the generator's
 output licence permits non-commercial use. This is a private fan project; keep
-every prompt free of franchise and character names (the packs already are, and
-`src/content/prompts.test.ts` fails the build if one creeps in).
+every prompt free of canon character, faction and place names; a prompt may cite
+"the animated Avatar style" as a style reference (owner, 2026-11-14). The packs
+already comply, and `src/content/prompts.test.ts` fails the build if a name
+creeps in.
 
 ## Where files land
 

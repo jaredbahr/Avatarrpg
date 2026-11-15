@@ -21,11 +21,11 @@ import {
 } from '../../core/save/serialize';
 
 const PREFIX = 'fnt.save.';
-export const SLOT_IDS = ['slot1', 'slot2', 'slot3'] as const;
+const SLOT_IDS = ['slot1', 'slot2', 'slot3'] as const;
 export const AUTOSAVE_ID = 'auto';
 export type SlotId = (typeof SLOT_IDS)[number] | typeof AUTOSAVE_ID;
 
-export const ALL_SLOT_IDS: readonly SlotId[] = [...SLOT_IDS, AUTOSAVE_ID];
+const ALL_SLOT_IDS: readonly SlotId[] = [...SLOT_IDS, AUTOSAVE_ID];
 
 export interface SlotSummary {
   readonly id: SlotId;
@@ -119,6 +119,7 @@ export function loadFromSlot(
 
   const result = deserialize(json);
   if (!result.ok) return { ok: false, error: result.error };
+  for (const warning of result.warnings ?? []) console.warn(warning);
 
   return {
     ok: true,
@@ -183,7 +184,7 @@ export function listSlots(): SlotSummary[] {
 /* Export and import                                                   */
 /* ------------------------------------------------------------------ */
 
-export function exportFilename(state: GameState): string {
+function exportFilename(state: GameState): string {
   const level = Math.max(...state.party.map((u) => u.level));
   const stamp = new Date().toISOString().slice(0, 10);
   return `four-nations-tactics-lv${level}-${stamp}.json`;
@@ -249,6 +250,7 @@ export function importFromFile(): Promise<
           finish({ ok: false, error: result.error });
           return;
         }
+        for (const warning of result.warnings ?? []) console.warn(warning);
         finish({
           ok: true,
           save: {

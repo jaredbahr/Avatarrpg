@@ -4,7 +4,7 @@
  * scene stays about the DOM and the choice is testable without one.
  */
 
-export type TitleArtId = 'a' | 'b' | 'c';
+type TitleArtId = 'a' | 'b' | 'c';
 
 export interface TitleArtFile {
   readonly file: string;
@@ -58,7 +58,7 @@ export const TITLE_ART: readonly TitleArtDef[] = [
 ];
 
 /** The shortest idle time `?titleArtHold=` may set; a URL cannot start a fast swap loop. */
-export const MIN_TITLE_ART_HOLD_MS = 3000;
+const MIN_TITLE_ART_HOLD_MS = 3000;
 
 /**
  * `?titleArtHold=` clamped: exactly 0 stops the rotation, 3000 ms or more is

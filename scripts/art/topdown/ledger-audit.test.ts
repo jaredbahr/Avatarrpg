@@ -196,4 +196,118 @@ describe('PixelLab ledger audit CLI', () => {
       expect(result.stderr).toContain('case-folded phase metadata collision');
     });
   });
+
+  describe('cost per region (#783)', () => {
+    const uuid = 'b0cc7559-12db-4011-aac0-82a7a3d4fb9b';
+    const regionLedger = {
+      task: 'region roll-up fixture',
+      default_region: 'ba_dan_valley',
+      jobs: [
+        { name: 't1_hero', endpoint: '/characters/animations', status: 'completed', credits: 12 },
+        { name: 't1_rock', endpoint: '/create-object-pro-flash', status: 'completed', credits: 5 },
+        { name: 't1_retake', endpoint: '/characters/animations', status: 'failed', credits: 3 },
+        {
+          name: 't2_lamp',
+          endpoint: `/objects/${uuid}/animations`,
+          status: 'completed',
+          credits: 8,
+          region: 'salt_step',
+        },
+        {
+          name: 't2_lamp_b',
+          endpoint: `/objects/${uuid.replace('b0', 'c1')}/animations`,
+          status: 'completed',
+          credits: 2,
+          region: 'salt_step',
+        },
+      ],
+    };
+    type RegionReport = {
+      regions: Array<{
+        region: string;
+        job_count: number;
+        tagged_on_job_count: number;
+        booked_credits: number;
+        completed_job_count: number;
+        completed_booked_credits: number;
+        by_endpoint: Array<{ endpoint: string; job_count: number; booked_credits: number }>;
+      }>;
+      region_policy: { default_region: string | null };
+      untagged_jobs: string[];
+      unmapped_metadata_keys: string[];
+    };
+
+    it('totals booked credits per region and per asset type, a job tag beating the default', () => {
+      withTemporaryLedger(JSON.stringify(regionLedger), (path) => {
+        const result = run(['--ledger', path, '--json']);
+        expect(result.status, result.stderr).toBe(0);
+        const report = JSON.parse(result.stdout) as RegionReport;
+        expect(report.region_policy.default_region).toBe('ba_dan_valley');
+        expect(report.untagged_jobs).toEqual([]);
+        expect(report.unmapped_metadata_keys).not.toContain('default_region');
+        expect(report.regions).toEqual([
+          {
+            region: 'ba_dan_valley',
+            job_count: 3,
+            tagged_on_job_count: 0,
+            booked_credits: 20,
+            completed_job_count: 2,
+            completed_booked_credits: 17,
+            by_endpoint: [
+              { endpoint: '/characters/animations', job_count: 2, booked_credits: 15 },
+              { endpoint: '/create-object-pro-flash', job_count: 1, booked_credits: 5 },
+            ],
+          },
+          {
+            region: 'salt_step',
+            job_count: 2,
+            tagged_on_job_count: 2,
+            booked_credits: 10,
+            completed_job_count: 2,
+            completed_booked_credits: 10,
+            by_endpoint: [
+              { endpoint: '/objects/{id}/animations', job_count: 2, booked_credits: 10 },
+            ],
+          },
+        ]);
+        const human = run(['--ledger', path]);
+        expect(human.stdout).toContain('Cost per region (booked credits):');
+        expect(human.stdout).toContain('  salt_step: jobs=2 booked=10 completed=10 (2 jobs)');
+      });
+    });
+
+    it('lists untagged jobs when the ledger has no default region', () => {
+      const { default_region: _default, ...noDefault } = regionLedger;
+      withTemporaryLedger(JSON.stringify(noDefault), (path) => {
+        const report = JSON.parse(run(['--ledger', path, '--json']).stdout) as RegionReport;
+        expect(report.untagged_jobs).toEqual(['t1_hero', 't1_rock', 't1_retake']);
+        expect(report.regions.map((region) => region.region)).toEqual(['salt_step']);
+      });
+    });
+
+    it('rejects a region that is not a snake_case region id', () => {
+      for (const bad of [
+        { ...regionLedger, default_region: 'Ba Dan' },
+        { ...regionLedger, jobs: [{ ...regionLedger.jobs[0], region: 7 }] },
+      ]) {
+        withTemporaryLedger(JSON.stringify(bad), (path) => {
+          const result = run(['--ledger', path, '--json']);
+          expect(result.status).toBe(2);
+          expect(result.stderr).toContain('snake_case region id');
+        });
+      }
+    });
+
+    it('tags every job in the shipped ledger with its region', () => {
+      const result = run(['--json']);
+      expect(result.status, result.stderr).toBe(0);
+      const report = JSON.parse(result.stdout) as RegionReport;
+      expect(report.untagged_jobs).toEqual([]);
+      // The demo's jobs take the ledger's default; RG-02's carry their own tag (`tools/rg02chars.py`).
+      expect(report.regions.map((region) => region.region)).toEqual([
+        'ba_dan_valley',
+        'saltstep_emberwatch',
+      ]);
+    });
+  });
 });

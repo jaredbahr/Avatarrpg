@@ -908,19 +908,3 @@ function discoverCombos(
     events: [...events, ...discovered],
   };
 }
-
-/** Applies a list of commands in order. Used by the simulator and by tests. */
-export function applyAll(
-  content: ContentIndex,
-  state: GameState,
-  commands: readonly Command[],
-): StepResult {
-  let current = state;
-  const events: GameEvent[] = [];
-  for (const command of commands) {
-    const result = apply(content, current, command);
-    current = result.state;
-    events.push(...result.events);
-  }
-  return { state: current, events };
-}

@@ -14,6 +14,7 @@ import {
   startGame,
   takeTurn,
   waitForIdle,
+  wheelOver,
 } from './helpers';
 import { paintedTileCentre } from './projection';
 
@@ -205,7 +206,7 @@ async function statusTooltip(page: Page): Promise<void> {
 }
 
 /** The existing capped HUD must reveal its complete actions through real scrolling. */
-async function reachableCombatActions(page: Page, mobileWebKit: boolean): Promise<void> {
+async function reachableCombatActions(page: Page): Promise<void> {
   const observe = () =>
     page.evaluate(() => {
       const app = window.fnt!.app;
@@ -259,16 +260,10 @@ async function reachableCombatActions(page: Page, mobileWebKit: boolean): Promis
   const before = await observe();
   const needsScroll = before.targets.some((target) => target.bottom > before.hud.visibleBottom);
   if (needsScroll) {
-    if (mobileWebKit) {
-      // Playwright cannot send wheel input to mobile WebKit.
-      await page.locator('.combat-scene .hud').evaluate((hud) => hud.scrollTo(0, hud.scrollHeight));
-    } else {
-      await page.mouse.move(
-        (before.hud.left + before.hud.right) / 2,
-        (Math.max(before.hud.top, 0) + before.hud.visibleBottom) / 2,
-      );
-      await page.mouse.wheel(0, before.hud.scrollHeight);
-    }
+    await wheelOver(page, page.locator('.combat-scene .hud'), before.hud.scrollHeight, {
+      x: (before.hud.left + before.hud.right) / 2,
+      y: (Math.max(before.hud.top, 0) + before.hud.visibleBottom) / 2,
+    });
   }
   await expect
     .poll(async () =>
@@ -360,10 +355,12 @@ for (const viewport of [
 ]) {
   for (const largeText of ['off', 'on'] as const) {
     test(`all screens meet --tap: ${viewport.name}, ${largeText === 'on' ? 'Large' : 'Normal'} text`, async ({
-      browserName,
-      isMobile,
       page,
     }) => {
+      // Every screen from the title through a fight in one case: CI's iPad
+      // WebKit ran past the 60 s default mid-fight (main, 2026-11-14), while
+      // each step keeps its own wait, so a hang still fails.
+      test.setTimeout(180_000);
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
       await observeTargets(page);
       await resetStorage(page, '?renderer=canvas&titleArt=a&titleArtHold=0');
@@ -488,7 +485,7 @@ for (const viewport of [
       ]);
       await statusTooltip(page);
       if (viewport.width === 390 && largeText === 'on') {
-        await reachableCombatActions(page, browserName === 'webkit' && isMobile);
+        await reachableCombatActions(page);
       }
       // Only the phone has the disclosure; viewport choice is explicit, not a skipped census.
       if (viewport.width === 390) {

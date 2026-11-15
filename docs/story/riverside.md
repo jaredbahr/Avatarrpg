@@ -20,21 +20,21 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 
 ```mermaid
 flowchart TD
-  n89["riverside_dorin<br/>Dorin: I'm working on my footing. I keep doing well on the dry …"]:::entry
-  n90["riverside_explore<br/>Explore ba_dan_riverside: Take your time. Meet the neighbors, c…"]:::entry
-  n91["riverside_invitation<br/>Riverside path: “To the river.” An arrow points down the path."]:::entry
-  n92["riverside_mira<br/>Elder Mira: You found me. Sit down. That end of the bench is dr…"]:::entry
-  n94["riverside_pella<br/>Pella: I have to stay where Mira can see me. That is why I am s…"]:::entry
-  n95["riverside_shrine<br/>The riverside shrine: Fresh flowers stand in a chipped jar besi…"]:::entry
-  n96["riverside_shrine_found<br/>Set flags"]
-  n143["village_explore — exit to act1 / part 1"]:::external
-  n89 -->|"Next"| n90
-  n90 -->|"Legacy/audit exit (live map exits differ)"| n143
-  n91 -->|"Next"| n90
-  n92 -->|"Next"| n90
-  n94 -->|"Next"| n90
-  n95 -->|"Next"| n96
-  n96 -->|"set: riverside_shrine_found=true"| n90
+  n292["riverside_dorin<br/>Dorin: I'm working on my footing. I keep doing well on the dry …"]:::entry
+  n293["riverside_explore<br/>Explore ba_dan_riverside: Take your time. Meet the neighbors, c…"]:::entry
+  n294["riverside_invitation<br/>Riverside path: “To the river.” An arrow points down the path."]:::entry
+  n295["riverside_mira<br/>Elder Mira: You found me. Sit down. That end of the bench is dr…"]:::entry
+  n297["riverside_pella<br/>Pella: I have to stay where Mira can see me. That is why I am s…"]:::entry
+  n298["riverside_shrine<br/>The riverside shrine: Fresh flowers stand in a chipped jar besi…"]:::entry
+  n299["riverside_shrine_found<br/>Set flags"]
+  n354["village_explore — exit to act1 / part 1"]:::external
+  n292 -->|"Next"| n293
+  n293 -->|"Legacy/audit exit (live map exits differ)"| n354
+  n294 -->|"Next"| n293
+  n295 -->|"Next"| n293
+  n297 -->|"Next"| n293
+  n298 -->|"Next"| n299
+  n299 -->|"set: riverside_shrine_found=true"| n293
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

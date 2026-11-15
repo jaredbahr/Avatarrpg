@@ -81,11 +81,6 @@ export function applyStatus(
   };
 }
 
-export function removeStatus(unit: Unit, id: StatusId): Unit {
-  if (!unit.statuses.some((s) => s.id === id)) return unit;
-  return { ...unit, statuses: unit.statuses.filter((s) => s.id !== id) };
-}
-
 export function removeStatuses(
   unit: Unit,
   ids: readonly StatusId[],
@@ -127,11 +122,6 @@ export function tickStatuses(content: ContentIndex, unit: Unit): StatusTick {
   }
 
   return { unit: { ...unit, statuses: kept }, expired, tickDamage };
-}
-
-/** Damage type a status ticks for, so incoming multipliers still apply. */
-export function tickDamageType(content: ContentIndex, id: StatusId) {
-  return content.statuses.get(id)?.tickDamageType ?? 'pure';
 }
 
 export function describeStatus(content: ContentIndex, id: StatusId): string {

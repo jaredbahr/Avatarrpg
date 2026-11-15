@@ -190,11 +190,15 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       expect(await takeTurn(page)).toBe(true);
       await waitForIdle(page);
       expect(await page.evaluate(() => window.fnt!.app.rendererBackend())).toBe(renderer);
-      // Some viewports already fit the board when combat opens.
+      // Top-down combat opens on the follow camera at N = 2 around the actor,
+      // which leaves part of the oil off screen; Recentre is the real control
+      // for the whole-board overview, where every sampled oil cell is drawn.
+      // Where the board already opens whole (the gate on an iPad in landscape),
+      // the game hides Recentre, so there is nothing to press.
       if (!(await page.evaluate(() => window.fnt!.app.rendererCamera()?.fitted))) {
         await page.getByRole('button', { name: 'Recentre', exact: true }).click();
+        await waitForIdle(page);
       }
-      await waitForIdle(page);
       expect(await page.evaluate(() => window.fnt!.app.rendererCamera()?.fitted)).toBe(true);
       const before = await state(page);
       expect(before.location.mapId).toBe(board.id);

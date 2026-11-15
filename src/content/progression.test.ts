@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { CONTENT, CONTENT_BUNDLE, STORY_ENTRY } from './index';
+import { CONTENT, CONTENT_BUNDLE, STORY_PROLOGUE } from './index';
 import { levelForXp, xpForLevel } from '../core/rules/leveling';
 import { xpRoster } from '../core/state/createGame';
 import { evaluate } from '../core/story/conditions';
 import type { FlagValue, GameState, StoryNode } from '../core/types';
+import { REGIONS } from './regions';
 
 /**
  * Does the party actually arrive at the level each fight is tuned for?
@@ -97,7 +98,8 @@ function walkOnce(decisions: ReadonlyMap<string, number>, party: readonly string
   const reached: DecisionPoint[] = [];
   let xp = 0;
   let losses = 0;
-  let nodeId: string | null = STORY_ENTRY;
+  // A new game opens on the prologue, which leads into STORY_ENTRY.
+  let nodeId: string | null = STORY_PROLOGUE;
   let truncated = false;
   let endedAt: string | null = null;
 
@@ -385,6 +387,8 @@ describe('progression', () => {
         npcRoots.add(npc.node);
         for (const route of npc.routes ?? []) npcRoots.add(route.node);
       }
+      // A walk-on scene is entered by stepping on its crossing, as the validator counts it.
+      for (const trigger of map.triggers ?? []) npcRoots.add(trigger.node);
     }
 
     const optionalRoots = new Set(npcRoots);
@@ -413,6 +417,51 @@ describe('progression', () => {
       const level = levelForXp(walk.finalXp);
       expect(level, `${walk.finalXp} XP`).toBeGreaterThanOrEqual(3);
       expect(level, `${walk.finalXp} XP`).toBeLessThanOrEqual(5);
+    }
+  });
+
+  it('carries on after a Driller loss at the same level as a win (C-01)', () => {
+    /*
+     * A Driller loss used to end the story; it now carries on into Act II
+     * (owner, 2026-11-14), and it is forgiving: the party that loses starts
+     * the next act at the level of the party that won (owner, 2026-11-15).
+     * The boss pays nothing on a loss, so `act1_lost` has to make it up, and
+     * this is the route most likely to drift when the boss's XP changes.
+     */
+    const winLevels = new Set(CLEAN.map((w) => levelForXp(w.finalXp)));
+    expect(winLevels.size, 'every clean route ends the act on one level').toBe(1);
+    const [winLevel] = [...winLevels];
+    const bossLosses = ALL.filter((w) =>
+      w.steps.some((s) => s.lost && s.encounterId === 'enc_grumbler'),
+    );
+    expect(bossLosses.length, 'no route loses to the Driller').toBeGreaterThan(0);
+    for (const walk of bossLosses) {
+      const level = levelForXp(walk.finalXp);
+      expect(walk.endedAt).toBe('act1_epilogue_lost');
+      expect(walk.flags.act1_lost).toBe(true);
+      expect(level, `${walk.finalXp} XP after losing to the Driller`).toBe(winLevel);
+      expect(level).toBeGreaterThanOrEqual(3);
+      expect(level).toBeLessThanOrEqual(5);
+    }
+  });
+
+  it('enters the Act II region inside its level band on every route, won or lost (ADR 0011)', () => {
+    /*
+     * The region graph's first edge: Ba Dan's coast road opens on Saltstep and Emberwatch once
+     * Act I is over either way (`ACT1_OVER` in `maps/world.ts`). A party arrives with whatever
+     * the act paid it, so every route, a lost fight included, must land inside the band that
+     * region's fights are tuned for (`regions/bands.ts` holds the fights to the band).
+     */
+    const next = REGIONS.find((region) => region.id === 'saltstep_emberwatch');
+    expect(next, 'the region Act I opens onto').toBeDefined();
+    const band = next?.levelBand ?? { minLevel: 0, maxLevel: 0 };
+    for (const walk of ALL) {
+      const label = [...walk.decisions].map(([k, v]) => `${k}=${v}`).join(', ') || 'defaults';
+      const level = levelForXp(walk.finalXp);
+      expect(level, `route [${label}] enters on level ${level}`).toBeGreaterThanOrEqual(
+        band.minLevel,
+      );
+      expect(level, `route [${label}] enters on level ${level}`).toBeLessThanOrEqual(band.maxLevel);
     }
   });
 

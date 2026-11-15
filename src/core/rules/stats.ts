@@ -4,12 +4,10 @@
  * order and the AI all go through `effectiveStats`.
  */
 
-import type { ContentIndex, DamageType, StatusDef, StatusId, Unit, UnitStats } from '../types';
+import type { ContentIndex, DamageType, StatusDef, Unit, UnitStats } from '../types';
 
 /** Hard ceiling on banked AP, so nobody saves up an unanswerable alpha strike. */
 export const MAX_BANKED_TOTAL_AP = 6;
-/** AP carried into the next turn, at most, regardless of how much went unused. */
-export const AP_BANK_PER_TURN = 1;
 
 export function statusDefs(content: ContentIndex, unit: Unit): StatusDef[] {
   const out: StatusDef[] = [];
@@ -18,14 +16,6 @@ export function statusDefs(content: ContentIndex, unit: Unit): StatusDef[] {
     if (def) out.push(def);
   }
   return out;
-}
-
-export function hasStatus(unit: Unit, id: StatusId): boolean {
-  return unit.statuses.some((s) => s.id === id);
-}
-
-export function statusStacks(unit: Unit, id: StatusId): number {
-  return unit.statuses.find((s) => s.id === id)?.stacks ?? 0;
 }
 
 /** Base stats with every active status modifier folded in. Never goes negative. */
@@ -91,11 +81,6 @@ export function canUseAbilities(content: ContentIndex, unit: Unit): boolean {
 export function startingAp(content: ContentIndex, unit: Unit): number {
   const stats = effectiveStats(content, unit);
   return Math.max(0, Math.min(MAX_BANKED_TOTAL_AP, stats.maxAp + unit.bankedAp + unit.pendingAp));
-}
-
-/** How much of this turn's leftover AP carries forward. */
-export function bankableAp(remainingAp: number): number {
-  return Math.min(AP_BANK_PER_TURN, Math.max(0, remainingAp));
 }
 
 export function isAlive(unit: Unit): boolean {
