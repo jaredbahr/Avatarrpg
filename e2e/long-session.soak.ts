@@ -20,7 +20,8 @@
  *
  * FNT_SOAK_CYCLES sets the number of cycles, FNT_SOAK_MOTION=on plays every walk and cast in real
  * time (several times slower), FNT_SOAK_SWEEP sets how many pointer positions each sweep of the
- * board takes (28; fewer shortens a software-WebGL run), and FNT_SOAK_STACKS=1 records where each surviving canvas and
+ * board takes (28; fewer shortens a software-WebGL run), FNT_SOAK_HEAP=1 takes a heap snapshot a
+ * cycle and names the constructors whose count rose after every one, and FNT_SOAK_STACKS=1 records where each surviving canvas and
  * listener was created (useful against `npm run dev`, where the frames are readable). The samples
  * and verdicts are written to `.shots/soak/<project>.json` (or under FNT_SOAK_OUT).
  */
@@ -28,6 +29,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { expect, test, type CDPSession, type Page } from '@playwright/test';
 import { judgeTrend, type Allowance, type Verdict } from '../scripts/long-session/trend';
 import { resetStorage } from './helpers';
+import { growing, heapCounts, type HeapCount } from './soak/heap';
 import { installProbe, type ProbeSample } from './soak/probe';
 import { newGameFromTitle, playRoute, titleLoadAndQuit, type RouteOptions } from './soak/route';
 
@@ -36,6 +38,7 @@ const SWEEP = process.env.FNT_SOAK_SWEEP ? Number(process.env.FNT_SOAK_SWEEP) : 
 const WARMUP = Number(process.env.FNT_SOAK_WARMUP ?? 2);
 const MOTION = process.env.FNT_SOAK_MOTION === 'on';
 const STACKS = process.env.FNT_SOAK_STACKS === '1';
+const HEAP = process.env.FNT_SOAK_HEAP === '1';
 
 interface Sample extends ProbeSample {
   readonly cycle: number;
@@ -146,8 +149,9 @@ function megapixels(area: number): string {
 }
 
 test('a long session neither leaks nor outgrows its bounds', async ({ page }, info) => {
-  test.setTimeout(CYCLES * (MOTION ? 900_000 : 240_000) + 120_000);
   const renderer = String(info.project.metadata.renderer ?? 'canvas');
+  // A cycle is about a minute on Canvas 2D; real-time motion and software WebGL take five or more.
+  test.setTimeout(CYCLES * (MOTION || renderer === 'webgl' ? 900_000 : 240_000) + 120_000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => {
@@ -180,6 +184,8 @@ test('a long session neither leaks nor outgrows its bounds', async ({ page }, in
   const samples: Sample[] = [];
   /** One a cycle on the quarry floor after the last fight, before any quit has released anything. */
   const midGame: Sample[] = [];
+  /** With FNT_SOAK_HEAP=1: live objects by constructor after each cycle, to name what grows. */
+  const heaps: Map<string, HeapCount>[] = [];
   const folder = process.env.FNT_SOAK_OUT ?? '.shots/soak';
   mkdirSync(folder, { recursive: true });
   const write = (verdicts: readonly Verdict[] = []): void =>
@@ -217,6 +223,7 @@ test('a long session neither leaks nor outgrows its bounds', async ({ page }, in
     await titleLoadAndQuit(page, options);
     const sample = await collect(cdp, page, cycle, t0);
     samples.push(sample);
+    if (HEAP) heaps.push(await heapCounts(cdp));
     write();
     console.log(
       `[${info.project.name}] cycle ${cycle}/${CYCLES} at ${sample.seconds}s: ` +
@@ -263,6 +270,18 @@ test('a long session neither leaks nor outgrows its bounds', async ({ page }, in
         `first ${String(Math.round(trend.first)).padStart(10)}  last ${String(Math.round(trend.last)).padStart(10)}  ` +
         `max ${String(Math.round(trend.max)).padStart(10)}`,
     );
+  }
+
+  if (HEAP) {
+    const grew = growing(heaps, WARMUP);
+    writeFileSync(`${folder}/${info.project.name}.heap.json`, JSON.stringify(grew, null, 2));
+    console.log(`\n[${info.project.name}] constructors that grew after every cycle`);
+    for (const row of grew.slice(0, 40)) {
+      console.log(
+        `  ${row.name.slice(0, 44).padEnd(44)} +${row.perCycle.toFixed(1).padStart(8)}/cycle ` +
+          `${Math.round(row.bytesPerCycle).toString().padStart(9)} B/cycle  ${row.counts.join(' ')}`,
+      );
+    }
   }
 
   const worst = (name: 'peakCanvasArea' | 'glContextsLive'): number =>
