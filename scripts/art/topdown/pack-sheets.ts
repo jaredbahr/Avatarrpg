@@ -56,7 +56,7 @@ export function shippedFiles(): string[] {
   const top = existsSync(OUT) ? readdirSync(OUT) : [];
   const objects = existsSync(OBJECTS_OUT) ? readdirSync(OBJECTS_OUT) : [];
   return [
-    // The boards' folders (`ba-dan/`, `forest-road/`, the quarry's three) are the ground packer's
+    // The boards' folders (`ba-dan/`, `forest-road/`, the quarry's three, RG-02's) are the ground packer's
     // (`pack-ground.ts`) and `props/` the prop packer's (`pack-props.ts`), each held by its own test.
     ...top
       .filter(
@@ -68,6 +68,8 @@ export function shippedFiles(): string[] {
             'quarry-gate',
             'cutting',
             'quarry-floor',
+            'saltstep-market',
+            'saltstep-pontoon',
             'props',
           ].includes(f),
       )
