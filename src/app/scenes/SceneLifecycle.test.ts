@@ -512,3 +512,72 @@ describe('dialogue layer ownership', () => {
     expect(sceneHost.children).toEqual([world.stage]);
   });
 });
+
+/**
+ * The unit-gate half of the long-session soak (#525): a hundred games' worth of scene changes
+ * through the real `showScene`, every branch of it (a world kept under a conversation, a
+ * conversation replaced in its layer, the world handed back, a fight replacing it, a fight kept
+ * under a conversation, an interlude releasing both, the title). Whatever is mounted is unmounted
+ * exactly once, nothing is left retained, and the scene host ends each game holding one stage.
+ */
+describe('a long evening of scene changes', () => {
+  it('unmounts every scene it mounted and retains nothing', () => {
+    const boot = fakeScene('title');
+    const { app, sceneHost } = appHarness(boot);
+    const everMounted: ReturnType<typeof fakeScene>[] = [boot];
+    const show = (name: string): ReturnType<typeof fakeScene> => {
+      const scene = fakeScene(name);
+      app.showScene(scene as unknown as Scene);
+      return scene;
+    };
+    const retained = (): unknown => Reflect.get(app, 'dialogueBackdrop');
+
+    for (let game = 0; game < 100; game++) {
+      setRoute(app, returnToExplore, 'explore');
+      const world = show('explore');
+      setRoute(app, ordinaryDialogue);
+      const first = show('dialogue');
+      expect(retained()).toBe(world);
+      const second = show('dialogue');
+      // Back on the map: the retained world is resumed and the scene offered for it is dropped
+      // unmounted, so it must never be counted as mounted.
+      setRoute(app, returnToExplore, 'explore');
+      const offered = show('explore');
+      expect(offered.mount).not.toHaveBeenCalled();
+      expect(world.resume).toHaveBeenCalledOnce();
+      expect(retained()).toBeNull();
+
+      const battle = {} as BattleState;
+      setRoute(app, ordinaryDialogue, 'combat', battle);
+      const fight = show('combat');
+      setRoute(app, ordinaryDialogue, 'dialogue', battle);
+      const midFight = show('dialogue');
+      expect(retained()).toBe(fight);
+      setRoute(app, roadInterlude);
+      const interlude = show('dialogue');
+      expect(retained()).toBeNull();
+
+      Object.assign(app as unknown as Record<string, unknown>, { state: null });
+      const title = show('title');
+
+      const played = [world, first, second, fight, midFight, interlude];
+      everMounted.push(...played, title);
+      for (const scene of played) {
+        expect(scene.mount).toHaveBeenCalledOnce();
+        expect(scene.unmount).toHaveBeenCalledOnce();
+      }
+      expect(sceneHost.children).toEqual([title.stage]);
+      expect(sceneHost.classList.contains('has-dialogue-backdrop')).toBe(false);
+      expect(Reflect.get(app, 'dialogueHost')).toBeNull();
+    }
+
+    // Seven hundred scenes later exactly one is still mounted: the title on screen.
+    const live = everMounted.filter(
+      (scene) =>
+        scene.mount.mock.calls.length + (scene === boot ? 1 : 0) > scene.unmount.mock.calls.length,
+    );
+    expect(everMounted).toHaveLength(701);
+    expect(live).toHaveLength(1);
+    expect(live[0]?.name).toBe('title');
+  });
+});
