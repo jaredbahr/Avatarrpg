@@ -215,6 +215,23 @@ export async function enterNode(page: Page, nodeId: string): Promise<void> {
 }
 
 /**
+ * Plays a conversation to its end with the real controls, taking the first open
+ * option at any choice (Mira's table asks one question, DLG-01).
+ */
+export async function finishConversation(page: Page): Promise<void> {
+  for (let step = 0; step < 80; step++) {
+    const open = await page.evaluate(() => ({
+      screen: window.fnt?.app.state?.screen,
+      choices: document.querySelectorAll('.choice-option:not([disabled])').length,
+    }));
+    if (open.screen !== 'dialogue') return;
+    if (open.choices) await page.locator('.choice-option:not([disabled])').first().click();
+    else await page.locator('[data-conversation-control="next"]').click();
+  }
+  throw new Error('The conversation did not end');
+}
+
+/**
  * Waits until it is a party unit's turn and clears the hand-off card.
  *
  * Returns false if the fight ended while waiting, so a spec that drives
