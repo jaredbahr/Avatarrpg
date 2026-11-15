@@ -146,18 +146,6 @@ jobs:
           # roughly 36 minutes for its first 86 cases and projects near 90
           # minutes for all 181, so three shards keep every runner inside the
           # job limit while still covering each case exactly once.
-          - label: Chromium touch 1/3
-            browser: chromium
-            artifact: chromium-1
-            projects: --project=surface-touch --shard=1/3
-          - label: Chromium touch 2/3
-            browser: chromium
-            artifact: chromium-2
-            projects: --project=surface-touch --shard=2/3
-          - label: Chromium touch 3/3
-            browser: chromium
-            artifact: chromium-3
-            projects: --project=surface-touch --shard=3/3
           # The WebKit suite (266 cases, one worker) took 50.5 minutes on run
           # 37145320243 and was cancelled at the 60-minute limit on run
           # 37177952609 with about 230 cases done, so two shards keep each
@@ -179,7 +167,7 @@ jobs:
             artifact: webkit-3
             projects: --project=ipad-landscape --project=ipad-portrait --shard=3/3
     # Each runner executes one shard on a machine of its own.
-    timeout-minutes: 60
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@v4
 

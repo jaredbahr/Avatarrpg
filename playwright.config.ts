@@ -65,7 +65,7 @@ export default defineConfig({
   // Publish a diagnostic report promptly after a reproducible failure.
   // A successful run still executes the complete suite.
   maxFailures: 0,
-  reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
+  reporter: [['list']],
   use: {
     baseURL: ORIGIN,
     // Continuous trace screenshots stall software WebGL through GPU readback.
