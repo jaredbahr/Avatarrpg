@@ -46,6 +46,16 @@ export function wheelZoomFactor(wheel: WheelGesture): number {
   return Math.exp(-wheel.deltaY * (wheel.ctrl ? 0.01 : 0.002));
 }
 
+/**
+ * Whether a `contextmenu` event is a mouse's right button. A finger's or a
+ * pen's long press raises the same event, and so does the keyboard's menu key;
+ * those are a hold, never a cancel. Browsers that report no pointer type on
+ * the event are told apart by the button.
+ */
+export function isRightClick(event: { pointerType?: string; button: number }): boolean {
+  return event.pointerType ? event.pointerType === 'mouse' : event.button === 2;
+}
+
 const kindOf = (event: PointerEvent): PointerKind =>
   event.pointerType === 'mouse' ? 'mouse' : event.pointerType === 'pen' ? 'pen' : 'touch';
 
@@ -164,10 +174,8 @@ export function attachPointer(target: HTMLElement, handlers: PointerHandlers): (
   const onContextMenu = (event: Event) => {
     event.preventDefault();
     if (!(event instanceof MouseEvent)) return;
-    // A finger's long press raises this event too (button 0); only a mouse's right button cancels.
-    const type = (event as PointerEvent).pointerType;
-    const rightClick = type ? type === 'mouse' : event.button === 2;
-    if (rightClick && handlers.onSecondary) handlers.onSecondary(local(event));
+    if (isRightClick(event as PointerEvent) && handlers.onSecondary)
+      handlers.onSecondary(local(event));
     else handlers.onLongPress?.(local(event));
   };
 
