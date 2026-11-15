@@ -222,6 +222,9 @@ const GAO: ResidentDef = {
   ],
 };
 
+/** Pella's place beside Mira's table before `mira_intro` (DLG-01). */
+const PELLA_AT_TABLE = talk('bd01.table_side', 'kid_pella', 'waiting_to_talk');
+
 const PELLA: ResidentDef = {
   id: 'lw.npc.pella',
   name: 'Pella',
@@ -247,10 +250,16 @@ const PELLA: ResidentDef = {
       // DLG-01: she is at Mira's table to say "Five" until that scene has
       // played. Tapping her there starts it (`kid_pella`'s first route).
       id: 'pella_at_table',
-      tier: 'mission',
+      tier: 'presence',
       when: all(OCCUPIED, not(visited('mira_intro'))),
-      slots: {},
-      all: talk('bd01.table_side', 'kid_pella', 'waiting_to_talk'),
+      // By day only: at night she is home in bed like everyone else.
+      slots: {
+        dawn: PELLA_AT_TABLE,
+        morning: PELLA_AT_TABLE,
+        midday: PELLA_AT_TABLE,
+        afternoon: PELLA_AT_TABLE,
+        evening: PELLA_AT_TABLE,
+      },
     },
     {
       id: 'pella_homecoming',

@@ -65,7 +65,11 @@ describe('background roles on the village (W8)', () => {
 
   it('keep an approach to Pella off the household adult beside her', () => {
     // From here the first tile beside Pella that `findApproach` tries is the yard itself.
-    const result = apply(CONTENT, at({ x: 12, y: 14 }), { type: 'walkTo', pos: { x: 11, y: 12 } });
+    // Mira's table has played, so Pella is back at her court (before it she waits at the table).
+    const result = apply(CONTENT, at({ x: 12, y: 14 }, ['mira_intro']), {
+      type: 'walkTo',
+      pos: { x: 11, y: 12 },
+    });
     expect(result.state.screen).toBe('dialogue');
     expect(distance(result.state.location.pos, { x: 11, y: 12 })).toBe(1);
     expect(roleTiles(result.state).has(posKey(result.state.location.pos))).toBe(false);

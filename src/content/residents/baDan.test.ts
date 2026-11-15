@@ -174,7 +174,8 @@ suite('Ba Dan residents: the §8 schedule and the §4 holds', () => {
     const fresh = table(CLASSES['new game'] ?? {});
     for (const phase of DAY_PHASES) {
       expect(fresh[phase]?.split(' | ')[0], phase).toBe('bd01.table');
-      expect(fresh[phase]?.split(' | ')[2], phase).toBe('bd01.table_side');
+      // By day; at night she is home.
+      if (phase !== 'night') expect(fresh[phase]?.split(' | ')[2], phase).toBe('bd01.table_side');
     }
   });
 
