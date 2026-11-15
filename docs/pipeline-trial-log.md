@@ -222,14 +222,32 @@ the plan's biggest art-pipeline cost in hours).
 
 ## Placeholders left for the writer
 
-Every one reads "[Writer placeholder] …" in game; `grep -rn "Writer placeholder\|writerPlaceholder" src/content`
-lists them.
+**Closed by the writing pass (2026-11-15).** No string reads "[Writer placeholder] …" in game any more. The
+helper stays in `placeholders.ts` for the next build; `grep -rn "writerPlaceholder(" src/content` lists any that are
+open (none now).
 
-- Three option details for Scene 2.3's approach choice (the script gives the labels only).
-- The winch fight's tip and its objective label ("Stop the winch", the ADR's example).
-- The market's objective text, three states (before the bowl, carrying it, after the vote).
-- Three enemy descriptions (freight handler, line rigger, Veyra).
-- Not marked, written plainly and to be checked: Emberwatch's and the power yard's objectives, the maps' names and
-  exit labels, and the "The party" speaker label.
-- Missing from the script and so not shown: SF-2.1's "the riggers put down their cutters" and the carry-on
-  narration ("they get away over the wall with one coil"), which the script gives as prose, not lines.
+What was written, from or in agreement with the script (`docs/story/scripts/act2-sparks.md`):
+
+- The three option details for Scene 2.3's approach choice, and a footer saying all three reach the clerk.
+- The winch fight's tip and its objective label ("Stop the winch at the brake").
+- The market's objective in its three states (before the bowl, carrying it, after the vote).
+- The three descriptions (freight handler, line rigger, Veyra).
+- Checked and reworded: Emberwatch's and the power yard's objectives now say what to do and where; the coast-road
+  exit names the map it goes to ("Ba Dan Village"), as Act I's exits do. The map names and the other exit labels
+  already matched the script and Act I's pattern.
+- SF-2.1's two outcomes, as narrator lines: "The riggers put down their cutters." before Luli's offer, and the
+  riggers getting away over the wall with one coil before her carry-on line.
+- Hero variants wired as data: **Tenzo** at the bowl stall (2.2) and **Jinu** on the coast road after a loss (2.1).
+  Each is the scene's chain again under its own ids, entered by an NPC route on `partyHas` and ending on the hero's
+  lines (the way Kaya's crates were wired). That is 13 extra node ids for four hero lines; friction 3's `branch` on a
+  `Condition` would have needed four.
+
+Still open, and why:
+
+- **"The party" speaker label.** The owner decided `Party:` lines are tappable choice text with no speaker. A
+  dialogue node must name a speaker and a choice needs two options (friction 2), so the four `Party:` lines keep the
+  narrator-framed "The party" label until a one-option tap exists.
+- **Sura and Wen (2.4) and Riko (2.6).** Their lines sit in the middle of the one chain that runs from the customs
+  stall through the choice, the fight and the vote. No NPC route starts there, and copying that whole chain for
+  every mix of the three is not sensible. They wait for friction 3 (a `branch`, or a dialogue node, that takes a
+  `Condition`).
