@@ -7,8 +7,8 @@
  * `docs/pipeline-trial-log.md`.
  *
  * Entered from Ba Dan's coast road once Act I is over, won or lost (the coast-road sign's `Condition`,
- * in `maps/world.ts`). The Saltstep market and the freight pontoon have their scenes; Emberwatch's two
- * maps still draw their bare boards. No music rows yet, so each map keeps the track already playing.
+ * in `maps/world.ts`). PLACEHOLDER ART: no scenes yet, so every map draws its bare board, and no
+ * music rows yet, so each map keeps the track already playing.
  */
 import type { RegionManifest } from '../../regions/types';
 
@@ -26,11 +26,7 @@ export const SALTSTEP_EMBERWATCH: RegionManifest = {
   // may belong to one region only (ADR 0111 §4), so Act I's cannot be borrowed.
   music: {},
 
-  // The plates run two cells past the grid either side, three above and two below, as Act I's do.
-  // TODO(region): Emberwatch's parade ground and power yard, once their boards are drawn (ADR 0104).
-  scenes: {
-    saltstep_market: { url: 'art/topdown/saltstep-market/scene.json', cameraCentreMargin: 1 },
-    saltstep_pontoon: { url: 'art/topdown/saltstep-pontoon/scene.json', cameraCentreMargin: 1 },
-  },
+  // TODO(region): each map's top-down scene once its board is drawn and approved (ADR 0104).
+  scenes: {},
   load: () => import('./content').then((module) => module.SALTSTEP_EMBERWATCH_CONTENT),
 };
