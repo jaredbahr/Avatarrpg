@@ -112,6 +112,14 @@ describe('the reunion (DLG-07)', () => {
     const kept = turns.indexOf('Pella: She kept making it. In case you came back hungry.');
     expect(kept).toBeGreaterThan(from);
     expect(turns[kept + 1]?.startsWith('Gao the Shopkeeper:')).toBe(true);
+    // Bo-shan speaks in his own frame now that his portrait has shipped (#806).
+    for (const id of ['reunion_all_right', 'reunion_sit', 'reunion_i_did', 'reunion_sorry']) {
+      const node = CONTENT.story.get(id);
+      expect(node?.kind === 'dialogue' && [node.speaker, node.portrait]).toEqual([
+        'Bo-shan',
+        'portrait.bo_shan',
+      ]);
+    }
     // Mira no longer tells it for Pella.
     expect(turns[0]).not.toContain('Pella reached');
   });
