@@ -27,26 +27,33 @@ async function fonts(page: Page, tag: string) {
   console.log('DIAG', tag, JSON.stringify(d));
 }
 
-const W1 = "html[data-large-text='on'] *, html[data-large-text='huge'] * { --large-text-restyle: 1 }";
-const W2 = "html[data-large-text='on'] *, html[data-large-text='huge'] *, html[data-large-text='off'] * { --large-text-restyle: 1 }";
-for (const variant of ['w1', 'w2', 'w1on'] as const)
-  test(`diag ${variant}`, async ({ page }) => {
-    await resetStorage(page, '?renderer=canvas');
-    await startGame(page, ['Tala', 'Mina'], ['sura', 'riko'], 'long-conversation-layout');
-    await page.addStyleTag({ content: variant === 'w2' ? W2 : W1 });
-    await fonts(page, variant + ' before');
-    await setLargeText(page, variant === 'w1on' ? 'on' : 'huge');
-    await fonts(page, variant + ' afterHuge');
-    await enterNode(page, 'gate_escort_explore');
-    await enterNode(page, 'gate_parley');
-    await page.locator('.conversation-panel .choice-option').nth(2).waitFor();
-    await fonts(page, variant + ' panel');
-    await setLargeText(page, 'off');
-    await fonts(page, variant + ' off');
-    await setLargeText(page, 'huge');
-    await fonts(page, variant + ' huge2');
-    await setLargeText(page, 'on');
-    await fonts(page, variant + ' on');
-    await page.waitForTimeout(1500);
-    await fonts(page, variant + ' on+1.5s');
+async function chain(page: Page, tag: string) {
+  const d = await page.evaluate(() => {
+    let e: Element | null = document.querySelectorAll('.choice-option > span.muted')[1] ?? document.querySelector('.scene');
+    const out: string[] = [];
+    while (e) {
+      const cs = getComputedStyle(e);
+      out.push(
+        (e.id ? '#' + e.id : '') + e.tagName.toLowerCase() + '.' + String(e.className).split(' ').slice(0, 2).join('.') +
+          ' fs=' + cs.fontSize + ' t=' + cs.transitionProperty.slice(0, 20) + '/' + cs.transitionDuration.slice(0, 12) +
+          ' a=' + e.getAnimations().map((a) => (a as CSSTransition).transitionProperty ?? (a as CSSAnimation).animationName).join(','),
+      );
+      e = e.parentElement;
+    }
+    return out;
   });
+  console.log('DIAG', tag, '\n  ' + d.join('\n  '));
+}
+test('diag chain', async ({ page }) => {
+  await resetStorage(page, '?renderer=canvas');
+  await startGame(page, ['Tala', 'Mina'], ['sura', 'riko'], 'long-conversation-layout');
+  await chain(page, 'before');
+  await setLargeText(page, 'huge');
+  await chain(page, 'afterHuge');
+  await enterNode(page, 'gate_escort_explore');
+  await enterNode(page, 'gate_parley');
+  await page.locator('.conversation-panel .choice-option').nth(2).waitFor();
+  await chain(page, 'panel');
+  await page.waitForTimeout(400);
+  await chain(page, '+400');
+});
