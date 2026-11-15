@@ -8,8 +8,8 @@ and one optional XP side fight (SF-2.1), built on placeholder art from the merge
 
 **Result:** the slice is playable start to end as data. **Zero files in `src/core/`**, zero map or encounter ids in
 `src/app/` or `src/render/` (one `src/app/` test changed: the music test now names regions still waiting for a
-track). One Claude session, **about 100 minutes** of wall-clock time from the first read to a green `ci:local`, of
-which about 45 were the content pipeline proper and most of the rest was finding and fixing tests pinned to a
+track). One Claude session, **about 125 minutes** of wall-clock time from the first read to a green `ci:local`, of
+which about 25 were the content pipeline proper and most of the rest was finding and fixing tests pinned to a
 one-region world. The friction below is what to fix before region three.
 
 ## Steps and minutes
@@ -17,19 +17,20 @@ one-region world. The friction below is what to fix before region three.
 Wall-clock minutes, one session, measured from the session's own timestamps. "Reading" includes the ADRs, the
 script, the region folder pattern and how Act I is wired.
 
-| Step                                                                   |  Minutes | Notes                                                                                                     |
-| ---------------------------------------------------------------------- | -------: | --------------------------------------------------------------------------------------------------------- |
-| 1. Read the plan, ADR 0111, ADR 0116, the script, Act I's wiring       |        6 | The script's "Trial slice" and "Build list" sections made scoping quick.                                  |
-| 2. Scaffold the region (`npm run new:region`)                          |       <1 | Folder, manifest, content, layouts and the three list lines, passing `validateContent` at once.           |
-| 3. Design: maps, story graph, fights, the Act I link                   |        3 | Deciding the slice's scenes and how the loss branch is carried.                                           |
-| 4. Author the data: 4 maps, 121 story nodes, 2 fights, 3 enemies       |        8 | Mostly transcribing the script's lines into nodes.                                                        |
-| 5. Make the content validators pass                                    |        5 | Node presentations, the Ba Dan link (rebuilt once, friction 1), map packs.                                |
-| 6. Registration: flags, id ledger, docs, the band test                 |        6 | `flags.ts`, `npm run ids:ledger`, `docs:story`, `docs:saves`, `docs:content`; a new progression check.    |
-| 7. A browser spec for the slice; this log's first draft                |       25 | About 10 of work; the rest waiting for the CI lock another session held.                                  |
-| 8. First `ci:local`                                                    |        8 | Steps 1-6 green; the test step failed 26 tests in 9 files pinned to the one-region world (friction 5-9).  |
-| 9. Fix those: precache, music, guest form, board width, pins, baseline |       22 | The balance baseline took about 20 minutes to write in process (friction 9), overlapping the other fixes. |
-| 10. Second `ci:local`, the e2e run, the PR                             |       16 | Steps 1-12 green; step 13 is the known `ERR_UNSUPPORTED_DIR_IMPORT`. E2E: 3 passed.                       |
-| **Total**                                                              | **~100** |                                                                                                           |
+| Step                                                                      |  Minutes | Notes                                                                                                     |
+| ------------------------------------------------------------------------- | -------: | --------------------------------------------------------------------------------------------------------- |
+| 1. Read the plan, ADR 0111, ADR 0116, the script, Act I's wiring          |        6 | The script's "Trial slice" and "Build list" sections made scoping quick.                                  |
+| 2. Scaffold the region (`npm run new:region`)                             |       <1 | Folder, manifest, content, layouts and the three list lines, passing `validateContent` at once.           |
+| 3. Design: maps, story graph, fights, the Act I link                      |        3 | Deciding the slice's scenes and how the loss branch is carried.                                           |
+| 4. Author the data: 4 maps, 121 story nodes, 2 fights, 3 enemies          |        8 | Mostly transcribing the script's lines into nodes.                                                        |
+| 5. Make the content validators pass                                       |        5 | Node presentations, the Ba Dan link (rebuilt once, friction 1), map packs.                                |
+| 6. Registration: flags, id ledger, docs, the band test                    |        6 | `flags.ts`, `npm run ids:ledger`, `docs:story`, `docs:saves`, `docs:content`; a new progression check.    |
+| 7. A browser spec for the slice; this log's first draft                   |       25 | About 10 of work; the rest waiting for the CI lock another session held.                                  |
+| 8. First `ci:local`                                                       |        8 | Steps 1-6 green; the test step failed 26 tests in 9 files pinned to the one-region world (friction 5-9).  |
+| 9. Fix those: precache, music, guest form, board width, pins, baseline    |       22 | The balance baseline took about 20 minutes to write in process (friction 9), overlapping the other fixes. |
+| 10. Second `ci:local`, the e2e run, the PR                                |       16 | Steps 1-12 green; step 13 is the known `ERR_UNSUPPORTED_DIR_IMPORT`. E2E: 3 passed.                       |
+| 11. Merge #827 (objective), plug in the winch brake, rebaseline, final CI |       30 | One encounter field and a round limit, no code; the baseline rewrite was most of it (friction 9).         |
+| **Total**                                                                 | **~125** |                                                                                                           |
 
 The content pipeline itself (steps 2 to 6) took **23 minutes** for a two-map region with 121 story nodes. The
 expensive part was the world outside the region folder: the Ba Dan link and the pinned tests.
@@ -119,17 +120,19 @@ Ordered by what it cost. None was solved by a `src/core/` change; 1, 2, 3, 5 and
 9. **The balance baseline writer cannot run here.** `npm run balance:baseline` fails in this container with
    `ERR_UNSUPPORTED_DIR_IMPORT` (the worker threads do not load TypeScript; `balance:check` fails the same way on
    `main`). The rows were written in process through the same functions; the existing 48 came out unchanged to the
-   digit. Placeholder tuning is easy: the winch fight wins 100% in about 2 rounds at every size on Story, and
-   SF-2.1 wins 67% at three players on Hard.
+   digit. Placeholder tuning is easy: with the objective, the winch fight wins 100% in 2 to 3 rounds at every size
+   and difficulty (Veyra reaches the brake almost at once), and SF-2.1 wins 67% at three players on Hard. Both
+   need a tuning pass (the brake further from the guest, more handlers on it) before the owner plays it.
 10. **Map painting packs for every map.** `prompts.test.ts` still demands an orthographic painting pack (ADR 0009)
     per map, written in `scripts/art/map-pack.ts`. Top-down regions do not use it; it should be scoped to maps with
     a `backdrop`, or retired.
 11. **The Ba Dan presentation test read only the shared registry.** It now reads node-declared presentations too
     (the ADR 0111 way); the assertion is unchanged.
-12. **Things the script needs that the engine lacks** (not built here, as briefed): the winch objective
-    (`claude/objective-hold`; TODO in `encounters.ts`), fight barks for Veyra, an in-fight line on a combo event
-    ("the first time a puddle sparks"), a live line that shocks the wet ground beside it, the handlers yielding at
-    low health, and a drifting stall.
+12. **Things the script needs that the engine lacks** (not built here, as briefed): fight barks for Veyra, an
+    in-fight line on a combo event ("the first time a puddle sparks"), a live line that shocks the wet ground beside
+    it, the handlers yielding at low health, and a drifting stall. The winch objective merged mid-trial (#827) and
+    was plugged in as data: `objective` (hold the brake at (13, 4) at a round's end) and `loseAfterRound: 6`, with
+    no code; that is the guest-ally ADR's pass bar met for the objective, too.
 13. **The region-graph progression walk.** The XP walk stops at Act I's end, so RG-02's fights are not walked. A new
     check holds every Act I route, won or lost, inside RG-02's band on arrival, and `bands.ts` holds both fights to
     the band; walking a region's own fights waits for the ADR 0011 rewrite.
@@ -163,7 +166,7 @@ Every one reads "[Writer placeholder] …" in game; `grep -rn "Writer placeholde
 lists them.
 
 - Three option details for Scene 2.3's approach choice (the script gives the labels only).
-- The winch fight's tip.
+- The winch fight's tip and its objective label ("Stop the winch", the ADR's example).
 - The market's objective text, three states (before the bowl, carrying it, after the vote).
 - Three enemy descriptions (freight handler, line rigger, Veyra).
 - Not marked, written plainly and to be checked: Emberwatch's and the power yard's objectives, the maps' names and
