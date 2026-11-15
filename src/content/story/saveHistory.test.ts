@@ -46,7 +46,13 @@ import { historyInput, HISTORY_NOW, USES_NOW, VISITED_READERS_NOW } from './save
 
 const RELEASES = loadReleases();
 const SNAPSHOTS = RELEASES.map((release) => release.snapshot);
-const INPUT = historyInput(SNAPSHOTS);
+/** Today's story against every release: what the real checks run on. */
+const LIVE = historyInput(SNAPSHOTS);
+/**
+ * The same against the first release alone. The synthetic cases below edit this one, so they
+ * describe one release and one change, however many releases have been frozen since.
+ */
+const INPUT = { ...LIVE, releases: SNAPSHOTS.slice(0, 1) };
 const SAVES = RELEASES.flatMap((release) => release.saves);
 
 /** The app's load path (`App.adoptLoaded`): aliases, backfills at the file's revision, reconcile. */
@@ -70,7 +76,7 @@ describe('the release fixtures (ADR 0112)', () => {
   it('are never dropped or reordered: the index only grows', () => {
     // The hashes guard each file; this guards the index itself. Freezing a release
     // (`npm run saves:release`) appends its id here, and nothing is ever taken out.
-    const FROZEN = ['2026-11-08-golden-v5'];
+    const FROZEN = ['2026-11-08-golden-v5', '2026-11-15-demo'];
     expect(RELEASES.map((release) => release.entry.id)).toEqual(FROZEN);
   });
 
@@ -94,12 +100,12 @@ describe('the release fixtures (ADR 0112)', () => {
 
 describe('the story against every release (ADR 0112)', () => {
   it('answers for every flag that gained a write under a release', () => {
-    const problems = checkReleases(INPUT);
+    const problems = checkReleases(LIVE);
     expect(problems, problems.join('\n')).toEqual([]);
   });
 
   it('keeps its backfill rules readable by the saves they serve, and never rewrites one', () => {
-    const problems = checkRules(INPUT);
+    const problems = checkRules(LIVE);
     expect(problems, problems.join('\n')).toEqual([]);
     expect(HISTORY_REV).toBe(Math.max(0, ...FLAG_BACKFILLS.map((rule) => rule.rev)));
   });
@@ -107,7 +113,7 @@ describe('the story against every release (ADR 0112)', () => {
   it.each(SAVES.map((save) => [save.name, save.json] as const))(
     '%s holds every flag it has walked past',
     (name, json) => {
-      const problems = checkSave(INPUT, name, load(json));
+      const problems = checkSave(LIVE, name, load(json));
       expect(problems, problems.join('\n')).toEqual([]);
     },
   );
@@ -488,6 +494,26 @@ describe('what counts as a late write', () => {
     expect(checkReleases(both).join('\n')).toContain(
       'flag "ruon_spared" is written at story:ruon_choice',
     );
+  });
+
+  it('asks again when an answered choice gains an option, now that a release pins the three', () => {
+    // `sq01.cabbages` is answered for the first release. The second release froze its three
+    // options, so a fourth is a changed write under that release and the old answer stops short.
+    const fourth: HistoryInput = {
+      ...LIVE,
+      now: {
+        ...LIVE.now,
+        writes: LIVE.now.writes.map((write) =>
+          write.key === 'sq01.cabbages'
+            ? { ...write, values: [...write.values, 'options[3].setFlags="burned"'] }
+            : write,
+        ),
+      },
+    };
+    expect(checkReleases(LIVE).filter((line) => line.includes('"sq01.cabbages"'))).toEqual([]);
+    const problems = checkReleases(fourth).filter((line) => line.includes('"sq01.cabbages"'));
+    expect(problems.join('\n')).toContain('stops at release 2026-11-08-golden-v5');
+    expect(problems.join('\n')).toContain('for 2026-11-15-demo');
   });
 
   it('holds an answer to the sites it names', () => {

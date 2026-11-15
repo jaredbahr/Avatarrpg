@@ -23,5 +23,30 @@
       "party-4-new-game.json": "92ce6b5d040f7593fbd759efa9765aef1c83c389ea5e473fad7317840942017f",
       "party-4-quarry-gate.json": "628cff5a85ab2c3f6975e91eaeba8a6e5c81b0a64c70e6407e361782e6a96401"
     }
+  },
+  {
+    "id": "2026-11-15-demo",
+    "saves": "saves",
+    "files": {
+      "history.json": "022a35b441da96ff2e6f14747117d1dd8f606d4a365afb7cf4ee712a09723a71",
+      "party-1-new-game.json": "9d859a7bb4b3d26b4b0b6f73064fb3f50e29ee17810161cfde56e4052322e930",
+      "party-1-ba-dan.json": "49fdac283948255b7da26e287daf97ba424624c7f20158c74d2366f7c93db464",
+      "party-1-before-forest.json": "4095a332711c5a834f5bffd01e0e1429ef98d7d4cd5da04c9eb4ea774c6d20e6",
+      "party-1-after-forest.json": "6201e56f5dcdc28a81fd93f178c72b1744a68d536316f48f3041dfe1e3039107",
+      "party-1-quarry-gate.json": "b68366e6f049bcd5317aa818173b6a0d9ced6d678c17f8619821e6e66ff26a5e",
+      "party-1-cutting.json": "76e1cd8493169e513190263527c091450ef657ca64ec998ced646a59efd75e78",
+      "party-1-driller-mid.json": "974725d0bd7612f32f6789375e4ad1587831f557533a79ad53d9bb1537d0b480",
+      "party-1-driller-won.json": "d3e2c7d6d9169b13feee23b328832617c30cbfa3cc1b5fb556a749a4f4a4b3eb",
+      "party-1-home.json": "eb2d7224393b9cd3581fe12b6a43cb4fb2177b4ce3e7f42846bcb4570718894b",
+      "party-4-new-game.json": "3fd87c4c3fe24e89e3bac8f7d844dd81319fdf12aa125f5ffbeb4c6ce860f08d",
+      "party-4-ba-dan.json": "fcacc58be05c4b6061a65c6ef8f89f771d01bf74154544116dc1cc8932638146",
+      "party-4-before-forest.json": "01dc03a6e03a03df357e3738266f73c05182d008dcaab27bac241280646399bc",
+      "party-4-after-forest.json": "dd010f5639f96b5e0681ab33422740ff25d5d6c1c324ab93711041c9b5d3167e",
+      "party-4-quarry-gate.json": "ddc0de702653613a36daa32dcc97729eb78e8d6dfbbe8f93103b686a0c3561fd",
+      "party-4-cutting.json": "858ec629332b127106ccb76c254e765ce96547a405139274f87a1b2ffb3834cd",
+      "party-4-driller-mid.json": "4d038ff7f6a3bcdcac93305832c4833641a8c0184349ba0b9e78801eeb835cf6",
+      "party-4-driller-won.json": "87f32502468eda379ff9c1f4abc9fff2d56f4b280d95861d6216dae3fcb64f89",
+      "party-4-home.json": "9edf07a2e056558b865d0a9d3c5e71483e67e9ee50cd3b28f4f9473c893db8e3"
+    }
   }
 ]

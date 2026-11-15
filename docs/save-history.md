@@ -4,7 +4,7 @@
 
 Read this before drafting a scene that depends on something that happened earlier. It is generated from the content, the flag registry (`src/content/story/flags.ts`) and the release fixtures (`src/core/save/fixtures/releases/`); ADR 0112 has the rules. Regenerate with `npm run docs:saves`.
 
-Content is at history revision **1**. Releases frozen so far: `2026-11-08-golden-v5` (2026-11-08).
+Content is at history revision **1**. Releases frozen so far: `2026-11-08-golden-v5` (2026-11-08), `2026-11-15-demo` (2026-11-15).
 
 ## Before you read the past
 
@@ -75,19 +75,19 @@ Flags read in one part and written in another. A reader in a later region depend
 
 ### Ba Dan valley: Return
 
-| Flag                  | Means                                                                                                                                                     | Written in                                | Read here by                                                         |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | -------------------------------------------------------------------- |
-| `gate_fire_bluff`     | A firebender talked Hotaro, the hired guard by the oil barrels, off his post at the quarry gate; the crew fought without him.                             | Ba Dan valley: Act 1                      | `story:demo_complete`, `story:welcome_home_dorin`                    |
-| `gate_talked_through` | The party talked Captain Ruon into opening the gate on what it knew about his quarry; no gate fight.                                                      | Ba Dan valley: Act 1                      | `story:demo_complete`, `story:welcome_home_dorin`                    |
-| `lost_quarry_gate`    | The quarry crew drove the party down the switchbacks; Ruon surrendered anyway.                                                                            | Ba Dan valley: Act 1                      | `story:demo_complete`, `story:welcome_home_dorin`                    |
-| `pella_asked`         | Pella told the party about her brother Bo-shan and his cabbage cart.                                                                                      | Ba Dan valley: Act 1                      | `story:demo_complete`, `story:pella_home`, `story:welcome_home_mira` |
-| `ruon_spared`         | The table chose to escort Captain Ruon to Ba Dan for trial (branch A).                                                                                    | Ba Dan valley: Act 1                      | `story:demo_complete`                                                |
-| `ruon_traded`         | The table traded Captain Ruon to Jin for the inner gate key (branch B).                                                                                   | Ba Dan valley: Act 1                      | `story:demo_complete`, `story:welcome_home_gao`                      |
-| `sq01.cabbages`       | Where the party sent Bo-shan’s tipped load: home to Ba Dan, partly to the trapped crews, or hidden to bargain with.                                       | Ba Dan valley: SQ-01 Too Many Cabbages    | `story:cart_departure`, `story:demo_complete`, `story:pella_home`    |
-| `sq02.gate`           | How the backwards side gate was put right: quietly with Dorin, by helping him explain it publicly, or by laughing it open.                                | Ba Dan valley: SQ-02 A Very Official Gate | `story:demo_complete`                                                |
-| `sq03.ledger`         | How the party helped Gao carry his neighbours’ debts: a quiet letter for more time, a shared food jar, or praise in the square he asked them not to give. | Ba Dan valley: SQ-03 Gao’s Other Ledger   | `story:demo_complete`                                                |
-| `world.ducks_seen`    | The party met Lanfen and her displaced turtle ducks on the Forest Road, and heard about the runoff; it opens the gate talk.                               | Ba Dan valley: World                      | `story:demo_complete`                                                |
-| `world.tea_shared`    | The party sat and shared Kuan’s tea at the workers’ rest stop.                                                                                            | Ba Dan valley: World                      | `story:demo_complete`                                                |
+| Flag                  | Means                                                                                                                                                     | Written in                                | Read here by                                                      |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | ----------------------------------------------------------------- |
+| `gate_fire_bluff`     | A firebender talked Hotaro, the hired guard by the oil barrels, off his post at the quarry gate; the crew fought without him.                             | Ba Dan valley: Act 1                      | `story:demo_complete`, `story:welcome_home_dorin`                 |
+| `gate_talked_through` | The party talked Captain Ruon into opening the gate on what it knew about his quarry; no gate fight.                                                      | Ba Dan valley: Act 1                      | `story:demo_complete`, `story:welcome_home_dorin`                 |
+| `lost_quarry_gate`    | The quarry crew drove the party down the switchbacks; Ruon surrendered anyway.                                                                            | Ba Dan valley: Act 1                      | `story:demo_complete`, `story:welcome_home_dorin`                 |
+| `pella_asked`         | Pella told the party about her brother Bo-shan and his cabbage cart.                                                                                      | Ba Dan valley: Act 1                      | `story:demo_complete`, `story:pella_home`                         |
+| `ruon_spared`         | The table chose to escort Captain Ruon to Ba Dan for trial (branch A).                                                                                    | Ba Dan valley: Act 1                      | `story:demo_complete`                                             |
+| `ruon_traded`         | The table traded Captain Ruon to Jin for the inner gate key (branch B).                                                                                   | Ba Dan valley: Act 1                      | `story:demo_complete`, `story:welcome_home_gao`                   |
+| `sq01.cabbages`       | Where the party sent Bo-shan’s tipped load: home to Ba Dan, partly to the trapped crews, or hidden to bargain with.                                       | Ba Dan valley: SQ-01 Too Many Cabbages    | `story:cart_departure`, `story:demo_complete`, `story:pella_home` |
+| `sq02.gate`           | How the backwards side gate was put right: quietly with Dorin, by helping him explain it publicly, or by laughing it open.                                | Ba Dan valley: SQ-02 A Very Official Gate | `story:demo_complete`                                             |
+| `sq03.ledger`         | How the party helped Gao carry his neighbours’ debts: a quiet letter for more time, a shared food jar, or praise in the square he asked them not to give. | Ba Dan valley: SQ-03 Gao’s Other Ledger   | `story:demo_complete`                                             |
+| `world.ducks_seen`    | The party met Lanfen and her displaced turtle ducks on the Forest Road, and heard about the runoff; it opens the gate talk.                               | Ba Dan valley: World                      | `story:demo_complete`                                             |
+| `world.tea_shared`    | The party sat and shared Kuan’s tea at the workers’ rest stop.                                                                                            | Ba Dan valley: World                      | `story:demo_complete`                                             |
 
 ### Ba Dan valley: Ba Dan day
 
@@ -149,12 +149,13 @@ Every flag write and every `visited`-read scene that today's story has and a rel
 
 ### Release `2026-11-08-golden-v5`
 
-Frozen 2026-11-08 from commit `982e5e65`, history revision 0. The story as the commit that wrote fixtures/golden/v5 had it, read back from that commit with the 2026-11-14 scanner. The demo route was one region then.
+Frozen 2026-11-08 from commit `982e5e65`, history revision 0. The story as the commit that wrote fixtures/golden/v5 had it, read back from that commit with the 2026-11-14 scanner. The demo route was one region then. App writes were confirmed by searching that commit for each key.
 
 | Added                              | Where                                                         | Read by                                                                                                      | Saves of this release                                                                                                                                                                   |
 | ---------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | flag `guidance.firstFightEligible` | `app:app/App`                                                 | `app:app/scenes/combatGuidance`                                                                              | **Stays unset.** Only a new game is offered the guided first fight; an older save plays the Forest Road unguided, as it always did.                                                     |
 | flag `guidance.firstFightStage`    | `app:app/scenes/combatGuidance`, `app:app/scenes/CombatScene` | `app:app/scenes/combatGuidance`                                                                              | **Stays unset.** Only a new game is offered the guided first fight; an older save plays the Forest Road unguided, as it always did.                                                     |
+| flag `guidance.tip.*`              | `app:app/scenes/CombatScene`                                  | `app:app/scenes/CombatScene`, `app:app/scenes/combatGuidance`                                                | **Stays unset.** Each tip shows once per save. An older save has seen none, so it is shown each tip the first time it applies.                                                          |
 | flag `reason.bo`                   | `story:reason_bo_kept`                                        | `map:quarry_floor`                                                                                           | **Still open.** The find waits on its map after the rescue until its hero takes it, and the road back to the quarry stays open.                                                         |
 | flag `reason.jinu`                 | `story:reason_jinu_kept`                                      | `map:quarry_gate`                                                                                            | **Still open.** The find waits on its map after the rescue until its hero takes it, and the road back to the quarry stays open.                                                         |
 | flag `reason.kaya`                 | `story:reason_kaya_kept`                                      | `map:quarry_floor`                                                                                           | **Still open.** The find waits on its map after the rescue until its hero takes it, and the road back to the quarry stays open.                                                         |
@@ -173,6 +174,12 @@ Frozen 2026-11-08 from commit `982e5e65`, history revision 0. The story as the c
 | scene `sq01_packing_list`          | `story:sq01_packing_list`                                     | `map:forest_road`                                                                                            | **Backfill rule.** Pella hands the list over as she asks about Bo-shan, a scene an older save has already had. A save that was asked and has not finished the rescue is given the list. |
 | scene `sq02_return`                | `story:sq02_return`                                           | `map:ba_dan_village`                                                                                         | **Still open.** Read only by its own once-only gate on Dorin; it plays for any save that settled the side gate.                                                                         |
 | scene `sq03_jar`                   | `story:sq03_jar`                                              | `map:ba_dan_village`                                                                                         | **Still open.** Read only by its own once-only gate on Gao; it plays for any save that settled the ledger.                                                                              |
+
+### Release `2026-11-15-demo`
+
+Frozen 2026-11-15 from commit `19340085`, history revision 1. Frozen with ADR 0112 from the story as it merged. A test fixture, not a product release: it pins every write site answered so far.
+
+Nothing has been added under this release.
 
 ## Backfill rules
 
