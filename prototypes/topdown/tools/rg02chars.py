@@ -54,13 +54,10 @@ DESC = {
              'black shoes',
     # NPC-12 Luli, she/her, 41, a lightningbender who keeps the public power lines.
     # The owner, 2026-11-15: the first take (`rg02_char_luli`) was too slim and too serious beside her portrait; this one
-    # follows the portrait's build (`portrait.luli`). The owner again, the same day: its head came out about 40% bigger
-    # than the party's (head:height 1/2.6 against their median 1/3.6, on the south idle cel), so this asks for adult
-    # proportions with a small head and keeps the curls close to it. Not yet run: waiting for the owner's word.
-    'luli': 'Luli, a line keeper, a broad, sturdy, heavy-set woman in her early forties, realistic adult proportions with '
-            'a small head, the head about one sixth of her full height, wide shoulders and a thick waist, '
-            'warm tan skin, a round cheerful face with a big open grin, short wild curly black hair kept close to the '
-            'head, a dark soot smudge on one cheek, a red sleeveless work vest over a dark grey long-sleeved shirt, a thick '
+    # follows the portrait's build (`portrait.luli`).
+    'luli': 'Luli, a line keeper, a broad, sturdy, heavy-set woman in her early forties, wide shoulders and a thick waist, '
+            'warm tan skin, a round cheerful face with a big open grin, wild curly black hair sticking out in a big bushy '
+            'mop, a dark soot smudge on one cheek, a red sleeveless work vest over a dark grey long-sleeved shirt, a thick '
             'brown leather apron over the vest, big heavy black work gloves on both hands, a ring of brass keys at the hip, '
             'dark brown trousers, heavy black boots',
     # The bowl-seller (Scene 2.2): two bowls of pepper broth, the custom of the second bowl. The first take
@@ -72,11 +69,15 @@ DESC = {
     'freightclerk': 'a freight office clerk, a young woman in her twenties, pale skin, a neat black bob haircut, a '
                     'tidy charcoal-grey buttoned office coat with a teal collar and teal cuffs, a pencil behind one '
                     'ear, a ledger book held under her left arm, dark grey trousers, polished black shoes',
-    # Emberwatch's retired cook (Scene 3.1): beans on the parade ground, the spear-rack trellis.
-    'cook': 'a retired outpost cook, a stout old man in his sixties, ruddy brown skin, a bald head with white side '
-            'hair, a bushy white moustache, a faded red short-sleeved cook\'s shirt with the old buttons, a stained '
-            'cream apron, a wide straw sun hat hanging on his back, brown trousers, brown sandals, a small woven '
-            'basket of dried beans in his left hand',
+    # Emberwatch's retired cook (Scene 3.1): beans on the parade ground, the spear-rack trellis. The owner, 2026-11-15:
+    # the first take (`rg02_char_cook`) "seemed off": its straw hat ran wider than his shoulders and its head stood
+    # about a quarter bigger than the party's (13 px of head on a 46 px figure). This take asks for adult
+    # proportions, a head near the party's and a smaller hat, and keeps his look otherwise.
+    'cook': 'a retired outpost cook, a stout old man in his sixties, realistic adult proportions with a small head like '
+            'the other villagers, ruddy brown skin, a bald head with white side hair, a bushy white moustache, a faded '
+            'red short-sleeved cook\'s shirt with the old buttons, a stained cream apron, a small round straw hat with a '
+            'narrow brim no wider than his shoulders, brown trousers, brown sandals, a small woven basket of dried '
+            'beans in his left hand',
 }
 HANDS = {
     'veyra': 'the long brass lance stays in her right hand',

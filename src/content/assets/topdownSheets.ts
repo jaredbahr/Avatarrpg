@@ -793,10 +793,10 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
   },
   cook: {
     pages: 1,
-    frame: { w: 48, h: 52 },
-    anchor: { x: 0.5, y: 0.942308 },
+    frame: { w: 44, h: 51 },
+    anchor: { x: 0.5, y: 0.941176 },
     footprint: 1,
-    idleCels: [3, 2, 3, 3, 3, 3, 3, 3],
+    idleCels: [2, 2, 3, 3, 2, 3, 3, 3],
     idleMs: 420,
     walkCels: [8, 8, 8, 8, 8, 8, 8, 8],
     walkCelMs: 28.846,
