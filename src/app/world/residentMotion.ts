@@ -261,17 +261,17 @@ const ease = (n: number) => {
 
 /** Tiles either way the party keeps an errand from setting off. */
 const YIELD = 2;
-export const WORK_LEAN_IN_MS = 240;
-export const WORK_LEAN_HOLD_MS = 400;
-export const WORK_STRAIGHTEN_MS = 240;
-export const WORK_STRAIGHT_HOLD_MS = 720;
+const WORK_LEAN_IN_MS = 240;
+const WORK_LEAN_HOLD_MS = 400;
+const WORK_STRAIGHTEN_MS = 240;
+const WORK_STRAIGHT_HOLD_MS = 720;
 /** One complete held work beat. Kept at 1.6 s to align with the authored routine timing. */
-export const WORK_CYCLE_MS =
+const WORK_CYCLE_MS =
   WORK_LEAN_IN_MS + WORK_LEAN_HOLD_MS + WORK_STRAIGHTEN_MS + WORK_STRAIGHT_HOLD_MS;
 const WORK_LEAN_RAD = 0.03;
 
 /** A resident stride has two planted contacts and never lifts more than two pixels at 1x. */
-export const RESIDENT_STRIDE_MS = 500;
+const RESIDENT_STRIDE_MS = 500;
 /**
  * How much slower a routine errand goes than the reference stroll (ADR 0095): 2 s a
  * tile. Every other move (a placement, a call home) keeps the brisk pace. The ambling animator is read on a clock
@@ -279,8 +279,8 @@ export const RESIDENT_STRIDE_MS = 500;
  * exploration tuning changes neither its ramps nor its reduced-motion timing.
  */
 export const RESIDENT_AMBLE = 2000 / STROLL_REFERENCE_MS;
-export const RESIDENT_STEP_MS = RESIDENT_STRIDE_MS / 2;
-export const RESIDENT_CONTACT_MS = 60;
+const RESIDENT_STEP_MS = RESIDENT_STRIDE_MS / 2;
+const RESIDENT_CONTACT_MS = 60;
 export const RESIDENT_BOB_PX = 2;
 export const RESIDENT_WALK_LEAN_RAD = 0.035;
 const RESIDENT_WALK_EASE_MS = RESIDENT_STEP_MS;

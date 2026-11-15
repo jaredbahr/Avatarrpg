@@ -14,7 +14,7 @@ export const FIRST_FIGHT_GUIDANCE = {
   stage: 'guidance.firstFightStage',
 } as const;
 
-export const COMBAT_TIP_COPY = {
+const COMBAT_TIP_COPY = {
   // ADR 0116's 2026-11-15 amendment: the first fight with an objective.
   objective:
     'To win, be standing on the flag spot when a round ends. The top bar counts the rounds.',
