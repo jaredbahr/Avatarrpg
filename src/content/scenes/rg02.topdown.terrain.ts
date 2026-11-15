@@ -115,8 +115,8 @@ export class Rg02Terrain {
       if (w <= 0 && k !== own) continue;
       const s =
         w +
-        vnoise(px, py, 21 + k * 7, 11) * 0.26 +
-        vnoise(px, py, 23 + k * 7, 4) * 0.1 +
+        vnoise(px, py, 21 + k * 7, 11) * 0.3 +
+        vnoise(px, py, 23 + k * 7, 4) * 0.16 +
         (k === own ? bump : 0) -
         (k === RG.water || k === RG.void ? hold : 0);
       if (s > score) {

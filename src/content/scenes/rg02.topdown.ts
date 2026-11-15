@@ -4,7 +4,12 @@
  * (`scripts/art/topdown/boards/rg02.ts`); the shipped runtime draws the packed scene and never imports them.
  */
 import type { TopDownLayout, TopDownObject } from '../topdownLayout';
-import { SALTSTEP_MARKET, SALTSTEP_PONTOON } from '../regions/saltstepEmberwatch/maps';
+import {
+  EMBERWATCH_PARADE,
+  EMBERWATCH_POWER_YARD,
+  SALTSTEP_MARKET,
+  SALTSTEP_PONTOON,
+} from '../regions/saltstepEmberwatch/maps';
 import { MOUTH_REACH, RG, Rg02Terrain, mouth } from './rg02.topdown.terrain';
 
 const C = 40;
@@ -141,5 +146,131 @@ export const SALTSTEP_PONTOON_TOPDOWN_LAYOUT: TopDownLayout = {
     mouthReach: MOUTH_REACH,
   },
   objects: SALTSTEP_PONTOON_OBJECTS,
+  slots: [],
+};
+
+/* ------------------------------------------------------------------ */
+/* Emberwatch parade ground                                            */
+/* ------------------------------------------------------------------ */
+
+export const EMBERWATCH_PARADE_TERRAIN = new Rg02Terrain({
+  mapId: 'emberwatch_parade',
+  rows: EMBERWATCH_PARADE.rows,
+  // the barracks wall's row (`#`) stands on packed earth; the parade square and the east gate are the old flagstones
+  chars: {
+    T: RG.void,
+    '#': RG.earth,
+    ',': RG.earth,
+    ':': RG.stone,
+    '=': RG.stone,
+    w: RG.deck,
+    W: RG.water,
+  },
+  beyond: RG.void,
+  mouths: [
+    mouth('power-yard', 'east', [
+      { x: 23, y: 7 },
+      { x: 23, y: 8 },
+    ]),
+  ],
+});
+
+/** A run of the parade wall: two cells a section, the sections overlapping so the wall reads as one. */
+const wallRun = (from: number, to: number): TopDownObject[] => {
+  const out: TopDownObject[] = [];
+  for (let x = from, i = 0; x <= to; x += 2, i++) {
+    const cells: [number, number][] =
+      x + 1 <= to
+        ? [
+            [x, 1],
+            [x + 1, 1],
+          ]
+        : [[x, 1]];
+    const wall = piece(`wall_${x}`, 'parade_wall', 'prop', cells, true);
+    out.push(i % 2 ? { ...wall, flip: true } : wall);
+  }
+  return out;
+};
+
+export const EMBERWATCH_PARADE_OBJECTS: readonly TopDownObject[] = [
+  // The north side (`#`): the old wall either side of the barracks, the spear-rack trellis and an outpost lamp.
+  ...wallRun(1, 8),
+  piece('trellis', 'spear_trellis', 'prop', [[9, 1]], true),
+  piece('barracks', 'barracks', 'house', block(10, 13, 1, 1), true),
+  ...wallRun(14, 21),
+  piece('lamp', 'outpost_lamp', 'prop', [[22, 1]], true),
+  // The cook's beans drying on an old tent canvas, beside where he stands.
+  piece(
+    'beans',
+    'bean_canvas',
+    'flat',
+    [
+      [6, 3],
+      [7, 3],
+    ],
+    false,
+  ),
+];
+
+export const EMBERWATCH_PARADE_TOPDOWN_LAYOUT: TopDownLayout = {
+  mapId: 'emberwatch_parade',
+  terrain: {
+    kind: 'classified',
+    classify: EMBERWATCH_PARADE_TERRAIN.classify,
+    mouths: EMBERWATCH_PARADE_TERRAIN.config.mouths,
+    mouthReach: MOUTH_REACH,
+  },
+  objects: EMBERWATCH_PARADE_OBJECTS,
+  slots: [],
+};
+
+/* ------------------------------------------------------------------ */
+/* Emberwatch power yard                                               */
+/* ------------------------------------------------------------------ */
+
+export const EMBERWATCH_POWER_YARD_TERRAIN = new Rg02Terrain({
+  mapId: 'emberwatch_power_yard',
+  rows: EMBERWATCH_POWER_YARD.rows,
+  // the yard's wall (`#`) is the rim, its gate (`=`) flagstones; the cistern (`W`) stands on the mud; the overflow (`~`) lies in puddles
+  chars: { '#': RG.void, '.': RG.earth, '=': RG.stone, '~': RG.puddle, F: RG.earth, W: RG.earth },
+  beyond: RG.void,
+  mouths: [
+    mouth('parade', 'west', [
+      { x: 0, y: 5 },
+      { x: 0, y: 6 },
+    ]),
+  ],
+});
+
+export const EMBERWATCH_POWER_YARD_OBJECTS: readonly TopDownObject[] = [
+  // The live line along the north side (`F`): a pole every two cells, each carrying its span of cable east.
+  ...[1, 3, 5, 7, 9, 11, 13].map((x) =>
+    piece(
+      `line_${x}`,
+      'line_pole',
+      'prop',
+      [
+        [x, 1],
+        [x + 1, 1],
+      ],
+      true,
+    ),
+  ),
+  // The overflowing rain cistern (`W`), and the dead copper spur on its own poles at the back (east).
+  piece('cistern', 'cistern', 'prop', block(15, 17, 1, 2), true),
+  piece('spur_north', 'copper_spur', 'prop', block(17, 17, 4, 6), true),
+  // the south spur stands back from the yard's corner, so its shadow falls on the yard and not into the rim
+  piece('spur_south', 'copper_spur', 'prop', block(17, 17, 7, 8), true, { x: -8, base: -16 }),
+];
+
+export const EMBERWATCH_POWER_YARD_TOPDOWN_LAYOUT: TopDownLayout = {
+  mapId: 'emberwatch_power_yard',
+  terrain: {
+    kind: 'classified',
+    classify: EMBERWATCH_POWER_YARD_TERRAIN.classify,
+    mouths: EMBERWATCH_POWER_YARD_TERRAIN.config.mouths,
+    mouthReach: MOUTH_REACH,
+  },
+  objects: EMBERWATCH_POWER_YARD_OBJECTS,
   slots: [],
 };
