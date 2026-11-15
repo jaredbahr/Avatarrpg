@@ -14,6 +14,7 @@
  * canvases, and a canvas uploads as a texture.
  */
 
+import { releaseCanvas } from '../canvasRelease';
 import {
   WebGLRenderer,
   Container,
@@ -480,6 +481,10 @@ export class PixiBackend implements RenderBackend {
   private pixelMarkDrawables = new PixelMarkDrawableCache(pixelMarkCanvas);
   private pixelMarkSources = new Map<string, HTMLCanvasElement>();
   private retiredPixelSources = new Set<HTMLCanvasElement>();
+  /** The canvas each one-picture layer drew last, by slot; see `layerTexture`. */
+  private layerCanvases = new Map<string, HTMLCanvasElement>();
+  /** Small canvases made once for this backend (the edge shades and the vignette). */
+  private ownedCanvases: HTMLCanvasElement[] = [];
   private pixelSpritePools = new Map<Container, Sprite[]>();
   private pixelSpriteUsed = new Map<Container, number>();
   /** World-space projected silhouettes; rendered to one viewport union mask per frame. */
@@ -592,13 +597,24 @@ export class PixiBackend implements RenderBackend {
    * acceleration is better served by the 2D path, and says so here.
    */
   static isSupported(): boolean {
+    // Asked once a page, not once a scene: the answer cannot change, and every ask made a WebGL
+    // context that lived until the collector found it. A browser keeps only so many contexts
+    // alive (sixteen in WebKit) and loses the oldest beyond that.
+    return (PixiBackend.supported ??= PixiBackend.probe());
+  }
+
+  private static supported: boolean | null = null;
+
+  private static probe(): boolean {
     try {
       const probe = document.createElement('canvas');
       const gl = probe.getContext('webgl2') ?? probe.getContext('webgl');
       if (!gl) return false;
       const info = gl.getExtension('WEBGL_debug_renderer_info');
-      if (!info) return true;
-      const renderer = String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL) ?? '');
+      const renderer = info ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL) ?? '') : '';
+      // The probe's context is given back now rather than left for the collector.
+      gl.getExtension('WEBGL_lose_context')?.loseContext();
+      releaseCanvas(probe);
       return !/swiftshader|llvmpipe|softpipe|software|basic render/i.test(renderer);
     } catch {
       return false;
@@ -676,11 +692,15 @@ export class PixiBackend implements RenderBackend {
     this.applyViewport();
 
     for (const kind of ['n', 's', 'w', 'e'] as const) {
-      const sprite = new Sprite(Texture.from(gradientCanvas(kind, EDGE_SHADE_ALPHA), true));
+      const sprite = new Sprite(
+        Texture.from(this.owned(gradientCanvas(kind, EDGE_SHADE_ALPHA)), true),
+      );
       this.shadeSprites.push(sprite);
       this.shadeLayer.addChild(sprite);
     }
-    const vignette = new Sprite(Texture.from(gradientCanvas('radial', VIGNETTE_ALPHA), true));
+    const vignette = new Sprite(
+      Texture.from(this.owned(gradientCanvas('radial', VIGNETTE_ALPHA)), true),
+    );
     this.shadeSprites.push(vignette);
     this.shadeLayer.addChild(vignette);
 
@@ -764,6 +784,16 @@ export class PixiBackend implements RenderBackend {
     this.groundSprite.height = this.viewport.height;
   }
 
+  private owned(canvas: HTMLCanvasElement): HTMLCanvasElement {
+    this.ownedCanvases.push(canvas);
+    return canvas;
+  }
+
+  /**
+   * Releases the GPU side, and gives back every canvas the backend made along with the map
+   * canvas's own drawing buffer: a canvas left for the collector is still memory the page holds
+   * (ADR 0112).
+   */
   destroy(): void {
     this.destroyed = true;
     this.fxUnder.destroy();
@@ -794,8 +824,14 @@ export class PixiBackend implements RenderBackend {
     this.groundChunks.clear();
     this.scenerySprites.clear();
     this.reveal?.texture?.destroy(true);
+    this.reveal?.layer.release();
     this.reveal = null;
     this.mapTexture.destroy(true);
+    this.decor.clear();
+    releaseCanvas(this.mapCanvas);
+    for (const canvas of this.ownedCanvases) releaseCanvas(canvas);
+    this.ownedCanvases = [];
+    releaseCanvas(this.canvas);
   }
 
   draw(view: MapView, camera: Camera): void {
@@ -2046,11 +2082,12 @@ export class PixiBackend implements RenderBackend {
         : null;
     const canvas = layer && rgbaCanvas(layer.image);
     if (!layer || !canvas) {
+      this.retireLayer('propShadows');
       sprite.visible = false;
       sprite.texture = Texture.EMPTY;
       return;
     }
-    const texture = this.texture(canvas);
+    const texture = this.layerTexture('propShadows', canvas);
     if (texture.source.scaleMode !== 'nearest') texture.source.scaleMode = 'nearest';
     sprite.texture = texture;
     sprite.position.set(layer.x, layer.y);
@@ -2066,13 +2103,14 @@ export class PixiBackend implements RenderBackend {
   private syncTopdownSurfaces(view: MapView): void {
     const art = this.surfaces;
     const { layer, glow } = art ? surfaceCanvases(art) : { layer: null, glow: null };
-    const place = (sprite: Sprite, canvas: HTMLCanvasElement | null) => {
+    const place = (slot: string, sprite: Sprite, canvas: HTMLCanvasElement | null) => {
       if (!art || !canvas) {
+        this.retireLayer(slot);
         sprite.visible = false;
         sprite.texture = Texture.EMPTY;
         return;
       }
-      const texture = this.texture(canvas);
+      const texture = this.layerTexture(slot, canvas);
       if (texture.source.scaleMode !== 'nearest') texture.source.scaleMode = 'nearest';
       sprite.texture = texture;
       sprite.position.set(0, 0);
@@ -2080,8 +2118,8 @@ export class PixiBackend implements RenderBackend {
       sprite.height = art.layer.height;
       sprite.visible = true;
     };
-    place(this.surfaceSprite, layer);
-    place(this.glowSprite, glow);
+    place('surfaces', this.surfaceSprite, layer);
+    place('glow', this.glowSprite, glow);
     this.glowSprite.alpha = glowAlpha(view.reducedMotion ? null : view.time);
   }
 
@@ -2137,11 +2175,12 @@ export class PixiBackend implements RenderBackend {
       : null;
     const canvas = image && rgbaCanvas(image);
     if (!image || !canvas) {
+      this.retireLayer('wash');
       sprite.visible = false;
       sprite.texture = Texture.EMPTY;
       return;
     }
-    const texture = this.texture(canvas);
+    const texture = this.layerTexture('wash', canvas);
     if (texture.source.scaleMode !== 'nearest') texture.source.scaleMode = 'nearest';
     sprite.texture = texture;
     sprite.position.set(0, 0);
@@ -2173,6 +2212,29 @@ export class PixiBackend implements RenderBackend {
     return texture;
   }
 
+  /**
+   * The texture of a layer that is one picture at a time (the wash, the prop shadows, the
+   * surfaces and their glow). Each is rebuilt as a new board-sized canvas when what it shows
+   * changes, the wash on every tile a pointer crosses, and the one it replaces is never drawn
+   * again; left in the texture map it would sit there, a canvas and a GPU copy each, until the
+   * map passed its 128 entries. So the replaced canvas is retired here and its texture goes after
+   * this frame.
+   */
+  private layerTexture(slot: string, canvas: HTMLCanvasElement): Texture {
+    const previous = this.layerCanvases.get(slot);
+    if (previous && previous !== canvas) this.retiredPixelSources.add(previous);
+    this.layerCanvases.set(slot, canvas);
+    return this.texture(canvas);
+  }
+
+  /** The layer shows nothing now: its last picture's texture goes after this frame. */
+  private retireLayer(slot: string): void {
+    const previous = this.layerCanvases.get(slot);
+    if (!previous) return;
+    this.retiredPixelSources.add(previous);
+    this.layerCanvases.delete(slot);
+  }
+
   /** Release idle textures after all of this frame's sprites have been bound and rendered. */
   private trimTextures(): void {
     trimPixiTextureCaches(
@@ -2197,6 +2259,7 @@ export class PixiBackend implements RenderBackend {
 
   private dropTextures(): void {
     this.retiredPixelSources.clear();
+    this.layerCanvases.clear();
     this.pixelMarkSources.clear();
     for (const texture of this.frameTextures.values()) texture.destroy(false);
     this.frameTextures.clear();

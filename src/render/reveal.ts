@@ -8,6 +8,7 @@
  * cover, not a probe at a fixed height, so it does not toggle on one pixel of a chimney's edge and
  * does not depend on the figure's scale. Both backends draw the one canvas this builds.
  */
+import { releaseCanvas } from './canvasRelease';
 import type { SceneScenery } from '../core/types';
 import type { Camera } from './camera';
 import { drawSceneImage, sceneImage } from './scene';
@@ -158,6 +159,12 @@ function boxed(
 export class RevealLayer {
   private readonly scratch = document.createElement('canvas');
   readonly canvas = document.createElement('canvas');
+
+  /** Gives both canvases back; the backend calls it when it is destroyed. */
+  release(): void {
+    releaseCanvas(this.scratch);
+    releaseCanvas(this.canvas);
+  }
 
   draw(
     figures: readonly RevealFigure[],

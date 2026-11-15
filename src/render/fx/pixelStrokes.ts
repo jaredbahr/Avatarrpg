@@ -12,6 +12,7 @@
  * opacity, in eighths.
  */
 
+import { releaseCanvas } from '../canvasRelease';
 import { TILE } from '../camera';
 import type { Stroke } from './simulate';
 
@@ -99,6 +100,14 @@ const MAX_SIDE = 1024;
 export class StrokeRasterer {
   private readonly pool: HTMLCanvasElement[] = [];
   private scratch: HTMLCanvasElement | null = null;
+
+  /** Gives back the pooled rasters and the scratch; the owner calls it when it is destroyed. */
+  release(): void {
+    for (const canvas of this.pool) releaseCanvas(canvas);
+    this.pool.length = 0;
+    releaseCanvas(this.scratch);
+    this.scratch = null;
+  }
 
   /**
    * Draws `shapes` as `slot`'s raster. `colour` and `ink` are hex; `ink` is

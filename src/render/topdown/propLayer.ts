@@ -8,6 +8,7 @@
  * The drawings load like the scene's pages, through a bounded `BackdropStore`; until one is in, the
  * backends keep drawing that prop's oblique sprite, so a missing file shows the old prop, never none.
  */
+import { releaseCanvas } from '../canvasRelease';
 import type { Vec2 } from '../../core/types';
 import { BackdropStore } from '../backdrops';
 import { TOPDOWN_TILE } from '../projection';
@@ -144,6 +145,7 @@ export function propShadows(
   }
   const key = [paved ? paved.length : -1, ...casters.map((c) => `${c.id}@${c.x},${c.y}`)].join('|');
   if (last?.key === key) return last;
+  dropRgbaCanvas(last?.layer?.image);
   last = { key, layer: shadowLayer(casters, pavedScale(paved)) };
   return last;
 }
@@ -151,6 +153,7 @@ export function propShadows(
 /** Test seam: forget the cached masks and layer. */
 export function resetPropShadows(): void {
   masks.clear();
+  dropRgbaCanvas(last?.layer?.image);
   last = null;
 }
 
@@ -179,4 +182,16 @@ export function rgbaCanvas(image: RgbaImage): HTMLCanvasElement | null {
   ctx.putImageData(data, 0, 0);
   canvases.set(image, canvas);
   return canvas;
+}
+
+/**
+ * Gives back the canvas of an image its owner has replaced. Each layer (the wash, the prop
+ * shadows) keeps one image and builds another when what it shows changes, on every tile a pointer
+ * crosses for the wash; the image it lets go of is never drawn again, so its board-sized canvas
+ * goes with it instead of waiting for the collector.
+ */
+export function dropRgbaCanvas(image: RgbaImage | null | undefined): void {
+  if (!image) return;
+  releaseCanvas(canvases.get(image));
+  canvases.delete(image);
 }

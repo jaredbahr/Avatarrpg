@@ -115,6 +115,7 @@ export class ParticleLayer {
       slot.texture.destroy(false);
       slot.source.destroy();
     }
+    this.rasterer.release();
     this.source.destroy();
   }
 

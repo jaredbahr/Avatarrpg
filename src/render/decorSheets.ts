@@ -13,6 +13,7 @@
  * 2048 px texture every iPad accepts and the whole set inside a few MB.
  */
 
+import { releaseCanvasSoon } from './canvasRelease';
 import type { Grid } from '../core/types';
 import type { TileRelief } from './geometry/board';
 import { DECOR_CHUNK, boardRelief, decorSignature, seamMaterial } from './geometry/board';
@@ -46,11 +47,13 @@ export class DecorSheets {
     if (signature === this.signature) return false;
     this.signature = signature;
     this.relief = boardRelief(grid);
-    this.chunks.clear();
+    this.clear();
     return true;
   }
 
+  /** Drops every chunk and gives its canvas back once this frame's draws are over. */
   clear(): void {
+    for (const canvas of this.chunks.values()) releaseCanvasSoon(canvas);
     this.chunks.clear();
   }
 
@@ -87,6 +90,7 @@ export class DecorSheets {
     while (this.chunks.size > MAX_CHUNKS) {
       const oldest = this.chunks.keys().next().value;
       if (oldest === undefined) break;
+      releaseCanvasSoon(this.chunks.get(oldest));
       this.chunks.delete(oldest);
     }
     return canvas;

@@ -11,6 +11,7 @@
  * their own slots at their 96 px master size (ADR 0086).
  */
 
+import { releaseCanvasSoon } from '../canvasRelease';
 import type { FxCell } from '../../content/fx';
 import { FX_CELLS } from '../../content/fx';
 import { CEL_FRAMES, CEL_SIZE, FX_CELS, FX_CEL_SHEETS, type FxCel } from '../../content/fxCels';
@@ -207,6 +208,7 @@ export function celAtSize(
   while (sized.size > MAX_SIZED) {
     const oldest = sized.keys().next().value;
     if (oldest === undefined) break;
+    releaseCanvasSoon(sized.get(oldest));
     sized.delete(oldest);
   }
   return { canvas, key };

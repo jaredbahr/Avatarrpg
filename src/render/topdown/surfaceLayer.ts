@@ -4,6 +4,7 @@
  * ground flames' atlas (`public/art/topdown/vfx.json`, packed by `pack-vfx.ts`), fetched the first
  * time a top-down board shows fire. Rubble stays on the board's own drawing (#577 gives it a sprite).
  */
+import { releaseCanvas } from '../canvasRelease';
 import type { Grid, SurfaceId } from '../../core/types';
 import { BackdropStore } from '../backdrops';
 import { surfaceIsPainted } from '../sceneSurfaces';
@@ -185,6 +186,9 @@ export function surfaceCanvases(art: SurfaceArt): {
   glow: HTMLCanvasElement | null;
 } {
   if (canvases?.version === art.version) return canvases;
+  // The surfaces changed: the last layer and glow are never drawn again.
+  releaseCanvas(canvases?.layer);
+  releaseCanvas(canvases?.glow);
   canvases = {
     version: art.version,
     layer: rgbaCanvas({ ...art.layer, data: art.layer.data.slice() }),

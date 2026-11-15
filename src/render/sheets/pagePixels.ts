@@ -7,6 +7,7 @@
  * 3 s of the scene's start in the CI's iPad WebKit. One readback of the page, then a crop of each
  * cel from it, measures the same pixels.
  */
+import { releaseCanvas } from '../canvasRelease';
 import type { AtlasFrame } from './atlasJson';
 
 /** Straight RGBA of a whole page, row-major, `width` pixels a row. */
@@ -50,5 +51,8 @@ export function readPagePixels(
   const ctx = scratch.getContext('2d', { willReadFrequently: true });
   if (!ctx) return null;
   ctx.drawImage(image, 0, 0);
-  return { data: ctx.getImageData(0, 0, width, height).data, width, height };
+  const data = ctx.getImageData(0, 0, width, height).data;
+  // A page-sized canvas (the Driller's is 16 MB) is needed for this one read only.
+  releaseCanvas(scratch);
+  return { data, width, height };
 }

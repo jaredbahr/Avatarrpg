@@ -447,6 +447,8 @@ describe('Pixi lays the same layer', () => {
       washSprite: sprite,
       squareFootprints: true,
       texture: () => texture,
+      layerCanvases: new Map(),
+      retiredPixelSources: new Set(),
     });
     const sync = (v: MapView, c: Camera) =>
       (backend.syncTopdownWash as (v: MapView, c: Camera) => void).call(backend, v, c);
@@ -463,5 +465,44 @@ describe('Pixi lays the same layer', () => {
     expect(sprite.visible).toBe(false);
     sync(fixtureView({ overlays: [] }), camera('topdown'));
     expect(sprite.visible).toBe(false);
+  });
+
+  it('gives a replaced picture back as the pointer crosses the board (#525)', () => {
+    fakeDocument();
+    const backend = Object.create(PixiBackend.prototype) as Record<string, unknown>;
+    const texture = new Texture({ source: new TextureSource({ width: 4, height: 4 }) });
+    const slots = new Map<string, { width: number; height: number }>();
+    const retired = new Set<unknown>();
+    Object.assign(backend, {
+      washSprite: new Sprite(),
+      squareFootprints: true,
+      texture: () => texture,
+      layerCanvases: slots,
+      retiredPixelSources: retired,
+    });
+    const sync = (v: MapView) =>
+      (backend.syncTopdownWash as (v: MapView, c: Camera) => void).call(
+        backend,
+        v,
+        camera('topdown'),
+      );
+    // Every tile the pointer crosses is a new picture the size of the board.
+    const made: { width: number; height: number }[] = [];
+    for (let x = 0; x < 9; x++) {
+      sync(fixtureView({ hoverTile: { x, y: 3 } }));
+      const canvas = slots.get('wash');
+      expect(canvas).toBeDefined();
+      if (canvas) made.push(canvas);
+    }
+    expect(new Set(made).size).toBe(9);
+    // Only the picture on screen keeps its pixels; each one it replaced was released at once,
+    // and its texture is queued to go after the frame rather than waiting in the texture map.
+    expect(made.filter((canvas) => canvas.width * canvas.height > 0)).toHaveLength(1);
+    for (const canvas of made.slice(0, -1)) expect(retired.has(canvas)).toBe(true);
+    expect(retired.has(made[made.length - 1])).toBe(false);
+    // With nothing to show, the last picture goes too.
+    sync(fixtureView({ overlays: [] }));
+    expect(made.filter((canvas) => canvas.width * canvas.height > 0)).toHaveLength(0);
+    expect(slots.has('wash')).toBe(false);
   });
 });
