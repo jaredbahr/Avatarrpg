@@ -61,11 +61,11 @@ export const SALTSTEP_EMBERWATCH_ENCOUNTERS: readonly EncounterDef[] = [
     conditionalEnemies: [],
     // Three heroes and Veyra: a guest counts as a friendly body in the roster scaling (ADR 0116).
     baselinePartySize: 4,
-    reinforcements: [
-      at(14, 6, 'freight_handler'),
-      at(17, 6, 'freight_handler'),
-      at(15, 7, 'freight_handler'),
-    ],
+    /*
+     * One more handler for a table of five or six. Kept to one so the fight stays below the
+     * largest roster in the game (the ambush), which `scripts/perf/core-bench.ts` measures.
+     */
+    reinforcements: [at(14, 6, 'freight_handler')],
     variants: [],
     intro:
       'Across the pontoon, the freight handlers have the tenth crate in a crane sling. It swings out over the water. One strap is already fraying.',
