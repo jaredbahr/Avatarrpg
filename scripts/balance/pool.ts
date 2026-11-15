@@ -58,8 +58,9 @@ export async function runSweepJobs(
 
   const lane = () =>
     new Promise<void>((resolve, reject) => {
-      // The worker inherits this process's `--import tsx`, so it loads TypeScript too.
-      const worker = new Worker(new URL('./worker.ts', import.meta.url), {
+      // A worker does not inherit `--import tsx`, so the entry registers tsx itself
+      // before it loads the lane (see `worker-entry.mjs`).
+      const worker = new Worker(new URL('./worker-entry.mjs', import.meta.url), {
         workerData: { tuning },
       });
       let current = -1;
