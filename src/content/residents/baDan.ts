@@ -72,6 +72,13 @@ const HOMECOMING = all(VICTORY, not(VILLAGE_HOMECOMINGS_COMPLETE));
 const MIRA_HELD = any(not(visited('mira_intro')), all(VICTORY, not(visited('mira_epilogue'))));
 const GAO_HELD = all(VICTORY, not(any(visited('gao_home'), visited('gao_home_cold'))));
 const PELLA_HELD = all(VICTORY, not(visited('pella_home')));
+/**
+ * Pella sits at Mira's table for the first talk there (DLG-01). Opening
+ * `mira_intro` visits it at once, but a conversation freezes resident motion
+ * until it ends (`residentMotion.ts`), so she stays beside Mira for the whole
+ * talk and walks back to her own day afterwards.
+ */
+const PELLA_AT_TABLE = not(visited('mira_intro'));
 const DORIN_HELD = all(VICTORY, not(visited('dorin_home')));
 
 /* ------------------------------------------------------------------ */
@@ -94,6 +101,9 @@ export const BA_DAN_ANCHORS: readonly WorldAnchor[] = [
   // Mira's Table: the square's paving beside the canal, next to the bench
   // rest spot (10,5). No table or awning art yet.
   tile('bd01.table', 'BD01', VILLAGE, 11, 5),
+  // Pella's seat at Mira's table for the first talk (DLG-01): the paving on
+  // Mira's east side, clear of the party's rest spot (10,5) to her west.
+  tile('bd01.bench', 'BD01', VILLAGE, 12, 5),
   // Gao's shopfront: the lane in front of his display, below the shop steps.
   tile('bd02.shopfront', 'BD02', VILLAGE, 9, 4),
   // The rear room: the merchant house's front door, its step at (7,4).
@@ -240,6 +250,15 @@ const PELLA: ResidentDef = {
     night: 'home',
   },
   overrides: [
+    {
+      // Mira's table (DLG-01): Pella waits beside Mira for the first talk,
+      // which she is part of, then goes back to her own day.
+      id: 'pella_at_table',
+      tier: 'mission',
+      when: PELLA_AT_TABLE,
+      slots: {},
+      all: talk('bd01.bench', 'kid_pella', 'waiting_at_table'),
+    },
     {
       id: 'pella_homecoming',
       tier: 'mission',
