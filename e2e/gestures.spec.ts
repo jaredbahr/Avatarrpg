@@ -138,6 +138,24 @@ async function lowestStop(page: Page, cam: CameraInfo, dpr: number): Promise<num
   return Math.max(1, Math.floor(fit * dpr + 1e-6), dpr);
 }
 
+/**
+ * Opens or closes the combat log from the header, wherever the layout keeps it.
+ *
+ * A tablet held upright folds Log behind More (the compact portrait header,
+ * 66d9ebea), as a phone does, so the button is in the page but not on screen
+ * until the list opens. What these cases need is the reflow: the log panel
+ * taking height from the map, which is asserted on the panel itself.
+ */
+async function setLog(page: Page, open: boolean): Promise<void> {
+  const toggle = page.getByRole('button', { name: open ? /^Log$/ : /^Hide log$/ });
+  const more = page.getByRole('button', { name: 'More', exact: true });
+  if (await more.isVisible()) await more.click();
+  await toggle.click();
+  const panel = page.locator('.log-panel');
+  if (open) await expect(panel).toBeVisible();
+  else await expect(panel).toHaveCount(0);
+}
+
 async function openFight(page: Page, node = 'battle_forest_road'): Promise<void> {
   await resetStorage(page);
   await startGame(page, ['Elias'], ['kaya'], 'gestures-spec');
@@ -371,11 +389,10 @@ test.describe('zoom and pan', () => {
       ],
     );
     const zoomed = await camera(page);
-    await page.getByRole('button', { name: /^Log$/ }).click();
-    await expect(page.getByRole('button', { name: /^Hide log$/ })).toBeVisible();
+    await setLog(page, true);
     const withLog = await camera(page);
     expect(withLog.tilePx).toBeCloseTo(zoomed.tilePx, 3);
-    await page.getByRole('button', { name: /^Hide log$/ }).click();
+    await setLog(page, false);
     const withoutLog = await camera(page);
     expect(withoutLog.tilePx).toBeCloseTo(zoomed.tilePx, 3);
   });
@@ -431,11 +448,10 @@ test.describe('zoom and pan', () => {
     await expect(page.locator('.confirm-bar').filter({ hasText: /Confirm/ })).toBeVisible();
     const firstFooter = await camera(page);
     expect(firstFooter.tilePx).toBeGreaterThanOrEqual(fitted.tilePx - 0.5);
-    await page.getByRole('button', { name: /^Log$/ }).click();
-    await expect(page.getByRole('button', { name: /^Hide log$/ })).toBeVisible();
+    await setLog(page, true);
     const withLog = await camera(page);
     expect(withLog.tilePx).toBeGreaterThanOrEqual(firstFooter.tilePx - 0.5);
-    await page.getByRole('button', { name: /^Hide log$/ }).click();
+    await setLog(page, false);
 
     await page.getByRole('button', { name: /^Cancel$/ }).click();
     // The cancel affordance backs out of the target but leaves the ability in

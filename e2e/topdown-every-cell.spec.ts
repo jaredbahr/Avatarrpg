@@ -3,7 +3,14 @@ import type { EncounterDef, MapDef, Vec2 } from '../src/core/types';
 import { buildGrid } from '../src/core/rules/grid';
 import { TOPDOWN_FIXTURE } from '../src/render/topdown.fixture';
 import { SOFTWARE_WEBGL_BUDGET_MS, allowSoftwareWebgl } from './budget';
-import { enterNode, resetStorage, startGame, takeTurn, waitForIdle } from './helpers';
+import {
+  enterNode,
+  resetStorage,
+  startGame,
+  takeTurn,
+  waitForIdle,
+  webglAvailable,
+} from './helpers';
 import { paintedTileCentre } from './projection';
 
 type Renderer = 'canvas' | 'webgl';
@@ -170,14 +177,10 @@ for (const renderer of ['canvas', 'webgl'] as const satisfies readonly Renderer[
       try {
         const page = await context.newPage();
         if (renderer === 'webgl') {
-          await page.goto('/');
-          const available = await page.evaluate(() => {
-            const probe = document.createElement('canvas');
-            const gl = probe.getContext('webgl2') ?? probe.getContext('webgl');
-            gl?.getExtension('WEBGL_lose_context')?.loseContext();
-            return gl !== null;
-          });
-          test.skip(!available, 'WebGL context creation is unavailable on this Chromium host.');
+          test.skip(
+            !(await webglAvailable(page)),
+            'WebGL context creation is unavailable on this Chromium host.',
+          );
         }
 
         await resetStorage(page, `?renderer=${renderer}`);
