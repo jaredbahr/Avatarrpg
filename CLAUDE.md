@@ -6,6 +6,10 @@ For dialogue, character biographies, banter, and story narration, read
 `docs/writing-guide.md`. Preserve the scene's branch facts and speaker availability
 when improving a line.
 
+Story, dialogue and scene planning have one owner, the writing pass (owner, 2026-11-14; `AGENTS.md`,
+`docs/story-bible.md`). A session that is not the writing pass does not draft story text: it leaves a marked
+placeholder and says so in its PR.
+
 For camera, interface, environment and character presentation work, also read
 `docs/player-view-target.md`: it records Jared's approved long-term player views,
 their interpretation and the staged delivery plan.
