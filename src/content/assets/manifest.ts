@@ -459,6 +459,11 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'portrait.jin': image('art/portraits/jin.png', 'nonbender'),
   'portrait.dema': image('art/portraits/dema.png', 'neutral'),
   'portrait.sen': image('art/portraits/sen.png', 'neutral'),
+  // RG-02 (Saltstep and Emberwatch): Veyra, Tavi Ren, Luli and the customs clerk (style B, ADR 0107).
+  'portrait.veyra': image('art/portraits/veyra.png', 'neutral'),
+  'portrait.tavi': image('art/portraits/tavi.png', 'neutral'),
+  'portrait.luli': image('art/portraits/luli.png', 'fire'),
+  'portrait.customs_clerk': image('art/portraits/customs_clerk.png', 'neutral'),
 
   /* ------------------------------------------------------------ Probe */
   /*

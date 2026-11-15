@@ -219,6 +219,10 @@ describe('content builders preserve their authored values', () => {
       ['portrait.jin', 'art/portraits/jin.png', 'nonbender'],
       ['portrait.dema', 'art/portraits/dema.png', 'neutral'],
       ['portrait.sen', 'art/portraits/sen.png', 'neutral'],
+      ['portrait.veyra', 'art/portraits/veyra.png', 'neutral'],
+      ['portrait.tavi', 'art/portraits/tavi.png', 'neutral'],
+      ['portrait.luli', 'art/portraits/luli.png', 'fire'],
+      ['portrait.customs_clerk', 'art/portraits/customs_clerk.png', 'neutral'],
     ]);
     expect(ASSETS['unit.enemy.crossbow']).toEqual(
       topdownSheet('crossbow', 'unit.enemy.crossbow', 'enemy'),
