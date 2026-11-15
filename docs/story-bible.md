@@ -204,6 +204,16 @@ The owner settled these where the canon documents disagreed or were silent. They
   truth: a story decision counts once it is on this page.
 - **How far the scripts go:** full dialogue for what is being built next (Act I and the first Act II region), and a
   scene-by-scene plan for everything after it. Dialogue for later regions is written as each is built.
+- **How the story is shown (owner, 2026-11-15, for all three of his games).** Most of it is **found**: by walking
+  about a village and talking to people, and a table that does not look may miss it. The spine is **played**: in
+  dialogue scenes in the game's own view. A few moments may get a **cutscene**: animated pixel art, closer than
+  the board can go, for what the small figures cannot show (a face, a hand). For this game the owner said
+  "maybe": one trial cutscene is made first (Mira's table, the fifth bowl) and he judges it by eye before any
+  scene plan relies on one. Until then the held paintings of
+  [story-cutscenes.md](story-cutscenes.md) remain this game's story breaks. Every scene plan marks each scene as
+  found, played or cutscene.
+- **Mira's table is one straight scene** (owner, 2026-11-14). DLG-01's three things to ask are played in order,
+  with no vote: the first minute of the game asks nothing of a new table.
 - **Parcel is one animal, and it is Ba Dan's.** Parcel pulls Bo-shan's cart from Act I (outline decision 8). It
   worked the Copper Orchard freight route before Ba Dan bought it, which is why it balks and follows its old stops
   when the cart reaches the Orchard. SQ-16 "Return to Sender, Eventually" (the eaten labels) happens to Bo-shan's
