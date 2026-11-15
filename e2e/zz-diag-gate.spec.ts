@@ -30,41 +30,26 @@ async function fonts(page: Page, tag: string) {
 const raf = (page: Page) =>
   page.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
 
-for (const variant of ['base', 'datasetOnly', 'rootFontDirect', 'epoch', 'displayToggle', 'noComputedRead'] as const)
+const W1 = "html[data-large-text='on'] *, html[data-large-text='huge'] * { --large-text-restyle: 1 }";
+const W2 = "html[data-large-text='on'] *, html[data-large-text='huge'] *, html[data-large-text='off'] * { --large-text-restyle: 1 }";
+for (const variant of ['w1', 'w2', 'w1on'] as const)
   test(`diag ${variant}`, async ({ page }) => {
     await resetStorage(page, '?renderer=canvas');
     await startGame(page, ['Tala', 'Mina'], ['sura', 'riko'], 'long-conversation-layout');
-    if (variant === 'rootFontDirect')
-      await page.addStyleTag({ content: "html[data-large-text='huge']{font-size:24px}" });
+    await page.addStyleTag({ content: variant === 'w2' ? W2 : W1 });
     await fonts(page, variant + ' before');
-    if (variant === 'datasetOnly') {
-      await page.evaluate(() => (document.documentElement.dataset.largeText = 'huge'));
-      await raf(page);
-    } else if (variant === 'noComputedRead') {
-      await page.evaluate(() => {
-        const app = window.fnt!.app as unknown as { settings: Record<string, unknown> };
-        app.settings = { ...app.settings, largeText: 'huge' };
-        document.documentElement.dataset.largeText = 'huge';
-      });
-      await raf(page);
-    } else {
-      await setLargeText(page, 'huge');
-    }
-    if (variant === 'epoch')
-      await page.evaluate(() => document.documentElement.style.setProperty('--text-epoch', '1'));
-    if (variant === 'displayToggle')
-      await page.evaluate(() => {
-        const a = document.getElementById('app')!;
-        a.style.display = 'none';
-        void a.offsetHeight;
-        a.style.display = '';
-        void a.offsetHeight;
-      });
+    await setLargeText(page, variant === 'w1on' ? 'on' : 'huge');
     await fonts(page, variant + ' afterHuge');
     await enterNode(page, 'gate_escort_explore');
     await enterNode(page, 'gate_parley');
     await page.locator('.conversation-panel .choice-option').nth(2).waitFor();
     await fonts(page, variant + ' panel');
+    await setLargeText(page, 'off');
+    await fonts(page, variant + ' off');
+    await setLargeText(page, 'huge');
+    await fonts(page, variant + ' huge2');
+    await setLargeText(page, 'on');
+    await fonts(page, variant + ' on');
     await page.waitForTimeout(1500);
-    await fonts(page, variant + ' +1.5s');
+    await fonts(page, variant + ' on+1.5s');
   });
