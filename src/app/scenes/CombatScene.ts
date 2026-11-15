@@ -74,6 +74,7 @@ import { assetCanvas } from '../ui/assetCanvas';
 import { portraitKeyFor } from '../ui/PartyRoster';
 import { victoryNote, victoryResults, type VictoryRow } from '../ui/victoryResults';
 import { UI_MARKS, markKindFor } from '../ui/marks';
+import { objectiveLine, objectiveOverlay } from './combatObjective';
 import { iconMarkup } from '../ui/icons';
 import { paletteFor } from '../../render/palettes';
 import { paintElementGlyph } from '../../render/painters/glyphs';
@@ -1647,6 +1648,27 @@ export class CombatScene implements Scene {
   /* Rendering: chrome                                                 */
   /* ---------------------------------------------------------------- */
 
+  /**
+   * The objective line under the round (ADR 0116's 2026-11-15 amendment): a flag, the goal and
+   * the rounds left, read out whole as one status line so a screen reader hears the change.
+   */
+  private objectiveLineElement(goal: NonNullable<ReturnType<typeof objectiveLine>>): HTMLElement {
+    const line = el(
+      'div',
+      {
+        class: `combat-objective${goal.urgent ? ' urgent' : ''}`,
+        attrs: { role: 'status', 'aria-label': goal.spoken },
+      },
+      mark(UI_MARKS.flag, 'mark-inline combat-objective-mark'),
+      el('span', { class: 'visually-hidden', text: 'Goal: ' }),
+      el('span', { class: 'combat-objective-label', text: goal.label, title: goal.label }),
+    );
+    if (goal.rounds) {
+      line.appendChild(el('span', { class: 'combat-objective-rounds', text: goal.rounds }));
+    }
+    return line;
+  }
+
   private renderTopBar(): void {
     const bar = this.host?.querySelector<HTMLElement>('.combat-bar');
     const battle = this.battle();
@@ -1670,6 +1692,7 @@ export class CombatScene implements Scene {
     clear(bar);
 
     const encounter = this.app.content.encounters.get(battle.encounterId);
+    const goal = battle.phase === 'active' ? objectiveLine(encounter, battle.round) : null;
     // The encounter's name on a plate, in the display face, with the round under it.
     bar.appendChild(
       el(
@@ -1698,6 +1721,7 @@ export class CombatScene implements Scene {
               ]
             : []),
         ),
+        ...(goal ? [this.objectiveLineElement(goal)] : []),
       ),
     );
     bar.appendChild(el('div', { class: 'spacer' }));
@@ -3184,7 +3208,7 @@ export class CombatScene implements Scene {
         const rise = this.animatorForBoard.wallRise(now, pos);
         return rise === undefined ? pos : { ...pos, rise };
       }),
-      overlays,
+      overlays: this.withObjective(battle, overlays),
       obscuringTiles: this.obscuringTilesFor(battle),
       weatherIntensity: weatherAt(this.app.content, battle.encounterId, battle.round),
       climbMarkers,
@@ -3224,6 +3248,19 @@ export class CombatScene implements Scene {
     this.deliverTopdownSounds(now, wallNow);
     this.advanceTopdownAi(now);
   };
+
+  /**
+   * The encounter's objective cells under every other overlay while the fight is on (ADR 0116's
+   * 2026-11-15 amendment): a rule the board must show, on either backend and on everyone's turn.
+   */
+  private withObjective(
+    battle: BattleState,
+    overlays: readonly OverlayLayer[],
+  ): readonly OverlayLayer[] {
+    if (battle.phase !== 'active') return overlays;
+    const layer = objectiveOverlay(this.app.content.encounters.get(battle.encounterId));
+    return layer ? [layer, ...overlays] : overlays;
+  }
 
   /**
    * Automatic combat framing follows only an enlarged animated body. Manual
