@@ -559,12 +559,12 @@ else one wheel. Nothing is destroyed. A key is put down where another hand can r
 **The four facts.** The party cannot end the night until all four are true. Each can be secured by the party
 or by a crew it met earlier; none needs a particular element.
 
-| Fact                           | Secured by                                                              |
-| ------------------------------ | ----------------------------------------------------------------------- |
+| Fact                           | Secured by                                                               |
+| ------------------------------ | ------------------------------------------------------------------------ |
 | A relief route is open         | The marsh spillway (13.4, 13.6); Ba Dan's culvert line, if its crew came |
-| Operators can stop the system  | The low district stop wheel (Fenn's key), and the main release (14.5)   |
-| People downstream are warned   | Jin's riders or the flag line (13.5)                                    |
-| The spirit passage is unsealed | The main vanes' manual release, behind the green door (14.5)            |
+| Operators can stop the system  | The low district stop wheel (Fenn's key), and the main release (14.5)    |
+| People downstream are warned   | Jin's riders or the flag line (13.5)                                     |
+| The spirit passage is unsealed | The main vanes' manual release, behind the green door (14.5)             |
 
 A lost front does not make a fact impossible; it makes it later and dearer, and Scene 14.7 counts it.
 
@@ -659,18 +659,18 @@ have never seen this. I have seen the gauge that said it couldn't happen.
 **What the water says during phase 2** _(one each round, as barks, in this order; only lines the party truly
 heard are used)_**:**
 
-| The echo                                    | Heard in | Used only if                            |
-| ------------------------------------------- | -------- | --------------------------------------- |
-| A dropped stone, and the same stone again   | MQ-01    | the culvert beat was seen in Act I      |
-| Bo-shan's laugh                             | MQ-02    | `act1_complete`                         |
-| "Good morning." (Dorin)                     | MQ-02    | `act1_lost`                             |
-| "Careful." (Kesi)                           | MQ-03    | always                                  |
-| A child's laugh                             | MQ-04    | always                                  |
-| "...come home." (Pella's letter)            | MQ-05    | always                                  |
-| "...forty years." (Ansa)                    | MQ-06    | always                                  |
-| "Hold the rail."                            | MQ-08    | always                                  |
-| "We live there." (Fenn)                     | MQ-10    | always                                  |
-| "...when the tide turns." (the party)       | MQ-12    | always; it is the last one              |
+| The echo                                  | Heard in | Used only if                       |
+| ----------------------------------------- | -------- | ---------------------------------- |
+| A dropped stone, and the same stone again | MQ-01    | the culvert beat was seen in Act I |
+| Bo-shan's laugh                           | MQ-02    | `act1_complete`                    |
+| "Good morning." (Dorin)                   | MQ-02    | `act1_lost`                        |
+| "Careful." (Kesi)                         | MQ-03    | always                             |
+| A child's laugh                           | MQ-04    | always                             |
+| "...come home." (Pella's letter)          | MQ-05    | always                             |
+| "...forty years." (Ansa)                  | MQ-06    | always                             |
+| "Hold the rail."                          | MQ-08    | always                             |
+| "We live there." (Fenn)                   | MQ-10    | always                             |
+| "...when the tide turns." (the party)     | MQ-12    | always; it is the last one         |
 
 **Narrator (with the last echo):** Your own promise comes back off the water. It is the only one of them that
 has not happened yet.
@@ -1388,11 +1388,11 @@ it kept.
 
 ## The echo in this act
 
-| Mission | Where                 | What the water does                                                        |
-| ------- | --------------------- | -------------------------------------------------------------------------- |
-| MQ-13   | The marsh spillway    | The same surge, over and over, until it is let through in stages           |
+| Mission | Where                  | What the water does                                                       |
+| ------- | ---------------------- | ------------------------------------------------------------------------- |
+| MQ-13   | The marsh spillway     | The same surge, over and over, until it is let through in stages          |
 | MQ-14   | The Stillwater cistern | Every echo the party has heard since Act I (14.3). Then one ripple, alone |
-| MQ-15   | Ba Dan's canal        | "It says nothing twice."                                                   |
+| MQ-15   | Ba Dan's canal         | "It says nothing twice."                                                  |
 
 ## Cart upgrade for this act
 
@@ -1405,18 +1405,18 @@ lamp (MQ-15).
 
 ## Hero moments in this act
 
-| Hero    | Where                                                                             |
-| ------- | --------------------------------------------------------------------------------- |
-| Kaya    | 13.3 Luli's first lesson; 15.4 Thursday                                           |
-| Tenzo   | 13.3 Luli's first lesson; 15.4 the long table                                     |
-| Nilak   | 15.4 handing over a shift                                                         |
-| Sura    | 13.2 the gap; 13.4 the banks; 14.3 counting ten; 14.4 her DLG-10 line             |
-| Bo      | 13.2 not counting; 13.3 Renn's count; 15.4 the far jack                           |
-| Lin Mei | 13.4 the school path; 15.4 the margin                                             |
-| Nima    | 14.4 his DLG-10 line; 15.4 the quiet watch                                        |
-| Jinu    | 14.3 Pella's third letter; 15.4 the half-door                                     |
-| Riko    | 14.2 "nobody has to stay down"; 15.4 eight people on a platform                   |
-| Wen     | 14.2 her regulator on gate two; 15.4 Min's lever                                  |
+| Hero    | Where                                                                 |
+| ------- | --------------------------------------------------------------------- |
+| Kaya    | 13.3 Luli's first lesson; 15.4 Thursday                               |
+| Tenzo   | 13.3 Luli's first lesson; 15.4 the long table                         |
+| Nilak   | 15.4 handing over a shift                                             |
+| Sura    | 13.2 the gap; 13.4 the banks; 14.3 counting ten; 14.4 her DLG-10 line |
+| Bo      | 13.2 not counting; 13.3 Renn's count; 15.4 the far jack               |
+| Lin Mei | 13.4 the school path; 15.4 the margin                                 |
+| Nima    | 14.4 his DLG-10 line; 15.4 the quiet watch                            |
+| Jinu    | 14.3 Pella's third letter; 15.4 the half-door                         |
+| Riko    | 14.2 "nobody has to stay down"; 15.4 eight people on a platform       |
+| Wen     | 14.2 her regulator on gate two; 15.4 Min's lever                      |
 
 ## Open, for the owner
 

@@ -1546,11 +1546,11 @@ only two letters of her own.
 
 ## The echo for each mission
 
-| Mission | Where                         | What the water does                                             |
-| ------- | ----------------------------- | --------------------------------------------------------------- |
-| MQ-10   | The flooding courtyard        | "We live there", in Fenn's voice                                |
-| MQ-11   | Ba Dan's canal, at the gate   | Nothing. It carries a leaf and a radish top and says nothing    |
-| MQ-12   | The gutter by the shed door   | "...when the tide turns", the end of the party's own promise    |
+| Mission | Where                       | What the water does                                          |
+| ------- | --------------------------- | ------------------------------------------------------------ |
+| MQ-10   | The flooding courtyard      | "We live there", in Fenn's voice                             |
+| MQ-11   | Ba Dan's canal, at the gate | Nothing. It carries a leaf and a radish top and says nothing |
+| MQ-12   | The gutter by the shed door | "...when the tide turns", the end of the party's own promise |
 
 ## Pella in this act
 
@@ -1565,18 +1565,18 @@ on the loss branch).
 
 ## Hero moments in this act
 
-| Hero    | Where                                                                            |
-| ------- | -------------------------------------------------------------------------------- |
-| Kaya    | 10.5 the gate; 12.2 Miri's lanterns and "Thursday"                               |
-| Tenzo   | 12.2 the rota and the bowl                                                       |
-| Nilak   | 10.5 the tailgate clinic; 12.2 scheduled to rest                                 |
-| Sura    | 12.2 the gap in the wall                                                         |
-| Bo      | 10.5 under the ramp; 12.2 handing over the chalk                                 |
-| Lin Mei | 12.2 the margin                                                                  |
-| Nima    | 12.2 the dull watch                                                              |
-| Jinu    | 11.10 Pella's sealed letter; 12.2 the button                                     |
-| Riko    | 10.4 her DLG-09 line; 12.2 one release, and walking away                         |
-| Wen     | 10.2 the measuring rule; 12.2 Min's eight steps; 12.4 the note                   |
+| Hero    | Where                                                          |
+| ------- | -------------------------------------------------------------- |
+| Kaya    | 10.5 the gate; 12.2 Miri's lanterns and "Thursday"             |
+| Tenzo   | 12.2 the rota and the bowl                                     |
+| Nilak   | 10.5 the tailgate clinic; 12.2 scheduled to rest               |
+| Sura    | 12.2 the gap in the wall                                       |
+| Bo      | 10.5 under the ramp; 12.2 handing over the chalk               |
+| Lin Mei | 12.2 the margin                                                |
+| Nima    | 12.2 the dull watch                                            |
+| Jinu    | 11.10 Pella's sealed letter; 12.2 the button                   |
+| Riko    | 10.4 her DLG-09 line; 12.2 one release, and walking away       |
+| Wen     | 10.2 the measuring rule; 12.2 Min's eight steps; 12.4 the note |
 
 ## Open, for the owner
 

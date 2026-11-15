@@ -1556,18 +1556,18 @@ C.1, after the first spoke, with a loss-branch version. It arrives with Grumbler
 
 ## Hero moments in this act
 
-| Hero    | Where                                                                                    |
-| ------- | ---------------------------------------------------------------------------------------- |
-| Kaya    | None scripted in the main line here; her PQ-01 runs at Saltstep (see Open, item 12)      |
-| Tenzo   | C.1, DLG-02 and his grandmother                                                          |
-| Nilak   | 7.2 the fever tally                                                                      |
-| Sura    | 7.2 Vessa (PQ-04 opens); 7.5 at the pool's edge                                          |
-| Bo      | 6.3 asking, not telling; 6.4 Renn (PQ-05 opens)                                          |
-| Lin Mei | 6.4 the chess table; 7.2 Fenn's notice (PQ-06 opens); 9.1 her survey under all three     |
-| Nima    | 8.1 on the rope like everyone else; 8.2 Sena (PQ-07 opens, with the bible's line)        |
-| Jinu    | 8.1 the warden's slip; 8.2 the mail shelter (PQ-08 opens); 9.5 folding in three          |
-| Riko    | 6.3 the brake wheel; 6.4 Seli (PQ-09 opens); 9.3 "Both of those are her"                 |
-| Wen     | 7.5 the gauge; 9.1 her regulator; 9.3 "you always need to know why"; C.1 the stove       |
+| Hero    | Where                                                                                |
+| ------- | ------------------------------------------------------------------------------------ |
+| Kaya    | None scripted in the main line here; her PQ-01 runs at Saltstep (see Open, item 12)  |
+| Tenzo   | C.1, DLG-02 and his grandmother                                                      |
+| Nilak   | 7.2 the fever tally                                                                  |
+| Sura    | 7.2 Vessa (PQ-04 opens); 7.5 at the pool's edge                                      |
+| Bo      | 6.3 asking, not telling; 6.4 Renn (PQ-05 opens)                                      |
+| Lin Mei | 6.4 the chess table; 7.2 Fenn's notice (PQ-06 opens); 9.1 her survey under all three |
+| Nima    | 8.1 on the rope like everyone else; 8.2 Sena (PQ-07 opens, with the bible's line)    |
+| Jinu    | 8.1 the warden's slip; 8.2 the mail shelter (PQ-08 opens); 9.5 folding in three      |
+| Riko    | 6.3 the brake wheel; 6.4 Seli (PQ-09 opens); 9.3 "Both of those are her"             |
+| Wen     | 7.5 the gauge; 9.1 her regulator; 9.3 "you always need to know why"; C.1 the stove   |
 
 ## Open, for the owner
 

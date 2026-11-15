@@ -1652,12 +1652,12 @@ Scene 3.8 (the manifest). Scene 2.2 and 2.8 plant her office and her clerk at Sa
 
 ## The echo for each mission
 
-| Mission | Where                         | What the water repeats                                 |
-| ------- | ----------------------------- | ------------------------------------------------------ |
-| MQ-02   | Under the freight pontoon     | Bo-shan's laugh (loss branch: Dorin's "Good morning")  |
-| MQ-03   | The rain cistern              | One word, "Careful", in Kesi's voice                   |
-| MQ-04   | The demonstration canal lock  | A child's laugh from the terraces                      |
-| MQ-05   | The river below the camp      | "...come home", from Pella's question, read out loud   |
+| Mission | Where                        | What the water repeats                                |
+| ------- | ---------------------------- | ----------------------------------------------------- |
+| MQ-02   | Under the freight pontoon    | Bo-shan's laugh (loss branch: Dorin's "Good morning") |
+| MQ-03   | The rain cistern             | One word, "Careful", in Kesi's voice                  |
+| MQ-04   | The demonstration canal lock | A child's laugh from the terraces                     |
+| MQ-05   | The river below the camp     | "...come home", from Pella's question, read out loud  |
 
 Nobody explains any of them. Sura, when present, is the only one who keeps count.
 
@@ -1667,18 +1667,18 @@ Scene 5.6, with a loss-branch version addressed to Dorin.
 
 ## Hero moments in this act
 
-| Hero    | Where                                                                              |
-| ------- | ---------------------------------------------------------------------------------- |
-| Kaya    | 2.2 Miri's crates (PQ-01 planted; opens at Saltstep after MQ-03); 4.3 the canal    |
-| Tenzo   | 2.2 the bowl-seller; 4.1 Dema (PQ-02 opens); 5.6 the second sauce                  |
-| Nilak   | 5.5 Aru's table (PQ-03 opens, with the bible's line)                               |
-| Sura    | 2.4, 3.3, 5.6: she is the one counting the echoes                                  |
-| Bo      | 4.3 moving the crowd                                                               |
-| Lin Mei | 3.5 the careful order; 5.3 her own phrase on the back of the map                   |
-| Nima    | 4.1 Oru's offer                                                                    |
-| Jinu    | 2.1 the courier-office copy (loss branch); 5.6 she carries Pella's letter          |
-| Riko    | 2.6 the packet and the stamp; 3.5 "suspended"; 4.5 "Who gets the key?" (DLG-04)    |
-| Wen     | 2.4 the pump; 3.1 her regulator (PQ-10 opens); 4.2 "napkins"                       |
+| Hero    | Where                                                                           |
+| ------- | ------------------------------------------------------------------------------- |
+| Kaya    | 2.2 Miri's crates (PQ-01 planted; opens at Saltstep after MQ-03); 4.3 the canal |
+| Tenzo   | 2.2 the bowl-seller; 4.1 Dema (PQ-02 opens); 5.6 the second sauce               |
+| Nilak   | 5.5 Aru's table (PQ-03 opens, with the bible's line)                            |
+| Sura    | 2.4, 3.3, 5.6: she is the one counting the echoes                               |
+| Bo      | 4.3 moving the crowd                                                            |
+| Lin Mei | 3.5 the careful order; 5.3 her own phrase on the back of the map                |
+| Nima    | 4.1 Oru's offer                                                                 |
+| Jinu    | 2.1 the courier-office copy (loss branch); 5.6 she carries Pella's letter       |
+| Riko    | 2.6 the packet and the stamp; 3.5 "suspended"; 4.5 "Who gets the key?" (DLG-04) |
+| Wen     | 2.4 the pump; 3.1 her regulator (PQ-10 opens); 4.2 "napkins"                    |
 
 ## Open, for the owner
 
