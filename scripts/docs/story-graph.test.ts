@@ -96,7 +96,9 @@ describe('runtime story graph', () => {
       'act1.md',
       'ba-dan-day.md',
       'discoveries.md',
+      'emberwatch.md',
       'lost.md',
+      'mq02-paper-and-stone.md',
       'reasons.md',
       'return.md',
       'riverside.md',
@@ -455,14 +457,14 @@ describe('runtime story graph', () => {
 });
 
 describe('story documentation check and CLI', () => {
-  it('checks missing and stale files without writing, and the CLI regenerates all twelve documents', async () => {
+  it('checks missing and stale files without writing, and the CLI regenerates all fourteen documents', async () => {
     const directory = await temporaryDirectory();
     const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     expect(await runCli(['--check'], directory)).toBe(1);
     expect(error).toHaveBeenCalledWith(expect.stringContaining('missing or stale'));
     expect(await readdir(directory)).toEqual([]);
     expect(await runCli([], directory)).toBe(0);
-    expect(await readdir(directory)).toHaveLength(12);
+    expect(await readdir(directory)).toHaveLength(14);
     expect(await runCli(['--check'], directory)).toBe(0);
     await writeFile(join(directory, 'act1.md'), 'stale\n', 'utf8');
     await rm(join(directory, 'world.md'));
