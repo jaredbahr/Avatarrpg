@@ -1,0 +1,19 @@
+name: zz-probe-green
+on:
+  push:
+    branches: [claude/e2e-green-main-probe]
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test e2e/topdown-every-cell.spec.ts --project=surface-touch --reporter=list --retries=0 --max-failures=0 --trace=off
+        env:
+          CI: '1'
