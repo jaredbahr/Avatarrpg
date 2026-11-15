@@ -228,6 +228,18 @@ export const BA_DAN_VILLAGE: MapDef = {
       sprite: 'npc.kid',
       node: 'pella_tips',
       routes: [
+        // Until Mira's table has played she stands at it, and speaking to her
+        // starts that scene (DLG-01; `pella_at_table`).
+        {
+          when: {
+            kind: 'all',
+            of: [
+              { kind: 'flag', key: 'act1_complete', op: 'unset' },
+              { kind: 'not', of: { kind: 'visited', nodeId: 'mira_intro' } },
+            ],
+          },
+          node: 'mira_intro',
+        },
         // SQ-01: once her homecoming is heard, the corrected list of helpers.
         {
           when: {

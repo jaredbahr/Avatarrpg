@@ -33,7 +33,7 @@ function withProfiles(state: GameState, profile: ResidentProfile): GameState {
 }
 
 function finish(state: GameState): GameState {
-  for (let count = 0; state.screen === 'dialogue' && count < 12; count++) {
+  for (let count = 0; state.screen === 'dialogue' && count < 45; count++) {
     state = apply(CONTENT, state, { type: 'advanceDialogue' }).state;
   }
   expect(state.screen).toBe('explore');

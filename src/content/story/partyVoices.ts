@@ -4,6 +4,12 @@ import { CHARACTER_BY_ID } from '../characters';
 /** Separate encounters give companions room to contribute without competing for one line. */
 export const VOICES = [
   {
+    // DLG-01, "Optional Kaya": she is ready before the bowls are down.
+    node: 'mira_table_stand',
+    character: 'kaya',
+    lines: ['We can leave now.'],
+  },
+  {
     node: 'cutting_tea',
     character: 'tenzo',
     lines: [

@@ -6,7 +6,7 @@
 
 Source: [act1.ts](../../src/content/story/act1.ts).
 
-48 nodes; 4 fights; 0 branches; 2 choices
+59 nodes; 4 fights; 0 branches; 2 choices
 
 Green nodes are story entry points (new game, map interactions, cross-file targets, or roots). Hexagons are fights; diamonds are flag branches. Purple placeholders exit this file; dashed placeholders continue in another part. Counts include owned story nodes only.
 
@@ -16,7 +16,7 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 
 ## Part 1: entry `act1_evening`
 
-48 owned nodes.
+59 owned nodes.
 
 ```mermaid
 flowchart TD
@@ -55,32 +55,43 @@ flowchart TD
   n69["mira_rubbing<br/>Elder Mira: Is that the rubbing? Hold that corner flat for me."]
   n70["mira_rubbing_given<br/>Set flags"]
   n71["mira_rubbing_kept<br/>Elder Mira: The rubbing is folded into the province report. Dor…"]:::entry
-  n72["pella_again<br/>Pella: He puts the cabbages on top of the turnips. Every bump, …"]:::entry
-  n73["pella_asked<br/>Set flags"]
-  n75["pella_tips<br/>Pella: You're going to the quarry? I can show you the way. I kn…"]:::entry
-  n86["prologue_storm<br/>The Storm: Rain hammers on an iron roof, somewhere far overhead."]:::entry
-  n88["quarry_assessment<br/>The Quarry: Workers bang on the barred gallery doors. One shout…"]
-  n89["quarry_descent<br/>The Quarry: Stone ledges step down to the quarry floor. Below t…"]:::entry
-  n123["road_depart<br/>The East Road: The road climbs between the pines. Rainwater fil…"]:::entry
-  n124["ruon_choice<br/>Captain Ruon: Ruon has surrendered. What happens to him?"]
-  n125["ruon_cutting<br/>Captain Ruon: The quarry floor is east, past the ore cart. I’ll…"]:::entry
-  n126["ruon_surrender<br/>Captain Ruon: My sabre stays on the ground. Tell me if anyone n…"]
-  n167["trade_chosen<br/>Jin: The inner gate key, as agreed. Your payment is in the pouc…"]
-  n168["trade_payment<br/>Set flags"]
-  n169["village_explore<br/>Explore ba_dan_village: Talk to Elder Mira, then take the east …"]:::entry
+  n72["mira_table_ask<br/>Elder Mira: And Bo-shan."]
+  n73["mira_table_before<br/>Pella: Bo-shan went before them. Before still counts."]
+  n74["mira_table_boshan<br/>Pella: And Bo-shan."]
+  n75["mira_table_bowl<br/>Mira’s Table: A fifth bowl sits under the table, covered with a…"]
+  n76["mira_table_eat<br/>Elder Mira: You can eat first."]
+  n77["mira_table_five<br/>Pella: Five."]
+  n78["mira_table_his<br/>Pella: Don’t take that bowl. That’s his."]
+  n79["mira_table_names<br/>Elder Mira: Yes. Five people from this village. And the crews w…"]
+  n80["mira_table_pella<br/>Elder Mira: Pella."]
+  n81["mira_table_served<br/>Mira’s Table: Mira slides another bowl towards you. The covered…"]
+  n82["mira_table_stand<br/>Mira’s Table: You push your chair back to stand."]
+  n83["pella_again<br/>Pella: He puts the cabbages on top of the turnips. Every bump, …"]:::entry
+  n84["pella_asked<br/>Set flags"]
+  n86["pella_tips<br/>Pella: You're going to the quarry? I can show you the way. I kn…"]:::entry
+  n97["prologue_storm<br/>The Storm: Rain hammers on an iron roof, somewhere far overhead."]:::entry
+  n99["quarry_assessment<br/>The Quarry: Workers bang on the barred gallery doors. One shout…"]
+  n100["quarry_descent<br/>The Quarry: Stone ledges step down to the quarry floor. Below t…"]:::entry
+  n134["road_depart<br/>The East Road: The road climbs between the pines. Rainwater fil…"]:::entry
+  n135["ruon_choice<br/>Captain Ruon: Ruon has surrendered. What happens to him?"]
+  n136["ruon_cutting<br/>Captain Ruon: The quarry floor is east, past the ore cart. I’ll…"]:::entry
+  n137["ruon_surrender<br/>Captain Ruon: My sabre stays on the ground. Tell me if anyone n…"]
+  n178["trade_chosen<br/>Jin: The inner gate key, as agreed. Your payment is in the pouc…"]
+  n179["trade_payment<br/>Set flags"]
+  n180["village_explore<br/>Explore ba_dan_village: Talk to Elder Mira, then take the east …"]:::entry
   n14["cutting_after_explore — exit to world / part 1"]:::external
   n34["forest_after_explore — exit to world / part 1"]:::external
   n38["forest_explore — exit to world / part 1"]:::external
   n48["gate_escort_explore — exit to world / part 1"]:::external
   n54["gate_trade_explore — exit to world / part 1"]:::external
-  n87["quarry_after_explore — exit to return / part 1"]:::external
-  n90["quarry_ledger — exit to reasons / part 1"]:::external
-  n135["sq01_packing_list — exit to sq01-cabbages / part 1"]:::external
-  n171["village_return_explore — exit to return / part 1"]:::external
-  n0 -->|"Next"| n90
-  n2 -->|"set: (none); phase: evening"| n87
+  n98["quarry_after_explore — exit to return / part 1"]:::external
+  n101["quarry_ledger — exit to reasons / part 1"]:::external
+  n146["sq01_packing_list — exit to sq01-cabbages / part 1"]:::external
+  n182["village_return_explore — exit to return / part 1"]:::external
+  n0 -->|"Next"| n101
+  n2 -->|"set: (none); phase: evening"| n98
   n3 -->|"set: act1_lost=true"| n1
-  n4 -->|"Next"| n169
+  n4 -->|"Next"| n180
   n5 -->|"set: act1_complete=true; resident profiles: lw.npc.amri=#quot;returning#quot;, lw.npc.bo_shan=#quot;returning#quot;, lw.npc.hesra=#quot;returning#quot;, lw.npc.leto=#quot;returning#quot;, lw.npc.senn_messenger=#quot;returning#quot;"| n0
   n6 -->|"Next"| n14
   n7 -->|"Next"| n34
@@ -91,16 +102,16 @@ flowchart TD
   n10 -->|"Defeat"| n24
   n11 -->|"Victory"| n5
   n11 -->|"Defeat"| n23
-  n12 -->|"Victory"| n126
+  n12 -->|"Victory"| n137
   n12 -->|"Defeat"| n25
   n22 -->|"Next"| n8
   n23 -->|"Next"| n3
   n24 -->|"Next"| n65
   n25 -->|"Next"| n66
-  n31 -->|"Next"| n169
+  n31 -->|"Next"| n180
   n33 -->|"Next"| n48
-  n42 -->|"Next"| n169
-  n43 -->|"Next"| n169
+  n42 -->|"Next"| n180
+  n43 -->|"Next"| n180
   n46 -->|"set: gate_fire_bluff=true"| n12
   n47 -->|"Next"| n46
   n49 -->|"Next"| n52
@@ -108,29 +119,40 @@ flowchart TD
   n50 -->|"Let the firebender do the talking; requires: you have a firebender"| n47
   n50 -->|"Talk to Captain Ruon about the galleries; requires: Bo is with you or Lin Mei is with you or you have world ducks seen or you have world discovered runoff marker; standing deltas: earth=2"| n49
   n52 -->|"Next"| n53
-  n53 -->|"set: gate_talked_through=true, ruon_respects_you=true; grant XP: 150"| n126
+  n53 -->|"set: gate_talked_through=true, ruon_respects_you=true; grant XP: 150"| n137
   n64 -->|"set: jin_has_satchel=true, lost_ambush=true, ruon_carried_you=true; grant XP: 150"| n6
   n65 -->|"set: lost_forest_road=true; grant XP: 100"| n7
-  n66 -->|"set: lost_quarry_gate=true; grant XP: 150"| n126
+  n66 -->|"set: lost_quarry_gate=true; grant XP: 150"| n137
   n67 -->|"Next"| n69
-  n68 -->|"Next"| n169
+  n68 -->|"Next"| n77
   n69 -->|"Next"| n70
-  n70 -->|"set: rubbing_given=true"| n171
-  n71 -->|"Next"| n171
-  n72 -->|"Next"| n169
-  n73 -->|"set: pella_asked=true"| n135
-  n75 -->|"Next"| n73
-  n86 -->|"Next"| n4
-  n88 -->|"Next"| n11
-  n89 -->|"Next"| n88
-  n123 -->|"Next"| n38
-  n124 -->|"Escort him back to Ba Dan for trial; set: ruon_spared=true; standing deltas: earth=2"| n33
-  n124 -->|"Trade him to Jin for the quarry key; set: ruon_traded=true; standing deltas: earth=-2"| n168
-  n125 -->|"Next"| n14
-  n126 -->|"Next"| n124
-  n167 -->|"Next"| n54
-  n168 -->|"set: jin_has_satchel=true, ruon_paid=true; grant XP: 150"| n167
-  n169 -->|"Legacy/audit exit (live map exits differ)"| n123
+  n70 -->|"set: rubbing_given=true"| n182
+  n71 -->|"Next"| n182
+  n72 -->|"Next"| n82
+  n73 -->|"Next"| n75
+  n74 -->|"Next"| n72
+  n75 -->|"Next"| n79
+  n76 -->|"Next"| n78
+  n77 -->|"Next"| n80
+  n78 -->|"Next"| n81
+  n79 -->|"Next"| n74
+  n80 -->|"Next"| n73
+  n81 -->|"Next"| n180
+  n82 -->|"Next"| n76
+  n83 -->|"Next"| n180
+  n84 -->|"set: pella_asked=true"| n146
+  n86 -->|"Next"| n84
+  n97 -->|"Next"| n4
+  n99 -->|"Next"| n11
+  n100 -->|"Next"| n99
+  n134 -->|"Next"| n38
+  n135 -->|"Escort him back to Ba Dan for trial; set: ruon_spared=true; standing deltas: earth=2"| n33
+  n135 -->|"Trade him to Jin for the quarry key; set: ruon_traded=true; standing deltas: earth=-2"| n179
+  n136 -->|"Next"| n14
+  n137 -->|"Next"| n135
+  n178 -->|"Next"| n54
+  n179 -->|"set: jin_has_satchel=true, ruon_paid=true; grant XP: 150"| n178
+  n180 -->|"Legacy/audit exit (live map exits differ)"| n134
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

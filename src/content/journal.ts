@@ -122,7 +122,7 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
     title: 'Out of the galleries',
     hint: 'Below the stone ledges, the gallery entrances have been barred with timber.',
     found:
-      'Pulled the bars from the gallery doors. Mira’s four messengers came out, then Bo-shan, asking where Pella was.',
+      'Pulled the bars from the gallery doors. Leto, Amri, Hesra and Senn came out, then Bo-shan, asking where Pella was.',
     when: { kind: 'flag', key: 'act1_complete', op: 'set' },
   },
   {

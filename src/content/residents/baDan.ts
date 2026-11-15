@@ -94,6 +94,9 @@ export const BA_DAN_ANCHORS: readonly WorldAnchor[] = [
   // Mira's Table: the square's paving beside the canal, next to the bench
   // rest spot (10,5). No table or awning art yet.
   tile('bd01.table', 'BD01', VILLAGE, 11, 5),
+  // Pella's place at the table until Mira has spoken (DLG-01): the paving on
+  // its east side, one tile from Mira.
+  tile('bd01.table_side', 'BD01', VILLAGE, 12, 5),
   // Gao's shopfront: the lane in front of his display, below the shop steps.
   tile('bd02.shopfront', 'BD02', VILLAGE, 9, 4),
   // The rear room: the merchant house's front door, its step at (7,4).
@@ -241,6 +244,15 @@ const PELLA: ResidentDef = {
   },
   overrides: [
     {
+      // DLG-01: she is at Mira's table to say "Five" until that scene has
+      // played. Tapping her there starts it (`kid_pella`'s first route).
+      id: 'pella_at_table',
+      tier: 'mission',
+      when: all(OCCUPIED, not(visited('mira_intro'))),
+      slots: {},
+      all: talk('bd01.table_side', 'kid_pella', 'waiting_to_talk'),
+    },
+    {
       id: 'pella_homecoming',
       tier: 'mission',
       when: PELLA_HELD,
@@ -347,7 +359,9 @@ export const BA_DAN_BACKGROUND_ROLES: readonly BackgroundRole[] = [
     slots: {},
     accompanies: {
       resident: 'lw.npc.pella',
-      anchors: ['bd04.court'],
+      // Also while she waits at Mira's table before `mira_intro`: the adult
+      // stays home at the chores, with Mira minding her at the table.
+      anchors: ['bd04.court', 'bd01.table_side'],
       slot: { anchor: 'bd04.yard', activity: 'household_chores', interrupt: 'observe' },
     },
   },

@@ -97,6 +97,7 @@ const ACT1_COMPLETE_READERS = [
   'map:quarry_floor',
   // Party voices (`partyVoices.ts`) only speak before the rescue.
   'story:village_explore',
+  'story:mira_table_stand',
   'story:dorin_directions',
   'story:defeat_forest',
   'story:gate_kinship',

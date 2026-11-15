@@ -101,6 +101,15 @@ export const ACT1_NODES: readonly StoryNode[] = [
     next: 'road_depart',
   },
 
+  /*
+   * Mira's table (bible DLG-01; story bible C-13 and C-33): a human obligation
+   * before the mystery. Pella corrects the count, the covered bowl comes up on
+   * to the table, and the five are named here and nowhere renamed later. Each
+   * messenger carries one stray detail of where they came from (outline
+   * decision 20); nobody remarks on it until MQ-11. One speaker a node, so the
+   * exchange is a chain. Pella stands at the table until it has played
+   * (`pella_at_table`, residents/baDan.ts).
+   */
   {
     id: 'mira_intro',
     kind: 'dialogue',
@@ -108,10 +117,109 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.mira',
     lines: [
       'Come in. There is rice if you have not eaten. We need to talk about the quarry.',
-      'No carts for a month. I sent four people to find out why. None came home.',
-      'Dorin went as far as the gate yesterday. They have guards now. Would not let him through.',
-      'I can offer you food and a bed here. I wish it were more. Will you look for our people?',
+      'The quarry stopped sending stone a month ago. I sent four people to ask why. None came back.',
     ],
+    next: 'mira_table_five',
+  },
+  {
+    id: 'mira_table_five',
+    kind: 'dialogue',
+    speaker: 'Pella',
+    portrait: 'portrait.pella',
+    lines: ['Five.'],
+    next: 'mira_table_pella',
+  },
+  {
+    id: 'mira_table_pella',
+    kind: 'dialogue',
+    speaker: 'Elder Mira',
+    portrait: 'portrait.mira',
+    lines: ['Pella.'],
+    next: 'mira_table_before',
+  },
+  {
+    id: 'mira_table_before',
+    kind: 'dialogue',
+    speaker: 'Pella',
+    portrait: 'portrait.pella',
+    lines: ['Bo-shan went before them. Before still counts.'],
+    next: 'mira_table_bowl',
+  },
+  {
+    id: 'mira_table_bowl',
+    kind: 'dialogue',
+    speaker: 'Mira’s Table',
+    portrait: 'portrait.narrator',
+    lines: [
+      'A fifth bowl sits under the table, covered with a cloth. Pella nudges it into view with one shoe. Mira lifts it on to the table.',
+    ],
+    next: 'mira_table_names',
+  },
+  {
+    id: 'mira_table_names',
+    kind: 'dialogue',
+    speaker: 'Elder Mira',
+    portrait: 'portrait.mira',
+    lines: [
+      'Yes. Five people from this village. And the crews who were already working there.',
+      'Leto drives carts. I hired him up from the coast.',
+      'Amri walks our letters. She came from Saltstep five years ago and has argued with me ever since.',
+      'Hesra came down from a hill farm to learn masonry. Senn kept tally for the quarry company, and stayed on when the company left.',
+    ],
+    next: 'mira_table_boshan',
+  },
+  {
+    id: 'mira_table_boshan',
+    kind: 'dialogue',
+    speaker: 'Pella',
+    portrait: 'portrait.pella',
+    lines: ['And Bo-shan.'],
+    next: 'mira_table_ask',
+  },
+  {
+    id: 'mira_table_ask',
+    kind: 'dialogue',
+    speaker: 'Elder Mira',
+    portrait: 'portrait.mira',
+    lines: [
+      'And Bo-shan.',
+      'Dorin went as far as the gate yesterday. They have guards now. They would not let him through.',
+      'I can offer you food and a bed here. I wish it were more. Will you look for our people?',
+      'Tell me what you find. Even if you have to come back without them.',
+    ],
+    next: 'mira_table_stand',
+  },
+  {
+    // Kaya's own line (DLG-01, "Optional Kaya") is a party voice on this node.
+    id: 'mira_table_stand',
+    kind: 'dialogue',
+    speaker: 'Mira’s Table',
+    portrait: 'portrait.narrator',
+    lines: ['You push your chair back to stand.'],
+    next: 'mira_table_eat',
+  },
+  {
+    id: 'mira_table_eat',
+    kind: 'dialogue',
+    speaker: 'Elder Mira',
+    portrait: 'portrait.mira',
+    lines: ['You can eat first.'],
+    next: 'mira_table_his',
+  },
+  {
+    id: 'mira_table_his',
+    kind: 'dialogue',
+    speaker: 'Pella',
+    portrait: 'portrait.pella',
+    lines: ['Don’t take that bowl. That’s his.'],
+    next: 'mira_table_served',
+  },
+  {
+    id: 'mira_table_served',
+    kind: 'dialogue',
+    speaker: 'Mira’s Table',
+    portrait: 'portrait.narrator',
+    lines: ['Mira slides another bowl towards you. The covered one stays where Pella can see it.'],
     next: 'village_explore',
   },
   {
@@ -121,14 +229,14 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.mira',
     lines: [
       'Bo-shan came through the gate ahead of you. Pella has not let go of his sleeve.',
-      'Bo-shan and all four messengers are home. I have counted everyone twice. They keep telling me to stop.',
+      'Leto, Amri, Hesra, Senn and Bo-shan are home. I have counted them twice. They keep telling me to stop.',
       'You can stay as long as you need. Leave your washing by the door.',
     ],
     variants: [
       {
         when: { kind: 'flag', key: 'ruon_spared', op: 'set' },
         lines: [
-          'Bo-shan and all four messengers are home. I have counted everyone twice. They keep telling me to stop.',
+          'Leto, Amri, Hesra, Senn and Bo-shan are home. I have counted them twice. They keep telling me to stop.',
           'Dorin is taking Ruon’s statement. Bring me the maker-plate rubbing too; I’ll attach both to the province report.',
           'You can stay too. Gao has food ready, and I will find you a bed.',
         ],
@@ -136,7 +244,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
       {
         when: { kind: 'flag', key: 'ruon_traded', op: 'set' },
         lines: [
-          'Bo-shan and all four messengers are home. Thank you for bringing them out.',
+          'Leto, Amri, Hesra, Senn and Bo-shan are home. Thank you for bringing them out.',
           'I wish Ruon were here to answer their questions. I will write to the province and ask where Jin delivered him.',
           'Bring me the maker-plate rubbing too; the province should know what the quarry was running. For now, go and eat.',
         ],
@@ -219,9 +327,9 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.pella',
     lines: [
       "You're going to the quarry? I can show you the way. I know it. Mira keeps saying I'm too little.",
-      'My brother took vegetables up before Mira sent the others. Bo-shan. That makes five missing. He was supposed to be back on Tuesday.',
+      'My brother took vegetables up before Mira sent the others. He was supposed to be back on Tuesday.',
       'He says a lightning strike can go right across a puddle. He saw it happen to a whole crew. He also says he can lift an ostrich horse, so I would ask someone else.',
-      'Mira says “the missing people” every time. She could say his name. She knows his name.',
+      'Mira always counts four. I have to say five every time.',
       "Look for the cart with cabbages piled above the seat. Tell him I'm not doing his chores again this week.",
     ],
     next: 'pella_asked',
@@ -815,7 +923,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.narrator',
     lines: [
       'The drill jams in the quarry floor. Grumbler tries the lever twice, then climbs out with his hands raised.',
-      'You pull the bars from the gallery doors. Mira’s four messengers are there. Bo-shan follows them out and asks where Pella is.',
+      'You pull the bars from the gallery doors. Leto comes out first, then Amri, Hesra and Senn. Bo-shan follows them and asks where Pella is.',
       'The driller bears a Republic City maker’s plate. You take a rubbing for Mira’s report to the province.',
       'The workers help each other up the ramp and start down the west road. It is time to take the news home to Ba Dan.',
     ],
