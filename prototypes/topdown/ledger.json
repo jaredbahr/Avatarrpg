@@ -29769,6 +29769,38 @@
     "animation_group_id": "bb3c85aa-5f8e-481b-a217-22ca82639c43"
    },
    "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_veyra_flare_retake2",
+   "endpoint": "/characters/animations",
+   "job": [
+    "84375c19-b41e-400c-b636-6f2ab4957925"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "046833ea-e283-40f8-91ac-43d8c258f664",
+    "mode": "skeleton-v3",
+    "action_description": "a signal: raises the left arm straight up high above the head, the fist closed a...",
+    "frame_count": 10,
+    "directions": [
+     "north-east"
+    ],
+    "animation_group_id": "6a2f256a-0c84-4c17-b3be-7883db764b17"
+   },
+   "credits": 3.0,
+   "credit_source": "usage",
+   "balance_diff": 3.0,
+   "usage": {
+    "generations": 3.0
+   },
+   "balance_before": 6036.0654640625,
+   "balance_after": 6033.0654640625,
+   "secs": 111,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "6a2f256a-0c84-4c17-b3be-7883db764b17"
+   },
+   "region": "saltstep_emberwatch"
   }
  ],
  "end_balance": 16728.0,

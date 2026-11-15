@@ -240,18 +240,6 @@
     "custom-a_signal_raises_the_left_arm_6a2f25_north_8.png",
     "custom-a_signal_raises_the_left_arm_6a2f25_north_9.png"
    ],
-   "north-east": [
-    "custom-a_signal_raises_the_left_arm_6a2f25_north-east_0.png",
-    "custom-a_signal_raises_the_left_arm_6a2f25_north-east_1.png",
-    "custom-a_signal_raises_the_left_arm_6a2f25_north-east_2.png",
-    "custom-a_signal_raises_the_left_arm_6a2f25_north-east_3.png",
-    "custom-a_signal_raises_the_left_arm_6a2f25_north-east_4.png",
-    "custom-a_signal_raises_the_left_arm_6a2f25_north-east_5.png",
-    "custom-a_signal_raises_the_left_arm_6a2f25_north-east_6.png",
-    "custom-a_signal_raises_the_left_arm_6a2f25_north-east_7.png",
-    "custom-a_signal_raises_the_left_arm_6a2f25_north-east_8.png",
-    "custom-a_signal_raises_the_left_arm_6a2f25_north-east_9.png"
-   ],
    "north-west": [
     "custom-a_signal_raises_the_left_arm_6a2f25_north-west_0.png",
     "custom-a_signal_raises_the_left_arm_6a2f25_north-west_1.png",
@@ -275,6 +263,18 @@
     "custom-a_signal_raises_the_left_arm_6a2f25_west_7.png",
     "custom-a_signal_raises_the_left_arm_6a2f25_west_8.png",
     "custom-a_signal_raises_the_left_arm_6a2f25_west_9.png"
+   ],
+   "north-east": [
+    "custom-a_signal_raises_the_left_arm_6a2f25_north-east_0.png",
+    "custom-a_signal_raises_the_left_arm_6a2f25_north-east_1.png",
+    "custom-a_signal_raises_the_left_arm_6a2f25_north-east_2.png",
+    "custom-a_signal_raises_the_left_arm_6a2f25_north-east_3.png",
+    "custom-a_signal_raises_the_left_arm_6a2f25_north-east_4.png",
+    "custom-a_signal_raises_the_left_arm_6a2f25_north-east_5.png",
+    "custom-a_signal_raises_the_left_arm_6a2f25_north-east_6.png",
+    "custom-a_signal_raises_the_left_arm_6a2f25_north-east_7.png",
+    "custom-a_signal_raises_the_left_arm_6a2f25_north-east_8.png",
+    "custom-a_signal_raises_the_left_arm_6a2f25_north-east_9.png"
    ]
   },
   "custom-knocked out: staggers back one@883b0a": {
