@@ -180,10 +180,16 @@ suite('Ba Dan residents: the §8 schedule and the §4 holds', () => {
     });
   });
 
-  it('holds Mira at her table before mira_intro, and Pella at home court without her', () => {
+  it('holds Mira at her table before mira_intro, with Pella beside her for that talk', () => {
     const fresh = table(CLASSES['new game'] ?? {});
-    for (const phase of DAY_PHASES) expect(fresh[phase]?.split(' | ')[0], phase).toBe('bd01.table');
-    expect(fresh.afternoon?.split(' | ')[2]).toBe('bd04.court');
+    for (const phase of DAY_PHASES) {
+      const [mira, , pella] = fresh[phase]?.split(' | ') ?? [];
+      expect(mira, phase).toBe('bd01.table');
+      // Mira's table (DLG-01): Pella is part of the first talk, so she waits at it.
+      expect(pella, phase).toBe('bd01.bench');
+    }
+    // Once Mira has met the party, Pella is back on her own day.
+    expect(table(CLASSES['mira_intro visited'] ?? {}).midday?.split(' | ')[2]).toBe('bd04.court');
   });
 
   it('holds every homecoming owner in public in every phase after victory', () => {
@@ -295,9 +301,10 @@ suite('Ba Dan residents: guards, supervision and the five missing', () => {
         }
         if (pella.anchor === 'bd04.court')
           expect(where(s, 'bg.pella_household'), label).toBe('bd04.yard');
-        expect([null, 'home.pella', 'bd05.school', 'bd04.court', 'bd06.watch'], label).toContain(
-          pella.anchor,
-        );
+        expect(
+          [null, 'home.pella', 'bd05.school', 'bd04.court', 'bd06.watch', 'bd01.bench'],
+          label,
+        ).toContain(pella.anchor);
       }
     });
     // The exception is real, and the test sees it.

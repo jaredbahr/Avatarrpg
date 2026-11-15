@@ -31,7 +31,7 @@ flowchart TD
   n50["gao_home<br/>Gao the Shopkeeper: Leave your packs by the door. There is rice…"]:::entry
   n51["gao_home_cold<br/>Gao the Shopkeeper: The workers are home. I am glad of that. Th…"]:::entry
   n58["gate_return_explore<br/>Explore quarry_gate: The workers are returning. The gate is ope…"]:::entry
-  n107["pella_home<br/>Pella: My brother is home. Bo-shan. He came through the gate an…"]:::entry
+  n107["pella_home<br/>Pella: My brother came home. Bo-shan. He came through the gate …"]:::entry
   n122["quarry_after_explore<br/>Explore quarry_floor: The five workers are returning with you. …"]:::entry
   n147["reunion_all_right<br/>Bo-shan: I’m all right."]
   n148["reunion_bowl<br/>Mira’s Table: Mira sets his covered bowl in front of him and li…"]

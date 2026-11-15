@@ -99,6 +99,9 @@ jobs:
       - name: Check generated story graphs
         run: npm run docs:story -- --check
 
+      - name: Check generated save history report
+        run: npm run docs:saves -- --check
+
       - name: Unit + content-validation + simulator tests
         run: npm test
 
@@ -119,12 +122,18 @@ jobs:
         run: npm run check:assets
 
       - name: Balance report
-        # Prints win rates per encounter at every table size. Fails only on an
-        # anomaly (a stalemate, impossible HP); the tuning band is a target to
-        # read, not a gate.
-        run: npm run balance
+        # The balance tripwire (ADR 0114). Prints win rate, party HP left,
+        # rounds and deaths with 95% intervals for every encounter and roster
+        # variant, on Story and Hard, at 1, 3 and 6 players, then compares them
+        # with scripts/balance/baseline.json. It fails on a shift that is both
+        # statistically significant and large enough to matter, on a row the
+        # baseline does not know (or the reverse), and on an anomaly (a
+        # stalemate, impossible HP). Its trial count, sizes and difficulties are
+        # fixed in scripts/balance/gate.ts; it refuses BALANCE_TRIALS and the
+        # other sweep overrides. Regenerate the baseline deliberately with
+        # `npm run balance:baseline` and say why in the pull request.
+        run: npm run balance:check
         env:
-          BALANCE_TRIALS: 40
           # The per-path sweep runs every discipline against every encounter
           # with both sides levelled past the gate, so its trial count costs
           # 40 fights a go. It is a tripwire for an obviously broken path, not

@@ -18,7 +18,7 @@ import { cachedGrid, DIRECTIONS, findPath, posKey, tileAt } from '../rules/grid'
 import { generateGoldenSaves } from '../../../scripts/saves/make-golden';
 import { deserialize, SAVE_FORMAT_VERSION, stateFromBlob } from './serialize';
 import { applyIdAliases } from './aliases';
-import { applyFlagBackfills } from './backfill';
+import { applyBackfills } from './backfill';
 import { FLAG_BACKFILLS } from '../../content/story/flagBackfills';
 import { ID_ALIASES } from '../../content/idAliases';
 import { reconcileBattleResult, reconcileDisciplines, reconcileWorld } from './reconcile';
@@ -56,7 +56,11 @@ function load(json: string): GameState {
   // Match App.adoptSave's real order. A lost battle/map is not silent success.
   const battle = reconcileBattleResult(
     CONTENT,
-    applyFlagBackfills(applyIdAliases(stateFromBlob(parsed.blob), ID_ALIASES), FLAG_BACKFILLS),
+    applyBackfills(
+      applyIdAliases(stateFromBlob(parsed.blob), ID_ALIASES),
+      parsed.blob.history,
+      FLAG_BACKFILLS,
+    ),
   );
   expect(battle.warnings).toEqual([]);
   return reconcileWorld(CONTENT, reconcileDisciplines(CONTENT, battle.state));

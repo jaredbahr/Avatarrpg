@@ -55,7 +55,7 @@ flowchart TD
   n71["lost_ambush<br/>Set flags"]
   n77["lost_forest_road<br/>Set flags"]
   n84["lost_quarry_gate<br/>Set flags"]
-  n85["mira_epilogue<br/>Elder Mira: Bo-shan came through the gate ahead of you. Pella h…"]:::entry
+  n85["mira_epilogue<br/>Elder Mira: Bo-shan has taken his cart down to the coast road. …"]:::entry
   n86["mira_intro<br/>Elder Mira: Come in. There is rice if you have not eaten."]:::entry
   n88["mira_rubbing<br/>Elder Mira: Is that the rubbing? Hold that corner flat for me."]
   n89["mira_rubbing_given<br/>Set flags"]

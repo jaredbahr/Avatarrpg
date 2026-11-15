@@ -314,7 +314,7 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
         when: victory,
         lines: [
           '“School this morning. Pupils home at midday.”',
-          'Underneath, in careful chalk: “PELLA IS AT SCHOOL. BO-SHAN, DO NOT MOVE MY STONES.”',
+          'Underneath, in careful chalk: “PELLA IS AT SCHOOL. NOBODY MOVE BO-SHAN’S STONE. IT IS HIS TURN.”',
         ],
       },
     ],

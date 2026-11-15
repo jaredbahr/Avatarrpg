@@ -277,15 +277,15 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'Elder Mira',
     portrait: 'portrait.mira',
     lines: [
-      'Bo-shan came through the gate ahead of you. Pella has not let go of his sleeve.',
-      'Bo-shan and all four messengers are home. I have counted everyone twice. They keep telling me to stop.',
+      'Bo-shan has taken his cart down to the coast road. Pella watched him go from behind her shutter, and she will not talk about it yet.',
+      'Leto, Amri, Hesra and Senn are home. I have counted them twice. They keep telling me to stop.',
       'You can stay as long as you need. Leave your washing by the door.',
     ],
     variants: [
       {
         when: { kind: 'flag', key: 'ruon_spared', op: 'set' },
         lines: [
-          'Bo-shan and all four messengers are home. I have counted everyone twice. They keep telling me to stop.',
+          'Leto, Amri, Hesra and Senn are home, and Bo-shan is on the coast road with his cart. I have counted everyone twice.',
           'Dorin is taking Ruon’s statement for the hearing. Bring me the maker-plate rubbing too.',
           'You can stay too. Gao has food ready, and I will find you a bed.',
         ],
@@ -293,7 +293,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
       {
         when: { kind: 'flag', key: 'ruon_traded', op: 'set' },
         lines: [
-          'Bo-shan and all four messengers are home. Thank you for bringing them out.',
+          'All five came out of that quarry. Four are home, and Bo-shan is on the coast road. Thank you for bringing them out.',
           'I wish Ruon were here to answer their questions. I will ask at every office on the coast road where Jin took him, until one of them tells me.',
           'Bring me the maker-plate rubbing too. For now, go and eat.',
         ],
