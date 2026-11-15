@@ -1,1 +1,2 @@
---project=ipad-landscape topdown-quarry -g "quarry_gate walks in exploration on webgl" --repeat-each=70
+--project=ipad-landscape exploration-dock --repeat-each=8
+--project=ipad-landscape long-conversation-layout --repeat-each=5

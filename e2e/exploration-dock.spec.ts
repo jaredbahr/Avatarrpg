@@ -138,6 +138,19 @@ for (const layout of [
     expect(geometry.objective.bottom).toBeLessThanOrEqual(geometry.map.top + 1);
     expect(geometry.covered).toBe(0);
 
+    await page.evaluate(() => {
+      const w = window as unknown as { __tl: unknown[] };
+      w.__tl = [];
+      const host = document.querySelector<HTMLElement>('.toasts')!;
+      const snap = (why: string) => {
+        const wraps = [...document.querySelectorAll('.scene-host .map-wrap')].map((m) => { const b = m.getBoundingClientRect(); return [Math.round(b.top), Math.round(b.height)]; });
+        w.__tl.push([Math.round(performance.now()), why, host.dataset.place ?? null, host.style.getPropertyValue('--toast-anchor'), getComputedStyle(host).top, Math.round(host.getBoundingClientRect().top), wraps, document.querySelectorAll('.overlay-host > .overlay > .panel').length, host.childElementCount]);
+      };
+      new MutationObserver(() => snap('mut')).observe(host, { attributes: true, childList: true });
+      const tick = () => { snap('raf'); if (w.__tl.length < 400) requestAnimationFrame(tick); };
+      requestAnimationFrame(tick);
+      snap('start');
+    });
     await page.evaluate(() =>
       window.fnt!.app.toasts.show('Objective clearance test', 'info', 10_000),
     );
@@ -181,6 +194,8 @@ for (const layout of [
           vv: [innerWidth, innerHeight, visualViewport?.offsetTop, visualViewport?.scale, scrollY],
         };
       })));
+      if (toastGeometry.toast.top < toastGeometry.mapTop)
+        console.log('PROBE dockfail', JSON.stringify(await page.evaluate(() => (window as unknown as { __tl: unknown[] }).__tl)));
       expect(toastGeometry.toast.top).toBeGreaterThanOrEqual(toastGeometry.mapTop);
       const overlaps =
         toastGeometry.toast.left < toastGeometry.objective.right &&
