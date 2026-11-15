@@ -139,7 +139,7 @@ export interface Scene {
   pausePresentation?(): void;
   resumePresentation?(): void;
   /**
-   * A keyboard or gamepad action (ADR 0112). Return true when the scene took
+   * A keyboard or gamepad action (ADR 0115). Return true when the scene took
    * it; false leaves it to the controls on screen. Only board scenes need this.
    */
   handleAction?(event: ActionEvent): boolean;
@@ -236,7 +236,7 @@ export class App {
   readonly stats: Stats | null;
   /** The reveal-from-ink on every scene change. */
   private readonly curtain: Curtain;
-  /** Keyboard and gamepad actions, and the device last used (ADR 0112). */
+  /** Keyboard and gamepad actions, and the device last used (ADR 0115). */
   readonly input: InputRouter;
 
   private previewSnapshot: { state: GameState | null; session: SessionMeta } | null = null;

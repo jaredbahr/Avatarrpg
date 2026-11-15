@@ -1,5 +1,5 @@
 /**
- * What an action does in a fight, by where the fight is (ADR 0112 §4, §7).
+ * What an action does in a fight, by where the fight is (ADR 0115 §4, §7).
  *
  * The decision is kept apart from `CombatScene` so the focus graph (the action
  * bar, the board, and the moments neither takes input) can be tested without a

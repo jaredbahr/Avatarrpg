@@ -227,8 +227,8 @@ content for a route of 30–40 minutes) puts a forty-hour game far past any sing
 | Area        | Today                                                                                                         | Gap                                                                                         |
 | ----------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
 | Mouse       | Pointer events throughout; wheel and ctrl+wheel zoom (`input/pointer.ts`); combat hover ghost                 | No desktop mouse project in `playwright.config.ts` (only touch profiles)                    |
-| Right click | Backs out of a move or an aim; inspects otherwise (ADR 0112)                                                  | none known                                                                                  |
-| Keyboard    | Every screen, through the action layer (ADR 0112); `e2e/keyboard-flow.spec.ts` plays to the first fight's end | Rebinding; a real Remote Play guest keyboard is on the manual checklist                     |
+| Right click | Backs out of a move or an aim; inspects otherwise (ADR 0115)                                                  | none known                                                                                  |
+| Keyboard    | Every screen, through the action layer (ADR 0115); `e2e/keyboard-flow.spec.ts` plays to the first fight's end | Rebinding; a real Remote Play guest keyboard is on the manual checklist                     |
 | Gamepad     | Standard mapping through the same layer; `e2e/gamepad-play.spec.ts` on a synthetic pad                        | A real controller and a Remote Play guest are unverified: `docs/device-matrix.md` checklist |
 | Window size | layout fits any viewport; desktop is tier 2                                                                   | 16:9 and 1080p window not tuned or tested                                                   |
 

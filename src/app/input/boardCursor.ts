@@ -1,5 +1,5 @@
 /**
- * The board cursor (ADR 0112 §3).
+ * The board cursor (ADR 0115 §3).
  *
  * A keyboard or a gamepad has no pointer, and a free pixel cursor on a tactics
  * board is slow and easy to misplace. So the cursor only ever stands on a tile

@@ -80,10 +80,10 @@ model, iPadOS version and the `?stats=1` numbers in the PR.
 27. **The elements have voices.** Cast fire, water, earth, air and lightning once each. Each should be recognisably a different thing: fire rushes and falls away, water is lower and rounder, earth lands with weight under a strike, air is wide and breathy and rising, lightning cracks and is gone. A hit lands with its own sound under whatever threw it; an oil flask splinters; a unit going down is heavier than a hit. A twenty-five tile storm must sound like one event, not twenty-five.
 28. **Off is off, and quiet is usable.** Settings → Sound → Off: nothing sounds, and nothing sounds after a reload either. Quiet is audible in a quiet room without being the loudest thing in it. At Largest text the four Sound buttons are each at least 48 px. With the iPad's silent switch on, the game makes no sound and nothing breaks — every control still works.
 
-## Keyboard and gamepad (ADR 0112)
+## Keyboard and gamepad (ADR 0115)
 
 A PC window is driven by mouse, keyboard or controller, and a Steam Remote Play guest often has only a
-controller. Every screen takes all of them through one action layer; the bindings are in ADR 0112 §2.
+controller. Every screen takes all of them through one action layer; the bindings are in ADR 0115 §2.
 
 | Covered where                               | What it proves                                                            |
 | ------------------------------------------- | ------------------------------------------------------------------------- |

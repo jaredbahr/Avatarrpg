@@ -1,4 +1,4 @@
-# ADR 0112: One action layer for touch, mouse, keyboard and gamepad
+# ADR 0115: One action layer for touch, mouse, keyboard and gamepad
 
 **Status:** proposed, 2026-11-14 (#753, #491). An input contract: every screen is driven through it.
 

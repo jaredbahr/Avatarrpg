@@ -1,5 +1,5 @@
 /**
- * Delivers actions (ADR 0112).
+ * Delivers actions (ADR 0115).
  *
  * The one place a key or a gamepad button becomes something the game does.
  * The order is the contract:

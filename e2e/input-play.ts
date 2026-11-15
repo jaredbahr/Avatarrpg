@@ -2,7 +2,7 @@ import { expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 
 /**
- * Plays the game through the action layer (ADR 0112) with one device only.
+ * Plays the game through the action layer (ADR 0115) with one device only.
  *
  * A `Driver` is a keyboard or a synthetic gamepad: the route below never
  * clicks, taps, or edits state. It reads `window.fnt.app` to decide what to do

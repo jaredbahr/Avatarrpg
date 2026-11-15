@@ -2,7 +2,7 @@
 
 ## 0.2.11 — release candidate
 
-- Play without touch (ADR 0112, #753, #491). One action layer sits between
+- Play without touch (ADR 0115, #753, #491). One action layer sits between
   the devices and the game: a key or a gamepad button becomes an action
   (move, confirm, cancel, next target, an action-bar slot, end turn, inspect,
   map, pause, look around), and one router delivers it to the open dialog,

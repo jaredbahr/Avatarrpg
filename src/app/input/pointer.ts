@@ -31,7 +31,7 @@ export interface WheelGesture {
 export interface PointerHandlers extends GestureHandlers {
   onWheel?(gesture: WheelGesture): void;
   /**
-   * A mouse right click (ADR 0112 §1): a scene with something to back out of
+   * A mouse right click (ADR 0115 §1): a scene with something to back out of
    * cancels it. Without this handler a right click is a long press.
    */
   onSecondary?(point: GesturePoint): void;

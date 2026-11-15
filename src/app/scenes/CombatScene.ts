@@ -263,7 +263,7 @@ interface OverlayBuild {
   readonly targetReticle: TargetReticleCue | null;
 }
 
-/** Marks the one control `confirm` presses when nothing has focus (ADR 0112 §1). */
+/** Marks the one control `confirm` presses when nothing has focus (ADR 0115 §1). */
 function defaultControl<T extends HTMLElement>(control: T): T {
   control.className = `${control.className} input-default`.trim();
   return control;
@@ -299,7 +299,7 @@ export class CombatScene implements Scene {
   private pending: Vec2 | null = null;
   private hover: Vec2 | null = null;
   /**
-   * The board cursor a keyboard or gamepad moves (ADR 0112 §3): always on a
+   * The board cursor a keyboard or gamepad moves (ADR 0115 §3): always on a
    * legal tile, and while moving or aiming it is the pending choice.
    */
   private cursor: Vec2 | null = null;
@@ -314,7 +314,7 @@ export class CombatScene implements Scene {
 
   /** Party unit whose owner last acknowledged the hand-off banner. */
   private handedOffTo: string | null = null;
-  /** When the current hand-off card first showed, for its hold-off (ADR 0112 §5). */
+  /** When the current hand-off card first showed, for its hold-off (ADR 0115 §5). */
   private handoffShownAt = 0;
   private bannerShownFor: string | null = null;
   private lastActiveId: string | null = null;
@@ -548,7 +548,7 @@ export class CombatScene implements Scene {
     const scene = el('div', { class: 'scene combat-scene' });
     scene.appendChild(el('div', { class: 'top-bar combat-bar' }));
     scene.appendChild(el('div', { class: 'turn-strip' }));
-    // A tab stop: with focus here the arrow keys move the board cursor (ADR 0112 §4).
+    // A tab stop: with focus here the arrow keys move the board cursor (ADR 0115 §4).
     const canvas = el('canvas', {
       class: 'map-canvas',
       attrs: { 'aria-label': 'Battlefield', role: 'application', tabindex: '0' },
@@ -1358,7 +1358,7 @@ export class CombatScene implements Scene {
   }
 
   /* ---------------------------------------------------------------- */
-  /* Keyboard and gamepad (ADR 0112)                                   */
+  /* Keyboard and gamepad (ADR 0115)                                   */
   /* ---------------------------------------------------------------- */
 
   /** True while a keyboard or a pad, not a pointer, was the last thing used. */
@@ -1620,7 +1620,7 @@ export class CombatScene implements Scene {
     }
   }
 
-  /** What the buttons do now, for the legend (ADR 0112 §6). */
+  /** What the buttons do now, for the legend (ADR 0115 §6). */
   inputHints(): readonly InputHint[] {
     const battle = this.battle();
     if (!battle || battle.phase !== 'active' || this.battleOpening || this.needsHandoff())

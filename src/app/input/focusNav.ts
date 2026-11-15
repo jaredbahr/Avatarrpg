@@ -1,5 +1,5 @@
 /**
- * Spatial focus (ADR 0112 §1, rule 3).
+ * Spatial focus (ADR 0115 §1, rule 3).
  *
  * On a screen made of ordinary controls a direction moves focus to the control
  * that lies that way, as a TV remote does. This is the geometry only: boxes in,

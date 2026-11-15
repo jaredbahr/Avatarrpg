@@ -1,5 +1,5 @@
 /**
- * What to print on a hint for the device last used (ADR 0112 §6).
+ * What to print on a hint for the device last used (ADR 0115 §6).
  *
  * Glyphs are short text in the UI face rather than pictures: they scale with
  * the Large-text setting, need no art per controller, and read aloud. A pad's
@@ -70,7 +70,7 @@ export function glyphFor(key: HintKey, device: InputDevice, family: PadFamily): 
   return null;
 }
 
-/** "Hand the tablet to" for the device in use (ADR 0112 §5). */
+/** "Hand the tablet to" for the device in use (ADR 0115 §5). */
 export function handoffCopy(device: InputDevice, touchScreen: boolean): string {
   if (device === 'keyboard') return 'Pass the keyboard to';
   if (device === 'gamepad') return 'Pass the controller to';

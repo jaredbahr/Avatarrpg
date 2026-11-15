@@ -261,7 +261,7 @@ function voteBanner(
       { class: 'btn-primary btn-large' },
     );
     ready.dataset.voteControl = 'ready';
-    // The voter who just picked must not answer for the next one (ADR 0112 §5).
+    // The voter who just picked must not answer for the next one (ADR 0115 §5).
     guardHandoff(ready);
     return banner(
       el('span', { class: 'tiny muted', text: 'Vote saved. Pass the screen to' }),

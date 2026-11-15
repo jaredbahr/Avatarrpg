@@ -1,5 +1,5 @@
 /*
- * Keyboard and gamepad (ADR 0112).
+ * Keyboard and gamepad (ADR 0115).
  *
  * `html[data-input]` is the device used last: touch, mouse, keyboard or gamepad.
  * Nothing here draws for touch or mouse; a pointer needs no hints.

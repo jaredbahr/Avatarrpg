@@ -219,7 +219,7 @@ export class ExploreScene implements Scene {
       ),
     );
 
-    // A tab stop: with focus here the arrow keys walk the party (ADR 0112 §4).
+    // A tab stop: with focus here the arrow keys walk the party (ADR 0115 §4).
     const canvas = el('canvas', {
       class: 'map-canvas',
       attrs: { 'aria-label': 'Village map', role: 'application', tabindex: '0' },
@@ -1501,7 +1501,7 @@ export class ExploreScene implements Scene {
   }
 
   /* ---------------------------------------------------------------- */
-  /* Keyboard and gamepad (ADR 0112)                                   */
+  /* Keyboard and gamepad (ADR 0115)                                   */
   /* ---------------------------------------------------------------- */
 
   private hudButtons(): HTMLButtonElement[] {
@@ -1605,7 +1605,7 @@ export class ExploreScene implements Scene {
     return press(buttons[slotIndex(action) ?? -1]);
   }
 
-  /** What the buttons do now, for the legend (ADR 0112 §6). */
+  /** What the buttons do now, for the legend (ADR 0115 §6). */
   inputHints(): readonly InputHint[] {
     if (this.conversationMode || this.suspended || this.app.state?.screen !== 'explore') return [];
     const primary = this.hudButtons()[0];

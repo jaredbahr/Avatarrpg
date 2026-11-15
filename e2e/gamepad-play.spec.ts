@@ -3,7 +3,7 @@ import { resetStorage } from './helpers';
 import { fightToTheEnd, gamepadDriver, installGamepad, playToFirstFight } from './input-play';
 
 /**
- * A controller alone (ADR 0112): what a Steam Remote Play guest on a phone or
+ * A controller alone (ADR 0115): what a Steam Remote Play guest on a phone or
  * a TV has. The pad is synthetic, a `navigator.getGamepads()` the game polls
  * as it would a real one, so this proves the mapping and the routing, not a
  * particular controller. Real hardware is on the checklist in

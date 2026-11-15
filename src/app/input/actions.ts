@@ -1,5 +1,5 @@
 /**
- * The action layer (ADR 0112).
+ * The action layer (ADR 0115).
  *
  * Devices never talk to scenes. A keyboard key or a gamepad button becomes one
  * of these actions here, and `InputRouter` delivers it: to the open dialog, to

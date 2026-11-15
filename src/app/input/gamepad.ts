@@ -1,5 +1,5 @@
 /**
- * The gamepad adapter's pure half (ADR 0112 §2).
+ * The gamepad adapter's pure half (ADR 0115 §2).
  *
  * The Gamepad API is polled, not evented, so a button is an action only on the
  * frame it goes down, and a held direction has to repeat by the clock. This
