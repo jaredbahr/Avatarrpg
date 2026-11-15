@@ -92,6 +92,27 @@ export async function resetStorage(page: Page, query = ''): Promise<void> {
   await page.waitForFunction(() => Boolean(window.fnt?.app));
 }
 
+/**
+ * Whether this browser can create a WebGL context at all, asked on a page that
+ * does not boot the game.
+ *
+ * The probe used to load `/`. That starts the game's boot fetches (the region
+ * and its top-down scenes), and the caller's next step is `resetStorage`, which
+ * navigates away while they are in flight. WebKit reports a fetch aborted by
+ * navigation as `TypeError: Load failed`, the game logs it, and a spec that
+ * collects console errors then failed on an error from the page it had already
+ * left (topdown-quarry on the iPad project, intermittently).
+ */
+export async function webglAvailable(page: Page): Promise<boolean> {
+  await page.goto('/robots.txt');
+  return page.evaluate(() => {
+    const probe = document.createElement('canvas');
+    const gl = probe.getContext('webgl2') ?? probe.getContext('webgl');
+    gl?.getExtension('WEBGL_lose_context')?.loseContext();
+    return gl !== null;
+  });
+}
+
 export interface StartOptions {
   /**
    * Reduce motion is on by default here: the suite tests rules and UI, not
