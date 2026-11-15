@@ -14,7 +14,7 @@ import { describe as describeCondition } from '../../core/story/conditions';
 import { optionAvailable, resolveDialogue } from '../../core/story/storyEngine';
 import { resolveAsset } from '../../content/assets/manifest';
 import { assetCanvas, fitAssetToBox } from './assetCanvas';
-import { button, el } from './dom';
+import { button, el, guardHandoff } from './dom';
 import type { Participant } from '../session';
 import {
   ballotFor,
@@ -261,7 +261,8 @@ function voteBanner(
       { class: 'btn-primary btn-large' },
     );
     ready.dataset.voteControl = 'ready';
-    guardHeldKey(ready);
+    // The voter who just picked must not answer for the next one (ADR 0112 §5).
+    guardHandoff(ready);
     return banner(
       el('span', { class: 'tiny muted', text: 'Vote saved. Pass the screen to' }),
       el('strong', { text: voter.name }),

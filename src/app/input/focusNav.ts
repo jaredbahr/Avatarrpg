@@ -27,9 +27,11 @@ const middle = (span: Span): number => (span.near + span.far) / 2;
  * The control a direction leads to from `from`, or null when none lies that
  * way. A control straight ahead (overlapping the one focus is on, seen along
  * the direction) is taken before one off to the side, and one within 45° of
- * the direction before one further round; within each, the nearest wins. So
- * Down from a column of buttons stays in the column while it has a next
- * button, and still reaches a row of buttons below and to the side.
+ * the direction before one further round; within each, the nearest wins. Up
+ * and Down may take one further round than that, Left and Right may not: Down
+ * from a column of buttons stays in the column while it has a next button and
+ * still reaches a row below and to the side, while Right from the last button
+ * of a row never leaps to a corner of the screen.
  */
 export function nextFocusIndex(
   boxes: readonly Box[],
@@ -54,6 +56,9 @@ export function nextFocusIndex(
     const side = gap(across(box), across(origin));
     const offset = Math.abs(middle(across(box)) - middle(across(origin)));
     const tier = side === 0 ? 0 : offset <= ahead ? 1 : 2;
+    // Screens are rows: Left and Right keep to the row (or near it), and only
+    // Up and Down may reach a control far off to the side.
+    if (tier === 2 && horizontal) continue;
     const distance = gap(along(box), along(origin));
     const score = distance + side * 3 + offset * 0.01 + ahead * 0.001;
     if (!best || tier < best.tier || (tier === best.tier && score < best.score))

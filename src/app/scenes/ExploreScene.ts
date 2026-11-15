@@ -94,6 +94,8 @@ const LOOK_SPEED = 720;
  * once begun, so this is also how far it can overshoot a released key.
  */
 const HELD_STRIDE = 3;
+/** The least time between strides: under Reduce motion a walk is instant, and a held key must not be. */
+const HELD_STRIDE_EVERY_MS = 250;
 
 export class ExploreScene implements Scene {
   readonly name = 'explore';
@@ -1637,6 +1639,7 @@ export class ExploreScene implements Scene {
   }
 
   private lastLookAt: number | null = null;
+  private lastStrideAt = 0;
 
   private onVisibility = (): void => {
     if (document.hidden) {
@@ -1719,7 +1722,8 @@ export class ExploreScene implements Scene {
         }
         // A direction still held walks on, a tile at a time, as each step lands.
         const heldWay = held || !live ? null : (this.app.input?.heldDirection() ?? null);
-        if (heldWay) {
+        if (heldWay && now - this.lastStrideAt >= HELD_STRIDE_EVERY_MS) {
+          this.lastStrideAt = now;
           this.stepWalk(heldWay, false);
           if (this.app.state !== state) return;
         }

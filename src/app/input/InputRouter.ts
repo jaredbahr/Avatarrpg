@@ -40,6 +40,8 @@ const MODAL = '[role="dialog"][aria-modal="true"]';
 /** A held arrow key repeats as fast as the OS says; a cursor that fast cannot be stopped on a tile. */
 const KEY_REPEAT_EVERY_MS = 110;
 const LEGEND_REFRESH_MS = 250;
+/** How long a direction is down before it counts as held. */
+const HOLD_AFTER_MS = 300;
 
 function usable(control: HTMLElement): boolean {
   return (
@@ -98,6 +100,10 @@ export class InputRouter {
   private readonly heldPans = new Map<string, Direction>();
   private readonly moveByCode = new Map<string, Direction>();
   private lastKeyRepeat = 0;
+  /** The dialog or scene the last fresh press landed in. */
+  private pressedIn: Element | null = null;
+  private heldWay: Direction | null = null;
+  private heldSince = 0;
   private readonly pads = new Map<number, PadReader>();
   private padHeld: Direction | null = null;
   private padPanVector = { x: 0, y: 0 };
@@ -128,11 +134,20 @@ export class InputRouter {
   /* What scenes read each frame                                       */
   /* ---------------------------------------------------------------- */
 
-  /** The direction held now, for walking on while it is held; null at rest or in a menu. */
-  heldDirection(): Direction | null {
+  /**
+   * The direction held now, for walking on while it is held; null at rest, in
+   * a menu, and for the first `HOLD_AFTER_MS` of a press, so a tap is one step
+   * and never the start of a stride.
+   */
+  heldDirection(now = performance.now()): Direction | null {
     if (topDialog()) return null;
     const code = this.heldMoves[this.heldMoves.length - 1];
-    return (code ? this.moveByCode.get(code) : undefined) ?? this.padHeld;
+    const direction = (code ? this.moveByCode.get(code) : undefined) ?? this.padHeld;
+    if (direction !== this.heldWay) {
+      this.heldWay = direction;
+      this.heldSince = now;
+    }
+    return direction && now - this.heldSince >= HOLD_AFTER_MS ? direction : null;
   }
 
   /** Look-around, each axis -1 to 1: Shift + arrows, I J K L, or the right stick. */
@@ -171,6 +186,11 @@ export class InputRouter {
   /** Delivers one action by the order in the header. True when something took it. */
   route(event: ActionEvent): boolean {
     const dialog = topDialog();
+    // A direction held since the last screen (a walk into a conversation, a
+    // cursor into a result card) does nothing on this one until it is pressed anew.
+    const place = dialog ?? this.host.sceneHost.lastElementChild;
+    if (!event.repeat) this.pressedIn = place;
+    else if (place !== this.pressedIn) return true;
     const handled = dialog
       ? this.controlAction(event, dialog, true)
       : this.host.sceneAction(event) || this.controlAction(event, this.host.sceneHost, false);
@@ -186,7 +206,8 @@ export class InputRouter {
     const focused = index >= 0 ? controls[index] : undefined;
 
     if (isDirection(action)) {
-      if (!focused) return this.seedFocus(scope, controls);
+      // A direction still held from the last screen (a walk) never grabs focus on this one.
+      if (!focused) return event.repeat || this.seedFocus(scope, controls);
       if (this.adjust(focused, action)) return true;
       const next = nextFocusIndex(
         controls.map((control) => control.getBoundingClientRect()),
@@ -240,8 +261,9 @@ export class InputRouter {
   /** Nothing has focus: put it on the way on, or the first control, and stop there. */
   private seedFocus(scope: HTMLElement, controls: readonly HTMLElement[]): boolean {
     const target =
-      [...scope.querySelectorAll<HTMLElement>(`${DEFAULT_CONTROL}, .btn-primary`)].find(usable) ??
-      controls.find((control) => !(control instanceof HTMLCanvasElement));
+      [
+        ...scope.querySelectorAll<HTMLElement>(`${DEFAULT_CONTROL}, .choice-option, .btn-primary`),
+      ].find(usable) ?? controls.find((control) => !(control instanceof HTMLCanvasElement));
     target?.focus();
     return target !== undefined;
   }
@@ -295,6 +317,8 @@ export class InputRouter {
     if (isDirection(action)) {
       if (!this.heldMoves.includes(event.code)) this.heldMoves.push(event.code);
       this.moveByCode.set(event.code, action);
+      // Starts the hold clock on the press itself, not when a scene next asks.
+      this.heldDirection();
       if (event.repeat) {
         const now = performance.now();
         if (now - this.lastKeyRepeat < KEY_REPEAT_EVERY_MS) {
@@ -310,6 +334,7 @@ export class InputRouter {
   private onKeyUp = (event: KeyboardEvent): void => {
     const held = this.heldMoves.indexOf(event.code);
     if (held >= 0) this.heldMoves.splice(held, 1);
+    this.heldDirection();
     this.heldPans.delete(event.code);
     // Letting Shift go ends a Shift + arrow look-around even if the arrow is still down.
     if (event.key === 'Shift')
@@ -373,6 +398,7 @@ export class InputRouter {
     this.padHeld = held;
     this.padPanVector = pan;
     this.padZoomRate = zoom;
+    this.heldDirection(now);
   };
 
   /* ---------------------------------------------------------------- */

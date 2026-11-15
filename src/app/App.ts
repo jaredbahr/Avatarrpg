@@ -430,11 +430,13 @@ export class App {
 
   showScene(scene: Scene, replaceRetained = false): void {
     const active = document.activeElement;
+    // A keyboard player's focus is visible; a gamepad player has no key to make it so.
     const enterDialogueWithFocus =
       scene.name === 'dialogue' &&
-      active instanceof HTMLElement &&
-      this.sceneHost.contains(active) &&
-      active.matches(':focus-visible');
+      (this.input?.device === 'gamepad' ||
+        (active instanceof HTMLElement &&
+          this.sceneHost.contains(active) &&
+          active.matches(':focus-visible')));
     this.cancelRoute();
     this.syncMusic(scene.name);
     const previousInterlude = this.currentSceneIsInterlude;
@@ -1074,12 +1076,16 @@ export class App {
   /** Escape or Start with nothing to back out of: the pause menu, wherever a game is running. */
   private openPauseFromInput(): boolean {
     const name = this.scene?.name;
-    if (
-      !this.state ||
-      this.pause ||
-      (name !== 'explore' && name !== 'combat' && name !== 'dialogue')
-    )
-      return false;
+    if (!this.state || this.pause) return false;
+    if (name === 'dialogue') {
+      // The stage's own Pause also stops a playing interlude; press that one.
+      const own = [...this.sceneHost.querySelectorAll<HTMLButtonElement>('.top-bar button')].find(
+        (candidate) => candidate.textContent?.trim() === 'Pause' && !candidate.closest('[inert]'),
+      );
+      own?.click();
+      return this.pause !== null;
+    }
+    if (name !== 'explore' && name !== 'combat') return false;
     const previous = document.activeElement;
     this.openPause(() => {
       if (previous instanceof HTMLElement && previous.isConnected)
