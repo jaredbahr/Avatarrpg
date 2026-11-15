@@ -65,6 +65,10 @@ not ticked for them and should be brought up to date.
       `validateContent`. A conversation names its map on the node (`StoryNode.presentation`), so a region no longer
       edits the shared `presentations.ts` registry. The board stub waits for the board-authoring item below.
 - [ ] **Regions and bands (W1, W6):** level band per region, world-graph checks in `validateContent`.
+      **Machinery in (#784):** `RegionManifest.levelBand` and `src/content/regions/bands.ts` check that a band is
+      a real range within the level cap and that every fight a region owns expects a level inside it. Ba Dan valley's
+      1–3 is a **placeholder** until the owner answers #784 (proposed bands for every saga region are there);
+      `bands.test.ts` lists placeholders. Left: the route check over the region graph (`progression.test.ts`).
 - [ ] **Board authoring:** extract the shared parts of `boards/baDan.ts`, `forestRoad.ts` and `quarry.ts` so a new
       board is mostly a declaration; measure lines per board before and after.
 
