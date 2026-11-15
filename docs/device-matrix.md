@@ -79,3 +79,61 @@ model, iPadOS version and the `?stats=1` numbers in the PR.
 26. **Sound unlocks.** Launch from the Home Screen with the ring/silent switch set to _ring_. Settings → Sound reads Normal. Tap anything, then walk a tile: a footstep. Sound never has to be asked for twice — send the app to the background and come back, and the next tap still sounds.
 27. **The elements have voices.** Cast fire, water, earth, air and lightning once each. Each should be recognisably a different thing: fire rushes and falls away, water is lower and rounder, earth lands with weight under a strike, air is wide and breathy and rising, lightning cracks and is gone. A hit lands with its own sound under whatever threw it; an oil flask splinters; a unit going down is heavier than a hit. A twenty-five tile storm must sound like one event, not twenty-five.
 28. **Off is off, and quiet is usable.** Settings → Sound → Off: nothing sounds, and nothing sounds after a reload either. Quiet is audible in a quiet room without being the loudest thing in it. At Largest text the four Sound buttons are each at least 48 px. With the iPad's silent switch on, the game makes no sound and nothing breaks — every control still works.
+
+## Keyboard and gamepad (ADR 0112)
+
+A PC window is driven by mouse, keyboard or controller, and a Steam Remote Play guest often has only a
+controller. Every screen takes all of them through one action layer; the bindings are in ADR 0112 §2.
+
+| Covered where                               | What it proves                                                            |
+| ------------------------------------------- | ------------------------------------------------------------------------- |
+| `src/app/input/*.test.ts` (pull requests)   | Key and pad maps, cursor snapping, cycle order, focus graph, glyphs       |
+| `e2e/keyboard-flow.spec.ts` (browser suite) | Keys alone: title, settings, setup, story, walking, map, pause, the fight |
+| `e2e/gamepad-play.spec.ts` (browser suite)  | The same route on a synthetic standard-mapping pad                        |
+
+The pad in the suite is a stand-in for `navigator.getGamepads()`. It proves the mapping and the routing,
+not any real controller, driver or stream.
+
+## Manual controller and Remote Play checklist (ten minutes)
+
+Run on the PC that will host, in the browser window Steam will share. Note the controller model, how it is
+connected (USB, Bluetooth, through Steam) and the browser.
+
+**A real controller, alone (about four minutes).** Put the mouse and keyboard aside.
+
+1. **Wake it.** At the title, press A (the bottom face button). New game takes a focus ring, and a second
+   press opens party setup. If nothing happens, press a different button once: browsers hide a pad until
+   its first press.
+2. **Menus.** D-pad to "Start with the suggested party", A. Press A through the opening. The Next button
+   shows the pad's own confirm mark (A, or ✕ on a PlayStation pad).
+3. **Walk.** In Ba Dan, tap the d-pad: one tile a press. Hold it: the party strides on and stops within
+   three tiles of letting go. Try the left stick the same way. Walk into Elder Mira: she talks.
+4. **Look and map.** Right stick pans the view; the triggers zoom; pressing the right stick recentres.
+   View (Select) opens the local map; B closes it. Menu (Start) pauses; B resumes.
+5. **A fight.** Take the east road and walk east into the roadblock. On your turn the d-pad moves along
+   the action bar; A on Move puts a cursor on the board, d-pad moves it tile to tile, A walks, B backs out.
+   A on an ability starts on the nearest enemy; RB and LB step through targets; A confirms. Y ends the turn
+   (twice if action points are left). Up from the bar looks over the board; X inspects.
+6. **Glyphs.** The legend at the foot of the map names the buttons printed on this controller. Touch the
+   mouse: the legend goes. Press a pad button: it comes back.
+
+**Hot-seat on one controller (about two minutes).** Start a two-player game.
+
+7. The hand-off card reads "Pass the controller to" and the next player's name. Hold A down from the last
+   turn: the card stays. Let go and press A: it clears.
+
+**One Steam Remote Play session with a friend (about four minutes).** Add the browser as a non-Steam game
+(`docs/pipeline-proof-plan.md` §5), start a session and invite one friend.
+
+8. **Does the invite work at all** for a non-Steam shortcut? If not, note what Steam offered instead.
+9. **The guest's controller.** The friend presses A at the title. Does the game react? Which glyphs does
+   the legend show for them (Steam usually presents a guest as an Xbox pad)?
+10. **Guest keyboard and mouse,** if Steam is set to share them: arrows walk, Enter confirms, a right click
+    backs out of an aim.
+11. **Two pads at once.** Host and guest each press a direction in the village. Both work; nothing fights.
+12. **Lag.** With the guest moving the board cursor, is a held d-pad easy to stop on a tile? If it
+    overshoots, say so: the repeat rate is one number (`PAD_REPEAT_EVERY_MS`).
+13. **Names.** A guest on a controller cannot type a player name. Did Steam's on-screen keyboard appear in
+    the name field, or was Skip names enough?
+14. **The vote.** At a story choice, the secret vote is not secret on a shared stream. Settings → Story
+    choices → Take turns is the remote-table setting; confirm it reads well for the guest.
