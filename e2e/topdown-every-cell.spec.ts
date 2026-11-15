@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type CDPSession, type Page } from '@playwright/test';
 import type { EncounterDef, MapDef, Vec2 } from '../src/core/types';
 import { buildGrid } from '../src/core/rules/grid';
 import { TOPDOWN_FIXTURE } from '../src/render/topdown.fixture';
@@ -152,10 +152,28 @@ async function installScenePickObserver(page: Page): Promise<void> {
 }
 
 /**
+ * A real touch on the page: the browser's own touch-start and touch-end, as
+ * `page.touchscreen.tap` sends them, but both queued before either is awaited.
+ * The browser handles input in order, so the touch-end cannot overtake its
+ * touch-start; what the sequential form added was one more wait for a software
+ * frame (about two seconds on CI) between the two, for every tap.
+ */
+async function touchTap(cdp: CDPSession, point: { x: number; y: number }): Promise<void> {
+  const touchPoints = [{ x: point.x, y: point.y }];
+  await Promise.all([
+    cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints }),
+    cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] }),
+  ]);
+}
+
+/**
  * Taps cells one after another and checks each tap's pick with the read that
  * aims the next one (see `aimAt`); `finish` reads the last tap's result.
+ * Every tap needs its own read: a tap selects a tile, the HUD's panel changes the
+ * canvas box, and the camera refits a frame later (measured: the box was 392 CSS px
+ * tall before the first tap and 364 after on the phone), so one aim up front misses.
  */
-function touchSweep(page: Page) {
+function touchSweep(page: Page, cdp: CDPSession) {
   let last: { aim: Aim; pos: Vec2 } | null = null;
   const check = (now: Aim) => {
     if (!last) return;
@@ -170,7 +188,7 @@ function touchSweep(page: Page) {
       expect(aim?.point, missing).toBeTruthy();
       if (!aim?.point) throw new Error(missing);
       check(aim);
-      await page.touchscreen.tap(aim.point.x, aim.point.y);
+      await touchTap(cdp, aim.point);
       last = { aim, pos };
     },
     async finish() {
@@ -282,7 +300,7 @@ for (const renderer of ['canvas', 'webgl'] as const satisfies readonly Renderer[
         expect(centreCount).toBe(54 - blockedFixtureCells.length);
         for (const blocked of blockedFixtureCells)
           expect(walkableKeys.has(`${blocked.x},${blocked.y}`)).toBe(false);
-        const sweep = touchSweep(page);
+        const sweep = touchSweep(page, await context.newCDPSession(page));
         for (const pos of walkable)
           await sweep.tap(pos, null, `missing painted centre for (${pos.x},${pos.y})`);
 
