@@ -48,7 +48,7 @@ export const GATE_SETTINGS = {
 /** The chance that an unchanged game trips the gate anywhere in one run. */
 export const FAMILY_ALPHA = 0.01;
 
-export type MeasureId = 'winRate' | 'hpLeft' | 'rounds' | 'deaths';
+type MeasureId = 'winRate' | 'hpLeft' | 'rounds' | 'deaths';
 
 export interface MeasureDef {
   readonly id: MeasureId;
@@ -207,7 +207,7 @@ export function rowKey(row: BaselineRow): string {
   return `${row.difficulty} / ${row.size}p / ${row.encounterId} / ${row.variantId ?? 'base'}`;
 }
 
-export interface Comparison {
+interface Comparison {
   readonly key: string;
   readonly measure: MeasureDef;
   readonly baseline: number;

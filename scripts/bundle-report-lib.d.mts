@@ -1,9 +1,9 @@
-export type ChunkReport = {
+type ChunkReport = {
   compressedBytes: number;
   modules: Map<string, number>;
 };
 
-export type BundleReport = {
+type BundleReport = {
   total: number;
   modules: Map<string, number>;
 };
