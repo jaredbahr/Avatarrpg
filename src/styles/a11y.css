@@ -20,12 +20,18 @@ html[data-reduce-motion='on'] {
   --motion-scale: 0;
 }
 
+/* Transitions snap (0s) rather than run for 1ms. transition-property starts as
+   `all`, so a 1ms duration gave every element a transition on every property,
+   inherited ones included. In WebKit a Large text change then reached the
+   page one tree level per frame: each element transitioned its font-size from
+   a parent that was still transitioning, and a conversation opened meanwhile
+   kept body text at the old size for over a second and re-wrapped later. */
 html[data-reduce-motion='on'] *,
 html[data-reduce-motion='on'] *::before,
 html[data-reduce-motion='on'] *::after {
   animation-duration: 1ms !important;
   animation-iteration-count: 1 !important;
-  transition-duration: 1ms !important;
+  transition-duration: 0s !important;
   scroll-behavior: auto !important;
 }
 
