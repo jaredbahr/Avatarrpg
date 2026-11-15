@@ -31,14 +31,14 @@ const COMBAT_PARTY_SPAWNS: readonly Vec2[] = [
 ];
 
 /**
- * The region's sprites (`docs/pipeline-trial-log.md`, "Art production"): its own people since the art batches; Miri's
- * crates still borrow the barrel until the objects batch.
+ * The region's sprites (`docs/pipeline-trial-log.md`, "Art production"): its own people and pieces since the art
+ * batches.
  */
 const SPRITE = {
   bowlSeller: 'npc.bowlseller',
   tavi: 'npc.tavi',
   freightClerk: 'npc.freightclerk',
-  crates: 'prop.barrel',
+  crates: 'world.lantern_crates',
   customsClerk: 'npc.customsclerk',
   veyra: 'unit.ally.veyra',
   cook: 'npc.cook',

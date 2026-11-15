@@ -315,6 +315,8 @@ export const TOPDOWN_OBJECTS: Readonly<Record<string, { readonly w: number; read
     'world.school_notice': { w: 45, h: 47 },
     // RG-02: Bo-shan's delivery cart with Parcel, the ostrich horse, in harness.
     'world.parcel_cart': { w: 58, h: 79 },
+    // RG-02: Miri's lantern crates on the Saltstep quay, stamped with her crooked-handle lantern.
+    'world.lantern_crates': { w: 34, h: 33 },
   };
 
 function topdownObject(key: string, size: { readonly w: number; readonly h: number }): SheetEntry {
@@ -417,6 +419,7 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'world.route_sign': image('art/world/route-sign.png', 'neutral'),
   // RG-02: the cart with Parcel in harness; the top-down object (`TOPDOWN_OBJECTS`) is laid over it.
   'world.parcel_cart': image('art/topdown/objects/parcel_cart.png', 'neutral'),
+  'world.lantern_crates': image('art/topdown/objects/lantern_crates.png', 'neutral'),
 
   /* --------------------------------------------------------------- Props */
   'prop.barrel': image('art/props/barrel.png', 'water'),
