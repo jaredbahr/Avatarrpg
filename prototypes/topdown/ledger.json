@@ -27970,6 +27970,122 @@
     "background_job_id": "6185c95f-e665-4d7f-81c0-c410c169ea3e"
    },
    "region": "cutscene_trial"
+  },
+  {
+   "name": "a3_mm12_s3",
+   "endpoint": "/animate-pixminimax",
+   "job": "26937b51-b6d9-4bad-88f8-5b7da16b9c88",
+   "status": "completed",
+   "settings": {
+    "first_frame": "<png>",
+    "description": "The old woman's hands slowly lower the cloth-covered bowl straight down onto the...",
+    "frame_count": 12,
+    "seed": 3,
+    "no_background": false,
+    "view": "side"
+   },
+   "credits": 1.0,
+   "credit_source": "usage",
+   "balance_diff": 1.0,
+   "usage": {
+    "type": "generations",
+    "generations": 1.0
+   },
+   "balance_before": 7141.0654640625,
+   "balance_after": 7140.0654640625,
+   "secs": 49,
+   "notes": "cutscene trial anim",
+   "ids": {
+    "background_job_id": "26937b51-b6d9-4bad-88f8-5b7da16b9c88"
+   },
+   "region": "cutscene_trial"
+  },
+  {
+   "name": "a3_mm12_s21",
+   "endpoint": "/animate-pixminimax",
+   "job": "d6e1fd54-ad5f-416f-bb36-97ca05cd55db",
+   "status": "completed",
+   "settings": {
+    "first_frame": "<png>",
+    "description": "The old woman's hands slowly lower the cloth-covered bowl straight down onto the wooden table and set it down gently, then release it and slide her hands slightly back to the right, leaving the bowl on the table. The four bowls on the left and the camera do not move.",
+    "frame_count": 12,
+    "seed": 21,
+    "no_background": false,
+    "view": "side"
+   },
+   "credits": 1.0,
+   "credit_source": "usage",
+   "balance_diff": 1.0,
+   "usage": {
+    "type": "generations",
+    "generations": 1.0
+   },
+   "balance_before": 7140.0654640625,
+   "balance_after": 7139.0654640625,
+   "secs": 53,
+   "notes": "cutscene trial anim",
+   "ids": {
+    "background_job_id": "d6e1fd54-ad5f-416f-bb36-97ca05cd55db"
+   },
+   "region": "cutscene_trial"
+  },
+  {
+   "name": "a3_mm12_s7",
+   "endpoint": "/animate-pixminimax",
+   "job": "1d95ad87-0966-457e-b76f-fe04289033fe",
+   "status": "completed",
+   "settings": {
+    "first_frame": "<png>",
+    "description": "The old woman's hands slowly lower the cloth-covered bowl straight down onto the wooden table and set it down gently, then release it and slide her hands slightly back to the right, leaving the bowl on the table. The four bowls on the left and the camera do not move.",
+    "frame_count": 12,
+    "seed": 7,
+    "no_background": false,
+    "view": "side"
+   },
+   "credits": 1.0,
+   "credit_source": "usage",
+   "balance_diff": 1.0,
+   "usage": {
+    "type": "generations",
+    "generations": 1.0
+   },
+   "balance_before": 7139.0654640625,
+   "balance_after": 7138.0654640625,
+   "secs": 37,
+   "notes": "cutscene trial anim",
+   "ids": {
+    "background_job_id": "1d95ad87-0966-457e-b76f-fe04289033fe"
+   },
+   "region": "cutscene_trial"
+  },
+  {
+   "name": "a1_mm12_s11",
+   "endpoint": "/animate-pixminimax",
+   "job": "65afb567-d6ef-4d39-af34-3459287f7115",
+   "status": "completed",
+   "settings": {
+    "first_frame": "<png>",
+    "description": "Thin wisps of white steam slowly curl and drift upward from the four clay bowls on the table, swaying gently; the leaves at the corner stir slightly. Everything else, the table, bench, bowls, shadows and camera, stays perfectly still.",
+    "frame_count": 12,
+    "seed": 11,
+    "no_background": false,
+    "view": "side"
+   },
+   "credits": 1.0,
+   "credit_source": "usage",
+   "balance_diff": 1.0,
+   "usage": {
+    "type": "generations",
+    "generations": 1.0
+   },
+   "balance_before": 7138.0654640625,
+   "balance_after": 7137.0654640625,
+   "secs": 48,
+   "notes": "cutscene trial anim",
+   "ids": {
+    "background_job_id": "65afb567-d6ef-4d39-af34-3459287f7115"
+   },
+   "region": "cutscene_trial"
   }
  ],
  "end_balance": 16728.0,
