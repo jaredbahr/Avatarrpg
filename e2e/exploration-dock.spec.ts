@@ -169,6 +169,18 @@ for (const layout of [
           mapTop: canvas.top,
         };
       });
+      console.log('PROBE dock', JSON.stringify(await page.evaluate(() => {
+        const host = document.querySelector<HTMLElement>('.toasts')!;
+        const r = (e: Element | null) => { const b = e?.getBoundingClientRect(); return b ? [b.left, b.top, b.width, b.height] : null; };
+        return {
+          place: host.dataset.place, anchorVar: host.style.getPropertyValue('--toast-anchor'), inline: host.getAttribute('style'),
+          cs: { top: getComputedStyle(host).top, position: getComputedStyle(host).position, transform: getComputedStyle(host).transform },
+          host: r(host), parent: r(host.parentElement), parentTag: host.parentElement?.className,
+          toasts: [...host.children].map((c) => ({ text: c.textContent, rect: r(c), anim: (c as HTMLElement).getAnimations().map((x) => x.playState), cls: c.className, cst: getComputedStyle(c).transform })),
+          mapWrap: r(document.querySelector('.scene-host .map-wrap')), canvas: r(document.querySelector('.map-canvas')),
+          vv: [innerWidth, innerHeight, visualViewport?.offsetTop, visualViewport?.scale, scrollY],
+        };
+      })));
       expect(toastGeometry.toast.top).toBeGreaterThanOrEqual(toastGeometry.mapTop);
       const overlaps =
         toastGeometry.toast.left < toastGeometry.objective.right &&

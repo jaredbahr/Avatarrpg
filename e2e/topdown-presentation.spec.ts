@@ -212,6 +212,7 @@ test('top-down Recentre fits the whole 20x12 board and speed/skip stay presentat
   const recentered = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
   const fitted = await canvasCorners(page);
   expect(recentered.projection).toBe('topdown');
+  console.log('PROBE recentre', JSON.stringify({ zoomed, recentered, fitted, dpr: await page.evaluate(() => devicePixelRatio) }));
   expect(recentered.fitted).toBe(true);
   expect(recentered.tilePx).toBeGreaterThanOrEqual(40);
   for (const point of fitted.corners) {

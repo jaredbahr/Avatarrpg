@@ -178,6 +178,11 @@ async function readAll(page: Page, panel: Locator) {
       .poll(() => panel.evaluate((element) => element.scrollTop))
       .toBeGreaterThan(previous.panel.scrollTop);
     const next = await sample(panel);
+    if (next.fragments.length !== first.fragments.length)
+      console.log('PROBE longconv', JSON.stringify({ step, firstPanel: first.panel, nextPanel: next.panel,
+        first: first.fragments.map((f) => [f.key, Math.round(f.left), Math.round(f.right), f.text?.slice(0, 30)]),
+        next: next.fragments.map((f) => [f.key, Math.round(f.left), Math.round(f.right), f.text?.slice(0, 30)]),
+        firstText: first.text, nextText: next.text }));
     expect(next.fragments.map((fragment) => fragment.key)).toEqual(
       first.fragments.map((fragment) => fragment.key),
     );
