@@ -54,13 +54,10 @@ DESC = {
              'black shoes',
     # NPC-12 Luli, she/her, 41, a lightningbender who keeps the public power lines.
     # The owner, 2026-11-15: the first take (`rg02_char_luli`) was too slim and too serious beside her portrait; this one
-    # follows the portrait's build (`portrait.luli`). The owner again, the same day: its head came out about 40% bigger
-    # than the party's (head:height 1/2.6 against their median 1/3.6, on the south idle cel), so this asks for adult
-    # proportions with a small head and keeps the curls close to it. Not yet run: waiting for the owner's word.
-    'luli': 'Luli, a line keeper, a broad, sturdy, heavy-set woman in her early forties, realistic adult proportions with '
-            'a small head, the head about one sixth of her full height, wide shoulders and a thick waist, '
-            'warm tan skin, a round cheerful face with a big open grin, short wild curly black hair kept close to the '
-            'head, a dark soot smudge on one cheek, a red sleeveless work vest over a dark grey long-sleeved shirt, a thick '
+    # follows the portrait's build (`portrait.luli`).
+    'luli': 'Luli, a line keeper, a broad, sturdy, heavy-set woman in her early forties, wide shoulders and a thick waist, '
+            'warm tan skin, a round cheerful face with a big open grin, wild curly black hair sticking out in a big bushy '
+            'mop, a dark soot smudge on one cheek, a red sleeveless work vest over a dark grey long-sleeved shirt, a thick '
             'brown leather apron over the vest, big heavy black work gloves on both hands, a ring of brass keys at the hip, '
             'dark brown trousers, heavy black boots',
     # The bowl-seller (Scene 2.2): two bowls of pepper broth, the custom of the second bowl. The first take
