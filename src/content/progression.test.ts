@@ -419,14 +419,17 @@ describe('progression', () => {
     }
   });
 
-  it('carries on after a Driller loss into the same band the next act expects (C-01)', () => {
+  it('carries on after a Driller loss at the same level as a win (C-01)', () => {
     /*
      * A Driller loss used to end the story; it now carries on into Act II
-     * (owner, 2026-11-14). The boss pays nothing on a loss, so this is the
-     * route most likely to fall out of the band, and it is asserted on its
-     * own rather than left out of "clean". It must also reach the occupied
-     * village's card, not stop somewhere on the way.
+     * (owner, 2026-11-14), and it is forgiving: the party that loses starts
+     * the next act at the level of the party that won (owner, 2026-11-15).
+     * The boss pays nothing on a loss, so `act1_lost` has to make it up, and
+     * this is the route most likely to drift when the boss's XP changes.
      */
+    const winLevels = new Set(CLEAN.map((w) => levelForXp(w.finalXp)));
+    expect(winLevels.size, 'every clean route ends the act on one level').toBe(1);
+    const [winLevel] = [...winLevels];
     const bossLosses = ALL.filter((w) =>
       w.steps.some((s) => s.lost && s.encounterId === 'enc_grumbler'),
     );
@@ -435,8 +438,9 @@ describe('progression', () => {
       const level = levelForXp(walk.finalXp);
       expect(walk.endedAt).toBe('act1_epilogue_lost');
       expect(walk.flags.act1_lost).toBe(true);
-      expect(level, `${walk.finalXp} XP after losing to the Driller`).toBeGreaterThanOrEqual(3);
-      expect(level, `${walk.finalXp} XP after losing to the Driller`).toBeLessThanOrEqual(5);
+      expect(level, `${walk.finalXp} XP after losing to the Driller`).toBe(winLevel);
+      expect(level).toBeGreaterThanOrEqual(3);
+      expect(level).toBeLessThanOrEqual(5);
     }
   });
 

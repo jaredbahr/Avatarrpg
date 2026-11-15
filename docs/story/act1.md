@@ -100,7 +100,7 @@ flowchart TD
   n0 -->|"Next"| n125
   n1 -->|"Continue after ending"| n218
   n2 -->|"set: (none); phase: evening"| n122
-  n3 -->|"set: act1_lost=true"| n82
+  n3 -->|"set: act1_lost=true; grant XP: 170"| n82
   n4 -->|"Next"| n218
   n5 -->|"set: act1_complete=true; resident profiles: lw.npc.amri=#quot;returning#quot;, lw.npc.bo_shan=#quot;returning#quot;, lw.npc.hesra=#quot;returning#quot;, lw.npc.leto=#quot;returning#quot;, lw.npc.senn_messenger=#quot;returning#quot;"| n0
   n6 -->|"Next"| n14

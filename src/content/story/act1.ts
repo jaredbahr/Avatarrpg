@@ -1024,13 +1024,17 @@ export const ACT1_NODES: readonly StoryNode[] = [
      * The loss is resumable (C-01; ADR 0047's open question, answered
      * 2026-11-14): the quarry stays occupied, the five stay held, and Ba Dan
      * reads this flag for its occupied state (residents, NPC routes, map
-     * objectives). No compensating XP: there is no later Act I fight to
-     * arrive at, and the loss route still ends the act inside the band the
-     * next act expects (`progression.test.ts` asserts it).
+     * objectives).
+     *
+     * Forgiving by default (owner, 2026-11-15): a loss pays what the Driller
+     * would have, so a party that carries on starts Act II at the same level
+     * as one that won. The boss pays 170 a head on every clean route;
+     * `progression.test.ts` holds the loss road to the win road's level.
      */
     id: 'act1_lost',
     kind: 'flags',
     set: { act1_lost: true },
+    grantXp: 170,
     next: 'lost_home_table',
   },
   {
