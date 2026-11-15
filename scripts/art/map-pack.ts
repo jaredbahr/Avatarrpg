@@ -93,7 +93,7 @@ const SCENES: Readonly<Record<string, Scene>> = {
   saltstep_pontoon: {
     place: 'The freight pontoon at Saltstep, where the handlers load the barges.',
     scene:
-      'A broad deck of weathered planks on the water, ragged at its edges, with deep harbour water all round it. A cast-iron hand pump in its crate stands near the left end, in two places. A heavy timber winch with a crane arm stands near the right end, its brake lever on the deck beside it; the deck runs on to the right edge as a gangway toward a barge beyond the picture.',
+      'A broad deck of weathered planks on the water, ragged at its edges, with deep harbour water all round it. A cast-iron hand pump in its crate stands near the left end, in two places. A short two-plank-wide gangway, its brake lever at its far end, joins the deck to a smaller platform on the right, where a heavy timber winch with a crane arm stands; the platform runs on to the right edge as a gangway toward a barge beyond the picture.',
     light: 'Grey afternoon light off the water, the tide on the turn.',
   },
   emberwatch_parade: {
