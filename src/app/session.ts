@@ -10,6 +10,7 @@
 
 import type { GameState, Unit } from '../core/types';
 import type { SessionMeta } from '../core/save/serialize';
+import { isGuest, isTableControlled } from '../core/rules/guests';
 
 export interface Player {
   /** What the turn banner says. "Ava", not "Player 2". */
@@ -137,6 +138,63 @@ export class Session {
   labelFor(unit: Unit): string {
     const player = this.playerFor(unit.id);
     return player ? `${unit.name} (${player.name})` : unit.name;
+  }
+
+  /**
+   * Who takes a table-controlled guest's turn (ADR 0116).
+   *
+   * Nobody owns a guest, so it passes round the table: one person a round,
+   * starting from whoever has the story decision and moving on each round,
+   * with a second guest one seat further on so two guests are not always the
+   * same person's. It is worked out from the saved round and decider index
+   * alone, so a loaded save hands the same turn to the same person.
+   */
+  guestControllerFor(state: GameState, unitId: string | null | undefined): Participant | undefined {
+    const battle = state.battle;
+    const count = this.people.length;
+    if (!battle || !unitId || count === 0) return undefined;
+    const guests = battle.units.filter((unit) => isGuest(unit) && isTableControlled(unit));
+    const seat = guests.findIndex((unit) => unit.id === unitId);
+    if (seat < 0) return undefined;
+    const index = state.story.deciderIndex + battle.round - 1 + seat;
+    return this.people[((index % count) + count) % count];
+  }
+
+  /** The person who takes `unitId`'s turn: its player's, or a table guest's of the round. */
+  controllerFor(
+    state: GameState | null,
+    unitId: string | null | undefined,
+  ): Participant | undefined {
+    return (
+      this.participantForUnit(unitId) ??
+      (state ? this.guestControllerFor(state, unitId) : undefined)
+    );
+  }
+
+  /** The name the hand-off card asks for when `unitId` is next to act. */
+  controllerHandoffName(
+    state: GameState | null,
+    unitId: string | null | undefined,
+  ): string | undefined {
+    if (this.playerFor(unitId)) return this.handoffNameFor(unitId);
+    const person = state ? this.guestControllerFor(state, unitId) : undefined;
+    return person?.handoffName ?? person?.name;
+  }
+
+  /**
+   * Whether a hand-off card is needed before `unitId` acts, given the person
+   * who last took the tablet. The same rule as `needsHandoff`, extended to a
+   * table guest, whose controller changes with the round rather than the unit.
+   */
+  needsHandoffTo(
+    previousParticipantId: string | null,
+    state: GameState | null,
+    unitId: string | null,
+  ): boolean {
+    if (this.solo) return false;
+    const next = this.controllerFor(state, unitId);
+    if (!next) return false;
+    return previousParticipantId !== next.id;
   }
 
   /**

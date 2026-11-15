@@ -15,7 +15,8 @@
  */
 
 import type { RngCursor } from '../rng';
-import type { BattleState, ContentIndex, Unit } from '../types';
+import type { BattleState, ContentIndex, EncounterDef, Unit } from '../types';
+import { guestHasFallen } from './guests';
 import { effectiveStats, isAlive } from './stats';
 
 function factionRank(unit: Unit): number {
@@ -150,10 +151,18 @@ export function livingByFaction(battle: BattleState) {
  */
 export const MAX_BATTLE_ROUNDS = 50;
 
-/** Victory when no enemies stand; defeat when no party members do, or time runs out. */
-export function battleOutcome(battle: BattleState): 'active' | 'victory' | 'defeat' {
+/**
+ * Victory when no enemies stand; defeat when no party members do, or time runs
+ * out. A fallen guest is a defeat only where the encounter says so
+ * (`loseIfGuestFalls`, ADR 0116); pass the encounter for that rule to apply.
+ */
+export function battleOutcome(
+  battle: BattleState,
+  encounter?: Pick<EncounterDef, 'loseIfGuestFalls'>,
+): 'active' | 'victory' | 'defeat' {
   const { party, enemies } = livingByFaction(battle);
   if (party.length === 0) return 'defeat';
+  if (guestHasFallen(battle.units, encounter)) return 'defeat';
   if (enemies.length === 0) return 'victory';
   if (battle.round > MAX_BATTLE_ROUNDS) return 'defeat';
   return 'active';
