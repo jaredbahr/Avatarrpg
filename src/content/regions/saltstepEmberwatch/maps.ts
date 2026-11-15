@@ -95,7 +95,7 @@ export const SALTSTEP_MARKET: MapDef = {
     { x: 1, y: 4 },
     { x: 2, y: 4 },
   ],
-  objective: 'Look around the market on the water.',
+  objective: 'Stop at the bowl stall on the quay.',
   props: [],
   exits: [
     {

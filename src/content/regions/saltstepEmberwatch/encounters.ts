@@ -11,7 +11,6 @@
  * the region's placeholder band. Neither has been through the balance simulator's sweep yet.
  */
 import type { EncounterDef, EncounterPlacement } from '../../../core/types';
-import { writerPlaceholder } from './placeholders';
 import { WINCH_BRAKE_CELLS } from './maps';
 
 const at = (x: number, y: number, enemyId: string): EncounterPlacement => ({
@@ -55,7 +54,7 @@ export const SALTSTEP_EMBERWATCH_ENCOUNTERS: readonly EncounterDef[] = [
     objective: {
       kind: 'holdAtRoundEnd',
       cells: WINCH_BRAKE_CELLS,
-      label: writerPlaceholder('Stop the winch'),
+      label: 'Stop the winch at the brake',
     },
     loseAfterRound: 6,
     conditionalEnemies: [],
@@ -69,9 +68,7 @@ export const SALTSTEP_EMBERWATCH_ENCOUNTERS: readonly EncounterDef[] = [
     variants: [],
     intro:
       'Across the pontoon, the freight handlers have the tenth crate in a crane sling. It swings out over the water. One strap is already fraying.',
-    tip: writerPlaceholder(
-      'Stand at the winch brake when a round ends, before the crate reaches the barge.',
-    ),
+    tip: 'The winch brake is on the gangway, and a handler is standing on it. Veyra can shove him off. Have a hero or Veyra on the brake when a round ends and the winch stops. You have six rounds before the crate reaches the barge. Defeating every handler wins too.',
   },
   {
     id: 'enc_sf21_wet_ground',

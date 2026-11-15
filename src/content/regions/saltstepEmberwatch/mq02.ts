@@ -3,9 +3,9 @@
  *
  * Every line is the merged script's (`docs/story/scripts/act2-sparks.md`, #814, owner-reviewed),
  * word for word, with the game's curly quotes. The script's `Party:` lines are shown as a
- * narrator-framed "The party" line until a one-option tap exists (a choice needs two options;
- * see `docs/pipeline-trial-log.md`, friction). Strings the script does not give are
- * `writerPlaceholder`s.
+ * narrator-framed "The party" line until a one-option tap exists (a choice needs two options and
+ * a line needs a speaker; see `docs/pipeline-trial-log.md`, friction). The strings the script does
+ * not give (option details, objectives) are the writing pass's.
  *
  * The driver: after an Act I win Bo-shan drives the cart; after a loss (`act1_lost`) Dorin does.
  * Where the script replaces a whole block, a `branch` on `act1_lost` runs one of two sequences
@@ -16,7 +16,7 @@
  * customs stall's drifting (the stall is an NPC on the quay).
  */
 import type { Condition, DialogueVariant, StoryNode } from '../../../core/types';
-import { PLACEHOLDER_PORTRAIT, writerPlaceholder } from './placeholders';
+import { PLACEHOLDER_PORTRAIT } from './placeholders';
 import { staged } from './stage';
 
 const LOST: Condition = { kind: 'flag', key: 'act1_lost', op: 'set' };
@@ -192,7 +192,7 @@ const NODES: readonly StoryNode[] = [
     id: 'mq02_market_explore',
     kind: 'explore',
     mapId: 'saltstep_market',
-    objective: writerPlaceholder('Find a seat at the bowl stall.'),
+    objective: 'Stop at the bowl stall on the quay.',
     objectiveTargetId: 'mq02_bowl_seller',
     objectiveVariants: [
       {
@@ -203,14 +203,12 @@ const NODES: readonly StoryNode[] = [
             { kind: 'flag', key: 'inquiry_quiet', op: 'set' },
           ],
         },
-        text: writerPlaceholder('Tavi’s ferry crosses the bay at dusk.'),
+        text: 'Board Tavi’s ferry at the landing to cross the bay.',
         objectiveTargetId: 'mq02_tavi',
       },
       {
         when: { kind: 'visited', nodeId: 'mq02_bowl_seller' },
-        text: writerPlaceholder(
-          'Carry the second bowl to the pump woman. Customs is the stall with the flag.',
-        ),
+        text: 'Carry the bowl and your papers to the customs stall with the flag.',
         objectiveTargetId: 'mq02_customs_clerk',
       },
     ],
@@ -371,20 +369,21 @@ const NODES: readonly StoryNode[] = [
     speaker: CLERK,
     portrait: PLACEHOLDER_PORTRAIT,
     prompt: 'This happens. Keep talking, I can still hear you!',
+    footer: 'All three reach the clerk.',
     options: [
       {
         label: 'Jump aboard now.',
-        detail: writerPlaceholder('Option detail for “Jump aboard now.”'),
+        detail: 'Land on the stall before the gap gets any wider. It will rock.',
         next: 'mq02_approach_jump',
       },
       {
         label: 'Follow along the pole walk.',
-        detail: writerPlaceholder('Option detail for “Follow along the pole walk.”'),
+        detail: 'Keep level with the stall along the plank walk and shout across the water.',
         next: 'mq02_approach_walk',
       },
       {
         label: 'Ask Tavi for a tow.',
-        detail: writerPlaceholder('Option detail for “Ask Tavi for a tow.”'),
+        detail: 'The ferry is at the landing, and Tavi has towed that stall back before.',
         next: 'mq02_approach_tow',
       },
     ],
