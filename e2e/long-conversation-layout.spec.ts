@@ -13,8 +13,9 @@ const profiles = [
   { name: 'short Largest', viewport: { width: 844, height: 390 }, size: 'huge' },
   { name: 'tablet Large', viewport: { width: 834, height: 1194 }, size: 'on' },
 ] as const;
-// `quarry_ledger` holds the longest authored line (Senn reading the delivery book);
-// each dialogue test checks the inventory still agrees, so a longer line elsewhere
+// `mq02_coast_receipt` holds the longest authored line (RG-02, #829), and
+// `quarry_ledger` the longest in Act I (Senn reading the delivery book); each
+// dialogue test checks the inventory still agrees, so a longer line elsewhere
 // fails here and gets its node added rather than going unread.
 const nodes = [
   'pella_tips',
@@ -22,6 +23,7 @@ const nodes = [
   'ruon_surrender',
   'ruon_choice',
   'gate_parley',
+  'mq02_coast_receipt',
 ] as const;
 const inventory = [...CONTENT.story.values()]
   .flatMap((node) => {
