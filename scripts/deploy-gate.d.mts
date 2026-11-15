@@ -1,5 +1,7 @@
 /** The frozen identity written by `select` and carried through every deploy job. */
 export type GateEvidence = {
+  /** Commit date of the selected SHA; written by `select` only. */
+  committed_at?: string;
   sha: string;
   ci_run_id: string;
   ci_run_attempt: string;

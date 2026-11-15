@@ -386,6 +386,13 @@ html:is([data-large-text='on'], [data-large-text='huge']) .combat-bar .title-pla
   border-color: var(--c-warn);
   color: var(--c-warn);
 }
+/* A guest ally's tag (ADR 0116): it fights with the party for one battle. */
+.chip-guest {
+  border-color: var(--c-ok);
+  background: color-mix(in srgb, var(--c-ok) 30%, transparent);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+}
 
 /* ------------------------------------------------------------------ */
 /* Reaction notes â€” the terrain half of the confirm step.              */
@@ -1941,6 +1948,18 @@ html[data-contrast='high'] .explore-conversation::before {
 
 .turn-chip.faction-ally .painter {
   box-shadow: 0 0 0 2px var(--c-ok);
+}
+
+/* A guest's chip carries a small "Guest" tag under its face, kept visible
+ * even where a phone strip hides the waiting chips' names. */
+.turn-chip .guest-tag {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.1rem var(--sp-1);
+  border-radius: var(--radius);
+  border: var(--hairline) solid var(--c-ok);
+  background: color-mix(in srgb, var(--c-ok) 30%, transparent);
 }
 
 .turn-chip span {

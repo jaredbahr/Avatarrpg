@@ -19,7 +19,7 @@ import { RngCursor } from '../rng';
 import { apply } from '../state/reducer';
 import { unitAbilities } from '../rules/abilities';
 import { createBattle, createGame } from '../state/createGame';
-import { reconcileDisciplines } from './reconcile';
+import { reconcileBattleResult, reconcileDisciplines } from './reconcile';
 import type { ContentIndex, GameState } from '../types';
 import { weatherAt } from '../rules/obscurement';
 import {
@@ -91,6 +91,65 @@ function sizeTwoBattleState(): GameState {
   const battle = createBattle(CONTENT, seeded, 'enc_grumbler', rng);
   return { ...seeded, screen: 'combat', rng: rng.state, battle };
 }
+
+/**
+ * A mid-battle save with guest allies (ADR 0116): an AI character guest, an AI
+ * enemy guest and a table guest, a few turns in. Guests add no field to the
+ * save (faction `ally`, and `ai: 'none'` for the table guest), so this is the
+ * round trip that proves it, and that loading keeps them where they were.
+ */
+function guestBattleState(): { content: ContentIndex; state: GameState } {
+  const base = CONTENT.encounters.get('enc_forest_road');
+  if (!base) throw new Error('missing the Forest Road');
+  const content: ContentIndex = {
+    ...CONTENT,
+    encounters: new Map(CONTENT.encounters).set(base.id, {
+      ...base,
+      variants: [],
+      loseIfGuestFalls: true,
+      guests: [
+        { characterId: 'sura', pos: { x: 4, y: 5 }, level: { partyOffset: 1 } },
+        { enemyId: 'ruon_ally', pos: { x: 5, y: 6 } },
+        { characterId: 'bo', pos: { x: 4, y: 7 }, control: 'table' },
+      ],
+    }),
+  };
+  const seeded = createGame(content, {
+    seed: 'save-round-trip-guests',
+    party: [{ characterId: 'kaya', level: 2, autoChoose: true }],
+    startNode: 'battle_forest_road',
+  });
+  const rng = new RngCursor(seeded.rng);
+  const battle = createBattle(content, seeded, 'enc_forest_road', rng);
+  let state: GameState = { ...seeded, screen: 'combat', rng: rng.state, battle };
+  for (let i = 0; i < 6 && state.battle?.phase === 'active'; i++) {
+    const b = state.battle;
+    const actor = b.units.find((unit) => unit.id === b.order[b.turnIndex]);
+    state = apply(
+      content,
+      state,
+      actor && actor.ai === 'none' ? { type: 'endTurn', unitId: actor.id } : { type: 'runAiTurn' },
+    ).state;
+  }
+  return { content, state };
+}
+
+describe('save round trip with guest allies', () => {
+  it('survives a round trip unchanged, guests and their control modes included', () => {
+    const { content, state: before } = guestBattleState();
+    expect(before.battle?.phase).toBe('active');
+    const guestsBefore = before.battle?.units.filter((unit) => unit.faction === 'ally') ?? [];
+    expect(guestsBefore.map((unit) => unit.ai)).toEqual(['aggressive', 'aggressive', 'none']);
+
+    const result = deserialize(serialize(before, META));
+    if (!result.ok) throw new Error(result.error);
+    const after = stateFromBlob(result.blob);
+    expect(after).toEqual(before);
+
+    // The load path's repair pass leaves a healthy guest battle alone.
+    expect(reconcileBattleResult(content, after).state).toEqual(before);
+  });
+});
 
 describe('save round trip', () => {
   it('retains explicit participant identity metadata while legacy session rows remain valid', () => {

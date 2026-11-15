@@ -122,3 +122,73 @@ describe('optional hand-off names', () => {
     expect(older.handoffNameFor('sura')).toBe('Player 2');
   });
 });
+
+describe('table-controlled guest allies (ADR 0116)', () => {
+  const participants: Participant[] = [
+    { id: 'person-1', name: 'Ava', handoffName: 'Mum' },
+    { id: 'person-2', name: 'Ben' },
+    { id: 'person-3', name: 'Cal' },
+  ];
+  const players: Player[] = [
+    { unitId: 'p0', name: 'Ava', participantId: 'person-1' },
+    { unitId: 'p1', name: 'Ben', participantId: 'person-2' },
+    { unitId: 'p2', name: 'Cal', participantId: 'person-3' },
+  ];
+  const unit = (id: string, faction: 'party' | 'ally' | 'enemy', ai: string) => ({
+    id,
+    faction,
+    ai,
+  });
+  /** A battle in `round` with two table guests, an AI guest and an enemy. */
+  const at = (round: number, deciderIndex = 0) =>
+    ({
+      story: { deciderIndex },
+      battle: {
+        round,
+        units: [
+          unit('p0', 'party', 'none'),
+          unit('a4', 'ally', 'aggressive'),
+          unit('a5', 'ally', 'none'),
+          unit('a6', 'ally', 'none'),
+          unit('e7', 'enemy', 'aggressive'),
+        ],
+      },
+    }) as unknown as GameState;
+
+  it('passes a table guest round the table, one person a round, from the decider', () => {
+    const session = new Session(players, participants);
+    expect(session.guestControllerFor(at(1), 'a5')?.id).toBe('person-1');
+    expect(session.guestControllerFor(at(2), 'a5')?.id).toBe('person-2');
+    expect(session.guestControllerFor(at(3), 'a5')?.id).toBe('person-3');
+    expect(session.guestControllerFor(at(4), 'a5')?.id).toBe('person-1');
+    // It starts from whoever holds the story decision.
+    expect(session.guestControllerFor(at(1, 2), 'a5')?.id).toBe('person-3');
+    // A second guest sits one seat further on.
+    expect(session.guestControllerFor(at(1), 'a6')?.id).toBe('person-2');
+  });
+
+  it('gives nobody an AI guest, an enemy or a party member through the guest rotation', () => {
+    const session = new Session(players, participants);
+    expect(session.guestControllerFor(at(1), 'a4')).toBeUndefined();
+    expect(session.guestControllerFor(at(1), 'e7')).toBeUndefined();
+    expect(session.guestControllerFor(at(1), 'p0')).toBeUndefined();
+    expect(session.controllerFor(at(1), 'p0')?.id).toBe('person-1');
+    expect(new Session().guestControllerFor(at(1), 'a5')).toBeUndefined();
+  });
+
+  it('asks for a hand-off when the guest changes hands, and names the person', () => {
+    const session = new Session(players, participants);
+    expect(session.needsHandoffTo(null, at(1), 'a5')).toBe(true);
+    expect(session.needsHandoffTo('person-1', at(1), 'a5')).toBe(false);
+    expect(session.needsHandoffTo('person-1', at(2), 'a5')).toBe(true);
+    expect(session.needsHandoffTo('person-1', at(1), 'a4')).toBe(false);
+    expect(session.controllerHandoffName(at(1), 'a5')).toBe('Mum');
+    expect(session.controllerHandoffName(at(2), 'a5')).toBe('Ben');
+    expect(session.controllerHandoffName(at(1), 'p1')).toBe('Ben');
+  });
+
+  it('never asks a solo table to hand the tablet over', () => {
+    const solo = new Session([{ unitId: 'p0', name: 'Ava' }]);
+    expect(solo.needsHandoffTo(null, at(2), 'a5')).toBe(false);
+  });
+});

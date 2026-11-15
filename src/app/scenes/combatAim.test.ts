@@ -38,16 +38,17 @@ interface AimScene {
  */
 function tap(tile: Vec2, mode: Mode = { kind: 'aim', abilityId: checkpoint.abilityId }): AimScene {
   const scene = Object.create(CombatScene.prototype) as unknown as AimScene;
+  const session = Session.fromMeta(checkpoint.session);
   scene.app = {
     state: checkpoint.state,
     content: CONTENT,
-    session: Session.fromMeta(checkpoint.session),
+    session,
     animator: { busy: vi.fn(() => false) },
     dispatch: vi.fn(),
   };
   scene.renderer = {};
   scene.victoryBeat = null;
-  scene.handedOffTo = checkpoint.casterId;
+  scene.handedOffTo = session.participantForUnit(checkpoint.casterId)?.id ?? '';
   scene.pending = null;
   scene.mode = mode;
   scene.skipBattleOpening = vi.fn(() => false);
