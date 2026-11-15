@@ -1511,7 +1511,9 @@ export class CombatScene implements Scene {
     // turn, the opening view); it gives it up once a card or the bar is there.
     const parked = active === this.canvas && target !== this.canvas;
     const lost = !active || active === document.body || !active.isConnected || parked;
-    if (!lost && (!force || !scene.contains(active))) return;
+    // Forced (a new turn), focus moves only from the last turn's own controls:
+    // the header (More, Pause) and anything outside the fight keep it.
+    if (!lost && (!force || !active.closest('.hud, .map-wrap'))) return;
     target?.focus({ preventScroll: true });
   }
 
