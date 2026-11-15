@@ -742,10 +742,11 @@ word for word.** `Player` is `Party`.
 
 **Party:** Then judge us when we return.
 
-**Narrator:** The leaf moves through the opening. The spirit's choice is shown in the water before it is
-explained in words.
+**Narrator:** The leaf comes round once more. This time it does not turn. It slides through the opening and
+away down the dark channel. The Still Keeper watches it go, and lowers one wing.
 
-_End of DLG-10. The Keeper has not said yes. It has lowered one wing._
+_End of DLG-10 (its spoken lines are word for word; its last stage direction is staged above as something
+seen). The Keeper has not said yes in words._
 
 ### Scene 14.5 — Phase 3, letting go
 
@@ -756,7 +757,9 @@ release is worked in stages; the hazards are the water and the machine. No one i
 it, a second, smaller wheel, on the far side of a gap that nobody could reach across alone.
 
 Two versions. **Surrender** plays if the party reached this room by winning phases 1 and 2. **Resistance**
-plays after any CARRY ON in this mission, or if two or more fronts were lost in MQ-13.
+plays after any CARRY ON in this mission, or if two or more fronts were lost in MQ-13 (owner, 2026-11-15: her
+choice stays tied to how the fights went). In Resistance she is removed from command and testifies later
+(Scene 15.1), so in every ending she has given up command and testified (outline decision 17).
 
 #### Surrender — DLG-11, Veyra lets go
 
@@ -783,10 +786,11 @@ key on its cord in her fist.
 
 **Party:** I don't think it is.
 
-**Narrator:** She begins explaining the release procedure to the local operator. The party does not reassure
-her that everyone will forgive her.
+**Narrator:** She turns her back on the key. She takes Bera's wrist and sets Bera's hand on the small wheel.
+Nobody in the room says anything to make it easier for her.
 
-_End of DLG-11._
+_End of DLG-11 (its spoken lines are word for word; its last stage direction is staged above as something
+done)._
 
 **Narrator:** On the dry ledge, beside the key, something small is turning round three times.
 
@@ -1381,6 +1385,52 @@ come and show us? We can offer supper."
 
 ---
 
+## Optional side fights
+
+Optional, XP-paying fights in every region (owner, 2026-11-15), so a table can level toward the discipline
+path it wants. None is needed for the main line, none hides a main clue, and every one pays its XP on a win
+and on "Carry on" alike. The people in them have reasons. Nobody is hurt past a bruise.
+
+Travel closes at the final commitment, so there are no side fights during the tide. These two open in the
+aftermath (MQ-15) and stay open in free roam after the ending.
+
+### SF-5.1 — The company store (Causeway's low landing)
+
+**Who:** nine low-landing residents. **Where:** a flooded company store, guarded by two watchmen. **Why:**
+their own goods are inside, left for safekeeping before the tide. The store's books went under, so the
+watchmen will let nobody take anything without a receipt.
+
+**Watchman:** I believe every one of you. I've got no paper says I can.
+
+**Resident:** That's my mother's loom. I can describe every knot in it.
+
+**Win:** the door is opened. **Watchman:** One at a time. Say what it is before you touch it. I'll write it
+down as you go, and then there'll be a paper. **Carry on:** the door stays shut until the clerk from Accounts
+arrives, at dusk, with a wet ledger and a pencil. Everything is given back by lamplight, slowly.
+
+### SF-5.2 — Returning Wind bouts (Bellweather; sparring)
+
+**Who:** anyone who turns up. **Where:** the sheltered pasture, with kites overhead. **Why:** a festival
+bout. The prize is first cut of the plum cake.
+
+**Oru:** In the left corner... no. In the corner nearest the tea... I'll just point.
+
+**Win:** first cut of the cake. **Carry on:** second cut. It is the same cake.
+
+## Community trust in this act
+
+Read by lines, never a lock (see Act II). Here it feeds one thing: which of the three community lines each
+ending shows (Scene 15.3).
+
+| What feeds it                                         | Effect                                                   |
+| ----------------------------------------------------- | -------------------------------------------------------- |
+| `front_landing`, `front_relay`, `front_spillway` held | each lost front moves the ending's community line a step |
+| `final_carried_on`                                    | one step                                                 |
+| `jin_guarantee_signed`                                | downstream landings warned in full; no step              |
+| `jin_guarantee_refused`                               | downstream landings lose boats and stores; no step       |
+| `rusk_isolated`                                       | Commonworks staff trust rises (his own people chose)     |
+| `veyra_surrendered`                                   | Commonworks staff and the low landing both rise          |
+
 ## Jin's beat for this act
 
 Scene 13.5: the downstream warning, sold for a written guarantee of her exit. Scene 15.1 shows the letter of
@@ -1418,9 +1468,12 @@ lamp (MQ-15).
 | Riko    | 14.2 "nobody has to stay down"; 15.4 eight people on a platform       |
 | Wen     | 14.2 her regulator on gate two; 15.4 Min's lever                      |
 
-## Open, for the owner
+## Decided (owner, 2026-11-15)
 
-1. **The final mission follows the story bible's proposed item 1**, which is still marked "awaiting owner":
+The owner accepted every item below on 2026-11-15, as recommended. Each item keeps its first wording, as the
+record of what was accepted ("Recommend" lines are now decisions). Later corrections are marked.
+
+1. **The final mission follows the story bible's proposed item 1** (_approved 2026-11-15_), which was marked "awaiting owner":
    the title is "The Engine in Revolt"; a lost final battle offers "Try again" or "Carry on"; "Carry on" plays
    the three-way vote with the lost fronts counted against it. I wrote it that way and did **not** write the
    bible's older rule (defeat forces E-03). Recommend: approve item 1 so this stands.
@@ -1430,13 +1483,13 @@ lamp (MQ-15).
    bad ending" and the outline's "the fall must not undo choices".
 3. **When Veyra gives up the key.** The outline says "if earned"; neither document says how. I made it: she
    puts the key down (DLG-11) if the party reaches the release by winning phases 1 and 2; she refuses if any
-   phase was carried on or two or more fronts were lost. Recommend: approve, or give me the test you want (it
-   could instead read earlier choices such as the MQ-04 terms).
+   phase was carried on or two or more fronts were lost. _Decided:_ it stays tied to how the fights went.
 4. **Outline decision 17 against the bible's Veyra modifier.** The outline says that in every ending she "has
    given up command and testified". The bible keeps a branch where she refuses and is removed. I wrote both:
    in the refusal branch she is removed from command, her advice at the wheel is still good, and her testimony
    is given later (in person, or as a signed statement). In every ending she ends up mending a pump under
-   Bera's direction, more closely supervised if she refused. Recommend: approve.
+   Bera's direction, more closely supervised if she refused. _Decided:_ in the refusal branch she is removed
+   and testifies later, so every ending meets outline decision 17.
 5. **Bera is DLG-11's "local operator"** and the person Veyra later works under. The outline suggests "perhaps
    the worker whose warning she brushed off"; I made that definite.
 6. **Latch and the key.** In DLG-11's branch Latch stands beside the key and does not take it ("it is being
@@ -1452,9 +1505,9 @@ lamp (MQ-15).
    Recommend: approve.
 9. **Ruon "leads a brace crew".** Outline decision 21 says he leads a crew under a worker he once guarded;
    the bible gives Renn a brace crew. I gave Ruon a gang of six at the bad end of the landing wall, under
-   Daiyu, and kept Renn's crew at the relay (if PQ-05 earned it). The bible's third Ruon modifier ("remains
-   detained after unresolved testimony") cannot be reached in these scripts, because MQ-11 always completes
-   his account. Recommend: accept two Ruon outcomes, or tell me what should leave the hearing unresolved.
+   Daiyu, and kept Renn's crew at the relay (if PQ-05 earned it). _Decided:_ Ruon has two outcomes only
+   (supervised repair; contests part of the hearing while serving restrictions). The bible's third modifier,
+   "remains detained after unresolved testimony", is removed: MQ-11 always completes his account.
 10. **Jin's Act V terms.** "The list is the list": her riders warn only what is written. Bo-shan writes the
     three erased places into her list from the delivery book, so the cart's ledger pays off one last time.
     Refusing costs time and property, never a life.
@@ -1479,3 +1532,12 @@ lamp (MQ-15).
       outline's decision 10 has Dorin hand back the reins in MQ-11, so it is Bo-shan in every game.
     - The outline says the echoes begin in Act I for every table; the culvert beat is optional in the shipped
       game. Phase 2 uses it only if it was seen.
+
+## Open, for the owner
+
+1. **Sura's line in DLG-10** ("A river can keep a path without keeping still. I had to learn that too.") was
+   flagged as a possible statement of the theme. It is the bible's own optional line, word for word, so I
+   left it in. Recommend: keep it (it is about her, and only plays with Sura); say so if you want it cut.
+2. **The side fights** (SF-5.1 and SF-5.2) open only in the aftermath, because travel closes at the final
+   commitment. If you want an XP fight before the finale, it belongs in Act IV's list.
+3. **The trust table** here only feeds the three community lines per ending.

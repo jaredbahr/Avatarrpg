@@ -10,9 +10,9 @@ the bible gives exact dialogue (DLG-04), it is used word for word and marked.
 
 - **One speaker per line.** Every line below is one dialogue node. `Narrator` lines are stage directions and are
   shown in the narrator frame.
-- **`Party:` lines** are neutral lines any hero can say. They go to whoever leads the party at that moment (the
-  rotating decider's hero). They can also be shown as the choice the table taps. No `Party:` line needs a
-  particular hero.
+- **`Party:` lines** are the table's side of a conversation. They are tappable choice text with no speaker and
+  no portrait (owner, 2026-11-15). Where only one is offered, it is a single choice to tap. No `Party:` line
+  needs a particular hero, and none is ever voiced by one.
 - **Hero variants** are marked "If Kaya is in the party". They are extra, never needed. Every scene works with
   no hero speaking: delete all `Party:` and hero lines and the narrator and the locals still carry it.
 - **Shown:** each scene is marked **found** (optional, by walking up to someone), **played** (dialogue in the
@@ -31,6 +31,22 @@ MQ-02: Emberwatch supplied the quarry, through a Commonworks contractor. MQ-03: 
 signed "V. Sen, Director"; Marshal Rusk made it harsher. MQ-04: the Director is the engineer from the Saltstep
 docks, and what she built is good. Nothing about the Works being unsafe, nothing about a refused shutdown, and
 no spirit is named. The echoes are never explained.
+
+## Trial slice (the first build)
+
+The first region built from this script is **Saltstep market plus Emberwatch** (owner, 2026-11-15). It covers:
+
+| In the slice                         | Scenes                                          |
+| ------------------------------------ | ----------------------------------------------- |
+| MQ-02, whole                         | 2.1 to 2.9                                      |
+| Veyra's guest-ally fight             | 2.5 (needs the guest-ally ADR)                  |
+| MQ-03, whole                         | 3.1 to 3.9                                      |
+| One side fight                       | SF-2.1 "Wet ground", in Emberwatch's power yard |
+| Teacher offers (the invitation only) | Luli and Edda in 3.1                            |
+| Hero openings (first exchange only)  | Kaya's crates in 2.2; Wen's regulator in 3.1    |
+
+Not in the slice: MQ-04, MQ-05, SF-2.2 and SF-2.3, the teacher stories and the personal quests. The slice ends
+on Scene 3.9, the invitation to Causeway. The build list for it is at the end of this file.
 
 ## Cutscene candidates for this act
 
@@ -67,16 +83,19 @@ row of lamps is burning in broad daylight.
 **Narrator:** A folded note, tucked into the delivery book. Mira's handwriting leans to the left, like her
 awning.
 
-**Mira's note:** The rubbing goes to the harbour customs office. So does the stub Senn found in the gate office.
-Ask who shipped that machine. Write down who will not answer. Eat something on the way. M.
+**Mira's note:** The rubbing goes to the harbour customs office. So do the back pages of Bo-shan's book, and
+the mark Senn copied off those crates. Ask who shipped that machine. Write down who will not answer. Eat
+something on the way. M.
 
-**Narrator:** The stub is half a dispatch slip. Most of it is torn away. What is left reads: "Forwarded from
-Emberwatch stores. Contractor to Commonworks."
+**Narrator:** In the back of the delivery book, after the pages in the other hand, Senn has drawn the stencil
+from the sealed crates beside the Driller: a lamp over a wavy line. Under it, in his tallyman's figures: "Not
+the quarry company's. Not any carrier's I know."
 
-**Driver (Bo-shan):** Commonworks. They put the lamps in at the Saltstep ferry. Good lamps. I've unloaded
-cabbages under them at midnight and counted every one.
+**Driver (Bo-shan):** I've seen every stencil that comes up the coast road. I've sat on most of them. I've
+never seen that one.
 
-**Driver (Bo-shan):** I didn't know they sent drilling machines to people.
+**Driver (Bo-shan):** Somebody counted crates out of my cart at night for two weeks and never wrote where they
+went. I'd like to ask them about that.
 
 > **Loss branch (Dorin drives).** Replace the Driver lines and the note:
 >
@@ -85,17 +104,22 @@ cabbages under them at midnight and counted every one.
 >
 > **Driver (Dorin):** Gao gave me this for you. And a second water skin. He counted them out loud.
 >
-> **Narrator:** A delivery receipt from Gao's shop drawer. Quarry lamp oil, forty tins, a month ago. At the
-> bottom, in a clerk's hand: "Forwarded from Emberwatch stores. Contractor to Commonworks."
+> **Narrator:** A delivery receipt, from the drawer where Gao keeps the debt slips. A stone carter left it on
+> his counter. It is not for stone. "Received at Stoneback: six sealed crates. Sent on: stop fourteen, route
+> nine, bell three." It is stamped with a mark nobody in Ba Dan knows: a lamp over a wavy line.
 >
-> **Driver (Dorin):** The courier office in Saltstep keeps the other half. If both halves say the same thing, it
-> is evidence. If they don't, it is two pieces of paper. I looked that up.
+> **Driver (Dorin):** That is all we have. There is no rubbing. The machine is still running, and Bo-shan's
+> delivery book is still up there with it. One receipt.
 >
-> **Driver (Dorin):** Bo-shan's deliveries are still in the back. I am going to deliver them. Nobody told me to.
+> **Driver (Dorin):** A receipt is half of something. The courier office in Saltstep keeps the other halves. If
+> the two say the same thing, it is evidence. If they don't, it is two pieces of paper. I looked that up.
+>
+> **Driver (Dorin):** Bo-shan's customers are still waiting. Gao loaded what he could. I am going to deliver
+> it. Nobody told me to.
 
 > **If Jinu is in the party (loss branch) —**
-> **Jinu:** The other half's already in my bag. Saltstep office, second drawer, under "returned, no such
-> person". I checked it twice, and then I checked the drawer above for luck.
+> **Jinu:** Saltstep office, second drawer, under "returned, no such person". That's where a receipt's other
+> half goes when nobody claims it. I've filed a hundred. I never once wondered what they were for.
 
 **Narrator:** The road levels out. The ostrich horse slows down by himself at a water trough, and waits until
 somebody notices.
@@ -182,18 +206,39 @@ clerk, the stool and the argument start to drift away from the quay.
 **Approach (decider picks one):**
 
 - **Jump aboard now.** _Narrator:_ You land on the stall. It dips, the seal swings on its chain, and the clerk
-  hands you the rubbing back without looking. "Hold the flag. If the flag goes in the water I have to fill in
+  hands your papers back without looking. "Hold the flag. If the flag goes in the water I have to fill in
   the long form."
 - **Follow along the pole walk.** _Narrator:_ You run the plank walk beside the level poles, past a wedding
   being argued about and a man selling one spoon. The stall stays level with you the whole way, close enough to
   shout at.
 - **Ask Tavi for a tow.** _Tavi:_ Again? That's the third time this month. Get in. Sit low. Don't help.
 
-**Narrator:** However you get there, the clerk reads the rubbing and the stub while the stall turns in a slow
-circle.
+**Narrator:** However you get there, the clerk reads the rubbing, and then Senn's drawing in the back of the
+delivery book, while the stall turns in a slow circle.
 
 **Customs clerk:** A Republic City plate. Came in four months back, in parts, on a Commonworks contractor's
-manifest. I stamped it. "Excavation plant, public works." Forwarded through Emberwatch stores.
+manifest. I stamped it. "Excavation plant, public works."
+
+**Customs clerk:** And that stencil, the lamp over the wave. That's Emberwatch stores. Everything the
+contractor lands goes across the bay first and comes back with that on it.
+
+**Driver (Bo-shan):** Commonworks. They put the lamps in at the Saltstep ferry. Good lamps. I've unloaded
+cabbages under them at midnight and counted every one. I didn't know they sent drilling machines to people.
+
+> **Loss branch.** Replace the four lines above:
+>
+> **Narrator:** However you get there, the clerk reads Gao's receipt while the stall turns in a slow circle. He
+> sends a boy along the pole walk to the courier office. The boy comes back with the other half.
+>
+> **Customs clerk:** They match. Six sealed crates, landed here on a Commonworks contractor's manifest. That
+> stamp, the lamp over the wave, is Emberwatch stores. Everything the contractor lands goes across the bay
+> first and comes back with that on it.
+>
+> **Customs clerk:** Same contractor brought an excavating machine through in parts, four months back. From
+> Republic City. I stamped that too.
+>
+> **Driver (Dorin):** Commonworks put the lamps in at the Saltstep ferry. I have stood under them. I did not
+> know they also sent machines to quarries.
 
 **Customs clerk:** I stamp what the paper says. If the paper said "cabbages" I'd have stamped that. I want that
 understood before anybody is cross with me.
@@ -286,6 +331,11 @@ out to you.
 
 **Shown:** played, into a fight. **Fight:** the Saltstep freight pontoon. **Guest ally:** Veyra (AI-controlled;
 pressure lance, signal flare; a non-bender). Needs the guest-ally ADR (outline decision 15).
+
+**Win:** stop the winch (a party member or Veyra stands at the winch brake at the end of a round), **or**
+defeat the handlers. **Lose:** the whole party is down, or the crate reaches the barge (the sling crosses the
+pontoon in six rounds). Veyra cannot be lost: if she is brought down she sits behind the pump until the fight
+ends. The handlers yield at low health; nobody is thrown in the harbour but the clerk.
 
 **Narrator:** Across the pontoon, the freight handlers have the tenth crate in a crane sling. It swings out over
 the water. One strap is already fraying.
@@ -386,8 +436,6 @@ the corner. And the bowl.
 > **Riko:** She gave the packet to the man with the stamp.
 >
 > **Narrator:** Riko watches the handcart all the way to the end of the pontoon.
->
-> **Riko:** Most people would have pocketed it or handed it to us. She knew which hands made it count.
 
 ### Scene 2.7 — VOTE: loud or quiet
 
@@ -553,8 +601,8 @@ there, and I show them the inside. That's the whole trade.
 > safe? I can only help with one of those.
 
 > **If a non-bender is in the party (Riko or Wen) —** _Teacher offer, TR-05._ **Edda:** There's a loading
-> platform out the back with a lovely powered lift and a stop button no one under six foot can reach. If you
-> want to learn the trade, start by being annoyed at that.
+> platform out the back with a lovely powered lift and a stop button no one under six foot can reach. Bring a
+> spanner on Thursday. We're moving it.
 
 **Found: the clinic supply room.**
 
@@ -728,7 +776,8 @@ no answer under it.
 than they should be. I would like this looked at before any more load goes on. N. Neri, safety." Nobody has
 stamped it.
 
-**Driver (Bo-shan):** "Supervise their output." That's a tidy way to say it. I was output for a month.
+**Driver (Bo-shan):** "Supervise their output." That's a tidy way to say it. I was output for nearly three
+weeks.
 
 **Driver (Bo-shan):** V. Sen. I'd like to meet V. Sen. I've got a delivery book I want explained.
 
@@ -1078,7 +1127,7 @@ counterweight; move the crowd back from the canal edge.
 - **A gate fitter (Bera), from the bank:** "The seal! It's the lower seal, it's swelled, I told them!"
 
 > **If Kaya is in the party —** (on entering the water)
-> **Kaya:** I'm going in. Who's on the chain with me? I'm asking. Somebody say a name.
+> **Kaya:** I'm going in. Who's on the chain with me? You, with the grease on your arms? Good. Count me in.
 
 > **If Bo is in the party —**
 > **Bo:** Crowd first. Twenty back from the edge, then twenty more. You, in the red, you're counting for me.
@@ -1413,11 +1462,20 @@ wall.
 
 **Driver (Bo-shan):** I want to go and see where I've been.
 
-> **Loss branch.** **Driver (Dorin):** Bo-shan's book. The back pages are not his. "Stop fourteen. Route nine.
-> Bell three." I have been carrying this for three weeks and reading it as arithmetic.
+> **Loss branch.** Bo-shan's delivery book is still in the Driller's cab. Replace the Driver lines above:
 >
-> **Driver (Dorin):** Somebody used his cart after they took him off it. I would like to see where. I would like
-> to put it in his book, in my writing, with the date, so he knows which parts weren't him.
+> **Driver (Dorin):** Say those again, please. Slowly.
+>
+> **Narrator:** He has Gao's receipt out, the one the stone carter left on the counter.
+>
+> **Driver (Dorin):** "Sent on: stop fourteen, route nine, bell three." I have carried this for three weeks and
+> read it as arithmetic.
+>
+> **Yenna:** Pear Halt was stop fourteen. It's painted on my lamp.
+>
+> **Driver (Dorin):** Then crates that went through that quarry went on to three places that are not on this
+> wall. Bo-shan's cart was at the quarry when they did. I would like to see where. I am going to write it in
+> the watch book, with the date, so he can read where his cart was sent without him.
 
 > **If Lin Mei is in the party —**
 > **Narrator:** Lin Mei has turned the painted map's corner over. On the back, in pencil, is the survey it was
@@ -1441,8 +1499,8 @@ it now so it isn't awkward later. I've seen your cart.
 
 **Driver (Bo-shan):** ...I'll write to someone.
 
-> **Loss branch.** **Driver (Dorin):** The tailgate is two feet and one inch from the ground. I have a rule for
-> gates you cannot get through. The rule is the gate is wrong. I'll write to Gao.
+> **Loss branch.** **Driver (Dorin):** The tailgate is two feet and one inch from the ground. I measured it
+> just now. I'll write to Gao.
 
 ### Scene 5.4 — VOTE: who sees the findings first
 
@@ -1476,7 +1534,9 @@ Footer: "The other two still get a copy. This is who you go to first."
 ### Scene 5.5 — Five teachers
 
 **Shown:** found. All five are in Causeway or on its roads this week, before any level-five choice. Each is one
-short invitation. The teacher stories themselves (TR-01 to TR-05) are separate scripts.
+short invitation. The teacher stories themselves (TR-01 to TR-05) are separate scripts. Aru's table is here,
+in Causeway, for MQ-05 (owner, 2026-11-15; a decided amendment to the bible, which keeps the outreach room
+itself at Saltstep).
 
 - **Luli** (fire; if not already offered at Emberwatch): **Luli:** I'm up from the bay for the lamp
   inspections. Offer stands. First lesson is stopping.
@@ -1573,8 +1633,6 @@ himself.
 > **Sura:** It took the middle of the sentence that time. Not the end.
 >
 > **Narrator:** She is looking at the river. She has stopped eating.
->
-> **Sura:** It isn't an echo. An echo doesn't choose.
 
 **Narrator:** The long bundle is four poles, a roll of oiled cloth, and a bag of bolts. A note is tied to it
 with wire, in cramped block letters.
@@ -1596,8 +1654,8 @@ is not rated for standing. G.
 > > Dorin. This is a list.
 > >
 > > 1. Hanru is doing your gate. They don't salute. The gate is fine anyway. Sorry.
-> > 2. A note came down in a stone cart. It said all five are alive. I have read it four times. I know it
-> >    could be old.
+> > 2. The stone carts stop at Gao's trough every morning. I ask every carter. They are not allowed to say.
+> >    One of them shook his head at me. I am counting that as "still alive". I know it is only a head.
 > > 3. Aunt Nala says thank the ones in the back. I said I would when there was something to thank them for.
 > >    She says that's rude. I've put it in anyway.
 > > 4. Gao gave you his awning. He stands in the sun now and says he likes it.
@@ -1646,6 +1704,83 @@ _End of Act II._
 
 ---
 
+## Optional side fights
+
+Optional, XP-paying fights in every region (owner, 2026-11-15), so a table can level toward the discipline
+path it wants. None is needed for the main line, none hides a main clue, and every one pays its XP on a win
+and on "Carry on" alike. The people in them have reasons. Nobody is hurt past a bruise.
+
+### SF-2.1 — Wet ground (Emberwatch power yard; in the trial slice)
+
+**Who:** four laid-off line riggers, led by a woman called Sabi. **Where:** the power yard, at night, after
+rain. The rain cistern has overflowed across the yard, and Luli's live line runs along one side of it.
+**Why:** their quota pay stopped when the line was finished. A dead spur of copper cable still hangs at the
+back of the yard, and copper sells. They are cutting it down. **The fight:** standing water carries a spark.
+Anyone on wet ground beside the live line, on either side, takes the shock. (The combo is hinted here first:
+"something in this yard reacts to water".)
+
+**Luli:** Off the wet! All of you! That line is live, and I am not explaining a puddle to four families!
+
+**Sabi:** We strung that spur. Nine weeks. Then they said the job was done and so were we. It's not stealing
+if nobody paid for the hanging of it.
+
+**Driver (Bo-shan):** Lightning goes straight across a puddle. I told Pella. I saw it happen to a whole crew.
+She said ask someone else.
+
+**Narrator (the first time a puddle sparks):** The spark goes across the standing water flat and blue, from
+the line to the far wall. Every hair on Parcel's neck stands up.
+
+**Driver (Bo-shan):** THERE. Somebody write that down. Somebody write "Bo-shan was right" and the date.
+
+> **Loss branch.** **Driver (Dorin):** Pella told me Bo-shan says lightning can cross a puddle. She told me to
+> ask someone else. Luli, I am asking. ...I see. I will write to her that he was right. She will not enjoy it.
+
+**Win:** the riggers put down their cutters. **Luli:** I'm owed nine days off and nobody to cover them. Two of
+you can splice. Come back at six. It's day wages. It's something. **Carry on:** they get away over the wall
+with one coil. Luli has to drop forty kitchens for an evening to make the spur safe. **Luli:** I'd have given
+them the scrap. They only had to ask in daylight.
+
+### SF-2.2 — The tipping platform (Saltstep; sparring)
+
+**Who:** Tavi's ferry apprentices and a crew of channel hands. **Where:** a spare market platform, moored
+loose, at the midday lull. **Why:** nobody is angry. Losers wash the bowl-seller's bowls. The platform tips
+toward whichever side has more people on it, and going in the water counts as out.
+
+**Tavi:** No bending the platform. Bend whatever else you like. If you fall in, swim to the left. The right's
+where the fish-seller empties her bucket.
+
+**Win:** **Channel hand:** Fair. We wash. You can dry, since you're so quick. **Carry on:** **Bowl-seller:**
+Sixty bowls. Sand's in the tub. Don't stack them wet.
+
+### SF-2.3 — The bridge toll (the river road to Causeway)
+
+**Who:** six guards from another quarry on the supply-control list, with a corporal. **Where:** a plank bridge
+on the river road. **Why:** unpaid for two months, like Ruon's were. They have put a pole across the bridge and
+are asking a "toll" in food.
+
+**Corporal:** One sack off every cart. I'm not proud of it. I've got six who haven't eaten hot since the last
+moon, and I'm the one they look at.
+
+**Win:** the pole comes up. **Corporal:** Where did you say? A kitchen with a late shelf? ...We'll walk it.
+We'll keep our hands where the cook can see them. **Carry on:** they take one sack of cabbages and wave the
+cart through. **Driver (Bo-shan):** That was the good sack. _(Loss branch:_ **Driver (Dorin):** "I have
+entered it as a delivery. It was, in a sense, delivered.")
+
+## Community trust in this act
+
+Community trust replaces nation standing (owner, 2026-11-14; story bible C-25). Each community remembers how
+it was treated. Lines read it; it never locks the main plot. These are the flags that feed it here.
+
+| Community                  | Trust rises with                                                | Trust falls with                           |
+| -------------------------- | --------------------------------------------------------------- | ------------------------------------------ |
+| Saltstep market and docks  | `inquiry_public`; winning 2.5; SF-2.2 played                    | `inquiry_quiet` (a little: "you'd know")   |
+| The Emberwatch loaders     | `loaders_freed` (most); `loaders_witnessed`; SF-2.1 won         | `jin_manifest_bought` (a little)           |
+| The Ferrymen's Compact     | `loaders_witnessed`; taking Tavi's tow                          | nothing in this act                        |
+| Commonworks staff          | `mandate_official`; `mandate_independent`; `findings_engineers` | `mandate_residents` (wary, not hostile)    |
+| Causeway's low landing     | `mandate_residents`; `findings_residents`; going into the canal | `mandate_official` (until shown otherwise) |
+| Rail and maintenance crews | `findings_guild`                                                | nothing in this act                        |
+| Ba Dan                     | carried from Act I (`ruon_spared`, the gate, the side stories)  | carried from Act I (`ruon_traded`)         |
+
 ## Jin's beat for this act
 
 Scene 3.8 (the manifest). Scene 2.2 and 2.8 plant her office and her clerk at Saltstep, where she is from.
@@ -1680,9 +1815,65 @@ Scene 5.6, with a loss-branch version addressed to Dorin.
 | Riko    | 2.6 the packet and the stamp; 3.5 "suspended"; 4.5 "Who gets the key?" (DLG-04) |
 | Wen     | 2.4 the pump; 3.1 her regulator (PQ-10 opens); 4.2 "napkins"                    |
 
-## Open, for the owner
+## Build list for MQ-02 and MQ-03 (the trial slice)
 
-Things I invented, and places the documents disagree. My recommendation is given for each.
+What a build session needs. Nothing here is made yet.
+
+**Locations**
+
+| Location                 | Used by             | Kind                                                                                              |
+| ------------------------ | ------------------- | ------------------------------------------------------------------------------------------------- |
+| The coast road           | 2.1                 | An interlude over a held view; no map                                                             |
+| Saltstep market          | 2.2, 2.7, 2.8       | Explore map: platforms, level poles, bowl stall, ferry landing, Jin's office front, Miri's crates |
+| The customs stall        | 2.3                 | Played on the market map, or an interlude if a drifting stall is not built                        |
+| The freight pontoon      | 2.4, 2.5, 2.6       | Explore and fight map: pump crate, winch, crane sling, barge                                      |
+| The ferry crossing       | 2.9                 | An interlude (cutscene candidate 1)                                                               |
+| Emberwatch parade ground | 3.1, 3.2            | Explore map: beans on canvas, spear-rack trellis, barracks wall, jetty                            |
+| The power yard           | 3.1, SF-2.1         | Explore and fight map: live line, cistern overflow, dead copper spur                              |
+| The public workshop      | 3.1                 | A corner of the parade-ground map, or a small interior                                            |
+| The clinic supply room   | 3.1                 | A door talk; no interior needed                                                                   |
+| The rain cistern         | 3.3 (one route)     | A short walk-through map, or an interlude                                                         |
+| The dispatch-room door   | 3.3, 3.4            | Fight map: door, crate, floor grate                                                               |
+| The dispatch room        | 3.5                 | A small interior, or documents shown as cards                                                     |
+| The east barracks        | 3.6                 | A small interior                                                                                  |
+| The signal tower door    | 3.7 (`ruon_traded`) | A door talk                                                                                       |
+| The jetty office         | 3.8, 3.9            | A small interior                                                                                  |
+
+**New speaking characters**
+
+| Character                      | Scenes           | Portrait                                     |
+| ------------------------------ | ---------------- | -------------------------------------------- |
+| Veyra (AN-01)                  | 2.4 to 2.6       | **Needed.** Also a fight sprite (guest ally) |
+| Tavi Ren (NPC-09)              | 2.2 to 3.6       | **Needed**                                   |
+| Luli (NPC-12)                  | 3.1, 3.9, SF-2.1 | **Needed**                                   |
+| Edda Coil (NPC-15)             | 3.1, 3.2         | **Needed**                                   |
+| Kesi                           | 3.2 to 3.8       | **Needed**                                   |
+| The customs clerk              | 2.3 to 2.7       | **Needed** (he carries most of MQ-02)        |
+| The sergeant                   | 3.4              | Wanted; the narrator frame will do           |
+| Bowl-seller                    | 2.2              | Narrator frame                               |
+| Freight handler                | 2.3, 2.5         | Narrator frame; a fight sprite               |
+| Freight clerk (Jin's office)   | 2.2, 2.8         | Narrator frame                               |
+| Dock workers, fish-seller      | 2.7              | Narrator frame                               |
+| Retired cook, supply clerk     | 3.1              | Narrator frame                               |
+| Kesi's brother, lantern keeper | 3.6              | Narrator frame                               |
+| Jin's guard, Commonworks clerk | 3.7, 3.9         | Narrator frame                               |
+| Sabi and the riggers           | SF-2.1           | Narrator frame; fight sprites                |
+
+Already in the game: Bo-shan (portrait since #806), Dorin, Jin, Ruon. Letters shown as cards: Mira's note,
+Hanru's letter, the Director's card.
+
+**Other art:** the cart with Parcel in harness; the pump crate and the mended teapot; the "safety materials"
+crate and the pay packet; the lamp-over-a-wave stencil; the order, the instruction and Neri's page as
+readable cards.
+
+**Engine work the slice needs:** the guest-ally system (its own ADR); a fight that can end on an objective
+(the winch brake); a skipped fight that still pays XP (already done for the Act I gate); wet ground beside a
+live line as a surface for SF-2.1.
+
+## Decided (owner, 2026-11-15)
+
+The owner accepted every item below on 2026-11-15, as recommended. Each item keeps its first wording, as the
+record of what was accepted ("Recommend" lines are now decisions). Later corrections are marked.
 
 1. **Names I invented.** Kesi (the Emberwatch loader), Tolo (the trapped gate worker), Bera (the fitter whose
    warning Veyra waves off; the outline says the epilogue may put Veyra under "the worker whose warning she
@@ -1723,10 +1914,10 @@ Things I invented, and places the documents disagree. My recommendation is given
     approve.
 12. **The cart's delivery book pays off here.** Its unnamed entries ("stop fourteen, route nine, bell three")
     turn out to be the three erased places. `reasons.ts` says "the erased places surface in MQ-05"; the exact
-    numbers are mine.
-13. **`Party:` lines.** DLG-04 has a `Player` speaker. This game has no such speaker. I wrote those lines as
-    `Party:`, to be given to the decider's hero or shown as tappable choices. Recommend: decide once for all
-    four acts.
+    numbers are mine. _Corrected 2026-11-15:_ after an Act I loss the book is still in the Driller's cab, so
+    the same three numbers are on Gao's receipt instead, and the book comes out with Senn in MQ-11.
+13. **`Party:` lines.** DLG-04 has a `Player` speaker. This game has no such speaker. _Decided:_ `Party:`
+    lines are tappable choice text with no speaker, in all four acts.
 14. **MQ-04 has no fight against people.** The gate rescue is an encounter against water and machinery. If the
     engine cannot do an objective-only encounter yet, the bible allows resolving it in dialogue; the scene is
     written so the barks can become narrator lines.
@@ -1734,10 +1925,31 @@ Things I invented, and places the documents disagree. My recommendation is given
     - Bible MQ-02 starts in "Ba Dan cookhouse" with Mira asking; the shipped ending and the outline start it on
       the cart's first run. I start on the coast road and carry Mira's ask as a note.
     - Bible MQ-02's victory evidence is "a shipping plate and duplicate dispatch stub"; the shipped game has a
-      maker's-plate rubbing and the delivery book. I use the rubbing plus a stub Senn found.
+      maker's-plate rubbing and the delivery book. _Corrected 2026-11-15:_ there is no stub. MQ-02's evidence
+      is the shipped rubbing, the delivery book and the crates' stencil; after a loss, only Gao's receipt.
     - The story bible says Pella's letter is carried by "Jinu, when he is in the party". Jinu is she/her (bible
       CH-08). I wrote "she".
     - The outline puts Jin's Act II beat at Emberwatch (MQ-03); the bible only has Jin "hear of the inquiry" in
       MQ-02. I did both (2.8 and 3.8).
     - The outline's MQ-03 set-piece lists two routes (cistern, bluffed inspection); the bible lists three
       (inspection, a worried loader, the cistern). I wrote three.
+16. **Aru's table is at Causeway in MQ-05** (a decided amendment to the bible, which puts the outreach room
+    at Saltstep; the room stays there, and Aru visits with a folding table).
+17. **Veyra keeps Rusk; she still sees the wage packet in MQ-02; MQ-03 has three approaches; Jin has both Act
+    II beats; DLG-04's choice and the commission vote both stand; Pella's extra sealed letters are kept.**
+
+## Open, for the owner
+
+1. **The stencil.** The shipped game says the crates carry "a stencil none of the workers know". I drew it as
+   a lamp over a wavy line and made it Emberwatch stores' mark. Recommend: approve the design, or give me
+   yours before the art is made.
+2. **Gao's receipt.** The shipped game says only that it is "not for stone". I wrote its text ("six sealed
+   crates; sent on: stop fourteen, route nine, bell three"). Recommend: approve.
+3. **The side fights** (SF-2.1 to SF-2.3): Sabi's riggers, the tipping platform and the bridge toll are mine,
+   and so is the name Sabi. SF-2.1 pays off Pella's shipped puddle line, as asked.
+4. **The trust table** maps this act's flags to communities. The mapping is mine; the registry work is row
+   C-25.
+5. **MQ-04's rescue is an objective-only encounter.** If the engine cannot do one, it falls back to dialogue.
+   This is a build question, not a story one.
+6. **Not yet written:** the five teacher stories (TR-01 to TR-05) and the personal quests that open in this
+   act (PQ-01, PQ-02, PQ-03, PQ-10).

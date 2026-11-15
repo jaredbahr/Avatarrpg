@@ -91,7 +91,8 @@ keeping one out. It's on you. Eat that.
 
 **Driver (Bo-shan):** I'd give them the cart. I mean it. I'd like the letters.
 
-> **Loss branch.** **Driver (Dorin):** I have no permit. I have checked the regulations I can remember, and a
+> **Loss branch.** Replace the two lines above: **Driver (Dorin):** They have the watch book. Her letters are
+> folded in it. I have no permit, either. I have checked the regulations I can remember, and a
 > gate guard away from his gate without a permit is a man in a coat. I find I am still here. I did not expect
 > that of myself.
 
@@ -276,7 +277,7 @@ a cart by its shafts with nothing harnessed to it. The chalk number is still on 
 > not say that it is holding. People walk up over him, and it holds.
 
 > **If Kaya is in the party —**
-> **Kaya:** I'll take the gate. Who's got the ramp? Somebody say "me". ...Good. Then I've got the gate.
+> **Kaya:** I'll take the gate. Who's got the ramp? ...The driver's got the ramp. Then I've got the gate.
 
 > **If Nilak is in the party —**
 > **Nilak:** Anyone who's swallowed water, to the cart. Sit on the tailgate. I'll come to each of you. I can't
@@ -459,7 +460,14 @@ nothing is sitting, and looks at the empty place beside him.
 
 **Driver (Bo-shan):** It left a bolt. In the road. I picked it up. I don't know if that's allowed.
 
-> **Loss branch.**
+> **Loss branch.** Replace the lines above, as far as the bolt:
+>
+> **Driver (Dorin):** The watch book is under the seat. They put it back. Her letters are in it.
+>
+> **Narrator:** He counts the letters. Then he looks at the tailgate, where nothing is sitting.
+>
+> **Driver (Dorin):** It left a bolt in the road. I picked it up and logged it as lost property.
+>
 > **Narrator:** Dorin's permit is on the seat, folded in half. Across it, in a level hand: "Not valid." Under
 > that, in a hurried one: "Valid. V. Sen."
 >
@@ -564,7 +572,8 @@ _(SQ-01 resolved: **Pella:** "It's low. It's even. ...Who taught you this?" **Bo
 #### After an Act I loss (`act1_lost`)
 
 **Narrator:** Ba Dan from the bend in the road: cooking smoke, the canal, the gate. The tables under Mira's
-awning are crowded, and nobody at them is laughing. No stone cart has stopped here in three months.
+awning are crowded, and nobody at them is laughing. A stone cart is watering its ostrich horse at Gao's
+trough, loaded high, with a guard standing beside it. It goes on toward the coast without unloading a block.
 
 **Narrator:** Hanru is at the gate with the plain wooden spear. They do not stand up. They nod.
 
@@ -666,6 +675,9 @@ talking.
 until Daiyu comes and takes it.
 
 _Sets `quarry_freed_later`. The five come out: Leto, Amri, Hesra (in one boot), Senn, and Bo-shan._
+
+**Narrator:** Senn comes out last. He went back for something. It is Bo-shan's delivery book, from behind the
+Driller's seat. The back pages are in another hand: sealed crates, counted out at night.
 
 > **If the left boot is under the cart seat (always, on this branch) —**
 > **Narrator:** Hesra comes down the west road in one boot and one foot wrapped in sacking. Dorin gets down,
@@ -1539,6 +1551,69 @@ _End of Act IV._
 
 ---
 
+## Optional side fights
+
+Optional, XP-paying fights in every region (owner, 2026-11-15), so a table can level toward the discipline
+path it wants. None is needed for the main line, none hides a main clue, and every one pays its XP on a win
+and on "Carry on" alike. The people in them have reasons. Nobody is hurt past a bruise.
+
+### SF-4.1 — Paste and paper (Causeway, while the party is posted)
+
+**Who:** a poster patrol of four, paid by the poster kept up. **Where:** the stair street outside the party's
+shelter. **Why:** a neighbour has been pulling the notices down at night. The patrol has come to take her to
+the Marshal's office "to explain".
+
+**Patrol leader:** I get a coin for every notice still up at dawn. She's had eleven down. That's my rent.
+
+**Neighbour:** It's my wall. I whitewashed it in spring.
+
+**Win:** the patrol goes back down the stairs. **Patrol leader:** I'll say I never found which door. I'm
+keeping the paste. **Carry on:** they walk her to the office. She is home by noon, with a notice to post on
+her own wall and a brush to do it with. She posts it upside down.
+
+### SF-4.2 — The bench in the Cutting (above Ba Dan)
+
+**Who:** two of Jin's old crew. **Where:** Kuan's tea stop. **Why:** Jin has stopped paying them. They have
+taken the bench and the kettle and are charging carters for hot water.
+
+**Kuan:** They've been here four days. They wash nothing. I'd not mind the bench. I mind the cups.
+
+**Jin's man:** She said the contract was finished. She said it like closing a drawer. We've nowhere we're
+due.
+
+**Win:** they get up off the bench. **Kuan:** There's a quarry up the road that's short of hauliers. It pays
+on a board now, where you can see it. Wash those before you go. **Carry on:** they keep the bench. Kuan
+brings out a second kettle and sets it down ten paces off, on a rock, for everyone else.
+
+### SF-4.3 — What's owed (the upper quarry road)
+
+**Who:** laid-off hauliers from the quarry, seven of them. **Where:** the switchbacks. **Why:** they were let
+go without their last month. They are stopping stone carts and taking a block from each, to sell at the
+coast.
+
+**Haulier:** One block a cart. I've counted what I'm owed in blocks. I stop at forty.
+
+**Daiyu** _(if she is on the road)_**:** I know every one of you. Put it on the board with the rest of us.
+There's a board now.
+
+**Win:** they come down to Ba Dan and write what they are owed on the notice board, each in their own hand.
+**Carry on:** the cart goes down one block short. The carter writes "one block, taken by Old Fen, owed" on
+his tally, and Senn accepts it.
+
+## Community trust in this act
+
+Read by lines, never a lock (see Act II).
+
+| Community              | Trust rises with                                                     | Trust falls with                                   |
+| ---------------------- | -------------------------------------------------------------------- | -------------------------------------------------- |
+| Causeway's low landing | winning 10.5; `command_shared`; `demand_stop_control`; SF-4.1 won    | `lost_assembly`; `lost_canal_rescue` (from Act II) |
+| Commonworks staff      | `command_commonworks`; `demand_mixed_team`                           | `demand_removal` (the office; not the crews)       |
+| The quarry workers     | `requisition_worker_led`; `quarry_worker_led`; `ruon_offered_repair` | `lost_requisition`; `lost_quarry_return`           |
+| Ba Dan                 | `ba_dan_supplies`; `ruon_transferred` or `ruon_rescued`; SF-4.3 won  | `ruon_traded` with no repair; `lost_fork`          |
+| The Ferrymen's Compact | sheltering on Tavi's ferry                                           | nothing in this act                                |
+
+Ba Dan's trust and the quarry workers' trust together decide whether eleven or five volunteer in Scene 11.8.
+
 ## Jin's beat for this act
 
 Scene 11.5, at the fork below Ba Dan, in three versions: she holds Ruon, she holds his satchel, or she holds
@@ -1578,7 +1653,10 @@ on the loss branch).
 | Riko    | 10.4 her DLG-09 line; 12.2 one release, and walking away       |
 | Wen     | 10.2 the measuring rule; 12.2 Min's eight steps; 12.4 the note |
 
-## Open, for the owner
+## Decided (owner, 2026-11-15)
+
+The owner accepted every item below on 2026-11-15, as recommended. Each item keeps its first wording, as the
+record of what was accepted ("Recommend" lines are now decisions). Later corrections are marked.
 
 1. **Names I invented:** Daiyu (the worker witness DLG-08 asks for, and the worker Ruon later serves under,
    outline decision 21); the lower gallery crew's names in Ruon's list (Oren, the Tam sisters, Old Bai, Kuo,
@@ -1641,3 +1719,12 @@ on the loss branch).
       See item 12.
     - Bible MQ-12 says "the first rain begins after the player commits"; the fall in MQ-09 already has rain in
       Causeway. I kept both: it rains at the fall, clears for MQ-11, and the tide's rain starts on the commit.
+
+## Open, for the owner
+
+1. **The side fights** (SF-4.1 to SF-4.3) are mine: the poster patrol, Jin's two unpaid men at Kuan's bench
+   (it reuses the shipped tea stop), and the hauliers on the upper road. "Old Fen" is a new name.
+2. **The trust table** mapping is mine, and so is the rule that Ba Dan's and the quarry workers' trust decide
+   whether eleven or five volunteer.
+3. **Senn carries the delivery book out of the Driller's cab** on the loss branch (added 2026-11-15 so the
+   book is back on the cart for Act V).

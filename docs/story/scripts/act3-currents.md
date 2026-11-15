@@ -149,9 +149,9 @@ hurrying. Everyone else on the platform follows her.
 - **Yard hand:** "Mind the crates! That's a week's picking!"
 
 > **If Bo is in the party —**
-> **Bo:** Crates first, then the points. You two take the far end. I'm asking, not telling. Is that all right?
+> **Bo:** Crates first, then the points. Which end do you two want?
 >
-> **Narrator:** Nobody has time to answer. They take the far end.
+> **Narrator:** They take the far end. Bo takes the one that is left.
 
 > **If Riko is in the party —**
 > **Riko:** I'll take the brake wheel. Somebody watch the grade above it. If a second one's coming I want to
@@ -332,7 +332,7 @@ is asleep with his head in the basket again.
 **Driver (Bo-shan):** Stop fourteen. I've got a line for it in the book now. "Pear Halt. One pot, to be
 returned. One old woman, not to be argued with."
 
-> **Loss branch.** **Driver (Dorin):** I have written it in Bo-shan's book. "Stop fourteen is a place. Ninety
+> **Loss branch.** **Driver (Dorin):** I have written it in the watch book, for Bo-shan. "Stop fourteen is a place. Ninety
 > people. I have met one. She is enough."
 
 > **If Yenna rode up —**
@@ -1061,8 +1061,8 @@ is three. P."
 > Bo-shan.
 >
 > 1. Two letters. I counted. One of them was mostly about a pump.
-> 2. Aunt Nala's knee is bad. She carried the water on Tuesday anyway. I carried it Wednesday. You were not
->    here either day.
+> 2. Aunt Nala's knee is bad. She carries the water anyway, now you don't. I do Wednesdays. You were not here
+>    for any of them.
 > 3. Grumbler: thirty-three days. He made a ramp for your lady with the chair. Three off.
 > 4. Leto says you take the corner at the Saltstep quay too fast. He heard it from a ferry pilot. Everybody
 >    knows things about you except me.
@@ -1096,7 +1096,8 @@ Grumbler's sums.
 > > Dorin. And the ones in the back.
 > >
 > > 1. No more notes have come down. One note is not very many.
-> > 2. Aunt Nala's knee is bad. I carry the water now. Bo-shan used to. I'm telling you so somebody knows.
+> > 2. Aunt Nala's knee is bad. She carries the water now. I do Wednesdays. Bo-shan used to do all of it. I'm
+> >    telling you so somebody knows.
 > > 3. Hanru says you have been to see a train, or a marsh, or a mountain. I asked if he was on it, or in it,
 > >    or up it. Hanru said no.
 > > 4. You are all very busy over there.
@@ -1145,7 +1146,7 @@ control and the shutoff with the pot in place.
 > **Tenzo:** Which pan do you normally use on this?
 >
 > **Driver (Bo-shan):** The dented one. It sits flat on that side. Don't put it on the left ring. The left
-> ring's got opinions about rice.
+> ring runs hot. I've burnt rice on it twice.
 >
 > **Tenzo:** A hot spot. Good. I'll start the onions there.
 >
@@ -1523,7 +1524,7 @@ shoes. A shutter closes. Another.
 - **If `rail_window_community`:** a bunk wagon on a siding, with a lit stove.
   **Hesh:** We run our own hour on this line now. In our hour, I say who rides. Get in.
 - **If `loaders_freed`:** Tavi's ferry, moored at the low landing with its lamp out.
-  **Tavi:** Eleven people got home in this boat with no tokens. Four more won't sink it. Sit low. Don't help.
+  **Tavi:** Eleven people got home in this boat with no tokens. A few more won't sink it. Sit low. Don't help.
 - **Otherwise:** a narrow house on the low landing, with a chair folded up in the porch.
   **Hua:** You're the ones on the lamp posts. I can read now, you know. I read all of it.
   **Narrator:** She looks at you over her spectacles, and at the rain coming off your sleeves.
@@ -1536,6 +1537,65 @@ _End of Act III. Sets `party_posted`, `cart_impounded`, `latch_gone`, and `shelt
 ferry or stranger)._
 
 ---
+
+## Optional side fights
+
+Optional, XP-paying fights in every region (owner, 2026-11-15), so a table can level toward the discipline
+path it wants. None is needed for the main line, none hides a main clue, and every one pays its XP on a win
+and on "Carry on" alike. The people in them have reasons. Nobody is hurt past a bruise.
+
+### SF-3.1 — A week's picking (Copper Orchard)
+
+**Who:** five people from Pear Halt who used to porter for the passenger train. **Where:** the braking yard's
+fruit siding, at dusk. **Why:** no train stops, so no portering. They have been lifting crates of pears off
+the freight to feed the Halt, and the yard hands have come to stop them.
+
+**Porter:** We loaded this fruit off our own trees. They pay us for the picking and nothing for the carrying,
+since the carrying stopped. So we're carrying some home.
+
+**Yard foreman:** I don't want this. I've got a tally to sign and my name's on every short crate.
+
+**Win:** the crates go back. **Yard foreman:** I need hands on the sand siding. Day rate. It's not portering.
+It's a wage. **Carry on:** they are gone through the trees with six crates. At Pear Halt that night there are
+pears on every table, and nobody will say where from.
+
+### SF-3.2 — The old eel traps (Reedglass; spirits, calmed and not hurt)
+
+**Who:** a knot of small ripple spirits, pushed off their road. **Where:** the abandoned eel traps. **Why:**
+they have crowded into the traps because it is the only still water left, and the netmaker cannot get his
+boat past. **The fight:** steer them out through the gaps. Each move on the water repeats next round, so it is
+also the place to practise the echo rule before MQ-07's crossing.
+
+**Old netmaker:** They're not angry. They're stuck. I've been stuck in a doorway behind my wife's sister. You
+don't push. You make room at the other end.
+
+**Win:** the last one goes out through the gap. The traps are empty water. **Carry on:** they scatter into
+the reeds and are back in the traps by morning. **Old netmaker:** Then I'll go round. I've gone round worse.
+
+### SF-3.3 — Three flags (Bellweather; sparring)
+
+**Who:** Sena's students and two lower-camp runners. **Where:** the sheltered pasture. **Why:** a drill. Three
+flags on poles; take two and hold them through a gust. Sena keeps score on a board-game slate.
+
+**Sena:** Low when the ribbon goes flat. I'm not going to shout it. Watch the ribbon.
+
+**Win:** **Sena:** Again. I had the wind on your side that time. I want to see it without. **Carry on:**
+**Lower-camp runner:** We do this with grain sacks every week. You'll get it. Hold my flag.
+
+## Community trust in this act
+
+Read by lines, never a lock (see Act II).
+
+| Community                     | Trust rises with                                                 | Trust falls with                                       |
+| ----------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------ |
+| Pear Halt                     | winning 6.3; `rail_window_community`; SF-3.1 won or carried on   | `lost_orchard_yard`; `rail_service_council` (a little) |
+| Rail and maintenance crews    | `rail_window_community`; `findings_guild`                        | SF-3.1 won by force with no wage offered               |
+| Reedglass                     | either marsh choice; winning 7.6; PQ-06 owned                    | `lost_marsh_bypass`                                    |
+| The marsh's spirit neighbours | `marsh_corridor_wide` (most); `marsh_crossing_scheduled`; SF-3.2 | refusing Latch does not lower it                       |
+| The Bellweather sanctuary     | `mast_sanctuary`; PQ-07 kept                                     | `mast_shared` (a little)                               |
+| The lower camps               | `mast_shared`; winning 8.1                                       | `mast_sanctuary` (a little); `lost_tram_rescue`        |
+| Commonworks staff             | `exposure_protected`                                             | `exposure_published` (mixed: crews up, office down)    |
+| Causeway's low landing        | `exposure_published`                                             | `exposure_protected` (a little: "you waited")          |
 
 ## Jin's beat for this act
 
@@ -1562,14 +1622,17 @@ C.1, after the first spoke, with a loss-branch version. It arrives with Grumbler
 | Tenzo   | C.1, DLG-02 and his grandmother                                                      |
 | Nilak   | 7.2 the fever tally                                                                  |
 | Sura    | 7.2 Vessa (PQ-04 opens); 7.5 at the pool's edge                                      |
-| Bo      | 6.3 asking, not telling; 6.4 Renn (PQ-05 opens)                                      |
+| Bo      | 6.3 the end that is left; 6.4 Renn (PQ-05 opens)                                     |
 | Lin Mei | 6.4 the chess table; 7.2 Fenn's notice (PQ-06 opens); 9.1 her survey under all three |
 | Nima    | 8.1 on the rope like everyone else; 8.2 Sena (PQ-07 opens, with the bible's line)    |
 | Jinu    | 8.1 the warden's slip; 8.2 the mail shelter (PQ-08 opens); 9.5 folding in three      |
 | Riko    | 6.3 the brake wheel; 6.4 Seli (PQ-09 opens); 9.3 "Both of those are her"             |
 | Wen     | 7.5 the gauge; 9.1 her regulator; 9.3 "you always need to know why"; C.1 the stove   |
 
-## Open, for the owner
+## Decided (owner, 2026-11-15)
+
+The owner accepted every item below on 2026-11-15, as recommended. Each item keeps its first wording, as the
+record of what was accepted ("Recommend" lines are now decisions). Later corrections are marked.
 
 1. **Names I invented:** Grandmother Ansa (see Act II), the conductor, yard foreman, pump keeper, netmaker and
    barge pilot are unnamed on purpose. Nel is the bible's deaf carpenter from SQ-29; I use them in the main
@@ -1624,3 +1687,10 @@ C.1, after the first spoke, with a loss-branch version. It arrives with Grumbler
     - The outline's hero table sends Nilak's thread to "PQ-03, Saltstep outreach room" while its MQ-07 beat
       lists "(Sura, Lin Mei, Nilak)". I gave Nilak a main-line moment at Reedglass (the fever tally) and left
       his quest at Aru's table.
+
+## Open, for the owner
+
+1. **The side fights** (SF-3.1 to SF-3.3) are mine: the Pear Halt porters, the eel traps and Sena's three
+   flags.
+2. **The trust table** mapping is mine.
+3. **Not yet written:** the personal quests that open in this act (PQ-04 to PQ-09), DLG-06 included.
