@@ -154,6 +154,10 @@ type FixtureOptions = {
   workflowMetadata?: WorkflowRecord;
   refSha?: string;
   artifacts?: ArtifactRecord[];
+  /** First-parent chain of main, newest first. */
+  chain?: string[];
+  /** compare/<sha>...main status for the selected commit. */
+  compareStatus?: string;
   onRequest?: (url: URL, init: RequestInit | undefined) => void;
 };
 function githubFixture(options: FixtureOptions = {}) {
@@ -166,6 +170,8 @@ function githubFixture(options: FixtureOptions = {}) {
     workflowMetadata = workflow(),
     refSha = SHA,
     artifacts = [artifact()],
+    chain = [SHA, OTHER_SHA],
+    compareStatus = 'ahead',
     onRequest,
   } = options;
   let listCalls = 0;
@@ -186,6 +192,27 @@ function githubFixture(options: FixtureOptions = {}) {
         return json({ full_name: 'jaredbahr/Avatarrpg', default_branch: 'main' });
       if (parsed.pathname === '/repos/jaredbahr/Avatarrpg/git/ref/heads/main')
         return json({ object: { sha: refSha } });
+      const commitMatch = parsed.pathname.match(
+        /\/repos\/jaredbahr\/Avatarrpg\/commits\/([0-9a-f]{40})$/,
+      );
+      if (commitMatch) {
+        const sha = commitMatch[1] ?? '';
+        const index = chain.indexOf(sha);
+        if (index < 0) return json({ message: 'unknown commit' }, 404);
+        const parent = chain[index + 1];
+        return json({
+          sha,
+          parents: parent ? [{ sha: parent }] : [],
+          commit: {
+            committer: {
+              date: new Date(Date.UTC(2026, 10, 15 - index, 8)).toISOString().replace('.000Z', 'Z'),
+            },
+          },
+        });
+      }
+      const compareMatch = parsed.pathname.match(/\/compare\/([0-9a-f]{40})\.\.\.main$/);
+      if (compareMatch)
+        return json({ status: compareStatus, merge_base_commit: { sha: compareMatch[1] } });
       if (parsed.pathname === `/repos/jaredbahr/Avatarrpg/actions/workflows/ci.yml`)
         return json(workflowMetadata);
       if (parsed.pathname === '/repos/jaredbahr/Avatarrpg/actions/workflows/ci.yml/runs') {
@@ -194,10 +221,12 @@ function githubFixture(options: FixtureOptions = {}) {
           activeRuns = listResponseSets?.[Math.min(listCalls, listResponseSets.length - 1)] ?? runs;
           listCalls += 1;
         }
+        const wanted = parsed.searchParams.get('head_sha');
+        const matching = activeRuns.filter((candidate) => candidate.head_sha === wanted);
         const start = (page - 1) * 100;
         return json({
-          total_count: activeRuns.length,
-          workflow_runs: activeRuns.slice(start, start + 100),
+          total_count: matching.length,
+          workflow_runs: matching.slice(start, start + 100),
         });
       }
       const detailMatch = parsed.pathname.match(/\/actions\/runs\/(\d+)$/);
@@ -221,7 +250,8 @@ function githubFixture(options: FixtureOptions = {}) {
           jobsCalls += 1;
         }
         const start = (page - 1) * 100;
-        return json({ total_count: activeJobs.length, jobs: activeJobs.slice(start, start + 100) });
+        const forRun = activeJobs.filter((job) => job.run_id === Number(jobsMatch[1]));
+        return json({ total_count: forRun.length, jobs: forRun.slice(start, start + 100) });
       }
       if (parsed.pathname === '/repos/jaredbahr/Avatarrpg/actions/runs/9900/artifacts')
         return json({ total_count: artifacts.length, artifacts });
@@ -393,7 +423,10 @@ describe('Pages deployment gate command dispatcher', () => {
     async (event: string) => {
       const fixture = githubFixture({ runs: [run({ event })] });
       const { evidence, output } = await select(fixture, event);
-      expect(evidence).toEqual(expectedEvidence(event));
+      expect(evidence).toEqual({
+        ...expectedEvidence(event),
+        committed_at: '2026-11-15T08:00:00Z',
+      });
       expect(output.values).toEqual([evidence]);
       expect(fixture.requests.every(({ url }) => url.origin === 'https://api.github.com')).toBe(
         true,
@@ -559,11 +592,164 @@ describe('Pages deployment gate command dispatcher', () => {
     );
   });
 
-  it('rejects a changed main head on the real pre-publish dispatcher', async () => {
+  it('rejects a selected commit that is no longer an ancestor of main', async () => {
+    for (const compareStatus of ['diverged', 'behind']) {
+      const fixture = githubFixture({ compareStatus });
+      await expect(invokeRevalidate(fixture, expectedEvidence(), 'before-publish')).rejects.toThrow(
+        /no longer an ancestor of main/,
+      );
+    }
+  });
+
+  it('still revalidates the selected commit after main has advanced past it', async () => {
     const fixture = githubFixture({ refSha: OTHER_SHA });
-    await expect(invokeRevalidate(fixture, expectedEvidence(), 'before-publish')).rejects.toThrow(
-      /live main head/,
+    const { result } = await invokeRevalidate(fixture, expectedEvidence(), 'before-publish', {
+      GITHUB_SHA: OTHER_SHA,
+    }).catch(() => ({ result: null }));
+    // The deploy run's own SHA (OTHER_SHA) owns the artifact, not the selected SHA.
+    expect(result).toBeNull();
+    const artifactOwnedByDeployRun = githubFixture({
+      refSha: OTHER_SHA,
+      artifacts: [
+        artifact({ workflow_run: { id: 9900, head_sha: OTHER_SHA, head_branch: 'main' } }),
+      ],
+    });
+    const { result: ok } = await invokeRevalidate(
+      artifactOwnedByDeployRun,
+      expectedEvidence(),
+      'before-publish',
+      { GITHUB_SHA: OTHER_SHA },
     );
+    expect(ok.evidence.sha).toBe(SHA);
+  });
+
+  describe('newest green commit selection', () => {
+    const NEWEST = 'a'.repeat(40);
+    const MIDDLE = 'b'.repeat(40);
+    const chain = [NEWEST, MIDDLE, SHA];
+    const select3 = (options: FixtureOptions) =>
+      select(githubFixture({ chain, refSha: NEWEST, ...options }), 'push', {
+        GITHUB_SHA: NEWEST,
+      });
+    const runFor = (sha: string, overrides: Partial<RunRecord> = {}) =>
+      run({ id: 4300 + chain.indexOf(sha), head_sha: sha, ...overrides });
+    const jobsFor = (runs: RunRecord[]) =>
+      runs.flatMap((r, i) => requiredJobs(r.id, r.head_sha, 700 + i * 20));
+
+    it('ships an older green commit when HEAD failed', async () => {
+      const head = runFor(NEWEST, { conclusion: 'failure' });
+      const green = runFor(MIDDLE);
+      const { evidence } = await select3({
+        runs: [head, green],
+        jobs: requiredJobs(green.id, MIDDLE),
+      });
+      expect(evidence.sha).toBe(MIDDLE);
+      expect(evidence.ci_run_id).toBe(String(green.id));
+    });
+
+    it('ships an older green commit when HEAD is still running', async () => {
+      const head = runFor(NEWEST, { status: 'in_progress', conclusion: null });
+      const green = runFor(MIDDLE);
+      const { evidence } = await select3({
+        runs: [head, green],
+        jobs: requiredJobs(green.id, MIDDLE),
+      });
+      expect(evidence.sha).toBe(MIDDLE);
+    });
+
+    it('does not count a cancelled run as green, and steps past it', async () => {
+      const head = runFor(NEWEST, { conclusion: 'cancelled' });
+      const middle = runFor(MIDDLE, { conclusion: 'cancelled' });
+      const green = runFor(SHA);
+      const { evidence } = await select3({
+        runs: [head, middle, green],
+        jobs: requiredJobs(green.id, SHA),
+      });
+      expect(evidence.sha).toBe(SHA);
+    });
+
+    it('steps past a successful run whose required browser job did not succeed', async () => {
+      const head = runFor(NEWEST);
+      const green = runFor(MIDDLE);
+      const headJobs = requiredJobs(head.id, NEWEST);
+      jobAt(headJobs, 3).conclusion = 'skipped';
+      const { evidence } = await select3({
+        runs: [head, green],
+        jobs: [...headJobs, ...requiredJobs(green.id, MIDDLE, 800)],
+      });
+      expect(evidence.sha).toBe(MIDDLE);
+    });
+
+    it('prefers HEAD when it is green', async () => {
+      const head = runFor(NEWEST);
+      const { evidence } = await select3({
+        runs: [head, runFor(MIDDLE)],
+        jobs: requiredJobs(head.id, NEWEST),
+      });
+      expect(evidence.sha).toBe(NEWEST);
+    });
+
+    it('fails with no output when no commit in the walk is green', async () => {
+      const runs = [
+        runFor(NEWEST, { conclusion: 'failure' }),
+        runFor(MIDDLE, { status: 'in_progress', conclusion: null }),
+        runFor(SHA, { conclusion: 'cancelled' }),
+      ];
+      const output = capture();
+      await expect(
+        dispatchCommand({
+          mode: 'select',
+          env: context('push', { GITHUB_SHA: NEWEST }),
+          fetchImpl: githubFixture({ chain, refSha: NEWEST, runs, jobs: jobsFor(runs) }).fetch,
+          writeOutput: output.writeOutput,
+        }),
+      ).rejects.toThrow(/No main commit among the newest 50/);
+      expect(output.values).toHaveLength(0);
+    });
+
+    it('stops at 50 commits and never ships a green commit beyond the bound', async () => {
+      const long = Array.from({ length: 60 }, (_, i) => i.toString(16).padStart(40, 'c'));
+      const deep = run({ id: 9001, head_sha: long[55] ?? '' });
+      const fixture = githubFixture({
+        chain: long,
+        refSha: long[0] ?? '',
+        runs: [deep],
+        jobs: requiredJobs(9001, long[55] ?? ''),
+      });
+      await expect(
+        dispatchCommand({
+          mode: 'select',
+          env: context('push', { GITHUB_SHA: long[0] ?? '' }),
+          fetchImpl: fixture.fetch,
+          writeOutput: capture().writeOutput,
+        }),
+      ).rejects.toThrow(/No main commit among the newest 50/);
+      expect(
+        fixture.requests.filter(({ url }) => /\/commits\/[0-9a-f]{40}$/.test(url.pathname)),
+      ).toHaveLength(50);
+    });
+
+    it('uses the older green run unchanged through every later revalidation stage', async () => {
+      const head = runFor(NEWEST, { conclusion: 'failure' });
+      const green = runFor(MIDDLE);
+      const fixture = githubFixture({
+        chain,
+        refSha: NEWEST,
+        runs: [head, green],
+        jobs: requiredJobs(green.id, MIDDLE),
+        artifacts: [
+          artifact({
+            name: `pages-${MIDDLE}-ci${green.id}-a1-deploy9900-a1`,
+            workflow_run: { id: 9900, head_sha: NEWEST, head_branch: 'main' },
+          }),
+        ],
+      });
+      const { evidence: selected } = await select(fixture, 'push', { GITHUB_SHA: NEWEST });
+      const { committed_at: _c, ...evidence } = selected;
+      for (const stage of ['before-build', 'before-upload', 'before-publish']) {
+        await invokeRevalidate(fixture, evidence, stage, { GITHUB_SHA: NEWEST });
+      }
+    });
   });
 
   it('rejects an API base that could redirect the token destination', async () => {
@@ -657,7 +843,8 @@ describe('Pages deployment gate command dispatcher', () => {
 
   it('runs all three real revalidation commands and captures their frozen outputs', async () => {
     const fixture = githubFixture();
-    const { evidence } = await select(fixture);
+    const { evidence: selected } = await select(fixture);
+    const { committed_at: _committedAt, ...evidence } = selected;
     for (const stage of ['before-build', 'before-upload', 'before-publish']) {
       const { output, result } = await invokeRevalidate(fixture, evidence, stage);
       expect(result.evidence).toMatchObject(evidence);
@@ -693,8 +880,8 @@ describe('Pages deployment gate command dispatcher', () => {
     const freshness = jobBlock('freshness', 'build');
     const build = jobBlock('build', 'deploy');
     const deploy = workflowText.slice(workflowText.indexOf('  deploy:\n'));
-    expect(freshness).toContain('name: Require successful exact-SHA main CI');
-    expect(workflowText.indexOf('name: Require successful exact-SHA main CI')).toBeLessThan(
+    expect(freshness).toContain('name: Select the newest green main commit');
+    expect(workflowText.indexOf('name: Select the newest green main commit')).toBeLessThan(
       workflowText.indexOf('  build:'),
     );
     expect(build.indexOf('name: Revalidate main and CI before install/build')).toBeLessThan(

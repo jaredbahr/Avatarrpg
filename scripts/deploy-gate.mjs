@@ -29,6 +29,8 @@ const BROWSER_JOB_NAMES = [
   'E2E WebKit iPad 2/3',
   'E2E WebKit iPad 3/3',
 ];
+// How many first-parent commits of main `select` inspects, newest first.
+const MAX_WALK = 50;
 const MAX_PAGES = 10;
 const PAGE_SIZE = 100;
 
@@ -39,6 +41,18 @@ export class GateError extends Error {
   }
 }
 
+// A commit whose CI is not (fully) green. `select` steps past these to an older
+// commit; everything else (API trouble, malformed data) still blocks deployment.
+export class NotGreenError extends GateError {
+  constructor(message) {
+    super(message);
+    this.name = 'NotGreenError';
+  }
+}
+
+const notGreen = (message) => {
+  throw new NotGreenError(message);
+};
 const fail = (message) => {
   throw new GateError(message);
 };
@@ -161,8 +175,45 @@ async function readRepository(context, client) {
     `/repos/${encodeURIComponent(context.owner)}/${encodeURIComponent(context.name)}/git/ref/heads/main`,
   );
   const mainSha = ref?.object?.sha;
-  if (!validSha(mainSha) || mainSha.toLowerCase() !== context.sha)
-    fail('The live main head no longer matches this Pages run SHA.');
+  if (!validSha(mainSha)) fail('GitHub returned a malformed main head.');
+  return mainSha.toLowerCase();
+}
+
+async function readCommit(context, client, sha) {
+  const commit = await client.request(
+    `/repos/${encodeURIComponent(context.owner)}/${encodeURIComponent(context.name)}/commits/${sha}`,
+  );
+  if (
+    !isObject(commit) ||
+    !validSha(commit.sha) ||
+    commit.sha.toLowerCase() !== sha ||
+    !Array.isArray(commit.parents) ||
+    commit.parents.some((parent) => !isObject(parent) || !validSha(parent.sha)) ||
+    !isoTime(commit.commit?.committer?.date)
+  ) {
+    fail('GitHub returned a malformed commit.');
+  }
+  return {
+    sha,
+    parent: commit.parents[0] ? commit.parents[0].sha.toLowerCase() : null,
+    committedAt: commit.commit.committer.date,
+  };
+}
+
+// The selected SHA must still be reachable from main (a force-push or revert of
+// history must not let a stale revision publish).
+async function requireAncestorOfMain(context, client, sha, stage) {
+  const result = await client.request(
+    `/repos/${encodeURIComponent(context.owner)}/${encodeURIComponent(context.name)}/compare/${sha}...main?per_page=1`,
+  );
+  if (
+    !isObject(result) ||
+    !['ahead', 'identical'].includes(result.status) ||
+    !validSha(result.merge_base_commit?.sha) ||
+    result.merge_base_commit.sha.toLowerCase() !== sha
+  ) {
+    fail(`The selected commit is no longer an ancestor of main ${stage}.`);
+  }
 }
 
 async function readCiWorkflow(context, client) {
@@ -230,12 +281,12 @@ function validateRunShape(run, context, workflow) {
   }
 }
 
-function runIdentityMatches(run, context, workflow) {
+function runIdentityMatches(run, sha, context, workflow) {
   return (
     run.workflow_id === workflow.id &&
     workflowPathMatches(run.path) &&
     run.head_branch === 'main' &&
-    run.head_sha.toLowerCase() === context.sha &&
+    run.head_sha.toLowerCase() === sha &&
     sameRepo(run.head_repository.full_name, context.repo) &&
     REQUIRED_EVENTS.has(run.event)
   );
@@ -271,9 +322,9 @@ async function pagedCollection(client, path, collectionKey, label) {
   return items;
 }
 
-async function listRuns(context, client, workflow) {
+async function listRuns(context, client, workflow, sha) {
   const workflowSlug = encodeURIComponent('ci.yml');
-  const path = `/repos/${encodeURIComponent(context.owner)}/${encodeURIComponent(context.name)}/actions/workflows/${workflowSlug}/runs?branch=main&head_sha=${context.sha}`;
+  const path = `/repos/${encodeURIComponent(context.owner)}/${encodeURIComponent(context.name)}/actions/workflows/${workflowSlug}/runs?branch=main&head_sha=${sha}`;
   // pagedCollection appends page controls while preserving the workflow filters.
   const runPath = path.slice(0, path.indexOf('?'));
   const query = new URLSearchParams(path.slice(path.indexOf('?') + 1));
@@ -312,11 +363,16 @@ async function listRuns(context, client, workflow) {
   return runs;
 }
 
-function newestEligible(runs, context, workflow) {
-  const eligible = runs.filter((run) => runIdentityMatches(run, context, workflow));
-  if (!eligible.length) fail('No eligible main CI run exists for this exact SHA.');
+function newestEligibleOrNone(runs, sha, context, workflow) {
+  const eligible = runs.filter((run) => runIdentityMatches(run, sha, context, workflow));
   eligible.sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at) || b.id - a.id);
   return eligible[0];
+}
+
+function newestEligible(runs, sha, context, workflow) {
+  const newest = newestEligibleOrNone(runs, sha, context, workflow);
+  if (!newest) fail('No eligible main CI run exists for this exact SHA.');
+  return newest;
 }
 
 function validateJobShape(job, run) {
@@ -352,23 +408,24 @@ function validateRequiredJobs(jobs, run) {
   }
   for (const name of REQUIRED_JOB_NAMES) {
     const job = byName.get(name);
-    if (!job || !successful(job)) fail(`Required CI job did not complete successfully: ${name}.`);
+    if (!job || !successful(job))
+      notGreen(`Required CI job did not complete successfully: ${name}.`);
   }
   const verify = byName.get(REQUIRED_JOB_NAMES[0]);
-  if (verify.steps.length === 0) fail('The CI verification job has no execution steps.');
+  if (verify.steps.length === 0) notGreen('The CI verification job has no execution steps.');
   for (const name of VERIFY_STEPS) {
     if (!successfulStep(verify, name))
-      fail(`CI verification step did not complete successfully: ${name}.`);
+      notGreen(`CI verification step did not complete successfully: ${name}.`);
   }
   const e2e = byName.get(REQUIRED_JOB_NAMES[1]);
   const gallery = byName.get(REQUIRED_JOB_NAMES[2]);
   if (!successfulStep(e2e, 'Require the browser suites (or, on a pull request, verify alone)')) {
-    fail('The CI browser aggregate did not confirm suite completion.');
+    notGreen('The CI browser aggregate did not confirm suite completion.');
   }
   if (
     !successfulStep(gallery, 'Require every gallery shard (or, when they were skipped, verify)')
   ) {
-    fail('The CI gallery aggregate did not complete successfully.');
+    notGreen('The CI gallery aggregate did not complete successfully.');
   }
   for (const name of BROWSER_JOB_NAMES) {
     const job = byName.get(name);
@@ -378,7 +435,7 @@ function validateRequiredJobs(jobs, run) {
       job.steps.length === 0 ||
       !successfulStep(job, 'Run e2e suite')
     ) {
-      fail(`Actual main browser suite did not complete successfully: ${name}.`);
+      notGreen(`Actual main browser suite did not complete successfully: ${name}.`);
     }
   }
   const requiredNames = [...REQUIRED_JOB_NAMES, ...BROWSER_JOB_NAMES];
@@ -413,43 +470,70 @@ function evidenceFrom(run, jobIds, context, workflow) {
   };
 }
 
+// Walks main's first-parent history from the live head, newest first, and
+// returns the first commit whose newest eligible CI run fully passed. A commit
+// that is failing, still running, cancelled or has no CI run is stepped past,
+// never shipped (owner, 2026-11-15).
+async function findNewestGreen(context, client, workflow, head) {
+  let sha = head;
+  for (let depth = 0; depth < MAX_WALK && sha; depth += 1) {
+    const commit = await readCommit(context, client, sha);
+    const runs = await listRuns(context, client, workflow, sha);
+    const newest = newestEligibleOrNone(runs, sha, context, workflow);
+    if (newest && successful(newest)) {
+      try {
+        const jobs = await listAttemptJobs(context, client, newest);
+        return { commit, run: newest, jobs };
+      } catch (error) {
+        if (!(error instanceof NotGreenError)) throw error;
+      }
+    }
+    sha = commit.parent;
+  }
+  return fail(
+    `No main commit among the newest ${MAX_WALK} has a fully successful CI run; nothing is deployed.`,
+  );
+}
+
 export async function selectEvidence(env, fetchImpl = globalThis.fetch) {
   const context = normalizedContext(env);
   if (context.event === 'workflow_dispatch' && context.ref !== 'refs/heads/main')
     fail('Manual Pages dispatch must target main.');
   const client = makeClient(context, fetchImpl);
-  await readRepository(context, client);
+  const head = await readRepository(context, client);
   const workflow = await readCiWorkflow(context, client);
-  const runs = await listRuns(context, client, workflow);
-  const selected = newestEligible(runs, context, workflow);
-  if (!successful(selected))
-    fail(
-      'The newest eligible CI run is not completed successfully; no older run will be substituted.',
-    );
-  const jobs = await listAttemptJobs(context, client, selected);
-  const latest = newestEligible(await listRuns(context, client, workflow), context, workflow);
+  const { commit, run: selected, jobs } = await findNewestGreen(context, client, workflow, head);
+  const sha = commit.sha;
+  const latest = newestEligible(
+    await listRuns(context, client, workflow, sha),
+    sha,
+    context,
+    workflow,
+  );
   if (
     latest.id !== selected.id ||
     latest.run_attempt !== selected.run_attempt ||
     !successful(latest)
   ) {
-    fail(
-      'The newest eligible CI run changed or is not successful; no older run will be substituted.',
-    );
+    fail('The newest eligible CI run changed or is not successful for the selected commit.');
   }
   const finalJobs = await listAttemptJobs(context, client, latest);
   if (finalJobs.jobIds.join(',') !== jobs.jobIds.join(','))
     fail('The required CI job identities changed while evidence was collected.');
   const after = await getRunById(context, client, selected.id, workflow);
   if (
-    !runIdentityMatches(after, context, workflow) ||
+    !runIdentityMatches(after, sha, context, workflow) ||
     after.run_attempt !== selected.run_attempt ||
     !successful(after)
   ) {
     fail('The selected CI run changed while its evidence was collected.');
   }
   await readRepository(context, client);
-  return evidenceFrom(after, finalJobs.jobIds, context, workflow);
+  await requireAncestorOfMain(context, client, sha, 'at selection');
+  return {
+    ...evidenceFrom(after, finalJobs.jobIds, context, workflow),
+    committed_at: commit.committedAt,
+  };
 }
 
 export async function revalidateEvidence(env, expected, stage, fetchImpl = globalThis.fetch) {
@@ -457,7 +541,6 @@ export async function revalidateEvidence(env, expected, stage, fetchImpl = globa
   if (
     !isObject(expected) ||
     !validSha(expected.sha) ||
-    expected.sha.toLowerCase() !== context.sha ||
     !validId(Number(expected.ci_run_id)) ||
     !Number.isSafeInteger(Number(expected.ci_run_attempt)) ||
     Number(expected.ci_run_attempt) < 1 ||
@@ -468,8 +551,10 @@ export async function revalidateEvidence(env, expected, stage, fetchImpl = globa
   ) {
     fail(`The frozen deployment identity is invalid at ${stage}.`);
   }
+  const sha = expected.sha.toLowerCase();
   const client = makeClient(context, fetchImpl);
   await readRepository(context, client);
+  await requireAncestorOfMain(context, client, sha, `before ${stage}`);
   const workflow = await readCiWorkflow(context, client);
   if (
     workflow.id !== Number(expected.ci_workflow_id) ||
@@ -479,14 +564,19 @@ export async function revalidateEvidence(env, expected, stage, fetchImpl = globa
   }
   const run = await getRunById(context, client, Number(expected.ci_run_id), workflow);
   if (
-    !runIdentityMatches(run, context, workflow) ||
+    !runIdentityMatches(run, sha, context, workflow) ||
     run.run_attempt !== Number(expected.ci_run_attempt) ||
     !successful(run)
   ) {
     fail(`The frozen CI evidence changed before ${stage}.`);
   }
   const jobs = await listAttemptJobs(context, client, run);
-  const latest = newestEligible(await listRuns(context, client, workflow), context, workflow);
+  const latest = newestEligible(
+    await listRuns(context, client, workflow, sha),
+    sha,
+    context,
+    workflow,
+  );
   if (latest.id !== run.id || latest.run_attempt !== run.run_attempt || !successful(latest)) {
     fail(`The newest eligible CI run changed or is not successful before ${stage}.`);
   }
@@ -503,13 +593,14 @@ export async function revalidateEvidence(env, expected, stage, fetchImpl = globa
   }
   const after = await getRunById(context, client, run.id, workflow);
   if (
-    !runIdentityMatches(after, context, workflow) ||
+    !runIdentityMatches(after, sha, context, workflow) ||
     after.run_attempt !== run.run_attempt ||
     !successful(after)
   ) {
     fail(`The selected CI run changed during ${stage} evidence collection.`);
   }
   await readRepository(context, client);
+  await requireAncestorOfMain(context, client, sha, `during ${stage}`);
   const current = evidenceFrom(after, finalJobs.jobIds, context, workflow);
   for (const key of [
     'sha',
@@ -565,7 +656,7 @@ export async function verifyArtifactMetadata(
     artifact.name !== expected.artifact_name ||
     artifact.expired ||
     artifact.workflow_run.id !== context.runId ||
-    artifact.workflow_run.head_sha?.toLowerCase() !== expected.sha ||
+    artifact.workflow_run.head_sha?.toLowerCase() !== context.sha ||
     artifact.workflow_run.head_branch !== 'main'
   ) {
     fail('The Pages artifact metadata does not match the frozen SHA and workflow run.');
