@@ -240,9 +240,14 @@ test('a long session neither leaks nor outgrows its bounds', async ({ page }, in
   // Cycle 0 is the cold title; the fit starts once every lazy cache has had its first fill.
   const measured = samples.slice(1);
   const verdicts: Verdict[] = [];
+  // What a destroyed WebGL renderer leaves in Pixi's module state and nothing here can reach:
+  // each program's source kept as a map key, about 13 KB a scene mount and 0.2 MB a cycle
+  // (ADR 0112). Allowed at that rate, so the heap still fails if anything is added to it.
+  const pixiPrograms = renderer === 'webgl' ? { perCycle: 300_000 } : {};
   for (const [name, allowance] of Object.entries(ALLOWANCES)) {
     const values = measured.map((sample) => sample[name as keyof Sample] as number);
-    verdicts.push(judgeTrend(name, values, WARMUP, allowance));
+    const known = name === 'heapUsed' ? pixiPrograms : {};
+    verdicts.push(judgeTrend(name, values, WARMUP, { ...allowance, ...known }));
   }
   for (const name of Object.keys(measured[0]?.caches ?? {})) {
     const values = measured.map((sample) => sample.caches[name] ?? 0);
@@ -253,7 +258,8 @@ test('a long session neither leaks nor outgrows its bounds', async ({ page }, in
   expect(midGame, 'one mid-game sample per cycle').toHaveLength(CYCLES);
   for (const [name, allowance] of Object.entries(MID_GAME_ALLOWANCES)) {
     const values = midGame.map((sample) => sample[name as keyof Sample] as number);
-    verdicts.push(judgeTrend(`mid.${name}`, values, WARMUP, allowance));
+    const known = name === 'heapUsed' ? pixiPrograms : {};
+    verdicts.push(judgeTrend(`mid.${name}`, values, WARMUP, { ...allowance, ...known }));
   }
   for (const name of Object.keys(midGame[0]?.caches ?? {})) {
     const values = midGame.map((sample) => sample.caches[name] ?? 0);

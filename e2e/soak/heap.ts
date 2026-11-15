@@ -46,9 +46,14 @@ export async function heapCounts(cdp: CDPSession): Promise<Map<string, HeapCount
   const counts = new Map<string, HeapCount>();
   for (let at = 0; at < snapshot.nodes.length; at += fields.length) {
     const type = types[snapshot.nodes[at + typeAt] ?? -1] ?? '';
-    if (!counted.has(type)) continue;
     const name = snapshot.strings[snapshot.nodes[at + nameAt] ?? -1] ?? '';
-    const key = type === 'closure' ? `closure ${name || '(anonymous)'}` : name;
+    // Objects by constructor; everything else (strings, arrays, code) as one row per kind, so
+    // the rows add up to the heap.
+    const key = !counted.has(type)
+      ? `(${type})`
+      : type === 'closure'
+        ? `closure ${name || '(anonymous)'}`
+        : name;
     const entry = counts.get(key) ?? { count: 0, bytes: 0 };
     entry.count += 1;
     entry.bytes += snapshot.nodes[at + sizeAt] ?? 0;

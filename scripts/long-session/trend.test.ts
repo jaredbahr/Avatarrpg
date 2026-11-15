@@ -55,6 +55,16 @@ describe('judgeTrend', () => {
     expect(verdict.leaking).toBe(false);
   });
 
+  it('allows a known growth per cycle and still fails a faster one', () => {
+    // Pixi's program strings: about 0.2 MB a cycle on WebGL, however long the run.
+    const known = Array.from({ length: 40 }, (_, cycle) => 15e6 + cycle * 200_000);
+    const allowance = { absolute: 2e6, perCycle: 300_000 };
+    expect(judgeTrend('heap', known, 2, { absolute: 2e6 }).leaking).toBe(true);
+    expect(judgeTrend('heap', known, 2, allowance).leaking).toBe(false);
+    const faster = known.map((value, cycle) => value + cycle * 400_000);
+    expect(judgeTrend('heap', faster, 2, allowance).leaking).toBe(true);
+  });
+
   it('does not call a falling series a leak', () => {
     expect(judgeTrend('timeouts', [9, 7, 5, 3], 0, { absolute: 0 }).leaking).toBe(false);
   });

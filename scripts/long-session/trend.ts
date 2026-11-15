@@ -67,6 +67,11 @@ export interface Allowance {
   readonly absolute: number;
   /** The same, as a fraction of the series' level at the first fitted cycle. */
   readonly relative?: number;
+  /**
+   * A known growth per cycle that is allowed on top, for a leak that is measured, explained and
+   * out of reach. The series still fails when it grows faster than that.
+   */
+  readonly perCycle?: number;
 }
 
 export interface Verdict {
@@ -88,7 +93,9 @@ export function judgeTrend(
   allowance: Allowance,
 ): Verdict {
   const trend = fitTrend(values, warmup);
-  const allowed = Math.max(allowance.absolute, (allowance.relative ?? 0) * Math.abs(trend.first));
+  const allowed =
+    Math.max(allowance.absolute, (allowance.relative ?? 0) * Math.abs(trend.first)) +
+    (allowance.perCycle ?? 0) * (trend.points - 1);
   const leaking = trend.growth > allowed && trend.last - trend.first > allowed;
   return { name, trend, allowed, leaking };
 }
