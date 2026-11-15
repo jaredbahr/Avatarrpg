@@ -30,20 +30,14 @@ export const SALTSTEP_EMBERWATCH_ENCOUNTERS: readonly EncounterDef[] = [
       at(16, 6, 'freight_handler'),
       at(15, 2, 'freight_handler'),
     ],
+    allies: [],
     /*
      * Veyra (AN-01): an AI guest, as the script says, built from her placeholder enemy record
-     * (`veyra_guest` in `enemies.ts`). ADR 0116's `allies` shorthand: an `ai` guest built from an
-     * enemy at the encounter's level (4, the level every Act I route ends on), tagged "Guest" in
-     * the HUD like any guest. "Veyra cannot be lost": `loseIfGuestFalls` stays unset, so a fallen
-     * guest stays down and the fight goes on.
-     *
-     * Not `guests: [{ enemyId: 'veyra_guest', pos, level: { partyOffset: 0 } }]`, the form the
-     * brief asked for: `src/core/state/encounterSpawns.test.ts` counts only `allies` as the
-     * party's side, so the first shipped `guests` entry fails it, and `src/core/` is not this
-     * trial's to change (`docs/pipeline-trial-log.md`, friction). Swap back once that test reads
-     * guests too.
+     * (`veyra_guest` in `enemies.ts`) at the party's level, tagged "Guest" in the HUD like any
+     * guest (ADR 0116). She starts with the party at the west end of the deck. "Veyra cannot be
+     * lost": `loseIfGuestFalls` stays unset, so a fallen guest stays down and the fight goes on.
      */
-    allies: [at(5, 5, 'veyra_guest')],
+    guests: [{ enemyId: 'veyra_guest', pos: { x: 5, y: 5 }, level: { partyOffset: 0 } }],
     /*
      * The script's other win and its other loss (ADR 0116, objective fights, #827): a party member
      * or Veyra standing at the winch brake when a round ends stops the winch and wins; not won by
