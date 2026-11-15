@@ -193,6 +193,41 @@ The owner answered a review of the shipped demo's writing on 2026-11-14. These r
 - **Scope of the writing pass:** existing lines, the scenes the story needs and lacks, and the story documents
   where they disagree with each other.
 
+### Owner decisions (2026-11-14, lore review)
+
+The owner settled these where the canon documents disagreed or were silent. They rank with the lists above.
+
+- **Story, dialogue and scene planning have one owner.** The writing pass (one Claude session at a time, working
+  through story PRs with a theme card) writes every scene, line and scene plan for this game. Other sessions build
+  engine, art, tooling and regions from what is on `main`; they do not draft story text, and a session that needs
+  words for something it is building leaves a marked placeholder and says so in its PR. GitHub is the source of
+  truth: a story decision counts once it is on this page.
+- **How far the scripts go:** full dialogue for what is being built next (Act I and the first Act II region), and a
+  scene-by-scene plan for everything after it. Dialogue for later regions is written as each is built.
+- **How the story is shown (owner, 2026-11-15, for all three of his games).** Most of it is **found**: by walking
+  about a village and talking to people, and a table that does not look may miss it. The spine is **played**: in
+  dialogue scenes in the game's own view. A few moments may get a **cutscene**: animated pixel art, closer than
+  the board can go, for what the small figures cannot show (a face, a hand). For this game the owner said
+  "maybe": one trial cutscene is made first (Mira's table, the fifth bowl) and he judges it by eye before any
+  scene plan relies on one. Until then the held paintings of
+  [story-cutscenes.md](story-cutscenes.md) remain this game's story breaks. Every scene plan marks each scene as
+  found, played or cutscene.
+- **Mira's table is one straight scene** (owner, 2026-11-14). DLG-01's three things to ask are played in order,
+  with no vote: the first minute of the game asks nothing of a new table.
+- **Parcel is one animal, and it is Ba Dan's.** Parcel pulls Bo-shan's cart from Act I (outline decision 8). It
+  worked the Copper Orchard freight route before Ba Dan bought it, which is why it balks and follows its old stops
+  when the cart reaches the Orchard. SQ-16 "Return to Sender, Eventually" (the eaten labels) happens to Bo-shan's
+  own deliveries there. The living-world guide's "Parcel's handlers" at the Orchard are its former handlers.
+- **Pella and Bo-shan's aunt is Nala.** Their parents died some years ago. Bo-shan has half-raised Pella alongside
+  their aunt Nala, who keeps the house. Nala is the adult at home through Acts II and III, and one more reason
+  his leaving costs something.
+- **Pella writes to the cart.** With Bo-shan gone she has no scene in Acts II and III, so she sends one letter to
+  each act's camp, carried by a courier (Jinu, when he is in the party). The lists get longer and the anger at
+  Bo-shan sharper from letter to letter, and the MQ-11 reunion answers them.
+- **Meren Sen tells Veyra in person.** Veyra's mother comes to the assembly (MQ-10) and tells her daughter to her
+  face that Rusk was the official who held back the rescue equipment in the Blackreed Flood. This gives outline
+  decision 18's turn a person and a scene. Beats 18 and 19 of the outline are amended to match.
+
 ## Fan-work rule
 
 Non-commercial fan work; keep the `README.md` disclaimer intact. **Original characters only:** no canon character
@@ -641,5 +676,27 @@ canon Avatar names this page could think of):
 
 ## Proposed — awaiting owner
 
-Nothing is awaiting the owner. A new gap filled here is listed as proposed, then moves to a dated approved list
-once the owner says yes.
+Proposed on 2026-11-14 by the lore review, to reconcile places where two documents, or the documents and the
+shipped demo, disagree. Each stays proposed until the owner says yes.
+
+1. **The final mission is the outline's.** MQ-14 is "The Engine in Revolt": three phases and a table vote between
+   the three endings (outline decisions 6 and 7; beat 23). The bible's earlier title for it, "The Current We
+   Keep", and its rule that a defeat forces ending E-03, are superseded. A lost final battle offers "Try again"
+   or "Carry on" like any other, and "Carry on" plays the vote with the fronts the party failed to hold counted
+   against it.
+2. **Bo-shan at home after he leaves.** The living-world guide's Ba Dan scenes for Pella and Bo-shan together
+   (her market-stall game, his paper animals) play on the night of the rescue and the morning of the departure,
+   and again whenever the cart is back in Ba Dan (the MQ-05 return visit and MQ-11). They never play while the
+   cart is on the road.
+3. **The sled and the cart are one load.** Bo-shan went up to the quarry with his cart and a drag sled towed
+   behind it for what would not fit. The sled tipped on the Forest Road (SQ-01); the cart went on, and it is the
+   cart that comes down from the quarry floor at the end of Act I.
+4. **The month, in order.** The last stone cart came down about a month before the party arrives. About two
+   weeks in, with no crews coming down to buy, Bo-shan took vegetables up to sell at the quarry cookhouse and was
+   due back the following Tuesday. When he did not come, Mira sent Leto, then Amri, then Hesra, then Senn, a few
+   days apart. Dorin walked to the gate the day before the party arrives.
+5. **Dorin's rhyme is a watch drill.** "Flow, spark, flow" (SQ-02) is the gate watch's rhyme for wet ground:
+   where water runs, a spark can follow it. Dorin is a non-bender; it is a safety check, not a form.
+6. **The cutscene notes follow the canon.** `docs/story-cutscenes.md` was written against bible 1.0. Where it
+   still stages the retired SQ-35 or the old Deputy exchange, the bible and the outline win; the file is brought
+   up to date with the next scene plan.
