@@ -858,6 +858,20 @@ const encounterWeatherSchema = z
     });
   });
 
+/**
+ * A board goal that wins without defeating every enemy (ADR 0116's 2026-11-15
+ * amendment). A discriminated union, so a later kind is one more member.
+ */
+const encounterObjective = z.discriminatedUnion('kind', [
+  z
+    .object({
+      kind: z.literal('holdAtRoundEnd'),
+      cells: z.array(vec2).min(1),
+      label: z.string().min(1),
+    })
+    .strict(),
+]);
+
 export const encounterSchema = z.object({
   id,
   name: z.string().min(1),
@@ -866,6 +880,9 @@ export const encounterSchema = z.object({
   allies: z.array(placement),
   guests: z.array(guestAlly).optional(),
   loseIfGuestFalls: z.boolean().optional(),
+  objective: encounterObjective.optional(),
+  /** Lost if not won by the end of this round. Below the engine's 50-round ceiling. */
+  loseAfterRound: z.number().int().min(1).max(50).optional(),
   conditionalEnemies: z.array(
     z.object({
       flag: z.string().min(1),
@@ -2586,6 +2603,34 @@ export function validateContent(
     }
     if (e.loseIfGuestFalls && e.allies.length === 0 && (e.guests ?? []).length === 0) {
       problems.push(`encounter "${e.id}" loses if a guest falls, but has no guest or ally`);
+    }
+
+    // The objective (ADR 0116's 2026-11-15 amendment): every cell can be stood on,
+    // and none is a party spawn or a prop, or the fight would open already won or
+    // could never be won. The enemies' own spawns are allowed: guarding is the point.
+    if (e.objective) {
+      const seen = new Set<string>();
+      for (const cell of e.objective.cells) {
+        const key = `${cell.x},${cell.y}`;
+        if (seen.has(key)) problems.push(`encounter "${e.id}" lists objective cell (${key}) twice`);
+        seen.add(key);
+        if (!isWalkable(map, cell.x, cell.y)) {
+          problems.push(`encounter "${e.id}" objective cell (${key}) is blocked on "${map.id}"`);
+        }
+        if (map.partySpawns.some((spawn) => spawn.x === cell.x && spawn.y === cell.y)) {
+          problems.push(`encounter "${e.id}" objective cell (${key}) is a party spawn`);
+        }
+        if (
+          map.props.some((placement) => placement.pos.x === cell.x && placement.pos.y === cell.y)
+        ) {
+          problems.push(`encounter "${e.id}" objective cell (${key}) holds a prop`);
+        }
+      }
+      for (const friend of [...e.allies, ...(e.guests ?? [])]) {
+        if (seen.has(`${friend.pos.x},${friend.pos.y}`)) {
+          problems.push(`encounter "${e.id}" places an ally on its objective, so it opens won`);
+        }
+      }
     }
 
     for (const spawn of map.partySpawns) {

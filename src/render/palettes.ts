@@ -284,6 +284,9 @@ export const OVERLAY = {
   sandWisp: 'rgba(231, 192, 131, 0.85)',
   rangeBonus: 'rgba(255, 238, 190, 0.34)',
   rangeBonusEdge: 'rgba(255, 238, 190, 0.78)',
+  /** An objective's cells (ADR 0116's 2026-11-15 amendment): a mint wash no other overlay uses. */
+  objective: 'rgba(120, 220, 160, 0.30)',
+  objectiveEdge: 'rgba(190, 255, 215, 0.95)',
   reticleCue: '#fff6e0',
   /** The wide faint stroke under a contour's crisp edge, in tiles and alpha. */
   softWidth: 0.3,

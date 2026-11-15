@@ -16,6 +16,7 @@
 
 import type { RngCursor } from '../rng';
 import type { BattleState, ContentIndex, EncounterDef, Unit } from '../types';
+import { outOfRounds } from './objectives';
 import { guestHasFallen } from './guests';
 import { effectiveStats, isAlive } from './stats';
 
@@ -154,17 +155,21 @@ export const MAX_BATTLE_ROUNDS = 50;
 /**
  * Victory when no enemies stand; defeat when no party members do, or time runs
  * out. A fallen guest is a defeat only where the encounter says so
- * (`loseIfGuestFalls`, ADR 0116); pass the encounter for that rule to apply.
+ * (`loseIfGuestFalls`, ADR 0116), and the encounter's own round limit
+ * (`loseAfterRound`) is the clock where it has one; pass the encounter for
+ * those rules to apply. A held objective wins only at the end of a round, so
+ * it is settled by the turn hand-off (`roundEndOutcome`), not read here.
  */
 export function battleOutcome(
   battle: BattleState,
-  encounter?: Pick<EncounterDef, 'loseIfGuestFalls'>,
+  encounter?: Pick<EncounterDef, 'loseIfGuestFalls' | 'loseAfterRound'>,
 ): 'active' | 'victory' | 'defeat' {
   const { party, enemies } = livingByFaction(battle);
   if (party.length === 0) return 'defeat';
   if (guestHasFallen(battle.units, encounter)) return 'defeat';
   if (enemies.length === 0) return 'victory';
   if (battle.round > MAX_BATTLE_ROUNDS) return 'defeat';
+  if (outOfRounds(battle.round, encounter)) return 'defeat';
   return 'active';
 }
 

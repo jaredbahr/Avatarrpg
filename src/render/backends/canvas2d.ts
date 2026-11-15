@@ -2038,6 +2038,8 @@ export function overlayColors(kind: OverlayKind): [string, string | null] {
       return [OVERLAY.rangeBonus, OVERLAY.rangeBonusEdge];
     case 'hover':
       return [OVERLAY.hover, null];
+    case 'objective':
+      return [OVERLAY.objective, OVERLAY.objectiveEdge];
   }
 }
 

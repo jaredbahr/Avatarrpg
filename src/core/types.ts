@@ -506,6 +506,23 @@ export interface EncounterWeather {
   }[];
 }
 
+/**
+ * A goal on the board that wins the fight without defeating every enemy (ADR 0116's
+ * 2026-11-15 amendment). A union on `kind`, so a later goal (reaching an exit,
+ * protecting a unit) is a new member, not a new field.
+ *
+ * - `holdAtRoundEnd`: the fight is won when a round ends with a living party member
+ *   or guest standing on one of `cells` (the winch brake in Scene 2.5). Checked at the
+ *   end of a round, not when a unit stops there, so the enemy gets a turn to answer.
+ */
+export type EncounterObjective = {
+  readonly kind: 'holdAtRoundEnd';
+  /** The cells to hold. Walkable, and never a party spawn or a prop. */
+  readonly cells: readonly Vec2[];
+  /** The top-bar line ("Stop the winch"). Written by the writing pass. */
+  readonly label: string;
+};
+
 export interface EncounterDef {
   readonly id: string;
   readonly name: string;
@@ -523,6 +540,13 @@ export interface EncounterDef {
    * Absent or false: a fallen guest is only a fallen guest, and the fight goes on.
    */
   readonly loseIfGuestFalls?: boolean;
+  /** A goal that wins the fight without defeating every enemy. Defeating them all still wins. */
+  readonly objective?: EncounterObjective;
+  /**
+   * The fight is lost if it is not won by the end of this round (Scene 2.5: the crate
+   * reaches the barge after six). Absent: only the engine's `MAX_BATTLE_ROUNDS` ceiling.
+   */
+  readonly loseAfterRound?: number;
   /** Enemies added only when a flag is set (Jin's mercenaries at the boss). */
   readonly conditionalEnemies: readonly {
     readonly flag: string;
