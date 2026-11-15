@@ -53,10 +53,13 @@ DESC = {
              'brass seal hanging on a chain round his neck, a sheaf of papers held in his left hand, dark trousers, '
              'black shoes',
     # NPC-12 Luli, she/her, 41, a lightningbender who keeps the public power lines.
-    'luli': 'Luli, a line keeper, a sturdy woman in her early forties, warm tan skin, a round cheerful tired face, '
-            'short choppy black hair with a soot smudge on one cheek, a rust-red sleeveless work tunic over a dark '
-            'grey long-sleeved shirt, a thick brown leather apron, black rubber gloves tucked in her belt, a ring of '
-            'brass keys at the hip, dark brown trousers, heavy black boots, hands empty',
+    # The owner, 2026-11-15: the first take (`rg02_char_luli`) was too slim and too serious beside her portrait; this one
+    # follows the portrait's build (`portrait.luli`).
+    'luli': 'Luli, a line keeper, a broad, sturdy, heavy-set woman in her early forties, wide shoulders and a thick waist, '
+            'warm tan skin, a round cheerful face with a big open grin, wild curly black hair sticking out in a big bushy '
+            'mop, a dark soot smudge on one cheek, a red sleeveless work vest over a dark grey long-sleeved shirt, a thick '
+            'brown leather apron over the vest, big heavy black work gloves on both hands, a ring of brass keys at the hip, '
+            'dark brown trousers, heavy black boots',
     # The bowl-seller (Scene 2.2): two bowls of pepper broth, the custom of the second bowl. The first take
     # (`rg02_char_bowlseller`) drew steam off the bowl in every rotation: no steam, and an empty bowl.
     'bowlseller': 'a market broth seller, a small round elderly woman, brown skin, grey hair in a tight bun with a '
@@ -174,9 +177,9 @@ def body_for(who, clip, dirs):
             'frame_count': frames, 'directions': dirs}
 
 
-def anim(who, clip):
+def anim(who, clip, take=''):
     est = 3 * len(D8) + 1; cap(est)
-    body = body_for(who, clip, D8); name = f'rg02_{who}_{clip}'
+    body = body_for(who, clip, D8); name = f'rg02_{who}{take}_{clip}'
     e, r = pl.run('/characters/animations', body, name, estimate=est)
     grp = r['post']['animation_group_id']
     save_state({'groups': {f'{who}.{clip}': grp}})
@@ -233,7 +236,7 @@ def dl(who):
 if __name__ == '__main__':
     cmd = sys.argv[1]
     if cmd == 'create': create(sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else '')
-    elif cmd == 'anim': anim(sys.argv[2], sys.argv[3])
+    elif cmd == 'anim': anim(sys.argv[2], sys.argv[3], sys.argv[4] if len(sys.argv) > 4 else '')
     elif cmd == 'dl': dl(sys.argv[2])
     elif cmd == 'retake': retake(sys.argv[2], sys.argv[3], sys.argv[4].split(','), sys.argv[5])
     elif cmd == 'spent': print('RG-02 usage', rg02_spent(), 'balance now', pl.balance())
