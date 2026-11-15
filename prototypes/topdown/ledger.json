@@ -27677,6 +27677,299 @@
    "ids": {
     "animation_group_id": "2c4bd589-1413-4af6-9656-275ca945d7c6"
    }
+  },
+  {
+   "name": "cut_s1_first_s11",
+   "endpoint": "/create-image-pro-flash",
+   "job": "3148b199-9ace-4d5a-b995-18e4b53388dc",
+   "status": "completed",
+   "settings": {
+    "description": "Detailed pixel art, top-down three-quarter view of a plain wooden outdoor table ...",
+    "image_size": {
+     "width": 192,
+     "height": 108
+    },
+    "no_background": false,
+    "seed": 11,
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 160,
+      "height": 60
+     },
+     "usage_description": "colour palette and pixel rendering style only"
+    }
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 7169.0654640625,
+   "balance_after": 7163.0654640625,
+   "secs": 31,
+   "notes": "cutscene trial shot1 first frame",
+   "ids": {
+    "background_job_id": "3148b199-9ace-4d5a-b995-18e4b53388dc",
+    "image_id": "bbc1457f-bafd-5cd4-a59d-8bad6bd0b516",
+    "source_image_id": "bbc1457f-bafd-5cd4-a59d-8bad6bd0b516"
+   },
+   "region": "cutscene_trial"
+  },
+  {
+   "name": "a1_v3_s11",
+   "endpoint": "/animate-with-text-v3",
+   "job": "fb7fe0b8-eb07-4b52-b6ff-e3cdc903cb8b",
+   "status": "completed",
+   "settings": {
+    "first_frame": "<png>",
+    "action": "thin wisps of steam curl gently upward from the four bowls on the table, the soft shadows hold still, everything else stays perfectly still",
+    "frame_count": 8,
+    "seed": 11,
+    "no_background": false
+   },
+   "credits": 3.0,
+   "credit_source": "usage",
+   "balance_diff": 3.0,
+   "usage": {
+    "type": "generations",
+    "generations": 3.0
+   },
+   "balance_before": 7163.0654640625,
+   "balance_after": 7160.0654640625,
+   "secs": 37,
+   "notes": "cutscene trial anim",
+   "ids": {
+    "background_job_id": "fb7fe0b8-eb07-4b52-b6ff-e3cdc903cb8b"
+   },
+   "region": "cutscene_trial"
+  },
+  {
+   "name": "cut_s2_first_s11",
+   "endpoint": "/create-image-pro-flash",
+   "job": "b03f8615-08a0-460b-abe4-edf2e31f67e2",
+   "status": "completed",
+   "settings": {
+    "description": "Detailed pixel art close-up, low camera under a wooden table in a village square...",
+    "image_size": {
+     "width": 192,
+     "height": 108
+    },
+    "no_background": false,
+    "seed": 11,
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 192,
+      "height": 108
+     },
+     "usage_description": "colour palette, outline and pixel rendering style only, not the composition"
+    }
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 7160.0654640625,
+   "balance_after": 7154.0654640625,
+   "secs": 31,
+   "notes": "cutscene trial shot2 first frame",
+   "ids": {
+    "background_job_id": "b03f8615-08a0-460b-abe4-edf2e31f67e2",
+    "image_id": "b2e3822b-3e35-52b0-a76f-37ef25f8b116",
+    "source_image_id": "b2e3822b-3e35-52b0-a76f-37ef25f8b116"
+   },
+   "region": "cutscene_trial"
+  },
+  {
+   "name": "a2_v3_s11",
+   "endpoint": "/animate-with-text-v3",
+   "job": "156cf830-9c19-48d0-a8e0-a9edea485249",
+   "status": "completed",
+   "settings": {
+    "first_frame": "<png>",
+    "action": "the child's shoe slides a little to the right and nudges the cloth-covered bowl, which slides forward a few pixels to the right; the camera, table legs and floor stay perfectly still",
+    "frame_count": 8,
+    "seed": 11,
+    "no_background": false
+   },
+   "credits": 3.0,
+   "credit_source": "usage",
+   "balance_diff": 3.0,
+   "usage": {
+    "type": "generations",
+    "generations": 3.0
+   },
+   "balance_before": 7154.0654640625,
+   "balance_after": 7151.0654640625,
+   "secs": 37,
+   "notes": "cutscene trial anim",
+   "ids": {
+    "background_job_id": "156cf830-9c19-48d0-a8e0-a9edea485249"
+   },
+   "region": "cutscene_trial"
+  },
+  {
+   "name": "a2_mm_s11",
+   "endpoint": "/animate-pixminimax",
+   "job": "3999ede3-36b0-48e2-9cfc-b26d52cf8f62",
+   "status": "completed",
+   "settings": {
+    "first_frame": "<png>",
+    "description": "The small child's shoe on the left slides a short way to the right and gently pushes the covered bowl, which slides a few pixels to the right and stops. Fixed camera, the table legs and floor do not move.",
+    "frame_count": 8,
+    "seed": 11,
+    "no_background": false,
+    "view": "side"
+   },
+   "credits": 1.0,
+   "credit_source": "usage",
+   "balance_diff": 1.0,
+   "usage": {
+    "type": "generations",
+    "generations": 1.0
+   },
+   "balance_before": 7151.0654640625,
+   "balance_after": 7150.0654640625,
+   "secs": 70,
+   "notes": "cutscene trial anim",
+   "ids": {
+    "background_job_id": "3999ede3-36b0-48e2-9cfc-b26d52cf8f62"
+   },
+   "region": "cutscene_trial"
+  },
+  {
+   "name": "a2_mm12_s5",
+   "endpoint": "/animate-pixminimax",
+   "job": "41175b6c-38f9-487a-bad7-dce0ccb07795",
+   "status": "completed",
+   "settings": {
+    "first_frame": "<png>",
+    "description": "The small child's shoe on the left steps firmly to the right and pushes the cloth-covered bowl a long way across the flagstones, the bowl slides right by about a third of its width, then both stop. Fixed camera, the table legs and floor do not move.",
+    "frame_count": 12,
+    "seed": 5,
+    "no_background": false,
+    "view": "side"
+   },
+   "credits": 1.0,
+   "credit_source": "usage",
+   "balance_diff": 1.0,
+   "usage": {
+    "type": "generations",
+    "generations": 1.0
+   },
+   "balance_before": 7150.0654640625,
+   "balance_after": 7149.0654640625,
+   "secs": 54,
+   "notes": "cutscene trial anim",
+   "ids": {
+    "background_job_id": "41175b6c-38f9-487a-bad7-dce0ccb07795"
+   },
+   "region": "cutscene_trial"
+  },
+  {
+   "name": "cut_s3_first_s11",
+   "endpoint": "/create-image-pro-flash",
+   "job": "30e4532f-9a91-4259-bf6c-c9d87a53b656",
+   "status": "completed",
+   "settings": {
+    "description": "Detailed pixel art close-up, side view from table height, of an old woman's two ...",
+    "image_size": {
+     "width": 192,
+     "height": 108
+    },
+    "no_background": false,
+    "seed": 11,
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 192,
+      "height": 108
+     },
+     "usage_description": "colour palette, outline, the cloth-covered bowl and pixel rendering style, not the composition"
+    }
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 7149.0654640625,
+   "balance_after": 7143.0654640625,
+   "secs": 20,
+   "notes": "cutscene trial shot3 first frame",
+   "ids": {
+    "background_job_id": "30e4532f-9a91-4259-bf6c-c9d87a53b656",
+    "image_id": "f1f655ff-cd39-5054-a108-75c53ef1865c",
+    "source_image_id": "f1f655ff-cd39-5054-a108-75c53ef1865c"
+   },
+   "region": "cutscene_trial"
+  },
+  {
+   "name": "a3_mm12_s11",
+   "endpoint": "/animate-pixminimax",
+   "job": "747ae80f-9c3c-42ca-bbbb-8c67c86269b1",
+   "status": "completed",
+   "settings": {
+    "first_frame": "<png>",
+    "description": "The old woman's hands slowly lower the cloth-covered bowl straight down onto the wooden table and set it down gently, then release it and slide her hands slightly back to the right, leaving the bowl on the table. The four bowls on the left and the camera do not move.",
+    "frame_count": 12,
+    "seed": 11,
+    "no_background": false,
+    "view": "side"
+   },
+   "credits": 1.0,
+   "credit_source": "usage",
+   "balance_diff": 1.0,
+   "usage": {
+    "type": "generations",
+    "generations": 1.0
+   },
+   "balance_before": 7143.0654640625,
+   "balance_after": 7142.0654640625,
+   "secs": 98,
+   "notes": "cutscene trial anim",
+   "ids": {
+    "background_job_id": "747ae80f-9c3c-42ca-bbbb-8c67c86269b1"
+   },
+   "region": "cutscene_trial"
+  },
+  {
+   "name": "a3_mm12_d0_s11",
+   "endpoint": "/animate-pixminimax",
+   "job": "6185c95f-e665-4d7f-81c0-c410c169ea3e",
+   "status": "completed",
+   "settings": {
+    "first_frame": "<png>",
+    "description": "The old woman's hands slowly lower the cloth-covered bowl straight down onto the wooden table and set it down gently, then release it and slide her hands slightly back to the right, leaving the bowl on the table. The four bowls on the left and the camera do not move.",
+    "frame_count": 12,
+    "seed": 11,
+    "no_background": false,
+    "view": "side",
+    "drift_threshold": 0.0
+   },
+   "credits": 1.0,
+   "credit_source": "usage",
+   "balance_diff": 1.0,
+   "usage": {
+    "type": "generations",
+    "generations": 1.0
+   },
+   "balance_before": 7142.0654640625,
+   "balance_after": 7141.0654640625,
+   "secs": 70,
+   "notes": "cutscene trial anim",
+   "ids": {
+    "background_job_id": "6185c95f-e665-4d7f-81c0-c410c169ea3e"
+   },
+   "region": "cutscene_trial"
   }
  ],
  "end_balance": 16728.0,
