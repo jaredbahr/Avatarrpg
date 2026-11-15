@@ -1,7 +1,15 @@
 import { expect, test, type Page } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
 import { paintedTileCentre } from './projection';
-import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
+import {
+  enterNode,
+  resetStorage,
+  settleLayout,
+  startGame,
+  takeTurn,
+  waitForIdle,
+  webglAvailable,
+} from './helpers';
 
 /**
  * The quarry boards under `?style=topdown` (ADR 0104, T5) on both backends: the gate, the Cutting
@@ -66,16 +74,6 @@ function collectErrors(page: Page): string[] {
   });
   page.on('pageerror', (error) => errors.push(error.message));
   return errors;
-}
-
-async function webglAvailable(page: Page): Promise<boolean> {
-  await page.goto('/');
-  return page.evaluate(() => {
-    const probe = document.createElement('canvas');
-    const gl = probe.getContext('webgl2') ?? probe.getContext('webgl');
-    gl?.getExtension('WEBGL_lose_context')?.loseContext();
-    return gl !== null;
-  });
 }
 
 async function expectTopDownBoard(page: Page, renderer: Renderer, board: Board): Promise<void> {

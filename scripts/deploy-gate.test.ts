@@ -110,9 +110,10 @@ const requiredJobs = (runId = 4242, headSha = SHA, firstId = 700): JobRecord[] =
     'E2E Chromium touch 1/3',
     'E2E Chromium touch 2/3',
     'E2E Chromium touch 3/3',
-    'E2E WebKit iPad 1/3',
-    'E2E WebKit iPad 2/3',
-    'E2E WebKit iPad 3/3',
+    'E2E WebKit iPad 1/4',
+    'E2E WebKit iPad 2/4',
+    'E2E WebKit iPad 3/4',
+    'E2E WebKit iPad 4/4',
   ];
   return names.map((name, index) => ({
     id: firstId + index,
@@ -293,7 +294,7 @@ const expectedEvidence = (event = 'push'): EvidenceRecord => ({
   ci_workflow_path: WORKFLOW_PATH,
   ci_event: event,
   ci_url: 'https://github.com/jaredbahr/Avatarrpg/actions/runs/4242',
-  ci_job_ids: '700,701,702,703,704,705,706,707,708',
+  ci_job_ids: '700,701,702,703,704,705,706,707,708,709',
   artifact_name: artifactName(),
 });
 const jobAt = (jobs: JobRecord[], index: number): JobRecord => {
@@ -475,7 +476,7 @@ describe('Pages deployment gate command dispatcher', () => {
     const { evidence } = await select(fixture);
     expect(evidence.ci_run_id).toBe('5000');
     expect(evidence.ci_run_attempt).toBe('3');
-    expect(evidence.ci_job_ids).toBe('700,701,702,703,704,705,706,707,708');
+    expect(evidence.ci_job_ids).toBe('700,701,702,703,704,705,706,707,708,709');
     const runPage2 = fixture.requests.filter(
       ({ url }) =>
         url.pathname.endsWith('/workflows/ci.yml/runs') && url.searchParams.get('page') === '2',

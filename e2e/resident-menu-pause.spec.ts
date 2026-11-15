@@ -185,6 +185,27 @@ function expectContinuousProgress(before: Sample, after: Sample, browserStepMs: 
   expect(after.frozen.camera).toEqual(before.frozen.camera);
 }
 
+/**
+ * Lets the shop's initial hold pass in real rendered browser time, on the live
+ * clock, until the resident sets off. Residents are never ticked directly, and
+ * the leg being asserted is not fast-forwarded past: the case pauses the clock
+ * as soon as the walk begins. Running the hold under the paused clock instead
+ * (`clock.runFor(6_400)`) renders every one of its 400 frames in turn, which on
+ * WebKit iPad took longer than the whole test budget and timed the case out.
+ */
+async function untilWalking(page: Page, id: string) {
+  await page.waitForFunction(
+    (residentId) => {
+      const figure = window
+        .fnt!.app.residents.figures()
+        .find((candidate) => candidate.id === residentId);
+      return Boolean(figure?.walking && figure.alpha === 1);
+    },
+    id,
+    { timeout: 20_000 },
+  );
+}
+
 /** Adopt only fixture state; every observed resident advance comes from rendered frames. */
 async function village(page: Page, phase: DayPhase, pos: Vec2) {
   await resetStorage(page, '?renderer=canvas');
@@ -219,11 +240,8 @@ async function activeWalk(page: Page, fixture: Fixture): Promise<Sample> {
     // The native fixture's legal wait spot; the actual reducer starts the new placements.
     await page.evaluate(() => window.fnt!.app.dispatch({ type: 'wait', until: 'afternoon' }));
     expect(await page.evaluate(() => window.fnt!.app.state!.world.clock?.phase)).toBe('afternoon');
-  } else {
-    // Include the shop's initial hold in real rendered browser time. Do not
-    // directly tick residents or fast-forward past the leg being asserted.
-    await page.clock.runFor(6_400);
   }
+  // The morning errand's first leg started on the live clock (`untilWalking`).
   let frame = await sample(page, fixture.id);
   for (let step = 0; step < 100; step++) {
     const figure = frame.frozen.figure;
@@ -249,6 +267,7 @@ for (const menu of ['Pause', 'Travel journal'] as const) {
       const evidence: Record<string, Sample> = {};
       let holdFrames = 0;
       await village(page, fixture.phase, fixture.party);
+      if (fixture.phase === 'morning') await untilWalking(page, fixture.id);
       await pauseClock(page);
       try {
         const underway = await activeWalk(page, fixture);
