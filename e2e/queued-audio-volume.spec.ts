@@ -388,8 +388,17 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         click('Pause');
         click('Settings');
         click('Off');
-        await new Promise<void>((resolve) => setTimeout(resolve, 60));
-        return { volume: app.settings.volume, retired: audio.ctx === null, state: old?.state };
+        // Off retires the context at once and closes it after the 40 ms fade
+        // (bus.ts). `close()` settles when the engine has released the device,
+        // which WebKit does later than a fixed pause allows for, so wait for the
+        // context itself to say it has closed.
+        const state = await new Promise<AudioContextState | undefined>((resolve) => {
+          if (!old || old.state === 'closed') return resolve(old?.state);
+          old.addEventListener('statechange', () => {
+            if (old.state === 'closed') resolve(old.state);
+          });
+        });
+        return { volume: app.settings.volume, retired: audio.ctx === null, state };
       });
       evidence.push({ off });
       expect(off).toEqual({ volume: 0, retired: true, state: 'closed' });
