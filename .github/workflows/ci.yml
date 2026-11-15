@@ -21,6 +21,6 @@ jobs:
           while IFS= read -r line; do
             [ -z "$line" ] && continue
             echo "::group::$line"
-            npx playwright test $line || true
+            eval "npx playwright test $line" || true
             echo "::endgroup::"
           done < e2e/.probe

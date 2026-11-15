@@ -1,6 +1,5 @@
---project=ipad-landscape exploration-dock -g "normal"
+--project=ipad-landscape exploration-dock -g normal
 --project=ipad-landscape long-conversation-layout -g "short Largest"
---project=ipad-landscape topdown-presentation -g "Recentre"
---project=ipad-landscape pointer-capture queued-audio-volume
---project=ipad-landscape keyboard-flow local-map-labels topdown-surface-readability
---project=ipad-portrait gestures -g "reflow"
+--project=ipad-landscape topdown-presentation -g Recentre
+--project=ipad-landscape topdown-quarry
+--project=ipad-portrait gestures -g reflow

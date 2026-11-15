@@ -3,7 +3,15 @@ import { PNG } from 'pngjs';
 import { deserialize, serialize, stateFromBlob } from '../src/core/save/serialize';
 import { allowSoftwareWebgl } from './budget';
 import { paintedGroundPoint, paintedTileCentre } from './projection';
-import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
+import {
+  enterNode,
+  resetStorage,
+  settleLayout,
+  startGame,
+  takeTurn,
+  waitForIdle,
+  webglAvailable,
+} from './helpers';
 
 /**
  * The Forest Road under `?style=topdown` (ADR 0104, T4) on both backends: the baked top-down scene
@@ -19,16 +27,6 @@ function collectErrors(page: Page): string[] {
   });
   page.on('pageerror', (error) => errors.push(error.message));
   return errors;
-}
-
-async function webglAvailable(page: Page): Promise<boolean> {
-  await page.goto('/');
-  return page.evaluate(() => {
-    const probe = document.createElement('canvas');
-    const gl = probe.getContext('webgl2') ?? probe.getContext('webgl');
-    gl?.getExtension('WEBGL_lose_context')?.loseContext();
-    return gl !== null;
-  });
 }
 
 async function expectTopDownForest(page: Page, renderer: Renderer): Promise<void> {
