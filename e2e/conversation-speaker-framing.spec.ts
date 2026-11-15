@@ -271,11 +271,18 @@ async function fixture(page: Page, renderer: string) {
         [0, 2],
       ] as const
     ).map(([x, y]) => ({ x: pella.pos!.x + x, y: pella.pos!.y + y }));
+    // A seat swaps Look around for Wait (ADR 0047 D8), and Pella now sits at
+    // Mira's table, beside its bench (DLG-01): approach from off the seat.
+    const seated = (p: { x: number; y: number }) =>
+      (map.restSpots ?? []).some(
+        (spot) => Math.max(Math.abs(spot.pos.x - p.x), Math.abs(spot.pos.y - p.y)) <= 1,
+      );
     const pos = candidates.find((p) => {
       const symbol = map.rows[p.y]?.[p.x];
       return (
         symbol !== undefined &&
         map.legend[symbol]?.blocked !== true &&
+        !seated(p) &&
         !app.residents.figures().some((who) => who.pos?.x === p.x && who.pos?.y === p.y)
       );
     });
