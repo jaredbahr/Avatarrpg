@@ -4,6 +4,8 @@ import { join, relative, resolve } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { CONTENT_BUNDLE } from '../../src/content';
 import { validateContent } from '../../src/content/schemas';
+import { levelBandProblems } from '../../src/content/regions/bands';
+import { MAX_LEVEL } from '../../src/core/rules/leveling';
 import type { RegionContent, RegionManifest } from '../../src/content/regions';
 import { regionFiles, regionIdProblem, regionIdentifiers, registerRegion } from './new-region-lib';
 
@@ -52,6 +54,8 @@ describe('new-region template', () => {
     );
     const problems = validateContent(withRegion(content));
     expect(problems, problems.join('\n')).toEqual([]);
+    expect(levelBandProblems([manifest], [content], MAX_LEVEL)).toEqual([]);
+    expect(manifest.levelBand.placeholder).toBe(true);
   });
 
   it('quotes a name with an apostrophe safely', async () => {
