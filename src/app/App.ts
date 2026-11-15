@@ -351,7 +351,6 @@ export class App {
     this.toasts = new Toasts(this.overlayHost);
     this.stats = Stats.enabled() ? new Stats(this.overlayHost) : null;
     this.curtain = new Curtain(this.overlayHost);
-    ensureStorageBorn(localStore(), Date.now());
     void this.savePersistence.check();
 
     window.addEventListener('resize', () => this.requestResize());
@@ -1139,7 +1138,12 @@ export class App {
       session: this.session.toMeta(),
     });
     if (!result.ok && result.error) this.toasts.show(result.error, 'warn');
-    if (result.ok) void this.savePersistence.afterSave();
+    if (result.ok) {
+      // Stamped with the first save, not at boot: a browser that has saved
+      // nothing keeps an empty store (#772).
+      ensureStorageBorn(localStore(), Date.now());
+      void this.savePersistence.afterSave();
+    }
     return result.ok;
   }
 

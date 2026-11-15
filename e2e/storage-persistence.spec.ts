@@ -99,7 +99,9 @@ test('the Save menu opens a storage check that reads the browser, and Settings s
   await expect(answer('Browser has agreed to keep saves')).toHaveText('No');
   await expect(answer('Answer when the game asked')).toHaveText(/Not asked yet/);
   await expect(answer('Saves on this device')).toHaveText('0 saves');
-  await expect(answer('Storage first used')).toHaveText(/\(today\)$/);
+  // Nothing is written until the first save: a fresh browser keeps an empty store.
+  await expect(answer('Storage first used')).toHaveText(/^No date yet/);
+  expect(await page.evaluate(() => localStorage.length)).toBe(0);
   await expect(answer('Last copy saved to a file')).toHaveText('Never from this browser');
   await expect(check.locator('.storage-note')).toHaveText(NOTE);
   // Done returns to the Save menu, which is still open underneath.

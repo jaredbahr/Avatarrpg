@@ -141,7 +141,7 @@ describe('the storage check wording (#772)', () => {
     ).toMatchObject({
       'Browser has agreed to keep saves': 'This browser cannot say',
       'Saves on this device': 'Site data is blocked',
-      'Storage first used': 'No date',
+      'Storage first used': 'No date yet (it is written with the first save)',
       'Space used': 'This browser cannot say',
     });
   });

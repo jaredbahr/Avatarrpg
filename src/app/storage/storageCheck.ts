@@ -8,10 +8,12 @@
  * only known on that iPad. So the game keeps two small dates beside the saves
  * and shows them, with the browser's own answers, from the Save menu:
  *
- * - **when this storage was first used.** It is written once and never updated,
- *   so if the browser ever clears the site the date starts again. A date that
- *   moved forward is the proof that the saves were deleted, and a date that did
- *   not is the proof that they were kept.
+ * - **when this storage was first used.** It is written with the first save and
+ *   never updated, so if the browser ever clears the site the date goes with
+ *   the saves and starts again at the next one. A date that is gone or moved
+ *   forward is the proof that the saves were deleted, and a date that did not
+ *   move is the proof that they were kept. A browser that has saved nothing
+ *   is left with an empty store.
  * - **when a copy was last saved to a file.** The export is the one backup a
  *   cleared site cannot take with it, so the game says how old it is.
  *
@@ -166,7 +168,7 @@ export function storageCheckLines(facts: StorageFacts): StorageLine[] {
       label: 'Storage first used',
       value:
         facts.bornAt === null
-          ? 'No date'
+          ? 'No date yet (it is written with the first save)'
           : `${plainDate(facts.bornAt)} (${daysAgo(facts.bornAt, facts.now)})`,
     },
     {

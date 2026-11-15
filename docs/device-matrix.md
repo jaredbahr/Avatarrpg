@@ -81,8 +81,8 @@ with `--app=<url>`, the Steam shortcut's shape. It is Chromium on Linux, not Chr
 
 | Step                              | Seen                                                                                                             |
 | --------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Fresh profile, before a save      | `persisted()` false; the title shows the PC line; "Storage first used" is stamped                                |
-| Save to Slot 1                    | the game asks; `persist()` answers false with no prompt; the line stays                                          |
+| Fresh profile, before a save      | `persisted()` false; the title shows the PC line; the store is still empty                                       |
+| Save to Slot 1                    | the game asks; `persist()` answers false with no prompt; the line stays; "Storage first used" is stamped         |
 | Export                            | a 1.9 KB `.json` downloads; "Last copy saved to a file" reads today                                              |
 | Quit, relaunch on the same folder | Continue is there, both slots, the settings and the same "Storage first used"; `persisted()` still false         |
 | The profile folder                | the saves are under `Default/Local Storage`, so copying the folder copies them                                   |
@@ -130,7 +130,7 @@ week or more later.
    title should show no line about saves.
 8. **A week or more later** (seven or more days on which Safari was used, without opening the game in a tab): open the
    **tab** and the **Home Screen app**. Is Continue still there in each? Storage check: has "Storage first used" moved
-   forward in either? A date that moved is a wipe.
+   forward, or gone back to "No date yet", in either? Either one is a wipe.
 
 | What                                                                | Safari tab | Home Screen app |
 | ------------------------------------------------------------------- | ---------- | --------------- |
