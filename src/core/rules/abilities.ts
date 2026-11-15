@@ -137,8 +137,9 @@ export function heightReachBonus(
   fromElevation: number,
   toElevation: number,
 ): number {
-  if (!canReachFromHeight(ability)) return 0;
-  return fromElevation > toElevation ? content.tuning.heightReachBonus : 0;
+  return fromElevation > toElevation && canReachFromHeight(ability)
+    ? content.tuning.heightReachBonus
+    : 0;
 }
 
 /** Every tile an ability touches when aimed at `target`. */
@@ -182,9 +183,17 @@ export function unitsOnTiles(
   tiles: readonly Vec2[],
   squareFootprints: boolean = SQUARE_FOOTPRINTS,
 ): Unit[] {
-  const keys = new Set(tiles.map(posKey));
+  if (tiles.length === 0) return [];
+  const onlyKey = tiles.length === 1 ? posKey(tiles[0]!) : undefined;
+  const keys = onlyKey === undefined ? new Set(tiles.map(posKey)) : undefined;
+  const contains = (cell: Vec2) => {
+    const key = posKey(cell);
+    return key === onlyKey || keys?.has(key) === true;
+  };
   return units.filter(
-    (u) => isAlive(u) && occupiedCells(u, squareFootprints).some((c) => keys.has(posKey(c))),
+    (u) =>
+      isAlive(u) &&
+      (u.size === 1 ? contains(u.pos) : occupiedCells(u, squareFootprints).some(contains)),
   );
 }
 
