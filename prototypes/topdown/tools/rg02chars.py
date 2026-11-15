@@ -69,11 +69,15 @@ DESC = {
     'freightclerk': 'a freight office clerk, a young woman in her twenties, pale skin, a neat black bob haircut, a '
                     'tidy charcoal-grey buttoned office coat with a teal collar and teal cuffs, a pencil behind one '
                     'ear, a ledger book held under her left arm, dark grey trousers, polished black shoes',
-    # Emberwatch's retired cook (Scene 3.1): beans on the parade ground, the spear-rack trellis.
-    'cook': 'a retired outpost cook, a stout old man in his sixties, ruddy brown skin, a bald head with white side '
-            'hair, a bushy white moustache, a faded red short-sleeved cook\'s shirt with the old buttons, a stained '
-            'cream apron, a wide straw sun hat hanging on his back, brown trousers, brown sandals, a small woven '
-            'basket of dried beans in his left hand',
+    # Emberwatch's retired cook (Scene 3.1): beans on the parade ground, the spear-rack trellis. The owner, 2026-11-15:
+    # the first take (`rg02_char_cook`) "seemed off": its straw hat ran wider than his shoulders and its head stood
+    # about a quarter bigger than the party's (13 px of head on a 46 px figure). This take asks for adult
+    # proportions, a head near the party's and a smaller hat, and keeps his look otherwise.
+    'cook': 'a retired outpost cook, a stout old man in his sixties, realistic adult proportions with a small head like '
+            'the other villagers, ruddy brown skin, a bald head with white side hair, a bushy white moustache, a faded '
+            'red short-sleeved cook\'s shirt with the old buttons, a stained cream apron, a small round straw hat with a '
+            'narrow brim no wider than his shoulders, brown trousers, brown sandals, a small woven basket of dried '
+            'beans in his left hand',
 }
 HANDS = {
     'veyra': 'the long brass lance stays in her right hand',

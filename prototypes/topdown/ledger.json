@@ -30264,6 +30264,130 @@
     "source_image_id": "67685a34-5c57-54d7-9100-593e4eeb823b"
    },
    "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_char_cook-b",
+   "endpoint": "/create-character-v3",
+   "job": "3c587f5d-0a5c-4cdd-a4ff-5a7af021ba2b",
+   "status": "completed",
+   "settings": {
+    "description": "a retired outpost cook, a stout old man in his sixties, realistic adult proporti...",
+    "image_size": {
+     "width": 48,
+     "height": 48
+    },
+    "view": "low top-down",
+    "outline": "single color black outline",
+    "detail": "medium detail",
+    "template_id": "mannequin",
+    "seed": 11,
+    "name": "RG-02 cook"
+   },
+   "credits": 2.0,
+   "credit_source": "usage",
+   "balance_diff": 2.0,
+   "usage": {
+    "type": "generations",
+    "generations": 2.0
+   },
+   "balance_before": 5457.0654640625,
+   "balance_after": 5455.0654640625,
+   "secs": 98,
+   "notes": "",
+   "ids": {
+    "background_job_id": "3c587f5d-0a5c-4cdd-a4ff-5a7af021ba2b",
+    "character_id": "df12114c-5ac8-49ca-a0c0-6bdb5665db07"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_cook-b_npcidle",
+   "endpoint": "/characters/animations",
+   "job": [
+    "af9534d8-5f43-4cee-9756-ac22f3d46d8d",
+    "69629016-40ff-48d5-8dbc-464f86bb0596",
+    "a2db717e-e59f-4cc0-9e10-36c6c3f0564c",
+    "4f1b9cc2-393e-4f28-81b2-94274e29a80f",
+    "21ca6cc4-8e80-48c7-a422-7c1a90893619",
+    "c8c5fd16-5c8c-4caf-91d8-922d3219939b",
+    "11aa4797-2060-4451-8485-ec882ac201a8",
+    "b1e3087c-e8fa-40eb-b5a7-67927889c3fc"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "df12114c-5ac8-49ca-a0c0-6bdb5665db07",
+    "mode": "skeleton-v3",
+    "action_description": "standing at rest: the chest and shoulders rise and fall slowly and clearly, a gentle weight shift from one hip to the other, arms relaxed at the sides; no vapour, no effects",
+    "frame_count": 12,
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 24.0,
+   "credit_source": "usage",
+   "balance_diff": 24.0,
+   "usage": {
+    "generations": 24.0
+   },
+   "balance_before": 5455.0654640625,
+   "balance_after": 5431.0654640625,
+   "secs": 176,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "66be8ae8-4be0-4369-821c-6f99b7363b49"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_cook-b_walk",
+   "endpoint": "/characters/animations",
+   "job": [
+    "2c100951-e2cf-4326-a81e-2ad1e917ebfc",
+    "7f0fa5b1-884c-419c-907e-9ee46e74c2df",
+    "6c512057-5783-4415-815d-a5a7ca55e889",
+    "7bb0bd96-ea2a-4271-a854-adf0d685e812",
+    "a56cd90a-4bdb-4bb3-b643-d272898f7d74",
+    "61ea651e-eb86-44bb-8f7c-1591c8039d16",
+    "beb2ce1d-98c3-4594-b89a-ce616989fe7c",
+    "8fddc8e3-5e8d-40b9-93f7-76294c73a530"
+   ],
+   "status": "completed",
+   "settings": {
+    "character_id": "df12114c-5ac8-49ca-a0c0-6bdb5665db07",
+    "template_animation_id": "walking-8-frames",
+    "mode": "skeleton-v3",
+    "directions": [
+     "south",
+     "south-east",
+     "east",
+     "north-east",
+     "north",
+     "north-west",
+     "west",
+     "south-west"
+    ]
+   },
+   "credits": 24.0,
+   "credit_source": "usage",
+   "balance_diff": 24.0,
+   "usage": {
+    "generations": 24.0
+   },
+   "balance_before": 5431.0654640625,
+   "balance_after": 5407.0654640625,
+   "secs": 232,
+   "notes": "",
+   "ids": {
+    "animation_group_id": "dc592124-4dd3-4207-b29b-2b057daea509"
+   },
+   "region": "saltstep_emberwatch"
   }
  ],
  "end_balance": 16728.0,
