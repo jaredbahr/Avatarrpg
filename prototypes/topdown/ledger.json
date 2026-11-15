@@ -28086,6 +28086,266 @@
     "background_job_id": "65afb567-d6ef-4d39-af34-3459287f7115"
    },
    "region": "cutscene_trial"
+  },
+  {
+   "name": "b1_pella_s11",
+   "endpoint": "/animate-pixminimax",
+   "job": "9710b2e8-df94-4a41-9d08-d7f76e5e30f9",
+   "status": "completed",
+   "settings": {
+    "first_frame": "<png>",
+    "description": "The girl says the single word 'Five' with a cheeky smile: her mouth opens wide once and closes again, and she blinks once. Her head, hair, shoulders and the cabbage stay almost completely still. Fixed camera.",
+    "frame_count": 12,
+    "seed": 11,
+    "no_background": false,
+    "view": "side",
+    "direction": "south"
+   },
+   "credits": 1.0,
+   "credit_source": "usage",
+   "balance_diff": 1.0,
+   "usage": {
+    "type": "generations",
+    "generations": 1.0
+   },
+   "balance_before": 7137.0654640625,
+   "balance_after": 7136.0654640625,
+   "secs": 43,
+   "notes": "cutscene trial v2",
+   "ids": {
+    "background_job_id": "9710b2e8-df94-4a41-9d08-d7f76e5e30f9"
+   },
+   "region": "cutscene_trial"
+  },
+  {
+   "name": "cut2_s2_first_s11",
+   "endpoint": "/create-image-pro-flash",
+   "job": "e49f9f53-2950-4fc8-992e-bdc0499c12e4",
+   "status": "completed",
+   "settings": {
+    "description": "Detailed pixel art close-up, low camera under a wooden table in a village square...",
+    "image_size": {
+     "width": 192,
+     "height": 108
+    },
+    "no_background": false,
+    "seed": 11,
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 192,
+      "height": 108
+     },
+     "usage_description": "colour palette, outline, the shape of the shallow clay bowls and pixel rendering style only, not the composition"
+    }
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 7136.0654640625,
+   "balance_after": 7130.0654640625,
+   "secs": 20,
+   "notes": "cutscene trial v2 shot2 first frame",
+   "ids": {
+    "background_job_id": "e49f9f53-2950-4fc8-992e-bdc0499c12e4",
+    "image_id": "9a079dc1-a327-5bc0-b560-128b286dc82a",
+    "source_image_id": "9a079dc1-a327-5bc0-b560-128b286dc82a"
+   },
+   "region": "cutscene_trial"
+  },
+  {
+   "name": "b2_mm_s5",
+   "endpoint": "/animate-pixminimax",
+   "job": "d36bdde5-d4ac-428c-a769-d5713fcc321c",
+   "status": "completed",
+   "settings": {
+    "first_frame": "<png>",
+    "description": "The child's leg and shoe on the left step firmly to the right and the toe pushes the cloth-covered bowl, which slides a good way to the right across the flagstones and stops. Fixed camera, the table legs and the floor do not move.",
+    "frame_count": 12,
+    "seed": 5,
+    "no_background": false,
+    "view": "side",
+    "direction": "east"
+   },
+   "credits": 1.0,
+   "credit_source": "usage",
+   "balance_diff": 1.0,
+   "usage": {
+    "type": "generations",
+    "generations": 1.0
+   },
+   "balance_before": 7130.0654640625,
+   "balance_after": 7129.0654640625,
+   "secs": 43,
+   "notes": "cutscene trial v2",
+   "ids": {
+    "background_job_id": "d36bdde5-d4ac-428c-a769-d5713fcc321c"
+   },
+   "region": "cutscene_trial"
+  },
+  {
+   "name": "b2_mm_s11",
+   "endpoint": "/animate-pixminimax",
+   "job": "f7f9a3a0-aa21-4b39-9864-d4642289b101",
+   "status": "completed",
+   "settings": {
+    "first_frame": "<png>",
+    "description": "The child's foot slides forward to the right along the flagstones and the toe nudges the cloth-covered bowl, which slides a good way to the right and stops, while the foot stays beside it. The leg stays the same colour. Fixed camera, the table legs and the floor do not move.",
+    "frame_count": 12,
+    "seed": 11,
+    "no_background": false,
+    "view": "side",
+    "direction": "east"
+   },
+   "credits": 1.0,
+   "credit_source": "usage",
+   "balance_diff": 1.0,
+   "usage": {
+    "type": "generations",
+    "generations": 1.0
+   },
+   "balance_before": 7129.0654640625,
+   "balance_after": 7128.0654640625,
+   "secs": 54,
+   "notes": "cutscene trial v2",
+   "ids": {
+    "background_job_id": "f7f9a3a0-aa21-4b39-9864-d4642289b101"
+   },
+   "region": "cutscene_trial"
+  },
+  {
+   "name": "b2_mm_s21",
+   "endpoint": "/animate-pixminimax",
+   "job": "a35a4cf6-07b6-41b0-926a-6801224112b9",
+   "status": "completed",
+   "settings": {
+    "first_frame": "<png>",
+    "description": "The child's foot slides forward to the right along the flagstones and the toe nudges the cloth-covered bowl, which slides a good way to the right and stops, while the foot stays beside it. The leg stays the same colour. Fixed camera, the table legs and the floor do not move.",
+    "frame_count": 12,
+    "seed": 21,
+    "no_background": false,
+    "view": "side",
+    "direction": "east"
+   },
+   "credits": 1.0,
+   "credit_source": "usage",
+   "balance_diff": 1.0,
+   "usage": {
+    "type": "generations",
+    "generations": 1.0
+   },
+   "balance_before": 7128.0654640625,
+   "balance_after": 7127.0654640625,
+   "secs": 54,
+   "notes": "cutscene trial v2",
+   "ids": {
+    "background_job_id": "a35a4cf6-07b6-41b0-926a-6801224112b9"
+   },
+   "region": "cutscene_trial"
+  },
+  {
+   "name": "cut2_s3_first_s11",
+   "endpoint": "/create-image-pro-flash",
+   "job": "6f965951-f455-494e-8800-73f01e83c477",
+   "status": "completed",
+   "settings": {
+    "description": "Detailed pixel art close-up, side view from table height. A long wooden table to...",
+    "image_size": {
+     "width": 192,
+     "height": 108
+    },
+    "no_background": false,
+    "seed": 11,
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 192,
+      "height": 108
+     },
+     "usage_description": "colour palette, outline, the shallow clay bowl, the cloth over a bowl and pixel rendering style, not the composition"
+    }
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 7127.0654640625,
+   "balance_after": 7121.0654640625,
+   "secs": 31,
+   "notes": "cutscene trial v2 shot3 first frame",
+   "ids": {
+    "background_job_id": "6f965951-f455-494e-8800-73f01e83c477",
+    "image_id": "90d8f8e5-8cf1-514d-a4b2-8f3eb0ecc7b7",
+    "source_image_id": "90d8f8e5-8cf1-514d-a4b2-8f3eb0ecc7b7"
+   },
+   "region": "cutscene_trial"
+  },
+  {
+   "name": "b3_mm_s7",
+   "endpoint": "/animate-pixminimax",
+   "job": "1435d52a-21e3-4276-a6d0-081d1ee606df",
+   "status": "completed",
+   "settings": {
+    "first_frame": "<png>",
+    "description": "The old woman's hands slowly lower the cloth-covered bowl straight down and set it on the empty part of the table to the right of the four bowls, level and upright, then let go and draw back to the right. The four bowls on the left, the wall and the camera do not move.",
+    "frame_count": 12,
+    "seed": 7,
+    "no_background": false,
+    "view": "side",
+    "direction": "west"
+   },
+   "credits": 1.0,
+   "credit_source": "usage",
+   "balance_diff": 1.0,
+   "usage": {
+    "type": "generations",
+    "generations": 1.0
+   },
+   "balance_before": 7121.0654640625,
+   "balance_after": 7120.0654640625,
+   "secs": 44,
+   "notes": "cutscene trial v2",
+   "ids": {
+    "background_job_id": "1435d52a-21e3-4276-a6d0-081d1ee606df"
+   },
+   "region": "cutscene_trial"
+  },
+  {
+   "name": "b3_mm_s11",
+   "endpoint": "/animate-pixminimax",
+   "job": "f55a5c42-199e-4db8-938d-5e54e3490bea",
+   "status": "completed",
+   "settings": {
+    "first_frame": "<png>",
+    "description": "The old woman's hands slowly lower the cloth-covered bowl straight down and set it on the empty part of the table to the right of the four bowls, level and upright, then let go and draw back to the right. The four bowls on the left, the wall and the camera do not move.",
+    "frame_count": 12,
+    "seed": 11,
+    "no_background": false,
+    "view": "side",
+    "direction": "west"
+   },
+   "credits": 1.0,
+   "credit_source": "usage",
+   "balance_diff": 1.0,
+   "usage": {
+    "type": "generations",
+    "generations": 1.0
+   },
+   "balance_before": 7120.0654640625,
+   "balance_after": 7119.0654640625,
+   "secs": 97,
+   "notes": "cutscene trial v2",
+   "ids": {
+    "background_job_id": "f55a5c42-199e-4db8-938d-5e54e3490bea"
+   },
+   "region": "cutscene_trial"
   }
  ],
  "end_balance": 16728.0,
