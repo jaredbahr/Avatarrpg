@@ -4,6 +4,10 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { CONTENT } from '../src/content';
 import * as reconciliation from '../src/core/save/reconcile';
+import { ID_ALIASES } from '../src/content/idAliases';
+import { FLAG_BACKFILLS } from '../src/content/story/flagBackfills';
+import { applyIdAliases } from '../src/core/save/aliases';
+import { applyBackfills } from '../src/core/save/backfill';
 import { deserialize, stateFromBlob } from '../src/core/save/serialize';
 
 const NO_HISTORY =
@@ -101,9 +105,14 @@ function inspectSnapshot(filePath: string, options: ReplayOptions) {
   }
   const parsed = deserialize(json);
   if (!parsed.ok) throw new ReplayError('invalid-save', parsed.error);
-  const loaded = stateFromBlob(parsed.blob);
-  // App.adoptSave's exact core order. Warnings remain visible, as in the app;
+  // App.adoptLoaded's exact core order: retired ids, then the history the file predates
+  // (ADR 0112), then the reconcile steps. Warnings remain visible, as in the app;
   // no commands are dispatched and no repaired snapshot is written to disk.
+  const loaded = applyBackfills(
+    applyIdAliases(stateFromBlob(parsed.blob), ID_ALIASES),
+    parsed.blob.history,
+    FLAG_BACKFILLS,
+  );
   const battleRepair = reconciliation.reconcileBattleResult(CONTENT, loaded);
   const state = reconciliation.reconcileWorld(
     CONTENT,

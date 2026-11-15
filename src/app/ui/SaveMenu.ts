@@ -148,7 +148,7 @@ export class SaveMenu extends Dialog {
       return;
     }
     this.close();
-    this.app.adoptSave(result.save.state, result.save.session);
+    this.app.adoptLoaded(result.save);
   }
 
   private eraseSlot(slot: SlotId): void {
@@ -182,6 +182,6 @@ export class SaveMenu extends Dialog {
       return;
     }
     this.close();
-    this.app.adoptSave(result.save.state, result.save.session);
+    this.app.adoptLoaded(result.save);
   }
 }

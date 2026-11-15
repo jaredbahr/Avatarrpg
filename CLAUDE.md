@@ -128,8 +128,9 @@ src/core/state/      createGame, the reducer (apply), the battle draft,
                      the combat log formatter
 src/core/story/      story graph traversal, flags, nation standing, the
                      condition predicate DSL, the rotating decider index
-src/core/save/       serialise / deserialise / migrate a save blob, and
-                     reconcile a loaded one against the current kits
+src/core/save/       serialise / deserialise / migrate a save blob, rename
+                     retired ids, backfill history, and reconcile a loaded
+                     one against the current kits
 src/core/sim/        headless combat runner used by tests and the balance report
 src/content/         all game data (see schemas.ts for the shapes); story
                      splits one file per region from Phase W5
@@ -307,6 +308,13 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   hold is in `src/content/ids.ledger.json` for good. Run `npm run ids:ledger` after adding content; to rename or
   remove an id, leave the ledger alone and add a row to `src/content/idAliases.ts`, which `applyIdAliases` applies
   first on load. `savedIds.test.ts` fails on a shipped id that vanished without one.
+- **A save remembers only what the story recorded when it was written** (ADR 0112). A flag that something reads
+  and that gains a write in a region a release already shipped must say how that release's saves answer, in its
+  registry entry (`oldSaves`: a backfill rule in `src/content/story/flagBackfills.ts`, `open` or `unset`); a new scene
+  a `visited` condition reads does the same in `LATE_SCENES`. `saveHistory.test.ts` names the flag and plays every
+  frozen save forward to the ending. A backfill rule's `rev` only grows, a released rule is never edited, and
+  `fixtures/releases/` is never regenerated: freeze a new release with `npm run saves:release -- <id>`.
+  `docs/save-history.md` (`npm run docs:saves`) is the report writers read first.
 - **Shipped code validates with `src/core/schema.ts`, not zod** (ADR 0060). It
   is zod's v3 API for the combinators the save, fx, sound and tuning schemas use,
   and `schema.test.ts` holds it to zod's verdicts, data and issue paths. A shipped

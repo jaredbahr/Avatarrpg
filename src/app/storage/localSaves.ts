@@ -119,6 +119,7 @@ export function loadFromSlot(
 
   const result = deserialize(json);
   if (!result.ok) return { ok: false, error: result.error };
+  for (const warning of result.warnings ?? []) console.warn(warning);
 
   return {
     ok: true,
@@ -249,6 +250,7 @@ export function importFromFile(): Promise<
           finish({ ok: false, error: result.error });
           return;
         }
+        for (const warning of result.warnings ?? []) console.warn(warning);
         finish({
           ok: true,
           save: {

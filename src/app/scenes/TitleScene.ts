@@ -156,7 +156,7 @@ export class TitleScene implements Scene {
       this.app.toasts.show(result.error, 'warn');
       return;
     }
-    this.app.adoptSave(result.save.state, result.save.session);
+    this.app.adoptLoaded(result.save);
   }
 
   private openLoad(): void {
