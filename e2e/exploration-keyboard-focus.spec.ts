@@ -88,11 +88,16 @@ test('keyboard Map walk, Mira conversation and return retain visible world focus
   await talkToMira(page);
   await visibleFocus(next(page));
   expect(await page.evaluate(() => window.fnt?.app.state?.location.pos)).toEqual({ x: 10, y: 5 });
-  for (let line = 1; line < 4; line++) {
+  // Mira's table (DLG-01): every turn and its one question by keyboard alone.
+  for (let step = 0; step < 40; step++) {
+    const nodeId = await page.evaluate(() => window.fnt?.app.state?.story.nodeId);
+    if (nodeId === 'village_explore') break;
+    const choosing = (await page.locator('.choice-option:not([disabled])').count()) > 0;
+    await visibleFocus(
+      choosing ? page.locator('.choice-option:not([disabled])').first() : next(page),
+    );
     await page.keyboard.press('Enter');
-    await visibleFocus(next(page));
   }
-  await page.keyboard.press('Enter');
   await idle(page);
   await visibleFocus(page.locator('.explore-hud .action-button:not([disabled])').first());
   expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe('village_explore');

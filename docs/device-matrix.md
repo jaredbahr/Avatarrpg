@@ -19,6 +19,136 @@
 - **The HUD reflow resizes the canvas with no event at all.** `Renderer` watches its canvas with a `ResizeObserver` and calls the scene's `onViewportChange`; combat keeps a pinch zoom across that refit.
 - **Home Screen apps on iOS 26 open every site as a web app**; the `apple-mobile-web-app-*` metas still set the title, the status bar and full-screen launch.
 
+## Where the saves live, and what can delete them
+
+Every save (three slots and the autosave) is in `localStorage`. Read from the publishers' own pages and source on
+2026-11-14 for #772; nothing here was measured on the family's devices yet. **Source** means the page says it in
+words, **code** means it was read in the browser's source with no page saying so, and **not confirmed** means no
+primary source was found. The answers only the real iPad can give are in the checklist that follows.
+
+### An iPad or iPhone (Safari, and every other browser there: all are WebKit)
+
+| Question                                             | Answer                                                                                                                                                                                                                                       | Standing                                                                                                                                                          |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Can a tab's saves be deleted with no one asking?     | Yes. WebKit deletes "all of a website's script-writable storage after seven days of Safari use without user interaction on the site". It applies to every site, not only to trackers.                                                        | Source: [WebKit, 24 Mar 2020][itp-2020] (iPadOS 13.4, Safari 13.1); [Tracking Prevention][itp-doc], still listed; the removal code is on the Safari 26 branches.  |
+| What does it delete?                                 | IndexedDB, LocalStorage, media keys, SessionStorage, service worker registrations and cache. So a second copy in IndexedDB goes at the same moment as the first.                                                                             | Source: [itp-doc]. The Cache API and the Origin Private File System are not named: not confirmed either way.                                                      |
+| What is a "day"?                                     | A day on which the browser was used. A fortnight with the iPad in a drawer counts for nothing; seven days of other browsing without a tap in the game counts in full. A tap, click or key press in the game restarts it; scrolling does not. | Interaction: source ([itp-doc]). The day count: code (`OperatingDates`), plus "7 days of browser use" in [WebKit bug 237350][bug-237350].                         |
+| Is it still seven days?                              | Assume seven. Since the Safari 18 branches the code waits 30 days of use for a site never reached through a decorated cross-site link, but no page or release note says so.                                                                  | Code only (`shouldRemoveAllButCookiesFor`; [WebKit bug 265598][bug-265598]). Not confirmed for a shipping Safari.                                                 |
+| Is a Home Screen web app exempt?                     | Yes. "The first-party domain of home screen web applications is exempt from ITP's 7-day cap on all script-writeable storage".                                                                                                                | Source: [itp-doc].                                                                                                                                                |
+| Does it see the tab's saves?                         | No. "The website data of home screen web applications is kept isolated from Safari". A game started in a tab has to be carried over: Save a copy in the tab, then Load, Import from file in the Home Screen app.                             | Isolation: source ([itp-doc]). That nothing is copied when the icon is made is stated for the Mac only ([Safari 17.0][safari-17]); not confirmed for iPadOS.      |
+| Does every Home Screen icon count?                   | On iPadOS 26 an added site opens as a web app by default; with "Open as Web App" switched off it is a bookmark that opens in Safari, with Safari's storage and Safari's rule.                                                                | Default: source ([Safari 26.0][safari-26]). The bookmark's storage: inferred.                                                                                     |
+| What does `navigator.storage.persist()` answer?      | No prompt. `true` only for a site WebKit already exempts (a Home Screen web app); `false` in a tab. Available from Safari 15.2, "fully supported" from 17.0.                                                                                 | "Heuristics like whether the website is opened as a Home Screen Web App": source ([WebKit, 10 Aug 2023][storage-2023]). `false` in a tab: code (`persistOrigin`). |
+| What does a `true` protect?                          | Deletion when storage runs short. No page says it protects from the seven-day rule; in practice the two coincide, because only an exempt site gets `true`.                                                                                   | Source for eviction ([storage-2023]). Exemption through `persist()`: not confirmed.                                                                               |
+| When storage runs short?                             | Whole sites go, least recently used first, `localStorage` included; a site with an open page, or in persistent mode, "might be excluded". A site may use up to about 60% of the disk in Safari or as a web app.                              | Source: [storage-2023] (Safari 17.0).                                                                                                                             |
+| Chrome or Edge on the iPad?                          | The same engine and the same tracking prevention, on by default in every WKWebView app since iOS 14.                                                                                                                                         | Source: [WebKit, App-Bound Domains, 2020][app-bound]. The seven-day rule is not named there for those apps: inferred.                                             |
+| Does "Save a copy" make a file from the Home Screen? | Unknown. A download inside a web app has opened a preview with its own save step (iOS 17) and has stranded the page (iOS 15); nothing was found for iPadOS 18 or 26.                                                                         | Not confirmed ([WebKit bug 275288][bug-275288], [236943][bug-236943]). Checklist step 6 measures it.                                                              |
+
+### A PC (Chrome or Edge, the Steam Remote Play route)
+
+| Question                                           | Answer                                                                                                                                                                                                                            | Standing                                                                                                                                                          |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Is there a seven-day rule?                         | No. Deleting sites "that aren't used regularly ... happens only in Safari".                                                                                                                                                       | Source: [MDN, Storage quotas and eviction criteria][mdn-quota].                                                                                                   |
+| When the disk runs out?                            | Chromium clears "all site data from the least recently used origin first". Its own design note calls only IndexedDB, the Cache API, the file system and service workers quota-managed; "local storage is not quota-managed data". | Source: [web.dev][webdev-storage] (2024). `localStorage` staying out of it: implied by the [Chromium storage note][cr-quota] (Oct 2024) and its code, not stated. |
+| Any time limit at all?                             | Quota-managed data a site has not touched for 400 days is cleared. By the row above that is not `localStorage`.                                                                                                                   | Source: [cr-quota]; code (`kStaleBucketCutoffInDays`).                                                                                                            |
+| What does `persist()` answer?                      | No prompt. `true` when the site is installed, bookmarked, allowed notifications or much used; otherwise `false`, and it may be asked again. A fresh Steam profile will say `false` at first.                                      | Source: [web.dev, Persistent storage][webdev-persist] (2020). The fresh profile: code (`persistent_storage_permission_context.cc`).                               |
+| What does a `true` protect?                        | Persistent storage is "only deleted if the user chooses to remove it using their site settings".                                                                                                                                  | Source: [webdev-persist].                                                                                                                                         |
+| Does a dedicated `--user-data-dir` keep the saves? | The folder holds the whole profile, so the saves are files inside it and return on the next launch. Back up that folder and the saves are backed up.                                                                              | Profile: source ([Chromium, user data directory][cr-udd]). `localStorage` by name and "between launches": not stated there; our own run is recorded below.        |
+| What would empty it?                               | Incognito or Guest; the setting that clears site data when the browser closes; and **Edge with `--kiosk`, which runs InPrivate**. Use `--app=<url>` for the borderless window, never Edge's kiosk mode.                           | Source: [cr-quota]; [Microsoft, Edge kiosk mode][edge-kiosk] (2025). Chrome's own `--kiosk` and `--app`: not confirmed.                                           |
+
+### What follows from it
+
+- **The Home Screen icon is the defence on the iPad**, and it is the only one. Nothing a page can write outlasts the
+  seven-day rule in a tab: IndexedDB, the Origin Private File System, the service worker's cache and script-made
+  cookies are deleted with `localStorage`, as one site. Writing the saves to a second store there would cost code and
+  change nothing, so the game does not.
+- **On a PC a second store would be worse, not better:** IndexedDB and the Origin Private File System are the
+  quota-managed data Chromium evicts, and `localStorage` is the one store it leaves out.
+- **The file is the only copy outside the browser.** "Save a copy" at a region's end and "Export to file" in the Save
+  menu write the same `.json`; the Save menu's Storage check says how old the last one is.
+- **The game asks once** (`navigator.storage.persist()`, after the first save of a run), which costs nothing and is
+  answered without a prompt on both platforms. While the answer is no and the game is not on the Home Screen, the title
+  and the Save menu say so in one line, worded for an iPad tab or for a PC (`src/app/storage/persistence.ts`).
+- **A real file on the PC is possible and not built.** Chrome and Edge (86 and later, not Safari or Firefox) can keep a
+  handle to a file the family picked and rewrite it at every save ([File System Access][cr-fsa]); after a restart the
+  browser asks again, once, unless "Allow on every visit" was chosen ([Chrome 122][cr-fsa-perm]). It would put the
+  autosave in a folder OneDrive already backs up. It needs a new control and a permission prompt, so it waits for the
+  owner's yes; whether the prompt appears in an `--app=` window is not confirmed.
+
+### Run here, in the dev container (Chromium, 2026-11-14)
+
+Playwright's Chromium against the production build (`vite preview`), launched twice on one dedicated profile folder
+with `--app=<url>`, the Steam shortcut's shape. It is Chromium on Linux, not Chrome on the family PC.
+
+| Step                              | Seen                                                                                                             |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Fresh profile, before a save      | `persisted()` false; the title shows the PC line; the store is still empty                                       |
+| Save to Slot 1                    | the game asks; `persist()` answers false with no prompt; the line stays; "Storage first used" is stamped         |
+| Export                            | a 1.9 KB `.json` downloads; "Last copy saved to a file" reads today                                              |
+| Quit, relaunch on the same folder | Continue is there, both slots, the settings and the same "Storage first used"; `persisted()` still false         |
+| The profile folder                | the saves are under `Default/Local Storage`, so copying the folder copies them                                   |
+| Load a save, Storage check, there | "Opened from: A browser tab" (an `--app` window is not an installed app), "Browser has agreed to keep saves: No" |
+
+[itp-2020]: https://webkit.org/blog/10218/full-third-party-cookie-blocking-and-more/
+[itp-doc]: https://webkit.org/tracking-prevention/
+[storage-2023]: https://webkit.org/blog/14403/updates-to-storage-policy/
+[safari-17]: https://webkit.org/blog/14445/webkit-features-in-safari-17-0/
+[safari-26]: https://webkit.org/blog/17333/webkit-features-in-safari-26-0/
+[app-bound]: https://webkit.org/blog/10882/app-bound-domains/
+[bug-237350]: https://bugs.webkit.org/show_bug.cgi?id=237350
+[bug-265598]: https://bugs.webkit.org/show_bug.cgi?id=265598
+[bug-275288]: https://bugs.webkit.org/show_bug.cgi?id=275288
+[bug-236943]: https://bugs.webkit.org/show_bug.cgi?id=236943
+[mdn-quota]: https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria
+[webdev-storage]: https://web.dev/articles/storage-for-the-web
+[webdev-persist]: https://web.dev/articles/persistent-storage
+[cr-quota]: https://docs.google.com/document/d/19QemRTdIxYaJ4gkHYf2WWBNPbpuZQDNMpUVf8dQxj4U/
+[cr-udd]: https://chromium.googlesource.com/chromium/src/+/main/docs/user_data_dir.md
+[cr-fsa]: https://developer.chrome.com/docs/capabilities/web-apis/file-system-access
+[cr-fsa-perm]: https://developer.chrome.com/blog/persistent-permissions-for-the-file-system-access-api
+[edge-kiosk]: https://learn.microsoft.com/en-us/deployedge/microsoft-edge-configure-kiosk-mode
+
+## Saves on the real iPad: a ten-minute check (#772)
+
+Run once on the family iPad against the deployed URL, then fill in the table. The Save menu's Storage check (Load a save on the title, Save in a game) shows every
+answer in large type, so nothing needs a cable or a console. Steps 1 to 7 take about ten minutes; step 8 is one look, a
+week or more later.
+
+1. **Tab, before a save.** Open the URL in Safari. Load a save, Storage check. Write down "Opened from" and "Browser has
+   agreed to keep saves".
+2. **Tab, after a save.** New game, the suggested party, play until the first scene changes (that autosaves). Back to the
+   title: is there a line under the buttons that starts "Saves made in a browser tab"? Storage check again: write down
+   "Answer when the game asked" and "Storage first used".
+3. **A copy from the tab.** In the game, Save, Export to file. Does a `.json` land in the Files app (Downloads)? Write
+   down what Safari showed.
+4. **Home Screen.** Share, Add to Home Screen, leave "Open as Web App" on. Launch from the icon. Is the title empty (no
+   Continue)? That is expected: write it down either way.
+5. **Carry the game over.** Load a save, Import from file, pick the file from step 3. Does the game continue where the
+   tab left it? Save once into Slot 1.
+6. **A copy from the Home Screen.** Save, Export to file. Does a file land in Files, does a preview open, or does
+   nothing happen? If a preview opens, can it be saved from there, and can you get back to the game?
+7. **Home Screen, storage check.** Save, Storage check: write down all three answers, and "Storage first used". The
+   title should show no line about saves.
+8. **A week or more later** (seven or more days on which Safari was used, without opening the game in a tab): open the
+   **tab** and the **Home Screen app**. Is Continue still there in each? Storage check: has "Storage first used" moved
+   forward, or gone back to "No date yet", in either? Either one is a wipe.
+
+| What                                                                | Safari tab | Home Screen app |
+| ------------------------------------------------------------------- | ---------- | --------------- |
+| iPad model, iPadOS version                                          |            |                 |
+| Browser has agreed to keep saves, before a save (1, 7)              |            |                 |
+| Answer when the game asked (2, 7)                                   |            |                 |
+| The line about saves shows on the title (2, 7)                      |            |                 |
+| Export makes a file in Files; what the browser showed (3, 6)        |            |                 |
+| The tab's saves are visible without importing (4)                   | n/a        |                 |
+| Import from file continues the game (5)                             | n/a        |                 |
+| Storage first used, on the day (2, 7)                               |            |                 |
+| Days of Safari use before the second look; Continue still there (8) |            |                 |
+| Storage first used, at the second look (8)                          |            |                 |
+
+**On the PC, once, when the Steam shortcut exists:** launch it, start a game, quit from Steam, launch again: Continue
+is there. Storage check, "Browser has agreed to keep saves": write the answer here. Note the browser and the exact
+launch options beside it.
+
 ## Automated coverage
 
 | Project          | Engine   | Profile                                | Specs                | Where                                  |

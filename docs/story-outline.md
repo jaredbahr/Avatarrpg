@@ -228,11 +228,12 @@ Each act ends on a quiet meal and a view (canon tone rule: follow intensity with
 ### Act IV: Weight (MQ-10 to MQ-12)
 
 18. **Sheltered.** Whoever the party helped hides them: Tavi's ferry, the Six-Ladle Kitchen, a rail crew. With
-    little optional help, a stranger does it anyway. Veyra learns who held the flood equipment seven years ago:
-    the man running her security.
+    little optional help, a stranger does it anyway. Veyra's mother, Meren Sen, is on the road to Causeway with
+    something to tell her (owner, 2026-11-14, lore review).
 19. **Everyone in the Room (MQ-10).** The assembly, whose speaking platform has only stairs. A pump floods the lower
     landing; Rusk uses it to seize the hall. _Set-piece:_ a crowd rescue while the party (or locals) builds a ramp
-    mid-battle so the people below can be heard. Nobody comments on the ramp. The cart and Parcel are won back.
+    mid-battle so the people below can be heard. Nobody comments on the ramp. Meren Sen tells Veyra to her face
+    who held the flood equipment seven years ago: the man running her security. The cart and Parcel are won back.
 20. **Back to the Stone (MQ-11).** Ba Dan again, changed by Act I's choices. Pella and Bo-shan, at last, with her
     anger as well as her joy. Ruon's testimony names the workers first. Mira admits who she sent. The village
     decides for itself whether to send a crew. A chair at Mira's table is finally used. Latch is back on the
