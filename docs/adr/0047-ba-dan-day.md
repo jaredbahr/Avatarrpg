@@ -6,8 +6,10 @@ questions (D1–D8) on 2026-09-22. One question stays open for him: an Act I def
 
 Builds on ADRs 0010, 0011, 0017, 0022, 0030 and 0039. It implements Slice A ("a believable Ba Dan
 day") of the living world guide, `Avatar-RPG-Living-Tidemark-Reach.md` §19.7, with its companion
-handoff `Avatar-RPG-World-Expansion-Agent-Handoff.md`. Both are design sources held outside the
-repo; § numbers below refer to the guide. Code references are to `main` at `49dcb77`.
+handoff `Avatar-RPG-World-Expansion-Agent-Handoff.md`. Both were design sources held outside the
+repo; § numbers below refer to the guide. **Both are superseded** (owner, 2026-11-14) by the story bible
+and its living-world companion, now in `docs/story/`; [docs/story-bible.md](../story-bible.md) indexes
+them. Code references are to `main` at `49dcb77`.
 
 ## Context
 
@@ -701,7 +703,9 @@ is their no-regression guard.
 | A1  | Art requests (Consequences)                                                                                                                                                        | —    | **Opus/SOL only**                                                            |
 
 **W6 and the story bible.** The guide defers voice to the story bible (Part 07 of
-`Avatar-RPG-The-Common-Current-Story-Bible-v1.0.md`) and its expansion, and neither is available.
+`Avatar-RPG-The-Common-Current-Story-Bible-v1.0.md`, now in the repo as
+[docs/story/the-common-current-bible.md](../story/the-common-current-bible.md)) and its expansion
+(now [docs/story/living-world-expansion.md](../story/living-world-expansion.md)), and neither is available.
 Jared has authorized Opus to write, or rewrite, the story material Slice A needs, so W6 no longer
 waits on them: Opus writes the lines against `docs/writing-guide.md` and the existing Ba Dan scenes,
 and Hanru's voice is set there. If the bible arrives later, W6's lines are reconciled with it.

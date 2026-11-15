@@ -465,6 +465,16 @@ describe('routines (Working Ba Dan)', () => {
   /** Out on the east lawn, well clear of the square, the bridge and the lanes. */
   const AWAY: Vec2[] = [{ x: 20, y: 11 }];
   const key = (p: Vec2) => posKey({ x: Math.round(p.x), y: Math.round(p.y) });
+  /**
+   * An afternoon with both errands out: Gao at his stock and Pella's household
+   * home at the court. Before Mira's briefing Pella now sits at Mira's table
+   * (DLG-01), so this is the first safe afternoon after victory, once Gao and
+   * Pella have been heard and Mira, not yet heard, is still held at her table.
+   */
+  const bothErrands = (): GameState => ({
+    ...at('afternoon', AWAY[0], ['mira_intro', 'gao_home', 'pella_home']),
+    flags: { act1_complete: true },
+  });
   /** The parked basket runs here as it will once the household adult has art. */
   const walks = (reduced = false) =>
     new ResidentWalks(CONTENT, () => reduced, [...BA_DAN_ROUTINES, ...PARKED_ROUTINES]);
@@ -501,12 +511,7 @@ describe('routines (Working Ba Dan)', () => {
     });
 
   it('runs no basket errand in the game until the household adult is painted', () => {
-    const frames = play(
-      new ResidentWalks(CONTENT, () => false),
-      at('afternoon', AWAY[0], []),
-      0,
-      40_000,
-    );
+    const frames = play(new ResidentWalks(CONTENT, () => false), bothErrands(), 0, 40_000);
     const carrier = of(frames, CARRIER);
     expect(carrier).toHaveLength(frames.length);
     for (const f of carrier) expect(f).toMatchObject({ drawPos: YARD, walking: false });
@@ -556,7 +561,7 @@ describe('routines (Working Ba Dan)', () => {
   it('is deterministic: the same clock and the same party give the same frames', () => {
     const run = () => {
       const w = walks();
-      const state = at('afternoon', AWAY[0], []);
+      const state = bothErrands();
       return play(w, state, 0, 45_000, (t) => (t > 20_000 && t < 26_000 ? [{ x: 9, y: 7 }] : AWAY));
     };
     const a = run();
@@ -605,7 +610,7 @@ describe('routines (Working Ba Dan)', () => {
 
   it('never steps onto anyone’s tile, and the two errands never share one', () => {
     const w = walks();
-    const state = at('afternoon', AWAY[0], []);
+    const state = bothErrands();
     const frames = play(w, state, 0, 90_000);
     const people = standingOn(CONTENT, VILLAGE, state);
     for (const { figures } of frames) {
@@ -759,7 +764,7 @@ describe('routines (Working Ba Dan)', () => {
 
   it('holds the anchor under reduce motion', () => {
     const w = walks(true);
-    const frames = play(w, at('afternoon', AWAY[0], []), 0, 40_000);
+    const frames = play(w, bothErrands(), 0, 40_000);
     for (const f of of(frames, GAO)) expect(f).toMatchObject({ drawPos: SHOP, walking: false });
     for (const f of of(frames, CARRIER)) expect(f).toMatchObject({ drawPos: YARD, walking: false });
     expect(

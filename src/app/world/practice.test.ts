@@ -9,7 +9,6 @@ import { Animator } from '../animator';
 import { choreograph } from '../anim/choreography';
 import { seatHere } from './waiting';
 import {
-  BA_DAN_PRACTICE,
   isBendingAttack,
   practiceAbility,
   practiceAt,
@@ -17,7 +16,9 @@ import {
   glidePoint,
   practiceEvents,
   practiceFrame,
+  practiceGround,
   practiceUnits,
+  type PracticeGround,
 } from './practice';
 
 function baDan() {
@@ -34,6 +35,13 @@ function baDan() {
 }
 
 const MAP = CONTENT.maps.get('ba_dan_village') as MapDef;
+const RIVERSIDE = CONTENT.maps.get('ba_dan_riverside');
+/** Ba Dan's south canal bank, as the village map declares it (`MapDef.practice`). */
+const BA_DAN_PRACTICE: PracticeGround = (() => {
+  const ground = practiceGround(MAP);
+  if (!ground) throw new Error('Ba Dan declares no practice ground');
+  return ground;
+})();
 /** The road at the bridge's foot and the bank beside it, as the party stands for the review capture. */
 const STANDING: readonly Vec2[] = [
   { x: 10, y: 8 },
@@ -43,13 +51,14 @@ const STANDING: readonly Vec2[] = [
 
 describe('where the party can practise', () => {
   it('offers Ba Dan’s south canal bank by the bridge, and nowhere else', () => {
-    expect(practiceAt('riverside', BA_DAN_PRACTICE.anchor)).toBeNull();
+    expect(RIVERSIDE).toBeDefined();
+    expect(practiceAt(RIVERSIDE, BA_DAN_PRACTICE.anchor)).toBeNull();
     for (const pos of STANDING)
-      expect(practiceAt('ba_dan_village', pos), String(pos.y)).toBe(BA_DAN_PRACTICE);
-    expect(practiceAt('ba_dan_village', { x: 9, y: 3 })).toBeNull();
-    expect(practiceAt('ba_dan_village', { x: 6, y: 8 })).toBeNull();
-    expect(practiceAt('ba_dan_village', BA_DAN_CANAL_BRIDGE)).toBeNull();
-    expect(practiceAt('riverside', { x: 10, y: 8 })).toBeNull();
+      expect(practiceAt(MAP, pos), String(pos.y)).toEqual(BA_DAN_PRACTICE);
+    expect(practiceAt(MAP, { x: 9, y: 3 })).toBeNull();
+    expect(practiceAt(MAP, { x: 6, y: 8 })).toBeNull();
+    expect(practiceAt(MAP, BA_DAN_CANAL_BRIDGE)).toBeNull();
+    expect(practiceAt(RIVERSIDE, { x: 10, y: 8 })).toBeNull();
     expect(practiceAt(undefined, { x: 10, y: 8 })).toBeNull();
   });
 

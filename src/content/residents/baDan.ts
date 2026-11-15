@@ -14,9 +14,9 @@
  * going home there steps from the front wall. See the W5c anchor table in the
  * slice report for the tile-by-tile reasoning.
  *
- * The schedule is the ADR's §8 table, itself the guide's §05.1 workday with
- * the recorded adaptations. The guide's §05.2 states are applied first, as it
- * asks, and in Slice A they reduce to four things:
+ * The schedule is the ADR's §8 table, a workday with the recorded
+ * adaptations. The ADR's story states are applied first, and in Slice A they
+ * reduce to four things:
  *
  * - **The five returnees** (Bo-shan, Leto, Amri, Hesra, Senn) are composed
  *   below from Slice B's profile-backed records. An absent key reads as
@@ -26,8 +26,8 @@
  *   a resolver-only state today) changes nobody's place, only the visible
  *   evidence: `variants` on the slots (short stock, a road watched for
  *   returnees, a shared household table).
- * - **Return** (`act1_complete` before every homecoming is heard, the guide's
- *   "first safe night"): the `mission` holds keep each owner of a homecoming
+ * - **Return** (`act1_complete` before every homecoming is heard, the first
+ *   safe night): the `mission` holds keep each owner of a homecoming
  *   at a public anchor in every phase until it is visited, and the evening
  *   slots show the returnees' supper.
  * - **Recovery** (every homecoming heard): the ordinary schedule, unchanged.
@@ -72,6 +72,13 @@ const HOMECOMING = all(VICTORY, not(VILLAGE_HOMECOMINGS_COMPLETE));
 const MIRA_HELD = any(not(visited('mira_intro')), all(VICTORY, not(visited('mira_epilogue'))));
 const GAO_HELD = all(VICTORY, not(any(visited('gao_home'), visited('gao_home_cold'))));
 const PELLA_HELD = all(VICTORY, not(visited('pella_home')));
+/**
+ * Pella sits at Mira's table for the first talk there (DLG-01). Opening
+ * `mira_intro` visits it at once, but a conversation freezes resident motion
+ * until it ends (`residentMotion.ts`), so she stays beside Mira for the whole
+ * talk and walks back to her own day afterwards.
+ */
+const PELLA_AT_TABLE = not(visited('mira_intro'));
 const DORIN_HELD = all(VICTORY, not(visited('dorin_home')));
 
 /* ------------------------------------------------------------------ */
@@ -94,6 +101,9 @@ export const BA_DAN_ANCHORS: readonly WorldAnchor[] = [
   // Mira's Table: the square's paving beside the canal, next to the bench
   // rest spot (10,5). No table or awning art yet.
   tile('bd01.table', 'BD01', VILLAGE, 11, 5),
+  // Pella's seat at Mira's table for the first talk (DLG-01): the paving on
+  // Mira's east side, clear of the party's rest spot (10,5) to her west.
+  tile('bd01.bench', 'BD01', VILLAGE, 12, 5),
   // Gao's shopfront: the lane in front of his display, below the shop steps.
   tile('bd02.shopfront', 'BD02', VILLAGE, 9, 4),
   // The rear room: the merchant house's front door, its step at (7,4).
@@ -115,7 +125,7 @@ export const BA_DAN_ANCHORS: readonly WorldAnchor[] = [
   door('home.pella', 'BD04', 8, 14),
   // No school on any map (§3): Pella goes to class down the south lane.
   door('bd05.school', 'BD05', 11, 15),
-  // Dorin's home is "off the gate lane" (guide NPC-04) and Hanru's is BD16:
+  // Dorin's home is near the gate (ADR 0047 §3) and Hanru's is BD16:
   // interim doors on open grass at the tree line just south of the gate,
   // clear of the rim tree's painted trunk at (22,11), never an exit.
   door('home.dorin', 'DORIN-HOME', 21, 12),
@@ -241,6 +251,15 @@ const PELLA: ResidentDef = {
   },
   overrides: [
     {
+      // Mira's table (DLG-01): Pella waits beside Mira for the first talk,
+      // which she is part of, then goes back to her own day.
+      id: 'pella_at_table',
+      tier: 'mission',
+      when: PELLA_AT_TABLE,
+      slots: {},
+      all: talk('bd01.bench', 'kid_pella', 'waiting_at_table'),
+    },
+    {
       id: 'pella_homecoming',
       tier: 'mission',
       when: PELLA_HELD,
@@ -297,7 +316,7 @@ const DORIN: ResidentDef = {
   ],
 };
 
-/** Bounded (guide §19.7): the evening and night watch, and the dawn handover. Never in daylight. */
+/** Bounded (ADR 0047 §8): the evening and night watch, and the dawn handover. Never in daylight. */
 const HANRU: ResidentDef = {
   id: 'lw.npc.hanru',
   name: 'Hanru',

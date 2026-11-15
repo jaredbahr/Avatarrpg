@@ -24,6 +24,12 @@
  *
  * Adding a flag: add the entry first, then the content. The test prints the
  * exact `setBy`/`readBy` it found when they disagree, so paste from there.
+ *
+ * Reading the past from a later scene (ADR 0112): a save already past a flag's
+ * setter can never come to hold it. When a flag that something reads gains a
+ * write in a region a release already shipped, its entry says how that
+ * release's saves answer (`oldSaves`). `saveHistory.test.ts` holds every
+ * release snapshot and every frozen save to that rule.
  */
 
 import type { FlagValue } from '../../core/types';
@@ -49,6 +55,9 @@ export const FLAG_ARCS = [
   'Demo · Walk home',
   'Demo · Riverside',
   'Demo · A Ba Dan day',
+  'Side story · SQ-01 Too Many Cabbages',
+  'Side story · SQ-02 A Very Official Gate',
+  'Side story · SQ-03 Gao’s Other Ledger',
   'Saga · Nation standing',
   'Saga · Disciplines',
   'App · Guidance',
@@ -56,6 +65,24 @@ export const FLAG_ARCS = [
 export type FlagArc = (typeof FLAG_ARCS)[number];
 
 export type FlagType = 'boolean' | 'number' | 'string';
+
+/**
+ * - `backfill`: a rule in `flagBackfills.ts` gives the save its answer on load.
+ * - `open`: every save can still set it (a new scene nobody is locked out of).
+ * - `unset`: a save past the setter answers "never happened", and that is the
+ *   intended answer; `why` says what the player sees because of it.
+ */
+export interface OldSavesAnswer {
+  /** The newest release (`src/core/save/fixtures/releases/index.json`) this was decided for. */
+  readonly upTo: string;
+  /**
+   * The write sites this answers for (`story:<node>`, `app:<module>`). A flag's answer covers
+   * only the sites it names, so a write added later is asked about afresh. Not used by a scene.
+   */
+  readonly sites?: readonly string[];
+  readonly answer: 'backfill' | 'open' | 'unset';
+  readonly why: string;
+}
 
 export interface FlagDef {
   /** The exact key, or a family ending in `.*` for keys the app builds at run time. */
@@ -72,7 +99,73 @@ export interface FlagDef {
   readonly note?: string;
   readonly setBy: readonly string[];
   readonly readBy: readonly string[];
+  /**
+   * How saves written before the flag's newest write site answer it (ADR 0112).
+   * Required once a release has shipped the region without that write and
+   * something reads the flag.
+   */
+  readonly oldSaves?: OldSavesAnswer;
 }
+
+/**
+ * The first release (`src/core/save/fixtures/releases/`): the story as the
+ * commit that wrote the `golden/v5` saves had it, on 2026-11-08.
+ */
+const GOLDEN_V5 = '2026-11-08-golden-v5';
+
+/* How saves from before each of these answer (ADR 0112). */
+const GUIDED_FIGHT_IS_FOR_NEW_GAMES = (...sites: string[]): OldSavesAnswer => ({
+  upTo: GOLDEN_V5,
+  sites,
+  answer: 'unset',
+  why: 'Only a new game is offered the guided first fight; an older save plays the Forest Road unguided, as it always did.',
+});
+const REASON_STAYS_ON_THE_FLOOR = (...sites: string[]): OldSavesAnswer => ({
+  upTo: GOLDEN_V5,
+  sites,
+  answer: 'open',
+  why: 'The find waits on its map after the rescue until its hero takes it, and the road back to the quarry stays open.',
+});
+const SIDE_STORY_WINDOW = (...sites: string[]): OldSavesAnswer => ({
+  upTo: GOLDEN_V5,
+  sites,
+  answer: 'unset',
+  why: 'The side story is offered before the rescue. A save already past it answers as a player who walked by, and every reader has a line for that.',
+});
+
+/**
+ * Scenes that a `visited` condition reads and that were added to a region a
+ * release had already shipped (ADR 0112). A save of that release may be past
+ * the only road into the scene, so each says how such a save answers, exactly
+ * as a flag's `oldSaves` does. `saveHistory.test.ts` asks for an entry.
+ */
+export const LATE_SCENES: Readonly<Record<string, OldSavesAnswer>> = {
+  sq01_packing_list: {
+    upTo: GOLDEN_V5,
+    answer: 'backfill',
+    why: 'Pella hands the list over as she asks about Bo-shan, a scene an older save has already had. A save that was asked and has not finished the rescue is given the list.',
+  },
+  sq02_return: {
+    upTo: GOLDEN_V5,
+    answer: 'open',
+    why: 'Read only by its own once-only gate on Dorin; it plays for any save that settled the side gate.',
+  },
+  sq03_jar: {
+    upTo: GOLDEN_V5,
+    answer: 'open',
+    why: 'Read only by its own once-only gate on Gao; it plays for any save that settled the ledger.',
+  },
+  cutting_culvert: {
+    upTo: GOLDEN_V5,
+    answer: 'open',
+    why: 'The culvert is a crossing in the Cutting that waits until it has been seen, and the Cutting stays open.',
+  },
+  demo_complete: {
+    upTo: GOLDEN_V5,
+    answer: 'open',
+    why: 'The welcome home waits at the village gate for any save that has walked home and not yet seen it.',
+  },
+};
 
 /* The hub flag: read nearly everywhere after the quarry. */
 const ACT1_COMPLETE_READERS = [
@@ -114,6 +207,7 @@ const ACT1_COMPLETE_READERS = [
   'story:hanru_watch_leave',
   'story:school_notice',
   'story:village_leave',
+  'story:sq01_leave',
   'resident:lw.npc.mira',
   'resident:lw.npc.gao',
   'resident:lw.npc.pella',
@@ -136,7 +230,6 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     readBy: [
       'map:ba_dan_village',
       'map:quarry_floor',
-      'story:welcome_home_mira',
       'story:demo_complete',
       'story:pella_home',
       'journal:bo_shan_cart',
@@ -149,6 +242,12 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     meaning: 'The party handed Mira the rubbing of the driller’s Republic City maker’s plate.',
     arc: 'Demo · Walk home',
     status: 'live',
+    oldSaves: {
+      upTo: GOLDEN_V5,
+      sites: ['story:mira_rubbing_given'],
+      answer: 'open',
+      why: 'Mira asks for the rubbing at the end of her epilogue, which repeats until she has it.',
+    },
     setBy: ['story:mira_rubbing_given'],
     readBy: ['map:ba_dan_village'],
   },
@@ -168,17 +267,25 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     key: 'world.ducks_seen',
     type: 'boolean',
     values: [true],
-    meaning: 'The party met Dema and her displaced turtle-ducks on the Forest Road.',
+    meaning:
+      'The party met Lanfen and her displaced turtle ducks on the Forest Road, and heard about the runoff; it opens the gate talk.',
     arc: 'Demo · Forest Road',
     status: 'live',
     setBy: ['story:forest_ducks_seen'],
-    readBy: ['map:forest_road', 'story:demo_complete', 'journal:ducks'],
+    readBy: [
+      'map:forest_road',
+      'story:gate_parley',
+      'story:gate_kinship',
+      'story:gate_ruon_listens',
+      'story:demo_complete',
+      'journal:ducks',
+    ],
   },
   {
     key: 'world.discovered.duck_nest',
     type: 'boolean',
     values: [true],
-    meaning: 'The party found the turtle-duck nest in the woollen sock.',
+    meaning: 'The party found the turtle duck nest in the woollen sock.',
     arc: 'Demo · Forest Road',
     status: 'live',
     setBy: ['story:remember_duck_nest'],
@@ -188,11 +295,18 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     key: 'world.discovered.runoff_marker',
     type: 'boolean',
     values: [true],
-    meaning: 'The party read the silted flood marker that asks if the settling pit is blocked.',
+    meaning:
+      'The party read the silted flood marker that asks if the settling pit is blocked; it opens the gate talk.',
     arc: 'Demo · Forest Road',
     status: 'live',
     setBy: ['story:remember_runoff_marker'],
-    readBy: ['map:forest_road', 'journal:runoff_marker'],
+    readBy: [
+      'map:forest_road',
+      'story:gate_parley',
+      'story:gate_kinship',
+      'story:gate_ruon_listens',
+      'journal:runoff_marker',
+    ],
   },
 
   /* -------------------------------------------------------- Quarry gate */
@@ -200,7 +314,8 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     key: 'gate_fire_bluff',
     type: 'boolean',
     values: [true],
-    meaning: 'A firebender bluffed the Fire Nation deserter aside at the quarry gate.',
+    meaning:
+      'A firebender talked Hotaro, the hired guard by the oil barrels, off his post at the quarry gate; the crew fought without him.',
     arc: 'Demo · Quarry gate',
     status: 'live',
     setBy: ['story:gate_bluff'],
@@ -210,7 +325,8 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     key: 'gate_talked_through',
     type: 'boolean',
     values: [true],
-    meaning: 'An earthbender talked Captain Ruon into opening the gate; no gate fight.',
+    meaning:
+      'The party talked Captain Ruon into opening the gate on what it knew about his quarry; no gate fight.',
     arc: 'Demo · Quarry gate',
     status: 'live',
     setBy: ['story:gate_talked_through'],
@@ -220,10 +336,11 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     key: 'ruon_respects_you',
     type: 'boolean',
     values: [true],
-    meaning: 'Ruon opened the gate to the party’s earthbender as one stoneworker to another.',
+    meaning:
+      'Ruon opened the gate because the party knew what his quarry was doing: Bo’s crew work, Lin Mei’s survey eye, or the runoff the road showed it.',
     arc: 'Demo · Quarry gate',
     status: 'informational',
-    note: 'Set alongside gate_talked_through. Nothing reads it yet; a later act with Ruon should.',
+    note: 'Set alongside gate_talked_through. Nothing reads it yet; Ruon’s account (DLG-08) credits the party’s knowledge of the galleries.',
     setBy: ['story:gate_talked_through'],
     readBy: [],
   },
@@ -270,6 +387,8 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'story:plant_chair',
       'story:plant_chair_decline_home',
       'story:plant_chair_decline_road',
+      'story:sq03_hook',
+      'story:sq03_jar',
       'journal:gate_wages',
     ],
   },
@@ -290,10 +409,11 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     key: 'lost_ambush',
     type: 'boolean',
     values: [true],
-    meaning: 'Jin’s mercenaries beat the party in the Cutting (escort branch only).',
+    meaning:
+      'Jin’s mercenaries beat the party in the Cutting and took Ruon’s dispatch satchel, not Ruon (escort branch only).',
     arc: 'Demo · The Cutting',
     status: 'informational',
-    note: 'Unlike the other losses, no line or recap reads it yet; ruon_carried_you carries the story.',
+    note: 'No line or recap reads it yet; ruon_carried_you and jin_has_satchel carry the story.',
     setBy: ['story:lost_ambush'],
     readBy: [],
   },
@@ -309,10 +429,22 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     readBy: [],
   },
   {
+    key: 'jin_has_satchel',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'Jin holds Ruon’s dispatch satchel, his orders and every delivery he signed for: seized in the Cutting, or handed over with him in the trade.',
+    arc: 'Demo · The Cutting',
+    status: 'informational',
+    note: 'Story bible C-10. Nothing reads it yet; MQ-02’s paper trail should, as Jin bargains over evidence.',
+    setBy: ['story:lost_ambush', 'story:trade_payment'],
+    readBy: [],
+  },
+  {
     key: 'world.tea_shared',
     type: 'boolean',
     values: [true],
-    meaning: 'The party sat and shared Sen’s tea at the workers’ rest stop.',
+    meaning: 'The party sat and shared Kuan’s tea at the workers’ rest stop.',
     arc: 'Demo · The Cutting',
     status: 'live',
     setBy: ['story:cutting_tea_shared'],
@@ -351,12 +483,131 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     readBy: ['resident:lw.npc.mira', 'resident:lw.npc.gao'],
   },
 
+  // Each present hero's reason to keep going (reasons.ts; saga outline decision 22).
+  {
+    key: 'reason.kaya',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'Kaya found her old neighbour’s lantern-workshop stamp on a crate of lamp glass (C-31): a reason to keep going.',
+    arc: 'Demo · Quarry floor',
+    status: 'live',
+    oldSaves: REASON_STAYS_ON_THE_FLOOR('story:reason_kaya_kept'),
+    note: 'Hides the find’s marker once seen. PQ-01 should read it when Kaya is in the party.',
+    setBy: ['story:reason_kaya_kept'],
+    readBy: ['map:quarry_floor'],
+  },
+  {
+    key: 'reason.tenzo',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'Tenzo found the workers’ ration crates, signed for and never opened (C-31): a reason to keep going.',
+    arc: 'Demo · Quarry floor',
+    status: 'live',
+    oldSaves: REASON_STAYS_ON_THE_FLOOR('story:reason_tenzo_kept'),
+    note: 'Hides the find’s marker once seen. PQ-02 should read it when Tenzo is in the party.',
+    setBy: ['story:reason_tenzo_kept'],
+    readBy: ['map:quarry_floor'],
+  },
+  {
+    key: 'reason.nilak',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'Nilak found his old healing house’s emblem on a “medical supplies” crate of restraints (C-31): a reason to keep going.',
+    arc: 'Demo · Quarry floor',
+    status: 'live',
+    oldSaves: REASON_STAYS_ON_THE_FLOOR('story:reason_nilak_kept'),
+    note: 'Hides the find’s marker once seen. PQ-03 should read it when Nilak is in the party.',
+    setBy: ['story:reason_nilak_kept'],
+    readBy: ['map:quarry_floor'],
+  },
+  {
+    key: 'reason.nima',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'Nima found a sanctuary knot on a supply crate diverted from the mountain shelters (C-31): a reason to keep going.',
+    arc: 'Demo · Quarry floor',
+    status: 'live',
+    oldSaves: REASON_STAYS_ON_THE_FLOOR('story:reason_nima_kept'),
+    note: 'Hides the find’s marker once seen. PQ-07 should read it when Nima is in the party.',
+    setBy: ['story:reason_nima_kept'],
+    readBy: ['map:quarry_floor'],
+  },
+  {
+    key: 'reason.bo',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'Bo found Renn and his old crew on next month’s labour roster in the Driller’s cab (C-31): a reason to keep going.',
+    arc: 'Demo · Quarry floor',
+    status: 'live',
+    oldSaves: REASON_STAYS_ON_THE_FLOOR('story:reason_bo_kept'),
+    note: 'Hides the find’s marker once seen. PQ-05 should read it when Bo is in the party.',
+    setBy: ['story:reason_bo_kept'],
+    readBy: ['map:quarry_floor'],
+  },
+  {
+    key: 'reason.wen',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'Wen found her own regulator in the Driller, its manual release taken out (C-31): a reason to keep going.',
+    arc: 'Demo · Quarry floor',
+    status: 'live',
+    oldSaves: REASON_STAYS_ON_THE_FLOOR('story:reason_wen_kept'),
+    note: 'Hides the find’s marker once seen. PQ-10 should read it when Wen is in the party.',
+    setBy: ['story:reason_wen_kept'],
+    readBy: ['map:quarry_floor'],
+  },
+  {
+    key: 'reason.lin_mei',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'Lin Mei found her own survey mark on the gallery plan Grumbler drew through (C-31): a reason to keep going.',
+    arc: 'Demo · Quarry floor',
+    status: 'live',
+    oldSaves: REASON_STAYS_ON_THE_FLOOR('story:reason_lin_mei_kept'),
+    note: 'Hides the find’s marker once seen. PQ-06 should read it when Lin Mei is in the party.',
+    setBy: ['story:reason_lin_mei_kept'],
+    readBy: ['map:quarry_floor'],
+  },
+  {
+    key: 'reason.riko',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'Riko found a hold her teacher taught her, chalked on the guards’ practice board (C-31): a reason to keep going.',
+    arc: 'Demo · Quarry floor',
+    status: 'live',
+    oldSaves: REASON_STAYS_ON_THE_FLOOR('story:reason_riko_kept'),
+    note: 'Hides the find’s marker once seen. PQ-09 should read it when Riko is in the party.',
+    setBy: ['story:reason_riko_kept'],
+    readBy: ['map:quarry_floor'],
+  },
+  {
+    key: 'reason.jinu',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'Jinu found the messengers’ undelivered letters in the gate office (C-31): a reason to keep going.',
+    arc: 'Demo · Walk home',
+    status: 'live',
+    oldSaves: REASON_STAYS_ON_THE_FLOOR('story:reason_jinu_kept'),
+    note: 'Hides the find’s marker once seen. PQ-08 should read it when Jinu is in the party.',
+    setBy: ['story:reason_jinu_kept'],
+    readBy: ['map:quarry_gate'],
+  },
+
   /* ----------------------------------------------------------- Riverside */
   {
     key: 'riverside_shrine_found',
     type: 'boolean',
     values: [true],
-    meaning: 'The party found the riverside shrine (“The river belongs to everyone downstream”).',
+    meaning: 'The party found the riverside shrine and the old high-water line cut into it.',
     arc: 'Demo · Riverside',
     status: 'live',
     setBy: ['story:riverside_shrine_found'],
@@ -388,10 +639,9 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     values: [true],
     meaning: 'The party finished Dorin’s flow-spark-flow footwork drill by the river.',
     arc: 'Demo · Riverside',
-    status: 'informational',
-    note: 'Saved for a later payoff; no journal note or line reads it yet.',
+    status: 'live',
     setBy: ['app:app/village/VillageLife'],
-    readBy: [],
+    readBy: ['story:sq02_return'],
   },
 
   /* -------------------------------------------------------- A Ba Dan day */
@@ -416,6 +666,62 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     readBy: ['map:ba_dan_village', 'app:app/world/barks'],
   },
 
+  /* ------------------------------------------- SQ-01 Too Many Cabbages */
+  {
+    key: 'sq01.cabbages',
+    type: 'string',
+    values: ['families', 'crew', 'leverage'],
+    meaning:
+      'Where the party sent Bo-shan’s tipped load: home to Ba Dan, partly to the trapped crews, or hidden to bargain with.',
+    arc: 'Side story · SQ-01 Too Many Cabbages',
+    status: 'live',
+    oldSaves: SIDE_STORY_WINDOW('story:sq01_choice'),
+    setBy: ['story:sq01_choice'],
+    readBy: [
+      'map:ba_dan_village',
+      'map:forest_road',
+      'story:cart_departure',
+      'story:demo_complete',
+      'story:pella_home',
+      'story:sq01_sled_again',
+      'story:sq01_pella_list',
+    ],
+  },
+
+  /* -------------------------------------- SQ-02 A Very Official Gate */
+  {
+    key: 'sq02.gate',
+    type: 'string',
+    values: ['quiet', 'public', 'mocked'],
+    meaning:
+      'How the backwards side gate was put right: quietly with Dorin, by helping him explain it publicly, or by laughing it open.',
+    arc: 'Side story · SQ-02 A Very Official Gate',
+    status: 'live',
+    oldSaves: SIDE_STORY_WINDOW('story:sq02_choice'),
+    setBy: ['story:sq02_choice'],
+    readBy: [
+      'map:ba_dan_village',
+      'story:demo_complete',
+      'story:sq02_after',
+      'story:sq02_return',
+      'story:sq02_return_gate',
+    ],
+  },
+
+  /* ---------------------------------------- SQ-03 Gao’s Other Ledger */
+  {
+    key: 'sq03.ledger',
+    type: 'string',
+    values: ['extension', 'fund', 'praised'],
+    meaning:
+      'How the party helped Gao carry his neighbours’ debts: a quiet letter for more time, a shared food jar, or praise in the square he asked them not to give.',
+    arc: 'Side story · SQ-03 Gao’s Other Ledger',
+    status: 'live',
+    oldSaves: SIDE_STORY_WINDOW('story:sq03_choice'),
+    setBy: ['story:sq03_choice'],
+    readBy: ['map:ba_dan_village', 'story:demo_complete', 'story:sq03_jar', 'story:sq03_jar_label'],
+  },
+
   /* ----------------------------------------------- Nation standing (reserved prefix) */
   {
     key: 'standing.earth',
@@ -432,9 +738,9 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     type: 'number',
     meaning: 'How the Fire Nation feels about the party, from -5 (hostile) to 5 (trusted).',
     arc: 'Saga · Nation standing',
-    status: 'pending',
-    note: 'Raised by the firebender’s bluff at the gate. No Condition reads standing yet.',
-    setBy: ['story:gate_parley'],
+    status: 'reserved',
+    note: 'Nothing moves it since the gate bluff stopped trading on a nation (owner, 2026-11-14; C-09). Community trust replaces it (C-25).',
+    setBy: [],
     readBy: [],
   },
   {
@@ -533,6 +839,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     meaning: 'This is a genuinely new game, so the Forest Road may run the guided first fight.',
     arc: 'App · Guidance',
     status: 'live',
+    oldSaves: GUIDED_FIGHT_IS_FOR_NEW_GAMES('app:app/App'),
     setBy: ['app:app/App'],
     readBy: ['app:app/scenes/combatGuidance'],
   },
@@ -543,6 +850,10 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     meaning: 'How far the guided first fight has got: move, attack, end turn, then done.',
     arc: 'App · Guidance',
     status: 'live',
+    oldSaves: GUIDED_FIGHT_IS_FOR_NEW_GAMES(
+      'app:app/scenes/combatGuidance',
+      'app:app/scenes/CombatScene',
+    ),
     note: 'Written by CombatScene through FIRST_FIGHT_GUIDANCE.stage; the literal lives in combatGuidance.',
     setBy: ['app:app/scenes/combatGuidance', 'app:app/scenes/CombatScene'],
     readBy: ['app:app/scenes/combatGuidance'],
@@ -554,6 +865,12 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     meaning: 'A one-time combat tip (cover, prop, status, surface.<id>) has been shown.',
     arc: 'App · Guidance',
     status: 'live',
+    oldSaves: {
+      upTo: GOLDEN_V5,
+      sites: ['app:app/scenes/CombatScene'],
+      answer: 'unset',
+      why: 'Each tip shows once per save. An older save has seen none, so it is shown each tip the first time it applies.',
+    },
     setBy: ['app:app/scenes/CombatScene'],
     readBy: ['app:app/scenes/CombatScene', 'app:app/scenes/combatGuidance'],
   },

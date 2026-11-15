@@ -405,6 +405,75 @@ describe('save round trip', () => {
   });
 });
 
+describe('saved story decider (#683)', () => {
+  const meta = {
+    ...META,
+    session: {
+      players: [
+        { name: 'Ava', unitId: 'p0' },
+        { name: 'Ben', unitId: 'p1' },
+      ],
+      soloPlay: false,
+    },
+  };
+
+  const choice = (deciderIndex: number): GameState => {
+    const fresh = createGame(CONTENT, {
+      seed: 'story-decider-save-683',
+      party: [{ characterId: 'kaya' }, { characterId: 'sura' }],
+      startNode: 'plant_chair',
+    });
+    const entered = apply(CONTENT, fresh, { type: 'enterNode', nodeId: 'plant_chair' }).state;
+    return { ...entered, story: { ...entered.story, deciderIndex } };
+  };
+
+  it('rejects a sole fractional decider cursor without changing its input', () => {
+    const state = choice(0);
+    const originalState = structuredClone(state);
+    const valid = JSON.parse(serialize(state, meta));
+    const corrupt = structuredClone(valid);
+    corrupt.state.story.deciderIndex = 0.5;
+    const before = structuredClone(corrupt);
+    const json = JSON.stringify(corrupt);
+
+    const result = deserialize(json);
+
+    expect(state).toEqual(originalState);
+    expect(corrupt).toEqual(before);
+    expect(json).toBe(JSON.stringify(before));
+    const restored = structuredClone(corrupt);
+    restored.state.story.deciderIndex = valid.state.story.deciderIndex;
+    expect(restored).toEqual(valid);
+    expect(result).toEqual({
+      ok: false,
+      error: 'This save looks damaged (state.story.deciderIndex).',
+    });
+  });
+
+  it.each([0, 1, 7])(
+    'preserves integer counter %s and advances it through an ordinary choice',
+    (counter) => {
+      const state = choice(counter);
+      const original = structuredClone(state);
+      const result = deserialize(serialize(state, meta));
+      if (!result.ok) throw new Error(result.error);
+      const loaded = stateFromBlob(result.blob);
+
+      expect(loaded).toEqual(state);
+      expect(loaded.story.deciderIndex).toBe(counter);
+      expect(result.blob.session).toEqual(meta.session);
+      const command = { type: 'chooseOption', optionIndex: 0 } as const;
+      const uninterrupted = apply(CONTENT, state, command);
+      const resumed = apply(CONTENT, loaded, command);
+      expect(resumed).toEqual(uninterrupted);
+      expect(resumed.state.story.nodeId).toBe('plant_chair_seat');
+      expect(resumed.state.story.deciderIndex).toBe(counter + 1);
+      expect(state).toEqual(original);
+      expect(loaded).toEqual(original);
+    },
+  );
+});
+
 describe('save rejection', () => {
   it.each([0.5, -0.5, -1, Number.MAX_SAFE_INTEGER, 'past the order'])(
     'rejects an invalid active turn cursor: %s',

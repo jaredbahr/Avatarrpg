@@ -6,6 +6,10 @@ For dialogue, character biographies, banter, and story narration, read
 `docs/writing-guide.md`. Preserve the scene's branch facts and speaker availability
 when improving a line.
 
+Story, dialogue and scene planning have one owner, the writing pass (owner, 2026-11-14; `AGENTS.md`,
+`docs/story-bible.md`). A session that is not the writing pass does not draft story text: it leaves a marked
+placeholder and says so in its PR.
+
 For camera, interface, environment and character presentation work, also read
 `docs/player-view-target.md`: it records Jared's approved long-term player views,
 their interpretation and the staged delivery plan.
@@ -124,8 +128,9 @@ src/core/state/      createGame, the reducer (apply), the battle draft,
                      the combat log formatter
 src/core/story/      story graph traversal, flags, nation standing, the
                      condition predicate DSL, the rotating decider index
-src/core/save/       serialise / deserialise / migrate a save blob, and
-                     reconcile a loaded one against the current kits
+src/core/save/       serialise / deserialise / migrate a save blob, rename
+                     retired ids, backfill history, and reconcile a loaded
+                     one against the current kits
 src/core/sim/        headless combat runner used by tests and the balance report
 src/content/         all game data (see schemas.ts for the shapes); story
                      splits one file per region from Phase W5
@@ -145,7 +150,8 @@ npm run ci:local # the full CI verify job mirror (typecheck, lint, format,
 npm run verify   # the faster subset: typecheck + lint + format:check + tests.
                  # It is not the whole CI gate — use ci:local before a push.
 npm test         # vitest
-npm run balance  # simulator win-rate report
+npm run balance  # simulator report: win rate, HP left, rounds, deaths (Story and Hard)
+npm run balance:check    # the CI tripwire: a fixed sweep against the committed baseline
 npm run e2e      # Playwright (builds first; uses the preinstalled Chromium)
 ```
 
@@ -153,7 +159,32 @@ The balance report reads two environment variables: `BALANCE_SIZES=1,2,3,4,5,6`
 for the table sizes to sweep and `BALANCE_VARIANTS=1` to report every roster
 variant on its own line instead of averaging over whichever ones the seeds drew.
 Use the second one whenever you touch a variant — an unpinned run hides a variant
-that is budget-legal but win-rate-illegal inside the average.
+that is budget-legal but win-rate-illegal inside the average. `BALANCE_TRIALS` sets
+the trials a row, and `BALANCE_DIFFICULTY=story` or `=hard` narrows the report to one
+difficulty (it shows both by default). Every rate and mean is printed with a 95%
+interval.
+
+**The balance tripwire (ADR 0114).** `npm run balance:check` is the CI step. It runs a
+fixed sweep (set in `scripts/balance/gate.ts`: both difficulties, 1, 3 and 6 players,
+every roster variant on its own row) and compares the win rate, HP left, rounds and
+deaths of each row with `scripts/balance/baseline.json`. On Story every row wins every
+trial, so the win rate cannot show a change there; the other three measures can.
+
+- It fails only on a shift that is both statistically significant and at least the
+  measure's minimum size, so ordinary AI and content changes pass **without touching
+  the baseline**. Do not regenerate it to be tidy.
+- It also fails when the rows differ (a new encounter or variant, a removed one,
+  another trial count), and on an anomaly.
+- Every comparison is against the committed baseline, so small drifts add up and
+  eventually trip it.
+- When it fails and the change is intended, run `npm run balance:baseline`, commit the
+  file with the change, and paste the before/after table it prints into the PR
+  description with the reason. When the change is not intended, it is a regression.
+- It refuses `BALANCE_TRIALS`, `BALANCE_SIZES`, `BALANCE_VARIANTS`, `BALANCE_DIFFICULTY`
+  and `BALANCE_TUNING`, so a run is never compared with a baseline made at other
+  settings.
+- The old "70-85% for a full table" win-rate band is not a gate. Whether it still
+  applies is the owner's open decision (#777).
 
 Never run `npx playwright install` in the dev container — Chromium is already at
 `PLAYWRIGHT_BROWSERS_PATH`.
@@ -299,6 +330,17 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   `toBlob` writes through an unchecked cast, so a forgotten field serialises fine,
   parses back as `undefined`, and crashes only on a loaded mid-battle save.
   `serialize.test.ts` deep-compares a real mid-battle round trip to catch it.
+- **Content ids are forever.** A story node, map, NPC, trigger, encounter, flag, ability or any other id a save can
+  hold is in `src/content/ids.ledger.json` for good. Run `npm run ids:ledger` after adding content; to rename or
+  remove an id, leave the ledger alone and add a row to `src/content/idAliases.ts`, which `applyIdAliases` applies
+  first on load. `savedIds.test.ts` fails on a shipped id that vanished without one.
+- **A save remembers only what the story recorded when it was written** (ADR 0112). A flag that something reads
+  and that gains a write in a region a release already shipped must say how that release's saves answer, in its
+  registry entry (`oldSaves`: a backfill rule in `src/content/story/flagBackfills.ts`, `open` or `unset`); a new scene
+  a `visited` condition reads does the same in `LATE_SCENES`. `saveHistory.test.ts` names the flag and plays every
+  frozen save forward to the ending. A backfill rule's `rev` only grows, a released rule is never edited, and
+  `fixtures/releases/` is never regenerated: freeze a new release with `npm run saves:release -- <id>`.
+  `docs/save-history.md` (`npm run docs:saves`) is the report writers read first.
 - **Shipped code validates with `src/core/schema.ts`, not zod** (ADR 0060). It
   is zod's v3 API for the combinators the save, fx, sound and tuning schemas use,
   and `schema.test.ts` holds it to zod's verdicts, data and issue paths. A shipped

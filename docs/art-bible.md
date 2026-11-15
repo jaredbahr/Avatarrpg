@@ -1,8 +1,10 @@
 # Art bible
 
 The specification every generated asset is made against. It doubles as the
-prompt sheet: an image generator gets the visual grammar from here, never a
-franchise name. Original characters only, no canon names, no canon likenesses
+prompt sheet: an image generator gets the visual grammar from here. A prompt may
+cite the animated Avatar style as a style reference (owner, 2026-11-14) and
+nothing else from the franchise. Original characters only, no canon character
+names, no canon likenesses
 or costume replicas; cultural motifs (a fur-trimmed parka, a wide straw hat) are
 fine, a recognisable canon design is not. Check the tool's output licence
 permits non-commercial use before generating anything that will be committed.
@@ -41,7 +43,8 @@ approved look. Checkable rules, cross-referenced to where each is decided:
 - **Palette.** Every colour traces to `src/render/palettes.ts` and
   `src/styles/base.css`. A colour not in those files is drift, not a variant.
 - **Authorship and marks.** Original designs only: no outside-franchise
-  likeness, costume replica or name in a prompt. No text, lettering, watermark
+  likeness, costume replica or character name in a prompt; "the animated
+  Avatar style" is the one permitted reference. No text, lettering, watermark
   or signature in image assets, and nothing that reads incorrectly when a
   mirrored sprite is used.
 - **Grid-true geometry.** Every scenery edge that communicates a footprint,
@@ -259,7 +262,8 @@ Every asset passes the shared list plus its class list before it is committed.
 - [ ] One grain: no visible square texels, nothing blurrier than the characters;
       outlines dark brown, one to two screen pixels, no black line or fringe; no
       photographic texture or lens effects
-- [ ] Prompt text contains no franchise or character names
+- [ ] Prompt text names no canon character, faction or place; at most it cites
+      "the animated Avatar style"
 - [ ] Colours trace to the palette sources; spot-check the principal anchors
 - [ ] One warm upper-left key is legible across the assembled scene
 - [ ] No text, lettering, watermark or signature; no outside-franchise likeness,

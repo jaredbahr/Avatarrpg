@@ -20,56 +20,56 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 
 ```mermaid
 flowchart TD
-  n49["handover_done<br/>Set flags"]
-  n50["handover_float<br/>The Village Gate: A model parade float sits in the cupboard beh…"]
-  n51["handover_repeat<br/>Hanru: Soft past the bend. Oil late. Anyone from the quarry, wa…"]
-  n52["handover_scene<br/>Gate Guard Dorin: Handover. East road is soft past the bend. Ga…"]:::entry
-  n53["hanru_watch<br/>Hanru: I have the watch until dawn. Walk where you like. I only…"]:::entry
-  n54{"hanru_watch_leave<br/>Branch: act1_complete"}
-  n70["plant_chair<br/>Gao the Shopkeeper: Come in out of the sun. Sit down a minute."]:::entry
-  n71["plant_chair_box<br/>Gao the Shopkeeper: There are three drawers in it. I have found…"]
-  n72{"plant_chair_decline<br/>Branch: act1_complete"}
-  n73{"plant_chair_decline_home<br/>Branch: ruon_traded"}
-  n74{"plant_chair_decline_road<br/>Branch: ruon_traded"}
-  n75["plant_chair_done<br/>Set flags"]
-  n76["plant_chair_leaf<br/>Gao the Shopkeeper: Third one this year. It only grows toward t…"]
-  n77["plant_chair_quiet<br/>Gao’s shop: You sit. Gao sits. Somewhere across the square, a b…"]
-  n78["plant_chair_seat<br/>Gao’s shop: The only spare chair holds a potted plant. Gao move…"]
-  n79["plant_chair_talk<br/>Gao the Shopkeeper: There."]
-  n101["school_notice<br/>School notice: “School this morning. Pupils home at midday.”"]:::entry
-  n106{"village_leave<br/>Branch: act1_complete"}
-  n38["gao_cold — exit to act1 / part 1"]:::external
-  n39["gao_friendly — exit to act1 / part 1"]:::external
-  n40["gao_home — exit to return / part 1"]:::external
-  n41["gao_home_cold — exit to return / part 1"]:::external
-  n105["village_explore — exit to act1 / part 1"]:::external
-  n107["village_return_explore — exit to return / part 1"]:::external
-  n49 -->|"set: scene.bd03_handover=#quot;completed#quot;"| n54
-  n50 -->|"Next"| n49
-  n51 -->|"Next"| n50
-  n52 -->|"Next"| n51
-  n53 -->|"Next"| n54
-  n54 -->|"act1_complete: truthy (you have act1 complete)"| n107
-  n54 -->|"act1_complete: falsy (you have not act1 complete)"| n105
-  n70 -->|"Sit down"| n78
-  n70 -->|"Another time"| n72
-  n71 -->|"Next"| n75
-  n72 -->|"act1_complete: truthy (you have act1 complete)"| n73
-  n72 -->|"act1_complete: falsy (you have not act1 complete)"| n74
-  n73 -->|"ruon_traded: truthy (you have ruon traded)"| n41
-  n73 -->|"ruon_traded: falsy (you have not ruon traded)"| n40
-  n74 -->|"ruon_traded: truthy (you have ruon traded)"| n38
-  n74 -->|"ruon_traded: falsy (you have not ruon traded)"| n39
-  n75 -->|"set: scene.bd01_plant_chair=#quot;completed#quot;"| n106
-  n76 -->|"Next"| n75
-  n77 -->|"Next"| n75
-  n78 -->|"Next"| n79
-  n79 -->|"Admire the plant"| n76
-  n79 -->|"Ask about the puzzle box"| n71
-  n79 -->|"Just sit"| n77
-  n101 -->|"Next"| n106
-  n106 -->|"act1_complete: truthy (you have act1 complete)"| n107
-  n106 -->|"act1_complete: falsy (you have not act1 complete)"| n105
+  n55["handover_done<br/>Set flags"]
+  n56["handover_float<br/>The Village Gate: A model parade float sits in the cupboard beh…"]
+  n57["handover_repeat<br/>Hanru: Soft past the bend. Oil late. Anyone from the quarry, wa…"]
+  n58["handover_scene<br/>Gate Guard Dorin: Handover. East road is soft past the bend. Ga…"]:::entry
+  n59["hanru_watch<br/>Hanru: I have the watch until dawn. Walk where you like. I only…"]:::entry
+  n60{"hanru_watch_leave<br/>Branch: act1_complete"}
+  n90["plant_chair<br/>Gao the Shopkeeper: Come in out of the sun. Sit down a minute."]:::entry
+  n91["plant_chair_box<br/>Gao the Shopkeeper: There are three drawers in it. I have found…"]
+  n92{"plant_chair_decline<br/>Branch: act1_complete"}:::entry
+  n93{"plant_chair_decline_home<br/>Branch: ruon_traded"}
+  n94{"plant_chair_decline_road<br/>Branch: ruon_traded"}
+  n95["plant_chair_done<br/>Set flags"]
+  n96["plant_chair_leaf<br/>Gao the Shopkeeper: Third one this year. It only grows toward t…"]
+  n97["plant_chair_quiet<br/>Gao’s shop: You sit. Gao sits. Somewhere across the square, a b…"]
+  n98["plant_chair_seat<br/>Gao’s shop: The only spare chair holds a potted plant. Gao move…"]
+  n99["plant_chair_talk<br/>Gao the Shopkeeper: There."]
+  n154["school_notice<br/>School notice: “School this morning. Pupils home at midday.”"]:::entry
+  n197{"village_leave<br/>Branch: act1_complete"}:::entry
+  n42["gao_cold — exit to act1 / part 1"]:::external
+  n43["gao_friendly — exit to act1 / part 1"]:::external
+  n44["gao_home — exit to return / part 1"]:::external
+  n45["gao_home_cold — exit to return / part 1"]:::external
+  n196["village_explore — exit to act1 / part 1"]:::external
+  n198["village_return_explore — exit to return / part 1"]:::external
+  n55 -->|"set: scene.bd03_handover=#quot;completed#quot;"| n60
+  n56 -->|"Next"| n55
+  n57 -->|"Next"| n56
+  n58 -->|"Next"| n57
+  n59 -->|"Next"| n60
+  n60 -->|"act1_complete: truthy (you have act1 complete)"| n198
+  n60 -->|"act1_complete: falsy (you have not act1 complete)"| n196
+  n90 -->|"Sit down"| n98
+  n90 -->|"Another time"| n92
+  n91 -->|"Next"| n95
+  n92 -->|"act1_complete: truthy (you have act1 complete)"| n93
+  n92 -->|"act1_complete: falsy (you have not act1 complete)"| n94
+  n93 -->|"ruon_traded: truthy (you have ruon traded)"| n45
+  n93 -->|"ruon_traded: falsy (you have not ruon traded)"| n44
+  n94 -->|"ruon_traded: truthy (you have ruon traded)"| n42
+  n94 -->|"ruon_traded: falsy (you have not ruon traded)"| n43
+  n95 -->|"set: scene.bd01_plant_chair=#quot;completed#quot;"| n197
+  n96 -->|"Next"| n95
+  n97 -->|"Next"| n95
+  n98 -->|"Next"| n99
+  n99 -->|"Admire the plant"| n96
+  n99 -->|"Ask about the puzzle box"| n91
+  n99 -->|"Just sit"| n97
+  n154 -->|"Next"| n197
+  n197 -->|"act1_complete: truthy (you have act1 complete)"| n198
+  n197 -->|"act1_complete: falsy (you have not act1 complete)"| n196
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

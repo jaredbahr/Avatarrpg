@@ -2,8 +2,10 @@
 import type { Condition, MapDef, MapEdgeSide, MapExit, MapTrigger, Vec2 } from '../../core/types';
 
 import { discoveryMarkers } from './discoveries';
+import { reasonMarkers } from '../story/reasons';
 import { RETURNEES_HOME, RETURNEES_RETURNING, VILLAGE_HOMECOMINGS_COMPLETE } from '../story/return';
 import { RETURNEE_PRESENTATIONS } from '../residents/returnees';
+import { SQ01_HAS_LIST, SQ01_RESOLVED } from '../story/sq01Cabbages';
 
 const visited = (nodeId: string): Condition => ({ kind: 'visited', nodeId });
 const unvisited = (nodeId: string): Condition => ({ kind: 'not', of: visited(nodeId) });
@@ -212,8 +214,19 @@ export function connectAct1(map: MapDef): MapDef {
           ...map.npcs,
           ...discoveryMarkers('forest_road'),
           {
+            // SQ-01: Bo-shan's tipped sled in the south ditch, for a party carrying Pella's list,
+            // until the workers are home. The cabbage cart stands in for a sled until art exists.
+            id: 'sq01_sled',
+            name: 'Overturned sled',
+            pos: { x: 11, y: 10 },
+            sprite: 'prop.cart',
+            node: 'sq01_sled',
+            when: { kind: 'all', of: [SQ01_HAS_LIST, { kind: 'not', of: rescued }] },
+            routes: [{ when: SQ01_RESOLVED, node: 'sq01_sled_again' }],
+          },
+          {
             id: 'dema',
-            name: 'Dema, road keeper',
+            name: 'Lanfen, road keeper',
             pos: { x: 3, y: 1 },
             sprite: 'npc.dema',
             node: 'forest_dema',
@@ -300,6 +313,8 @@ export function connectAct1(map: MapDef): MapDef {
             unvisited('ruon_choice'),
           ),
         ],
+        // Jinu's find in the gate office on the walk home (C-31; reasons.ts).
+        npcs: [...map.npcs, ...reasonMarkers('quarry_gate')],
       };
     case 'ambush_road':
       return {
@@ -309,7 +324,7 @@ export function connectAct1(map: MapDef): MapDef {
         objectiveVariants: [
           {
             when: rescued,
-            text: 'Ba Dan lies west, past the quarry gate. Sen is at the rest stop.',
+            text: 'Ba Dan lies west, past the quarry gate. Kuan is at the rest stop.',
           },
         ],
         exits: [
@@ -337,6 +352,17 @@ export function connectAct1(map: MapDef): MapDef {
             kind: 'all',
             of: [{ kind: 'flag', key: 'ruon_spared', op: 'set' }, unvisited('after_ambush')],
           }),
+          // The culvert (C-29): column 10 is the only dry crossing east of the pool, so
+          // either branch passes it once on the way down. Until the art batch draws a
+          // culvert mouth, the runoff measuring stone stands in for it.
+          crossing(map, 10, 6, 'cutting_culvert', 'The culvert', 'world.runoff_marker', {
+            kind: 'all',
+            of: [
+              { kind: 'any', of: [visited('after_ambush'), visited('trade_chosen')] },
+              unvisited('cutting_culvert'),
+              { kind: 'not', of: rescued },
+            ],
+          }),
         ],
         npcs: [
           ...map.npcs,
@@ -360,7 +386,7 @@ export function connectAct1(map: MapDef): MapDef {
           },
           {
             id: 'rest_keeper',
-            name: 'Sen, the tea keeper',
+            name: 'Kuan, the tea keeper',
             pos: { x: 5, y: 9 },
             sprite: 'npc.sen',
             node: 'cutting_tea',
@@ -400,6 +426,8 @@ export function connectAct1(map: MapDef): MapDef {
             of: [unvisited('act1_epilogue'), unvisited('act1_epilogue_lost')],
           }),
         ],
+        // The off-ledger cargo and the Driller's cab: one find per present hero (C-31).
+        npcs: [...map.npcs, ...reasonMarkers('quarry_floor')],
       };
     default:
       return map;

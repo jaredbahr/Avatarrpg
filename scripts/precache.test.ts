@@ -58,7 +58,8 @@ describe('the precache', () => {
     const budget = readFileSync('scripts/check-asset-budget.mjs', 'utf8');
     expect(budget).toContain("from './precache.mjs'");
     expect(budget).toMatch(/isPrecacheIgnored\(/);
-    // the family keeps its own budget
-    expect(budget).toMatch(/\['topdown', TOPDOWN_BUDGET_MB\]/);
+    // the family keeps its own budget (its shared part since ADR 0111 §4; boards go by region)
+    expect(budget).toMatch(/\['topdown', TOPDOWN_SHARED_BUDGET_MB\]/);
+    expect(budget).toMatch(/REGION_BOARDS_BUDGET_MB/);
   });
 });

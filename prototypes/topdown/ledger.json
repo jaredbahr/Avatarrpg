@@ -1,5 +1,6 @@
 {
  "task": "top-down village demo",
+ "default_region": "ba_dan_valley",
  "budget": 1500.0,
  "start_balance": 16945.0,
  "jobs": [
@@ -27675,6 +27676,64 @@
    "notes": "",
    "ids": {
     "animation_group_id": "2c4bd589-1413-4af6-9656-275ca945d7c6"
+   }
+  },
+  {
+   "name": "t9_portrait_bo_shan_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "4498bfa9-d43d-4f39-9a03-ba1cd3c512a3",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of a broad-shouldered nineteen-year-old ...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 7181.0654640625,
+   "balance_after": 7175.0654640625,
+   "secs": 42,
+   "notes": "",
+   "ids": {
+    "background_job_id": "4498bfa9-d43d-4f39-9a03-ba1cd3c512a3",
+    "image_id": "8626a86d-86de-5193-835c-8d984a8f4925",
+    "source_image_id": "8626a86d-86de-5193-835c-8d984a8f4925"
+   }
+  },
+  {
+   "name": "t9_portrait_bo_shan_B_s41",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "d21ee559-0814-4c56-8d0e-40a46b935e9a",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of a broad-shouldered nineteen-year-old ...",
+    "no_background": false,
+    "seed": 41
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 7175.0654640625,
+   "balance_after": 7169.0654640625,
+   "secs": 31,
+   "notes": "",
+   "ids": {
+    "background_job_id": "d21ee559-0814-4c56-8d0e-40a46b935e9a",
+    "image_id": "4775f340-0176-5eac-8aa1-71ac04b512c2",
+    "source_image_id": "4775f340-0176-5eac-8aa1-71ac04b512c2"
    }
   }
  ],

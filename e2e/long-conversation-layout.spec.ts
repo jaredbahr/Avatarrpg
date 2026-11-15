@@ -13,7 +13,16 @@ const profiles = [
   { name: 'short Largest', viewport: { width: 844, height: 390 }, size: 'huge' },
   { name: 'tablet Large', viewport: { width: 834, height: 1194 }, size: 'on' },
 ] as const;
-const nodes = ['pella_tips', 'ruon_surrender', 'ruon_choice', 'gate_parley'] as const;
+// `quarry_ledger` holds the longest authored line (Senn reading the delivery book);
+// each dialogue test checks the inventory still agrees, so a longer line elsewhere
+// fails here and gets its node added rather than going unread.
+const nodes = [
+  'pella_tips',
+  'quarry_ledger',
+  'ruon_surrender',
+  'ruon_choice',
+  'gate_parley',
+] as const;
 const inventory = [...CONTENT.story.values()]
   .flatMap((node) => {
     if (node.kind === 'dialogue')
@@ -148,7 +157,14 @@ async function readAll(page: Page, panel: Locator) {
   const samples = [first];
   await page.screenshot({ path: test.info().outputPath('reading-start.png') });
   // Use physical wheel input at the panel, with overlapping viewfuls. Neither
-  // DOM scroll assignment nor forced focus can make an obscured line pass.
+  // DOM scroll assignment nor forced focus can make an obscured line pass:
+  // each viewful is still sampled for what is really visible. Mobile WebKit
+  // has no Playwright wheel input, so there the panel scrolls by the same step,
+  // as setup-footer-overlap does; the overflow check above still applies.
+  const wheel = !(
+    page.context().browser()?.browserType().name() === 'webkit' && test.info().project.use.isMobile
+  );
+  const stepPx = Math.max(48, Math.floor(first.panel.height / 3));
   await page.mouse.move(
     (first.panel.left + first.panel.right) / 2,
     (first.panel.top + first.panel.bottom) / 2,
@@ -156,7 +172,8 @@ async function readAll(page: Page, panel: Locator) {
   for (let step = 0; step < 80; step++) {
     const previous = samples[samples.length - 1]!;
     if (previous.panel.scrollHeight - previous.panel.height - previous.panel.scrollTop <= 1) break;
-    await page.mouse.wheel(0, Math.max(48, Math.floor(first.panel.height / 3)));
+    if (wheel) await page.mouse.wheel(0, stepPx);
+    else await panel.evaluate((element, dy) => element.scrollBy(0, dy), stepPx);
     await expect
       .poll(() => panel.evaluate((element) => element.scrollTop))
       .toBeGreaterThan(previous.panel.scrollTop);
@@ -221,7 +238,8 @@ for (const profile of profiles)
           for (let line = 0; line < index; line++)
             await panel.locator('[data-conversation-control="next"]').tap();
           expect(await page.evaluate(() => window.fnt!.app.state!.story.lineIndex)).toBe(index);
-          expect(inventory[0]?.node).toBe('pella_tips');
+          expect(nodes as readonly string[]).toContain(inventory[0]?.node);
+          expect(inventory[0]?.variant).toBe(false);
         }
         await page.evaluate(() => document.fonts.ready);
         const before = await page.evaluate(() => window.fnt!.app.state!);

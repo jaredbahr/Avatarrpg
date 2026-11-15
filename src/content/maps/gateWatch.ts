@@ -3,10 +3,15 @@
  * parley says, so two of the crew stand under the curtain wall while it is
  * read: on the open ground of row 1 (the wall's own cells are blocked), west
  * of the gate's first stack of oil barrels and inside the stage `gate_parley`
- * frames, leaving the east stack to the deserter the parley also names. They
+ * frames, leaving the east stack to the hired guard the parley also names. They
  * are the crew the party then fights (the Quarry Worker and the Quarry Hauler,
  * their combat art), so they leave the wall as the fight starts, or once Ruon
- * has the gate opened for an earthbender.
+ * has the gate opened for a party that talked him round.
+ *
+ * Hotaro, the guard the parley shows "by the oil barrels", stands at the east
+ * stack, (13,1), from the same moment and for the same stretch: he is in the
+ * gate fight's roster too (or steps back there for a firebender's bluff, which
+ * also starts that fight). He faces down and west toward the party on (8,5).
  *
  * Kept apart from `connectAct1` so the gate's other staging can change there
  * without touching this list.
@@ -42,9 +47,18 @@ export const GATE_WATCHERS: readonly NpcDef[] = [
     node: 'gate_parley',
     when: GATE_WATCH,
   },
+  {
+    id: 'gate_watch_deserter',
+    name: 'Guard by the oil barrels',
+    pos: { x: 13, y: 1 },
+    sprite: 'unit.enemy.deserter',
+    faces: 'southWest',
+    node: 'gate_parley',
+    when: GATE_WATCH,
+  },
 ];
 
-/** Adds the watchers to the quarry gate; every other map is returned unchanged. */
+/** Adds the watchers and the deserter to the quarry gate; every other map is returned unchanged. */
 export function stageGateWatch(map: MapDef): MapDef {
   return map.id === 'quarry_gate' ? { ...map, npcs: [...map.npcs, ...GATE_WATCHERS] } : map;
 }

@@ -238,3 +238,25 @@ suite('returnee placeholder contract', () => {
     );
   });
 });
+
+suite('after the end card', () => {
+  it('has Bo-shan away on the coast road in every phase and profile, and the four at home', () => {
+    for (const phase of DAY_PHASES)
+      for (const profile of ['resting', 'recovering', 'ready'] as const) {
+        const before = state(phase, all(profile), VILLAGE);
+        const after: GameState = {
+          ...before,
+          flags: { act1_complete: true },
+          story: { ...before.story, visited: [...before.story.visited, 'demo_complete'] },
+        };
+        const visible = visibleReturnees(after).map((npc) => npc.id);
+        expect(visible, `${phase}, ${profile}`).not.toContain('lw.npc.bo_shan');
+        const placements = returneePlacements(after);
+        expect(placements.find((p) => p.id === 'lw.npc.bo_shan')?.anchor ?? null).toBeNull();
+        // The other four keep their own day.
+        const others = (placements: ReturnType<typeof returneePlacements>) =>
+          placements.filter((p) => p.id !== 'lw.npc.bo_shan').map((p) => p.anchor);
+        expect(others(placements)).toEqual(others(returneePlacements(before)));
+      }
+  });
+});

@@ -494,6 +494,11 @@ export interface EncounterDef {
    * Hard profile's (`rules/difficulty.ts`). Story never reads it.
    */
   readonly hard?: Partial<DifficultyProfile>;
+  /**
+   * `firstFight`: the guided first fight. The app walks a new table through Move, an attack and End
+   * turn here, and holds back the general combat tips. Presentation only; no rule reads it.
+   */
+  readonly guidance?: 'firstFight';
   readonly expectedLevel: number;
   readonly intro: string;
   /** Shown under the objective banner — a hint aimed at an 8-year-old. */
@@ -854,6 +859,36 @@ export interface MapDef {
   readonly backdrop?: MapBackdrop;
   /** Keep the viewport centre within the map, optionally grown by this many tiles. */
   readonly cameraCentreMargin?: number;
+  /*
+   * Presentation only, like `ambience`: the app reads these, nothing in core does. They are on the
+   * map so a new region declares them as data rather than adding a map id to app code.
+   */
+  /** An environment bed: `courtyard` plays open air and swells a pond tone near water. */
+  readonly soundscape?: 'courtyard';
+  /** A bending practice ground (#284): offered while the leader stands within `reach` of `anchor`. */
+  readonly practice?: MapPractice;
+  /** The camera's first framing of the map, on arriving at `at` before `unlessVisited` is visited. */
+  readonly arrivalShot?: MapArrivalShot;
+}
+
+export interface MapPractice {
+  /** What the action calls the place. */
+  readonly label: string;
+  readonly anchor: Vec2;
+  /** Chebyshev tiles from `anchor`. */
+  readonly reach: number;
+  /** The tile every bend is thrown at. */
+  readonly mark: Vec2;
+}
+
+export interface MapArrivalShot {
+  readonly at: Vec2;
+  /** A story node; once visited the map frames as usual. */
+  readonly unlessVisited: string;
+  /** How many tile rows the fitted view holds (top-down only). */
+  readonly rows: number;
+  /** The row the view centres on when those rows fit; otherwise it centres on the party. */
+  readonly centreY: number;
 }
 
 /**
@@ -1101,6 +1136,17 @@ export type Condition =
       readonly in: readonly ResidentProfile[];
     };
 
+/**
+ * Where a world conversation plays: over the map it belongs to, with the camera keeping a person
+ * (an NpcDef id on that map) or some tiles above the dialogue panel (#628). Presentation only;
+ * nothing in core reads it. A region's own conversations declare it on the node, so a new region
+ * needs no entry in a shared registry (`src/content/story/presentations.ts`).
+ */
+export interface NodePresentation {
+  readonly mapId: string;
+  readonly stage?: { readonly npc: string } | { readonly tiles: readonly Vec2[] };
+}
+
 export interface StoryOption {
   readonly label: string;
   readonly detail: string;
@@ -1155,6 +1201,8 @@ export type StoryNode =
       readonly portrait: string;
       readonly lines: readonly string[];
       readonly next: string;
+      /** Played over its map instead of the dialogue scene (`NodePresentation`). */
+      readonly presentation?: NodePresentation;
       /** First match wins; falls back to `lines` when none do. */
       readonly variants?: readonly DialogueVariant[];
     }
@@ -1164,6 +1212,8 @@ export type StoryNode =
       readonly speaker: string;
       readonly portrait: string;
       readonly prompt: string;
+      /** Played over its map instead of the dialogue scene (`NodePresentation`). */
+      readonly presentation?: NodePresentation;
       readonly options: readonly StoryOption[];
       readonly variants?: readonly DialogueVariant[];
       /** Line under the options. Act-specific colour, so it lives in the data. */

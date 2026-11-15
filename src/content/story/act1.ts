@@ -9,12 +9,12 @@
  * The branch: Captain Ruon surrenders after the gate fight.
  *   escort him  -> `ruon_spared`, an extra ambush, and Ruon fights beside you
  *   trade him   -> `ruon_traded`, no ambush, but Jin's mercenaries are waiting
- *                  at the boss and Gao the shopkeeper will not look at you
+ *                  at the boss and Gao the shopkeeper tells you what he thinks
  *
  * Choice descriptions state the consequences; the players judge Ruon themselves.
  */
 
-import type { ResidentProfile, StoryNode } from '../../core/types';
+import type { Condition, ResidentProfile, StoryNode } from '../../core/types';
 import { RETURNEE_IDS } from '../residents/returnees';
 import { RETURNEES_HOME } from './return';
 
@@ -22,7 +22,52 @@ const RETURNING_PROFILES = Object.fromEntries(
   RETURNEE_IDS.map((id) => [id, 'returning']),
 ) as Readonly<Record<(typeof RETURNEE_IDS)[number], ResidentProfile>>;
 
+/**
+ * What opens the gate talk (story bible C-07, C-08): Bo's crew work, Lin Mei's
+ * survey eye, or what any party learned on the Forest Road below, from Lanfen
+ * or from the flood marker. Never an element on its own.
+ */
+export const GATE_TALK_EARNED: Condition = {
+  kind: 'any',
+  of: [
+    { kind: 'partyHas', characterId: 'bo' },
+    { kind: 'partyHas', characterId: 'lin_mei' },
+    { kind: 'flag', key: 'world.ducks_seen', op: 'set' },
+    { kind: 'flag', key: 'world.discovered.runoff_marker', op: 'set' },
+  ],
+};
+
+const MIRA = 'Elder Mira';
+const PELLA = 'Pella';
+
 export const ACT1_NODES: readonly StoryNode[] = [
+  /* --------------------------------------------------------------- Prologue */
+  /*
+   * The flash-forward (saga outline, decision 3; story bible C-28): a storm
+   * inside a machine, long after Act I. No names and no faces, and nothing
+   * that names the place or the woman at the valve (the reveal ladder). The
+   * final battle replays it with names. Its stills are placeholder cards
+   * until the art batch (`interludes.ts`); the last line cuts to Ba Dan.
+   */
+  {
+    id: 'prologue_storm',
+    kind: 'dialogue',
+    speaker: 'The Storm',
+    portrait: 'portrait.narrator',
+    lines: [
+      'Rain hammers on an iron roof, somewhere far overhead.',
+      'Below the roof, water comes in under a steel door. Ankle-deep. Then deeper. A lantern swings on its hook and throws the shadows around.',
+      'Somewhere in the dark a turbine is screaming. The sound climbs past anything a machine is meant to make.',
+      'Red lamps flash down a gallery, one after another. A gauge needle leans hard against its pin and shivers there.',
+      'A hand closes on a valve wheel. A woman’s hand, the knuckles scraped, a ring of grease worn into the thumb.',
+      'She leans her whole weight on the wheel. It does not move.',
+      'A drop falls from a pipe into the water at her feet. The water ripples once. A breath later, it ripples again.',
+      'Then only the rain.',
+      'Morning, far from there. In Ba Dan, someone has set bowls along an outdoor table, more than anyone will eat from today.',
+    ],
+    next: 'act1_open',
+  },
+
   /* ---------------------------------------------------------------- Opening */
   {
     id: 'act1_open',
@@ -32,7 +77,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     lines: [
       'Ba Dan lies below a limestone quarry, its houses built from the same pale stone as the hill.',
       'Every week, a cart of cut stone comes down from the quarry. Gao opens his shop early for the crew; by noon, the whole square is white with dust.',
-      'The cart has not come for a month. Elder Mira has asked you to find out why her messengers have not come home.',
+      'The cart has not come for a month. Gao still opens early. By noon he has swept a square with nothing on it.',
     ],
     next: 'village_explore',
   },
@@ -59,16 +104,167 @@ export const ACT1_NODES: readonly StoryNode[] = [
     next: 'road_depart',
   },
 
+  /*
+   * Mira's table (canon DLG-01; story bible C-13). The first conversation is a
+   * table with a covered fifth bowl on it, and Pella making the count right.
+   * Mira names her four messengers only when asked; Pella supplies Bo-shan.
+   * Every answer meets again at the bowl Pella will not let anyone take. The
+   * names also stay in the journal (`mira_table`), so nobody is quizzed later.
+   * Their outsiders' details are planted elsewhere and never remarked on here.
+   */
   {
     id: 'mira_intro',
     kind: 'dialogue',
-    speaker: 'Elder Mira',
+    speaker: MIRA,
     portrait: 'portrait.mira',
     lines: [
-      'Come in. There is rice if you have not eaten. We need to talk about the quarry.',
-      'No carts for a month. I sent four people to find out why. None came home.',
-      'Dorin went as far as the gate yesterday. They have guards now. Would not let him through.',
-      'I can offer you food and a bed here. I wish it were more. Will you look for our people?',
+      'Come in. There is rice if you have not eaten.',
+      'The quarry stopped sending stone a month ago. I sent four people to ask why. None came back.',
+    ],
+    next: 'mira_table_five',
+  },
+  {
+    id: 'mira_table_five',
+    kind: 'dialogue',
+    speaker: PELLA,
+    portrait: 'portrait.pella',
+    lines: ['Five.'],
+    next: 'mira_table_hush',
+  },
+  {
+    id: 'mira_table_hush',
+    kind: 'dialogue',
+    speaker: MIRA,
+    portrait: 'portrait.mira',
+    lines: ['Pella—'],
+    next: 'mira_table_before',
+  },
+  {
+    id: 'mira_table_before',
+    kind: 'dialogue',
+    speaker: PELLA,
+    portrait: 'portrait.pella',
+    lines: ['Bo-shan went before them. Before still counts.'],
+    next: 'mira_table_bowl',
+  },
+  {
+    id: 'mira_table_bowl',
+    kind: 'dialogue',
+    speaker: 'Mira’s Table',
+    portrait: 'portrait.narrator',
+    lines: [
+      'Pella hooks a bowl out from under the table with one shoe. It has a cloth over it.',
+      'Mira looks at it for a moment. Then she lifts it onto the table, beside the others.',
+    ],
+    next: 'mira_table_ask',
+  },
+  {
+    id: 'mira_table_ask',
+    kind: 'choice',
+    speaker: MIRA,
+    portrait: 'portrait.mira',
+    prompt: 'Yes. Five people from this village. And the crews who were already working there.',
+    options: [
+      {
+        label: 'Tell us their names.',
+        detail: 'Mira tells you who she sent.',
+        next: 'mira_table_names',
+      },
+      {
+        label: 'What can you tell us about the gate?',
+        detail: 'Mira tells you what Dorin found there.',
+        next: 'mira_table_gate',
+      },
+      {
+        label: 'We can look. We can’t promise.',
+        detail: 'Be honest with her about what you can do.',
+        next: 'mira_table_promise',
+      },
+    ],
+  },
+  {
+    id: 'mira_table_names',
+    kind: 'dialogue',
+    speaker: MIRA,
+    portrait: 'portrait.mira',
+    lines: ['Leto. Amri. Hesra. Senn. And—'],
+    next: 'mira_table_names_pella',
+  },
+  {
+    id: 'mira_table_names_pella',
+    kind: 'dialogue',
+    speaker: PELLA,
+    portrait: 'portrait.pella',
+    lines: ['Bo-shan.'],
+    next: 'mira_table_road',
+  },
+  {
+    id: 'mira_table_gate',
+    kind: 'dialogue',
+    speaker: MIRA,
+    portrait: 'portrait.mira',
+    lines: [
+      'There are guards on it now. Dorin went as far as the gate yesterday, and they would not let him through.',
+      'Nothing has come down that road since. Not stone, not a letter.',
+    ],
+    next: 'mira_table_cart',
+  },
+  {
+    id: 'mira_table_cart',
+    kind: 'dialogue',
+    speaker: PELLA,
+    portrait: 'portrait.pella',
+    lines: ['Look for his cart, too. He wouldn’t leave it unless he had to.'],
+    next: 'mira_table_road',
+  },
+  {
+    id: 'mira_table_promise',
+    kind: 'dialogue',
+    speaker: MIRA,
+    portrait: 'portrait.mira',
+    lines: ['Then tell me what you find. Even if you have to come back without them.'],
+    next: 'mira_table_road',
+  },
+  {
+    // Kaya says it when she is in the party; otherwise Pella asks. Mira answers either way.
+    id: 'mira_table_road',
+    kind: 'dialogue',
+    speaker: PELLA,
+    portrait: 'portrait.pella',
+    lines: ['Are you going now?'],
+    variants: [
+      {
+        when: { kind: 'partyHas', characterId: 'kaya' },
+        speaker: 'Kaya',
+        portrait: 'portrait.kaya',
+        lines: ['We can leave now.'],
+      },
+    ],
+    next: 'mira_table_eat',
+  },
+  {
+    id: 'mira_table_eat',
+    kind: 'dialogue',
+    speaker: MIRA,
+    portrait: 'portrait.mira',
+    lines: ['You can eat first.'],
+    next: 'mira_table_his',
+  },
+  {
+    id: 'mira_table_his',
+    kind: 'dialogue',
+    speaker: PELLA,
+    portrait: 'portrait.pella',
+    lines: ['Don’t take that bowl. That’s his.'],
+    next: 'mira_table_set',
+  },
+  {
+    id: 'mira_table_set',
+    kind: 'dialogue',
+    speaker: 'Mira’s Table',
+    portrait: 'portrait.narrator',
+    lines: [
+      'Mira slides another bowl across to you. The covered one stays where Pella can see it.',
     ],
     next: 'village_explore',
   },
@@ -78,25 +274,25 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'Elder Mira',
     portrait: 'portrait.mira',
     lines: [
-      'Bo-shan came through the gate ahead of you. Pella has not let go of his sleeve.',
-      'Bo-shan and all four messengers are home. I have counted everyone twice. They keep telling me to stop.',
+      'Bo-shan has taken his cart down to the coast road. Pella watched him go from behind her shutter, and she will not talk about it yet.',
+      'Leto, Amri, Hesra and Senn are home. I have counted them twice. They keep telling me to stop.',
       'You can stay as long as you need. Leave your washing by the door.',
     ],
     variants: [
       {
         when: { kind: 'flag', key: 'ruon_spared', op: 'set' },
         lines: [
-          'Bo-shan and all four messengers are home. I have counted everyone twice. They keep telling me to stop.',
-          'Dorin is taking Ruon’s statement. Bring me the maker-plate rubbing too; I’ll attach both to the province report.',
+          'Leto, Amri, Hesra and Senn are home, and Bo-shan is on the coast road with his cart. I have counted everyone twice.',
+          'Dorin is taking Ruon’s statement for the hearing. Bring me the maker-plate rubbing too.',
           'You can stay too. Gao has food ready, and I will find you a bed.',
         ],
       },
       {
         when: { kind: 'flag', key: 'ruon_traded', op: 'set' },
         lines: [
-          'Bo-shan and all four messengers are home. Thank you for bringing them out.',
-          'I wish Ruon were here to answer their questions. I will write to the province and ask where Jin delivered him.',
-          'Bring me the maker-plate rubbing too; the province should know what the quarry was running. For now, go and eat.',
+          'All five came out of that quarry. Four are home, and Bo-shan is on the coast road. Thank you for bringing them out.',
+          'I wish Ruon were here to answer their questions. I will ask at every office on the coast road where Jin took him, until one of them tells me.',
+          'Bring me the maker-plate rubbing too. For now, go and eat.',
         ],
       },
     ],
@@ -113,7 +309,8 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.mira',
     lines: [
       'Is that the rubbing? Hold that corner flat for me.',
-      'Republic City. Somebody paid to bring that machine a long way. It goes in the report, and the province can tell me who.',
+      'Republic City. Somebody paid to bring that machine a long way, and nobody in Ba Dan was asked.',
+      'The province can have a copy. This one stays here until I know who paid.',
     ],
     next: 'mira_rubbing_given',
   },
@@ -129,7 +326,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'Elder Mira',
     portrait: 'portrait.mira',
     lines: [
-      'The rubbing is folded into the province report. Dorin asked to copy the maker’s mark into his watch book first.',
+      'The rubbing is pinned up inside my door. The province has a copy. Dorin copied the maker’s mark into his watch book first.',
       'Go and eat. Gao has kept bowls for you.',
     ],
     next: 'village_return_explore',
@@ -143,7 +340,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
       'For the quarry? Water skins are by the door. Take one. You can pay me when everyone is home.',
       'Check the stopper. Dorin brought one back empty and told me it leaked. I filled it, turned it upside down, and we stood there watching it.',
       'Then he asked if I had any more water.',
-      'The cutting is flooded in places. Mind your footing, especially if there is a fight.',
+      'The cutting holds water after rain. If there is trouble up there, pick where you stand before it starts.',
     ],
     next: 'village_explore',
   },
@@ -154,8 +351,10 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.gao',
     lines: [
       'Jin came through with Ruon. Rope round his wrists.',
-      'He should answer for what happened up there. Here, where the families can hear him. What is Jin going to do with him?',
-      "No. Leave the water skins on the counter. We're done.",
+      'You handed him to her. I know what you needed. I’m asking what she is allowed to do with him now.',
+      'He should have answered for it here, where the families could hear him. Now nobody in Ba Dan can even check on him.',
+      'Take a water skin. It’s for the road.',
+      'Yes, I’m angry. Drink anyway.',
     ],
     next: 'village_explore',
   },
@@ -176,9 +375,22 @@ export const ACT1_NODES: readonly StoryNode[] = [
     lines: [
       "You're going to the quarry? I can show you the way. I know it. Mira keeps saying I'm too little.",
       'My brother took vegetables up before Mira sent the others. Bo-shan. That makes five missing. He was supposed to be back on Tuesday.',
-      'He says a lightning strike can go right across a puddle. He saw it happen to a whole crew. He also says he can lift an ostrich-horse, so I would ask someone else.',
+      'He says a lightning strike can go right across a puddle. He saw it happen to a whole crew. He also says he can lift an ostrich horse, so I would ask someone else.',
       'Mira says “the missing people” every time. She could say his name. She knows his name.',
       "Look for the cart with cabbages piled above the seat. Tell him I'm not doing his chores again this week.",
+    ],
+    variants: [
+      {
+        // After Mira's table (C-13) the count is settled; Pella talks about the bowl instead.
+        when: { kind: 'visited', nodeId: 'mira_intro' },
+        lines: [
+          "You're going to the quarry? I can show you the way. I know it. Mira keeps saying I'm too little.",
+          'Bo-shan took vegetables up before Mira sent the others. He was supposed to be back on Tuesday.',
+          'He says a lightning strike can go right across a puddle. He saw it happen to a whole crew. He also says he can lift an ostrich horse, so I would ask someone else.',
+          'That bowl was under the table all month. Mira kept putting soup in it.',
+          "Look for the cart with cabbages piled above the seat. Tell him I'm not doing his chores again this week.",
+        ],
+      },
     ],
     next: 'pella_asked',
   },
@@ -186,7 +398,8 @@ export const ACT1_NODES: readonly StoryNode[] = [
     id: 'pella_asked',
     kind: 'flags',
     set: { pella_asked: true },
-    next: 'village_explore',
+    // SQ-01's entry: Pella hands over her copy of his packing list.
+    next: 'sq01_packing_list',
   },
   {
     id: 'pella_again',
@@ -271,7 +484,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.narrator',
     lines: [
       "Stone dust coats the attackers' cuffs. Their hands are calloused around the thumb, where a quarry hammer wears the skin.",
-      'These people worked the quarry. Something has put them on the road with weapons.',
+      'One of them dropped a tally stick, cut with a notch for every cart sent down to Ba Dan. The newest notch has weathered grey.',
     ],
     // Back onto the road; reaching the quarry watch starts the parley.
     next: 'forest_after_explore',
@@ -296,7 +509,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
         when: { kind: 'flag', key: 'lost_forest_road', op: 'set' },
         lines: [
           "You remember stone dust on the attackers' clothes and the worn hands of people who cut rock for a living.",
-          'Quarry workers have robbed you. There is still no word from the people Mira sent.',
+          'They took every scrap of food and left the coin lying beside it.',
         ],
       },
       {
@@ -313,15 +526,21 @@ export const ACT1_NODES: readonly StoryNode[] = [
 
   /* ------------------------------------------------------------ The gate */
   /*
-   * The Speaker Choice, and the first place the party's *composition* is the
-   * decision rather than its abilities.
+   * The Speaker Choice: three ways up to the same gate, every one shown to
+   * everyone, greyed with a reason when it is not yours to take, because
+   * seeing the road you cannot walk is what makes somebody want to come back
+   * with a different party.
    *
-   * Avatar's whole argument is that difference is the problem and also the
-   * answer: the same gate opens differently for a firebender and for an
-   * earthbender, and a party with neither has to do it the hard way. Every
-   * option is shown to everyone, greyed with a reason when it is not yours to
-   * take, because seeing the road you cannot walk is what makes somebody want
-   * to come back with a different four people.
+   * The talk is earned, not inherited (story bible C-07, C-08; canon MQ-01).
+   * Ruon listens to people who know what his quarry is doing: Bo, who ran a
+   * crew; Lin Mei, who reads ground for a living; or any party at all that
+   * stopped on the road below to hear Lanfen out or to read the flood marker.
+   * Element alone is not a biography, and a party of non-benders can walk in
+   * through the front gate on what it bothered to learn.
+   *
+   * The bluff plays on one man's fear (C-09). Hotaro was a ship's guard; he
+   * knows what a stack of lamp oil does near an open flame, and this post does
+   * not pay enough to stand beside it. It is not a rule about anyone's nation.
    */
   {
     id: 'gate_parley',
@@ -329,7 +548,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'The Quarry Gate',
     portrait: 'portrait.narrator',
     prompt:
-      'Quarry workers watch from the wall. A Fire Nation deserter stands beside the oil barrels. How will you approach?',
+      'Quarry workers watch from the wall with slings. A hired guard stands by the oil barrels, as far from them as his post allows. How will you approach?',
     options: [
       {
         label: 'Walk up and knock',
@@ -339,44 +558,144 @@ export const ACT1_NODES: readonly StoryNode[] = [
       {
         label: 'Let the firebender do the talking',
         detail:
-          'Bluff the deserter into standing aside. You will still have to fight the quarry crew.',
-        next: 'gate_bluff',
+          'Make the guard by the oil barrels think twice about his post. You will still have to fight the quarry crew.',
+        next: 'gate_bluff_words',
         speaker: { element: 'fire' },
         requires: { kind: 'partyHas', element: 'fire' },
         lockedHint: 'You need a firebender for this bluff.',
-        // Trading on Fire Nation fear works, and it is remembered on both sides.
-        adjust: { fire: 1, earth: -1 },
       },
       {
-        label: 'Let the earthbender speak — these are quarry workers',
+        label: 'Talk to Captain Ruon about the galleries',
         detail:
-          'Ask about the unsafe galleries. An earthbender may get Ruon to open the gate without a fight.',
+          'Tell him what you know about his quarry. If he listens, the gate may open without a fight.',
         next: 'gate_kinship',
-        speaker: { element: 'earth' },
-        requires: { kind: 'partyHas', element: 'earth' },
-        lockedHint: 'You need an earthbender to speak about the stonework.',
+        requires: GATE_TALK_EARNED,
+        lockedHint:
+          'Ruon listens to someone who knows quarry work, or knows what the quarry is doing to the stream below the road.',
         adjust: { earth: 2 },
       },
     ],
   },
   {
+    id: 'gate_bluff_words',
+    kind: 'dialogue',
+    speaker: 'The Quarry Gate',
+    portrait: 'portrait.narrator',
+    lines: [
+      'Your firebender calls up to the guard by the barrels: how much lamp oil is in that stack, and where would he like to be standing once a fight starts?',
+    ],
+    variants: [
+      {
+        when: { kind: 'partyHas', characterId: 'tenzo' },
+        speaker: 'Tenzo',
+        portrait: 'portrait.tenzo',
+        lines: [
+          'That stack by your feet. Lamp oil? Cooking oil smells sweeter.',
+          'I light my stove with one finger every morning. I would not stand where you are standing. Not once this starts.',
+        ],
+      },
+      {
+        when: { kind: 'partyHas', characterId: 'kaya' },
+        speaker: 'Kaya',
+        portrait: 'portrait.kaya',
+        lines: [
+          'Hey! You by the barrels! Is all of that lamp oil?',
+          'I’m a firebender. I’m only saying, if this turns into a fight, I’d stand somewhere else.',
+        ],
+      },
+    ],
+    next: 'gate_bluff',
+  },
+  {
     id: 'gate_bluff',
     kind: 'flags',
-    // Feeds the `bluffed` variant on enc_quarry_gate: the deserter steps back
-    // and the quarry crew comes forward in his place, at the same threat cost.
+    // Feeds the `bluffed` variant on enc_quarry_gate: Hotaro walks off and the
+    // quarry crew comes forward in his place, at the same threat cost.
     set: { gate_fire_bluff: true },
     next: 'battle_quarry_gate',
   },
   {
+    /*
+     * The party makes its case. Bo and Lin Mei speak from their own work
+     * (`partyVoices.ts`); any other party says what the road showed it.
+     */
     id: 'gate_kinship',
+    kind: 'dialogue',
+    speaker: 'The Quarry Gate',
+    portrait: 'portrait.narrator',
+    lines: [
+      'You call up to the wall about the stream below the road, and the white silt in it.',
+      'For a moment nobody answers. Then an officer comes to the top of the wall, a sabre at his belt.',
+    ],
+    variants: [
+      {
+        when: { kind: 'flag', key: 'world.discovered.runoff_marker', op: 'set' },
+        lines: [
+          'You call up to the wall about the stone by the stream below the road: its flood marks silted over, and the question someone scratched under the arrow.',
+          '“Settling pit blocked?”',
+          'For a moment nobody answers. Then an officer comes to the top of the wall, a sabre at his belt.',
+        ],
+      },
+      {
+        when: { kind: 'flag', key: 'world.ducks_seen', op: 'set' },
+        lines: [
+          'You call up to the wall. The road keeper below the switchbacks wants to know why her stream runs white, and she asked you to ask.',
+          'For a moment nobody answers. Then an officer comes to the top of the wall, a sabre at his belt.',
+        ],
+      },
+    ],
+    next: 'gate_ruon_listens',
+  },
+  {
+    /* Ruon answers whichever case was made, in the same order as `gate_kinship`. */
+    id: 'gate_ruon_listens',
     kind: 'dialogue',
     speaker: 'Captain Ruon',
     portrait: 'portrait.ruon',
     lines: [
-      'Hold on. You know the galleries? The supports under the east face?',
-      'I told my quartermaster those needed replacing. He sent the crew back in anyway.',
+      'That silt is from the settling pit. It has been choked since the driller came.',
+      'What cannot drain out of the pit runs down into the lower galleries. I told my quartermaster. He said the machine cuts faster than water rises.',
       'All right. Lower the slings. Open the gate.',
       'You want someone to answer for this, you can talk to me. Leave the crew out of it.',
+    ],
+    variants: [
+      {
+        when: { kind: 'partyHas', characterId: 'bo' },
+        lines: [
+          'A week of wages. My crews have not seen wages in a month.',
+          'I told my quartermaster those supports needed replacing. He sent the crew back in anyway.',
+          'All right. Lower the slings. Open the gate.',
+          'You want someone to answer for this, you can talk to me. Leave the crew out of it.',
+        ],
+      },
+      {
+        when: { kind: 'partyHas', characterId: 'lin_mei' },
+        lines: [
+          'I was told. Twice.',
+          'I told my quartermaster those supports needed replacing. He sent the crew back in anyway.',
+          'All right. Lower the slings. Open the gate.',
+          'You want someone to answer for this, you can talk to me. Leave the crew out of it.',
+        ],
+      },
+      {
+        when: { kind: 'flag', key: 'world.discovered.runoff_marker', op: 'set' },
+        lines: [
+          'Blocked since the driller came. It fills the pit with cuttings faster than anyone can dig them out.',
+          'What cannot drain out of the pit runs down into the lower galleries. I told my quartermaster. He said the machine cuts faster than water rises.',
+          'All right. Lower the slings. Open the gate.',
+          'You want someone to answer for this, you can talk to me. Leave the crew out of it.',
+        ],
+      },
+      {
+        when: { kind: 'flag', key: 'world.ducks_seen', op: 'set' },
+        lines: [
+          'The road keeper. She has walked up here twice about that stream. I sent her back down twice.',
+          'It runs white because the settling pit is choked with cuttings. What cannot drain out of the pit runs down into the lower galleries.',
+          'I told my quartermaster. He said the machine cuts faster than water rises.',
+          'All right. Lower the slings. Open the gate.',
+          'You want someone to answer for this, you can talk to me. Leave the crew out of it.',
+        ],
+      },
     ],
     next: 'gate_talked_through',
   },
@@ -432,7 +751,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
       'Captain Ruon, provincial guard. Nineteen years. I still give the rank, though I doubt they would claim me now.',
       'The crews stopped getting paid. Then our wages stopped too. My quartermaster said holding the stone would make somebody listen. I let him shut the gate.',
       'Then he locked people in the galleries. I kept my post. Their families will want to know that.',
-      'Jin’s mercenaries keep the inner gate. Jin holds a provincial bounty on me, and she will pay whoever hands me over.',
+      'Jin’s mercenaries keep the inner gate. Jin’s client wants me, and what I signed for. She will pay whoever hands me over.',
     ],
     next: 'ruon_choice',
   },
@@ -456,13 +775,13 @@ export const ACT1_NODES: readonly StoryNode[] = [
       {
         label: 'Trade him to Jin for the quarry key',
         detail:
-          'Accept Jin’s payment and the inner gate key. Her crew will let you pass the cutting, but Gao will hear about the trade.',
+          'Accept Jin’s payment and the inner gate key. Her crew will let you pass the cutting. Ruon leaves with her and will not answer to Ba Dan’s families.',
         next: 'trade_payment',
         setFlags: { ruon_traded: true },
         adjust: { earth: -2 },
       },
     ],
-    footer: 'Both routes reach the quarry floor.',
+    footer: 'Both routes reach the quarry. Ruon will live with the choice.',
   },
 
   /* ----------------------------------------------------- Branch A: escort */
@@ -473,7 +792,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.ruon',
     lines: [
       'Ba Dan, then, once the galleries are open.',
-      "Jin will not let her bounty walk down the hill. She'll send people after us.",
+      "Jin has a client waiting on me. She won't let me walk down the hill. She'll send people after us.",
       "If they catch us in the cutting, I'll need my sabre. You can take it back afterwards.",
     ],
     next: 'gate_escort_explore',
@@ -492,8 +811,25 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.narrator',
     lines: [
       'The mercenaries block the road. Ruon points to a gap in the rocks and pulls you towards it.',
-      'He hauls you over the loose scree, stopping to check that everyone is still with him.',
-      'You lose the pursuers below the cutting. Ruon stays beside you, bent over and struggling for breath.',
+      'Ruon gets you out through the scree, then goes back for anyone still trapped.',
+      'You lose the pursuers below the cutting. Ruon sits down beside you, bent over and struggling for breath.',
+    ],
+    next: 'ambush_satchel',
+  },
+  {
+    /*
+     * What the Cutting loss costs (story bible C-10; canon 09): Jin's raiders
+     * take Ruon's dispatch satchel, not Ruon. A node of its own, after the
+     * party voices on `defeat_ambush`, so every party hears it.
+     */
+    id: 'ambush_satchel',
+    kind: 'dialogue',
+    speaker: 'The Cutting',
+    portrait: 'portrait.narrator',
+    lines: [
+      'Only then does Ruon put a hand to his shoulder. The strap of his dispatch satchel has been cut clean through.',
+      'Far up the slope, one of Jin’s people is running back towards the road with it.',
+      '“Every order I signed is in that satchel,” Ruon says. “Her client will be pleased.” He gets to his feet. “Ba Dan still gets me.”',
     ],
     next: 'lost_ambush',
   },
@@ -501,8 +837,8 @@ export const ACT1_NODES: readonly StoryNode[] = [
     id: 'lost_ambush',
     kind: 'flags',
     // 450 across three. `ruon_carried_you` is the sort of thing a later act
-    // should remember about him.
-    set: { lost_ambush: true, ruon_carried_you: true },
+    // should remember about him; so is what Jin's people took.
+    set: { lost_ambush: true, ruon_carried_you: true, jin_has_satchel: true },
     grantXp: 150,
     next: 'after_ambush',
   },
@@ -541,7 +877,8 @@ export const ACT1_NODES: readonly StoryNode[] = [
   {
     id: 'trade_payment',
     kind: 'flags',
-    set: { ruon_paid: true },
+    // Jin's client pays for Ruon and the papers he signed for (C-03).
+    set: { ruon_paid: true, jin_has_satchel: true },
     grantXp: 150,
     next: 'trade_chosen',
   },
@@ -552,8 +889,8 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.jin',
     lines: [
       'The inner gate key, as agreed. Your payment is in the pouch.',
-      'Captain. Hands where I can see them.',
-      'The province wants him alive. Keep the receipt if anyone asks who took him.',
+      'Captain. Hands where I can see them. The satchel too.',
+      'My client wants him alive, and his papers with him. Keep the receipt if anyone asks who took him.',
       'My crew is in the quarry securing the equipment. The key gets you through the gate. It does not give you a claim on the machinery.',
     ],
     next: 'gate_trade_explore',
@@ -620,8 +957,10 @@ export const ACT1_NODES: readonly StoryNode[] = [
     lines: [
       'Stone carts leave the quarry again. At the fork, each one takes the coast road past Ba Dan.',
       'Mira stretches the evening rice with broth. Families still come to her door asking for news from the galleries.',
-      'A worker gets a note to Dorin: Bo-shan, the four messengers and the crews are alive. Grumbler is still holding them in the quarry.',
+      'Grumbler’s crew rolls Bo-shan’s cart down to the fork, emptied, one wheel split, and leaves it there. Under the seat, a worker has tucked a note for Dorin: Bo-shan, the four messengers and the crews are alive.',
       'The driller is still down there. Its parts came from Republic City; someone paid to bring them all this way.',
+      'Gao patches the wheel with what he has in the shop. Pella watches every nail. “His deliveries are still waiting,” she tells you. “Take the cart for him. Bring it back with him on it.”',
+      'Dorin writes himself a travel permit, signs it, reads it twice and stamps it. Then he climbs up and takes the reins.',
     ],
     teaser:
       'Across the bay, lamps burn in a Fire Nation outpost closed nine years ago. A supply boat ties up at its jetty.',
@@ -644,11 +983,12 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.narrator',
     lines: [
       'The drill jams in the quarry floor. Grumbler tries the lever twice, then climbs out with his hands raised.',
-      'You pull the bars from the gallery doors. Mira’s four messengers are there. Bo-shan follows them out and asks where Pella is.',
-      'The driller bears a Republic City maker’s plate. You take a rubbing for Mira’s report to the province.',
+      'You pull the bars from the gallery doors. Leto, Amri, Hesra and Senn come out first, then the crews. Bo-shan follows them and asks where Pella is.',
+      'The driller bears a Republic City maker’s plate. Sealed crates wait beside it for loading, under a stencil none of the workers know. You take a rubbing of the plate for Mira.',
       'The workers help each other up the ramp and start down the west road. It is time to take the news home to Ba Dan.',
     ],
-    next: 'act1_evening',
+    // The cart's delivery book, the party-neutral reason to keep going (reasons.ts).
+    next: 'quarry_ledger',
   },
   {
     // Evening falls as the walk home begins. A phase change rests at an explore

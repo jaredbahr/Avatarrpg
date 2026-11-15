@@ -58,8 +58,8 @@ export const RIVERSIDE_STORY: readonly StoryNode[] = [
         when: rescued,
         lines: [
           'I have to stay where Mira can see me. Bo-shan says that is a good rule. He never followed it.',
-          'He is resting. Mira says to let him, so I am letting him.',
-          'The flat stone is still his turn. I am keeping it until he is rested.',
+          'He has gone down the coast road with the cart. Mira says he will write.',
+          'The flat stone is still his turn. I am keeping it until he gets back.',
         ],
       },
     ],
@@ -84,7 +84,7 @@ export const RIVERSIDE_STORY: readonly StoryNode[] = [
     portrait: 'portrait.narrator',
     lines: [
       'Fresh flowers stand in a chipped jar beside the inscription.',
-      '“The river belongs to everyone downstream.”',
+      'The inscription is one line cut across the stone at knee height, with a year beside it too worn to read.',
       'The jar’s handle has been carefully mended with wire.',
     ],
     next: 'riverside_shrine_found',

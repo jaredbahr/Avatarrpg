@@ -39,6 +39,70 @@ function pathPart(key: PropertyKey): string {
   return typeof key === 'symbol' ? `[${String(key)}]` : `.${String(key)}`;
 }
 
+/**
+ * A disjoint copy of a GameState graph: plain objects, arrays, Maps and Sets,
+ * with shared references kept shared, as `structuredClone` does, at about 0.13
+ * ms a battle state against its 0.40. Anything else throws rather than being
+ * copied loosely, and the structural oracle checks every copy against the
+ * original after each call anyway. Objects in `keep` are returned as they are.
+ */
+function cloneStateGraph<T>(
+  value: T,
+  keep: WeakSet<object> | null = null,
+  copies = new Map<object, unknown>(),
+): T {
+  if (typeof value === 'function' || typeof value === 'symbol') {
+    throw new TypeError(`Unsupported ${typeof value} in a cloned state`);
+  }
+  if (value === null || typeof value !== 'object') return value;
+  if (keep?.has(value)) return value;
+  const known = copies.get(value);
+  if (known !== undefined) return known as T;
+
+  if (Array.isArray(value)) {
+    const source = value as unknown[];
+    const copy = new Array<unknown>(source.length);
+    copies.set(value, copy);
+    for (let index = 0; index < source.length; index++) {
+      if (!(index in source)) throw new TypeError('Unsupported sparse array in a cloned state');
+      copy[index] = cloneStateGraph(source[index], keep, copies);
+    }
+    return copy as T;
+  }
+  if (value instanceof Map) {
+    const copy = new Map<unknown, unknown>();
+    copies.set(value, copy);
+    for (const [key, entry] of value as Map<unknown, unknown>) {
+      copy.set(cloneStateGraph(key, keep, copies), cloneStateGraph(entry, keep, copies));
+    }
+    return copy as T;
+  }
+  if (value instanceof Set) {
+    const copy = new Set<unknown>();
+    copies.set(value, copy);
+    for (const entry of value as Set<unknown>) copy.add(cloneStateGraph(entry, keep, copies));
+    return copy as T;
+  }
+  const prototype: unknown = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) {
+    throw new TypeError('Unsupported non-plain object in a cloned state');
+  }
+  const source = value as Record<string, unknown>;
+  const copy: Record<string, unknown> = {};
+  copies.set(value, copy);
+  for (const key of Object.keys(source)) copy[key] = cloneStateGraph(source[key], keep, copies);
+  return copy as T;
+}
+
+/**
+ * Every object this test has copied and deep-frozen as a reducer input. The
+ * reducer shares unchanged subtrees between its input and its result, so the
+ * next input reuses them instead of copying and freezing them again. They are
+ * already frozen, never CONTENT (they are copies), and the snapshot taken
+ * before each call is a full copy that shares nothing with them.
+ */
+const FROZEN_COPIES = new WeakSet<object>();
+
 /** Protects a cloned GameState graph, never CONTENT or caller-owned commands. */
 function deepFreezeStateGraph<T>(value: T, path = '$', seen = new WeakSet<object>()): T {
   if (value === null || typeof value !== 'object') return value;
@@ -208,9 +272,14 @@ function applyWithoutMutation(
   command: Command,
   context: string,
 ): ReturnType<typeof apply> {
-  const protectedInput = structuredClone(state);
-  const before = structuredClone(protectedInput);
-  deepFreezeStateGraph(protectedInput);
+  // Measured over the 10,235 calls of a run on a 4-core container: two
+  // `structuredClone`s and a full deep freeze per call cost 11.3 s of the
+  // test's 21-22 s, against a 20 s deadline. A full copy for the snapshot and
+  // an incremental copy and freeze for the input cost 1.8 s. Every input is
+  // still a deep-frozen copy equal to `state`, checked by the same oracle.
+  const before = cloneStateGraph(state);
+  const protectedInput = cloneStateGraph(state, FROZEN_COPIES);
+  deepFreezeStateGraph(protectedInput, '$', FROZEN_COPIES);
 
   let result: ReturnType<typeof apply> | undefined;
   let thrown: unknown;

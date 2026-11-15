@@ -11,6 +11,9 @@
  *
  * The lists in `index.ts`, `content.ts` and `layouts.ts` beside this file register a region; nothing
  * else in the game names one (`regions.test.ts` holds that).
+ *
+ * `npm run new:region -- <id> "<Name>"` (`scripts/content/new-region.ts`) writes a new region's folder
+ * from a template that already passes `validateContent`, and adds it to all three lists.
  */
 import type {
   BackgroundRole,
@@ -37,6 +40,16 @@ export interface StoryGroup {
   readonly nodes: readonly StoryNode[];
 }
 
+/**
+ * The levels a party is expected to be at in a region (ADR 0011). `placeholder` marks a band the
+ * owner has not approved yet (#784); `regions.test.ts` lists every one still waiting.
+ */
+export interface LevelBand {
+  readonly minLevel: number;
+  readonly maxLevel: number;
+  readonly placeholder: boolean;
+}
+
 /** What the game knows about a region without loading its data. */
 export interface RegionManifest {
   readonly id: string;
@@ -48,6 +61,8 @@ export interface RegionManifest {
    * encounter's board). They are loaded with it, so crossing into one never waits.
    */
   readonly neighbours: readonly string[];
+  /** The region's level band (ADR 0011); every fight it owns is tuned for a level inside it. */
+  readonly levelBand: LevelBand;
   /** Map id to area track (ADR 0108). A map with no row keeps whatever is playing. */
   readonly music: Readonly<Record<string, MusicTrackId>>;
   /** Map id to its top-down scene asset (ADR 0104); a map not listed draws its bare board. */

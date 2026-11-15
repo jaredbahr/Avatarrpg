@@ -181,6 +181,9 @@ test('three freed workers walk into Ba Dan for the welcome home', async ({ page 
     .poll(() => page.evaluate(() => window.fnt!.app.state!.location.mapId))
     .toBe('ba_dan_village');
   await waitForIdle(page);
+  // The logical map changes before lastNpcs receives the first village frame.
+  // Wait on that same cache: the old road also contains all three walkers.
+  await expect.poll(() => npcIds(page)).toContain('riverside_sign');
   const walkers = ['lw.npc.amri', 'lw.npc.bo_shan', 'lw.npc.leto'];
   await expect
     .poll(async () => (await npcIds(page)).filter((id) => id.startsWith('lw.npc.')).sort())
@@ -214,6 +217,8 @@ test('Mira takes the maker-plate rubbing once', async ({ page }) => {
   await next.click();
   expect(await page.evaluate(() => window.fnt!.app.state!.story.nodeId)).toBe('mira_rubbing');
   await expect(page.locator('.dialogue-line')).toContainText('rubbing');
+  // Three lines: Mira keeps the rubbing and sends the province a copy (C-15).
+  await next.click();
   await next.click();
   await next.click();
   await expect(page.locator('.explore-conversation')).toBeHidden();

@@ -60,6 +60,7 @@ import type {
   WorldAnchor,
 } from '../core/types';
 import { SQUARE_FOOTPRINT_CONTENT_DEFAULT } from './footprint';
+import { STORY_ENTRY, STORY_PROLOGUE } from './entry';
 import { STORY_PRESENTATIONS, validateStoryPresentations } from './story/presentations';
 import {
   FORBIDDEN_BINDINGS,
@@ -611,6 +612,25 @@ export const mapSchema = z
       .optional(),
     edgeContract: z.literal('enforce').optional(),
     cameraCentreMargin: z.number().finite().optional(),
+    soundscape: z.literal('courtyard').optional(),
+    practice: z
+      .object({
+        label: z.string().min(1),
+        anchor: vec2,
+        reach: z.number().int().min(0),
+        mark: vec2,
+      })
+      .strict()
+      .optional(),
+    arrivalShot: z
+      .object({
+        at: vec2,
+        unlessVisited: id,
+        rows: z.number().positive(),
+        centreY: z.number().finite(),
+      })
+      .strict()
+      .optional(),
     // A painting under the grid (ADR 0009). Between 32 px a tile (the probe) and
     // 256, so a 24-wide map stays inside the 2048 px texture every iPad takes.
     projection: z.literal('topdown').optional(),
@@ -851,6 +871,7 @@ export const encounterSchema = z.object({
     .partial()
     .strict()
     .optional(),
+  guidance: z.literal('firstFight').optional(),
   expectedLevel: z.number().int().min(1).max(10),
   intro: z.string().min(1),
   tip: z.string().min(1),
@@ -878,6 +899,15 @@ const standingAdjust = z
   })
   .partial();
 
+const nodePresentation = z
+  .object({
+    mapId: id,
+    stage: z
+      .union([z.object({ npc: id }).strict(), z.object({ tiles: z.array(vec2) }).strict()])
+      .optional(),
+  })
+  .strict();
+
 export const storyNodeSchema = z.discriminatedUnion('kind', [
   z.object({
     id,
@@ -887,6 +917,7 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     lines: z.array(z.string().min(1)).min(1),
     next: id,
     variants: z.array(dialogueVariant).optional(),
+    presentation: nodePresentation.optional(),
   }),
   z.object({
     id,
@@ -894,6 +925,7 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     speaker: z.string().min(1),
     portrait: z.string().min(1),
     prompt: z.string().min(1),
+    presentation: nodePresentation.optional(),
     options: z
       .array(
         z.object({
@@ -2708,6 +2740,22 @@ export function validateContent(
     }
   }
 
+  /* --- map presentation data (#767): the app reads it, so it must point at real things --- */
+  for (const map of bundle.maps) {
+    const inside = (pos: { x: number; y: number }) =>
+      pos.x >= 0 && pos.y >= 0 && pos.x < map.width && pos.y < map.height;
+    if (map.practice && !(inside(map.practice.anchor) && inside(map.practice.mark)))
+      problems.push(`map "${map.id}" practice anchor or mark is off the map`);
+    if (map.arrivalShot) {
+      if (!inside(map.arrivalShot.at))
+        problems.push(`map "${map.id}" arrival shot stands off the map`);
+      if (!storyIds.has(map.arrivalShot.unlessVisited))
+        problems.push(
+          `map "${map.id}" arrival shot names unknown story node "${map.arrivalShot.unlessVisited}"`,
+        );
+    }
+  }
+
   // Profile-backed placeholders have no authored conversation until W5. Their
   // map explore node is an intentional no-op, not missing dialogue metadata.
   const profileBacked = new Set(
@@ -2739,12 +2787,14 @@ export function validateContent(
   );
 
   /* --- reachability: every node must be reachable from the entry ----- */
-  const entry = 'act1_open';
+  const entry = STORY_ENTRY;
   if (!storyIds.has(entry)) {
     problems.push(`story has no entry node "${entry}"`);
   } else {
-    const reachable = new Set<string>([entry]);
-    const queue = [entry];
+    // A new game from the title opens on the prologue, which leads into the entry.
+    const roots = storyIds.has(STORY_PROLOGUE) ? [STORY_PROLOGUE, entry] : [entry];
+    const reachable = new Set<string>(roots);
+    const queue = [...roots];
     while (queue.length > 0) {
       const current = queue.shift();
       if (!current) break;

@@ -147,7 +147,9 @@ test.beforeEach(async ({ page }) => {
   await startGame(page, ['Ana', 'Ben', 'Cy'], ['kaya', 'sura', 'bo'], 'ruon-escort');
 });
 
-test('two of the crew watch from the wall while the parley is read', async ({ page }) => {
+test('two of the crew watch from the wall and the deserter stands by the barrels while the parley is read', async ({
+  page,
+}) => {
   await adopt(page, {
     node: 'forest_after_explore',
     mapId: 'quarry_gate',
@@ -155,23 +157,26 @@ test('two of the crew watch from the wall while the parley is read', async ({ pa
     visited: ['road_depart', 'after_forest'],
   });
   expect(await npcIds(page)).not.toContain('gate_watch_worker');
+  expect(await npcIds(page)).not.toContain('gate_watch_deserter');
   await walkTo(page, 8, 5);
   expect(await nodeId(page)).toBe('gate_parley');
   await expect(page.locator('.explore-conversation .choice-panel')).toBeVisible();
   await expect
     .poll(() => npcIds(page))
-    .toEqual(expect.arrayContaining(['gate_watch_worker', 'gate_watch_hauler']));
-  // They face the party below the wall, on their south-facing idle, not side-on.
-  expect(await npcClips(page, ['gate_watch_worker', 'gate_watch_hauler'])).toEqual([
-    'idleSouth',
-    'idleSouth',
-  ]);
+    .toEqual(
+      expect.arrayContaining(['gate_watch_worker', 'gate_watch_hauler', 'gate_watch_deserter']),
+    );
+  // They face the party below the wall, on their south-facing idle, not side-on;
+  // the deserter at the east stack of barrels looks down and west toward it.
+  expect(
+    await npcClips(page, ['gate_watch_worker', 'gate_watch_hauler', 'gate_watch_deserter']),
+  ).toEqual(['idleSouth', 'idleSouth', 'idleSouthWest']);
   // They are the crew the party fights: they come down off the wall for it.
   await page.evaluate(() => window.fnt!.app.dispatch({ type: 'chooseOption', optionIndex: 0 }));
   await expect.poll(() => page.evaluate(() => window.fnt!.app.state!.screen)).toBe('combat');
 });
 
-test('an earthbender talks the gate open and Ruon steps up to surrender', async ({ page }) => {
+test('Bo talks the gate open and Ruon steps up to surrender', async ({ page }) => {
   await adopt(page, {
     node: 'forest_after_explore',
     mapId: 'quarry_gate',
@@ -180,11 +185,13 @@ test('an earthbender talks the gate open and Ruon steps up to surrender', async 
   });
   await walkTo(page, 8, 5);
   expect(await nodeId(page)).toBe('gate_parley');
-  // Bo speaks about the stonework; the crew watch until the gate is opened.
+  // Bo speaks from his own crew work; the crew watch until the gate is opened.
   await page.evaluate(() => window.fnt!.app.dispatch({ type: 'chooseOption', optionIndex: 2 }));
   expect(await nodeId(page)).toBe('gate_kinship');
   expect(await followers(page)).toEqual([]);
   await finishDialogue(page, 'gate_kinship');
+  expect(await nodeId(page)).toBe('gate_ruon_listens');
+  await finishDialogue(page, 'gate_ruon_listens');
   expect(await nodeId(page)).toBe('ruon_surrender');
   // The world kept behind the conversation repaints with him in it.
   await expect.poll(() => followers(page)).toEqual(['follower.ruon']);

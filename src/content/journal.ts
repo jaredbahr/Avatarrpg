@@ -41,9 +41,9 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
   {
     id: 'ducks',
     mapId: 'forest_road',
-    title: 'Dema’s unexpected tenants',
+    title: 'Lanfen’s unexpected tenants',
     hint: 'Meet the road keeper on the northwestern verge.',
-    found: 'Dema says quarry runoff has driven the turtle-ducks uphill into her washing.',
+    found: 'Lanfen says quarry runoff has driven the turtle ducks uphill into her washing.',
     when: { kind: 'flag', key: 'world.ducks_seen', op: 'set' },
   },
   {
@@ -52,7 +52,7 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
     title: 'The crews’ rest stop',
     hint: 'A little workers’ rest sits along the southern verge of the cutting.',
     found:
-      'Two shifts built the bench from offcuts and never agreed on its height. Sen keeps the kettle going in case they come down.',
+      'Two shifts built the bench from offcuts and never agreed on its height. Kuan keeps the kettle going in case they come down.',
     when: { kind: 'flag', key: 'world.tea_shared', op: 'set' },
   },
   {
@@ -86,10 +86,19 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
     id: 'tea_station',
     mapId: 'ambush_road',
     title: 'The seventh cup',
-    hint: 'Look beside Sen’s rest stop for a shared kettle and mismatched cups.',
+    hint: 'Look beside Kuan’s rest stop for a shared kettle and mismatched cups.',
     found:
-      'Washed the seventh cup, the one with the wire-mended handle. The bench says: “Wash your own cup, Hesh.”',
+      'Washed the seventh cup, the one with the wire-mended handle. The bench says: “Wash your own cup, Dunmo.”',
     when: { kind: 'flag', key: 'world.discovered.tea_station', op: 'set' },
+  },
+  {
+    id: 'mira_table',
+    mapId: 'ba_dan_village',
+    title: 'Five bowls',
+    hint: 'Elder Mira is waiting at her table in the square.',
+    found:
+      'Mira sent four people to the quarry: Leto, Amri, Hesra and Senn. Pella’s brother, Bo-shan, went before them. His bowl stays on the table, covered.',
+    when: { kind: 'visited', nodeId: 'mira_intro' },
   },
   {
     id: 'bo_shan_cart',
@@ -122,7 +131,7 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
     title: 'Out of the galleries',
     hint: 'Below the stone ledges, the gallery entrances have been barred with timber.',
     found:
-      'Pulled the bars from the gallery doors. Mira’s four messengers came out, then Bo-shan, asking where Pella was.',
+      'Pulled the bars from the gallery doors. Leto, Amri, Hesra and Senn came out, then Bo-shan, asking where Pella was.',
     when: { kind: 'flag', key: 'act1_complete', op: 'set' },
   },
   {
@@ -130,7 +139,8 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
     mapId: 'quarry_floor',
     title: 'The maker’s plate',
     hint: 'Look the driller over once it stops moving.',
-    found: 'The driller carries a maker’s plate. Took a rubbing for Mira’s report to the province.',
+    found:
+      'The driller carries a Republic City maker’s plate. The crates beside it bore a stencil none of the workers knew. Took a rubbing of the plate for Mira.',
     when: { kind: 'flag', key: 'act1_complete', op: 'set' },
   },
 ];

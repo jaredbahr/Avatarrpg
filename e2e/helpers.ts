@@ -69,12 +69,18 @@ export async function snapshot(page: Page): Promise<AppSnapshot> {
 /**
  * Clears saved games and settings so each spec starts from nothing.
  *
- * `query` is kept across the reload, which is how a spec forces a renderer
+ * Storage is cleared on a same-origin page that does not boot the game, and
+ * the game then boots once. Booting it first and reloading aborted its
+ * startup fetches (the top-down scenes), and WebKit reports an aborted fetch
+ * as `TypeError: Load failed`, which the game logs as a console error that
+ * every spec collecting errors then failed on (explore.spec, intermittently).
+ *
+ * `query` is passed to that one boot, which is how a spec forces a renderer
  * (`?renderer=webgl`) or the frame-time readout (`?stats=1`): both are read
  * from `location.search` when the app boots.
  */
 export async function resetStorage(page: Page, query = ''): Promise<void> {
-  await page.goto(`/${query}`);
+  await page.goto('/robots.txt');
   await page.evaluate(() => {
     try {
       localStorage.clear();
@@ -82,7 +88,7 @@ export async function resetStorage(page: Page, query = ''): Promise<void> {
       /* private window: nothing to clear */
     }
   });
-  await page.reload();
+  await page.goto(`/${query}`);
   await page.waitForFunction(() => Boolean(window.fnt?.app));
 }
 
@@ -99,6 +105,11 @@ export interface StartOptions {
    * shipped default, the table vote (#621).
    */
   readonly storyChoices?: 'vote' | 'turns';
+  /**
+   * A new game opens on the flash-forward prologue (C-28). The suite starts on
+   * Ba Dan's opening, as Skip scene would, unless a spec is about the prologue.
+   */
+  readonly prologue?: boolean;
 }
 
 /** Starts a game without walking the whole setup flow. */
@@ -110,7 +121,7 @@ export async function startGame(
   options: StartOptions = {},
 ): Promise<void> {
   await page.evaluate(
-    ({ players, characterIds, seed, reduceMotion, storyChoices }) => {
+    ({ players, characterIds, seed, reduceMotion, storyChoices, prologue }) => {
       const app = window.fnt?.app;
       if (!app) throw new Error('The game has not finished booting.');
       app.updateSettings({ reduceMotion, storyChoices });
@@ -119,6 +130,8 @@ export async function startGame(
         characterIds.map((characterId) => ({ characterId })),
         seed,
       );
+      if (!prologue && app.state?.story.nodeId === 'prologue_storm')
+        app.dispatch({ type: 'enterNode', nodeId: 'act1_open' });
     },
     {
       players,
@@ -126,6 +139,7 @@ export async function startGame(
       seed,
       reduceMotion: options.reduceMotion ?? true,
       storyChoices: options.storyChoices ?? 'turns',
+      prologue: options.prologue ?? false,
     },
   );
 }
@@ -135,6 +149,23 @@ export async function enterNode(page: Page, nodeId: string): Promise<void> {
   await page.evaluate((id) => {
     window.fnt?.app.dispatch({ type: 'enterNode', nodeId: id });
   }, nodeId);
+}
+
+/**
+ * Plays a conversation to its end with the real controls, taking the first open
+ * option at any choice (Mira's table asks one question, DLG-01).
+ */
+export async function finishConversation(page: Page): Promise<void> {
+  for (let step = 0; step < 80; step++) {
+    const open = await page.evaluate(() => ({
+      screen: window.fnt?.app.state?.screen,
+      choices: document.querySelectorAll('.choice-option:not([disabled])').length,
+    }));
+    if (open.screen !== 'dialogue') return;
+    if (open.choices) await page.locator('.choice-option:not([disabled])').first().click();
+    else await page.locator('[data-conversation-control="next"]').click();
+  }
+  throw new Error('The conversation did not end');
 }
 
 /**

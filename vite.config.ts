@@ -4,6 +4,8 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { version } from './package.json';
 import { PRECACHE_IGNORES } from './scripts/precache.mjs';
+import { REGIONS, START_REGION_ID } from './src/content/regions';
+import { laterRegionRuntimeCaching, regionCacheCleanupScript } from './scripts/region-cache.mjs';
 
 // Stamp the code being built so even an offline cached bundle identifies itself.
 function buildRevision(): string {
@@ -54,6 +56,10 @@ function omittedPixi(name: string): string {
  * built asset URLs resolve on GitHub Pages. Locally it stays `/`.
  */
 const base = process.env.GH_PAGES_BASE ?? '/';
+
+// Later regions' region cache (ADR 0111 §3) is named for the build, so an update starts it clean.
+const regionBuild = `${version}-${buildRevision()}`;
+const REGION_CLEANUP = 'region-cache-cleanup.js';
 
 export default defineConfig({
   base,
@@ -353,6 +359,19 @@ export default defineConfig({
         }
       },
     },
+    {
+      // On activate the worker drops the region caches of older builds (`region-cache.mjs`). Only
+      // written once a second region exists; until then there is no region cache to clean.
+      name: 'region-cache-cleanup',
+      generateBundle() {
+        if (laterRegionRuntimeCaching(REGIONS, START_REGION_ID, regionBuild).length === 0) return;
+        this.emitFile({
+          type: 'asset',
+          fileName: REGION_CLEANUP,
+          source: regionCacheCleanupScript(regionBuild),
+        });
+      },
+    },
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'script-defer',
@@ -392,6 +411,12 @@ export default defineConfig({
           }),
         ],
         cleanupOutdatedCaches: true,
+        // ADR 0111 §3: every region but the start region is cached on its first visit.
+        runtimeCaching: laterRegionRuntimeCaching(REGIONS, START_REGION_ID, regionBuild),
+        importScripts:
+          laterRegionRuntimeCaching(REGIONS, START_REGION_ID, regionBuild).length > 0
+            ? [REGION_CLEANUP]
+            : [],
         navigateFallback: `${base}index.html`,
       },
       devOptions: {

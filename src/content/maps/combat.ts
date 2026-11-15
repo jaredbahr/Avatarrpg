@@ -131,6 +131,9 @@ export const FOREST_ROAD: MapDef = {
   projection: 'topdown',
   // The plate runs two cells past the grid either side and three above (the pine margin).
   cameraCentreMargin: 1,
+  // The first arrival frames Lanfen and the party between the objective and the dock: the view
+  // fits 4.25 rows and centres on row 2.25, until the party has set off (`road_depart`).
+  arrivalShot: { at: { x: 1, y: 4 }, unlessVisited: 'road_depart', rows: 4.25, centreY: 2.25 },
   scene: ruleScene(FOREST_RUBBLE_CELLS),
   name: 'The Forest Road',
   kind: 'combat',
@@ -162,7 +165,7 @@ export const FOREST_ROAD: MapDef = {
    * is the Quarry Gate's lesson about which side a hazard sits on (see the
    * flask and cart there).
    *
-   * Dema's water barrel stands at the foot of the NE bank, under the slinger's
+   * Lanfen's water barrel stands at the foot of the NE bank, under the slinger's
    * perch. Broken, it soaks the bank's edge and the road below it: the map's
    * own Wet lesson carried up to the ones throwing stones, ready to freeze,
    * shock or steam. The oil flask lies on the grass island the thugs cross to

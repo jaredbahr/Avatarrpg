@@ -118,6 +118,13 @@ export class TitleScene implements Scene {
           text: 'Play alone or pass the iPad around. A tactical RPG set after Korra.',
         }),
         actions,
+        // Saves the browser may clear (#772): one plain line, never a dialog.
+        this.app.savePersistence.warning
+          ? el('p', {
+              class: 'storage-note title-storage-note',
+              text: this.app.savePersistence.warning,
+            })
+          : null,
         el(
           'div',
           { class: 'title-fineprint' },
@@ -149,7 +156,7 @@ export class TitleScene implements Scene {
       this.app.toasts.show(result.error, 'warn');
       return;
     }
-    this.app.adoptSave(result.save.state, result.save.session);
+    this.app.adoptLoaded(result.save);
   }
 
   private openLoad(): void {
