@@ -1,0 +1,17 @@
+name: zz-diag-gate
+on:
+  push:
+    branches: [claude/diag-gate-parley-webkit]
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps webkit
+      - run: npx playwright test e2e/zz-diag-gate.spec.ts --project=ipad-landscape --reporter=list
