@@ -27,9 +27,6 @@ async function fonts(page: Page, tag: string) {
   console.log('DIAG', tag, JSON.stringify(d));
 }
 
-const raf = (page: Page) =>
-  page.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
-
 const W1 = "html[data-large-text='on'] *, html[data-large-text='huge'] * { --large-text-restyle: 1 }";
 const W2 = "html[data-large-text='on'] *, html[data-large-text='huge'] *, html[data-large-text='off'] * { --large-text-restyle: 1 }";
 for (const variant of ['w1', 'w2', 'w1on'] as const)
