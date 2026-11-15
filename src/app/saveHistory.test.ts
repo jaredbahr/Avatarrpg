@@ -24,9 +24,10 @@ function sources(directory: string): string[] {
 
 describe('the app and the history revision (ADR 0112)', () => {
   const files = sources(APP).map((path) => ({ path, text: readFileSync(path, 'utf8') }));
+  const appPath = join(APP, 'App.ts');
+  const app = files.find((file) => file.path === appPath)?.text ?? '';
 
   it('stamps the revision on every slot save and every export', () => {
-    const app = files.find((file) => file.path.endsWith('/App.ts'))?.text ?? '';
     for (const call of ['saveToSlot(slot, state, {', 'exportToFile(state, {']) {
       const at = app.indexOf(call);
       expect(at, call).toBeGreaterThan(-1);
@@ -36,7 +37,7 @@ describe('the app and the history revision (ADR 0112)', () => {
     const writers = files.filter((file) => /\b(saveToSlot|exportToFile)\(/.test(file.text));
     expect(writers.map((file) => file.path.slice(APP.length)).sort()).toEqual([
       'App.ts',
-      'storage/localSaves.ts',
+      join('storage', 'localSaves.ts'),
     ]);
   });
 
@@ -54,7 +55,6 @@ describe('the app and the history revision (ADR 0112)', () => {
   });
 
   it('stamps the higher of the file and this build, so an older build never lowers a file', () => {
-    const app = files.find((file) => file.path.endsWith('/App.ts'))?.text ?? '';
     expect(app).toContain('this.historyRev = Math.max(history, HISTORY_REV);');
     // And a new game starts at this build's revision, whatever was loaded before it.
     const fresh = app.indexOf('const state = createGame(this.content, {');
