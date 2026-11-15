@@ -7,8 +7,9 @@
 import type { RegionManifest, TopDownSceneSource } from './types';
 import type { MusicTrackId } from '../music';
 import { BA_DAN_VALLEY } from './baDanValley/manifest';
+import { SALTSTEP_EMBERWATCH } from './saltstepEmberwatch/manifest';
 
-export const REGIONS: readonly RegionManifest[] = [BA_DAN_VALLEY];
+export const REGIONS: readonly RegionManifest[] = [BA_DAN_VALLEY, SALTSTEP_EMBERWATCH];
 
 /** The region a fresh game starts in: the one that owns the story's entry node. */
 export const START_REGION_ID = BA_DAN_VALLEY.id;

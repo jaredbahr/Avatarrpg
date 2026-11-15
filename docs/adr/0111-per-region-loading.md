@@ -132,6 +132,14 @@ serve last build's. A later region is therefore fetched again once after an upda
 streamed: an `<audio>` element sends Range requests and a cached 206 cannot be kept. With one region
 the list is empty, so `sw.js` and the precache are unchanged.
 
+**Amended 2026-11-15 (RG-02, the pipeline trial; for the owner's review).** The start region's
+**neighbours are precached with it.** A region is ready only when its neighbours are loaded (§2), so
+once Ba Dan valley names Saltstep and Emberwatch (the coast-road link), a new game cannot run its
+first command until RG-02's chunk is in. Left to the runtime cache, which an update clears, the demo
+itself would not start offline after an update. `laterRegions` now leaves out the start region and
+its neighbours; RG-02's chunk (about 10 KB gz) and, later, its boards join the precache, inside the
+25 MB cap. Regions further out are still cached on their first visit, as decided.
+
 ### 4. Budgets (accepted by the owner, 2026-11-14)
 
 One total per kind grows with every region and would need raising each time. Instead: a budget for

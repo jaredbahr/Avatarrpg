@@ -34,14 +34,14 @@ flowchart TD
   n82["lost_home_table<br/>Ba Dan: Ba Dan has not gone to bed. Lamps are lit all along the…"]:::entry
   n83["lost_morning<br/>Set flags"]
   n87["mira_lost<br/>Elder Mira: Sit, if you can find a stool. Half of mine are at o…"]:::entry
-  n108["pella_lost<br/>Pella: Mira tells everybody “soon.” She told me “not tonight.”"]:::entry
-  n177["sen_lost<br/>Kuan: You came back the hard way, I hear. Sit. The water’s hot."]:::entry
+  n237["pella_lost<br/>Pella: Mira tells everybody “soon.” She told me “not tonight.”"]:::entry
+  n306["sen_lost<br/>Kuan: You came back the hard way, I hear. Sit. The water’s hot."]:::entry
   n1["act1_epilogue_lost — exit to act1 / part 1"]:::external
   n14["cutting_after_explore — exit to world / part 1"]:::external
   n44["forest_explore — exit to world / part 1"]:::external
-  n218["village_explore — exit to act1 / part 1"]:::external
+  n354["village_explore — exit to act1 / part 1"]:::external
   n32 -->|"Next"| n44
-  n52 -->|"Next"| n218
+  n52 -->|"Next"| n354
   n72 -->|"Next"| n74
   n73 -->|"Next"| n76
   n74 -->|"Next"| n75
@@ -53,9 +53,9 @@ flowchart TD
   n81 -->|"Next"| n78
   n82 -->|"Next"| n80
   n83 -->|"set: (none); phase: morning"| n1
-  n87 -->|"Next"| n218
-  n108 -->|"Next"| n218
-  n177 -->|"Next"| n14
+  n87 -->|"Next"| n354
+  n237 -->|"Next"| n354
+  n306 -->|"Next"| n14
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

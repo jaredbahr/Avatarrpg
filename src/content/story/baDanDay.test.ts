@@ -18,7 +18,7 @@ import { npcNode, resolveDialogue } from '../../core/story/storyEngine';
 import { visibleNpcs } from '../../core/story/world';
 import { DAY_PHASES } from '../../core/types';
 import type { DayPhase, FlagValue, GameState, MapDef, StoryNode } from '../../core/types';
-import { STORY_PRESENTATIONS } from './presentations';
+import { presentationOf } from './presentations';
 
 const VILLAGE = 'ba_dan_village';
 const RIVERSIDE = 'ba_dan_riverside';
@@ -250,7 +250,7 @@ describe('a Ba Dan day: where and when each new conversation opens', () => {
           seen.add(id);
           const node = CONTENT.story.get(id);
           if (node?.kind === 'dialogue' || node?.kind === 'choice')
-            expect(STORY_PRESENTATIONS[id]?.mapId, `${npc.id} -> ${id}`).toBe(mapId);
+            expect(presentationOf(node)?.mapId, `${npc.id} -> ${id}`).toBe(mapId);
           queue.push(...next(node));
         }
       }

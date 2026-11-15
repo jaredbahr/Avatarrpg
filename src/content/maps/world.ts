@@ -13,6 +13,8 @@ const unvisited = (nodeId: string): Condition => ({ kind: 'not', of: visited(nod
 const rescued: Condition = { kind: 'flag', key: 'act1_complete', op: 'set' };
 /** A Driller loss (C-01): the quarry is still held, and the valley shows it. */
 const lost: Condition = { kind: 'flag', key: 'act1_lost', op: 'set' };
+/** Act I is over, won (the walk home's closing card) or lost: the coast road to RG-02 opens. */
+export const ACT1_OVER: Condition = { kind: 'any', of: [visited('demo_complete'), lost] };
 const route = (
   pos: Vec2,
   toMapId: string,
@@ -93,6 +95,29 @@ export function connectAct1(map: MapDef): MapDef {
             // small trees on both shoulders: the walkable border cells are the exit.
             [18, 19, 20].map((x) => ({ x, y: 15 })),
           ),
+        ],
+        /*
+         * Act II (RG-02): the coast road to Saltstep. A route sign on the south lawn's rim, shown once
+         * Act I is over either way: after the walk home's closing card, or after a Driller loss
+         * (`act1_lost`, #821), when the occupied village is where the party wakes. Its `when` is
+         * the region's hard gate (ADR 0011). It is a sign, not an exit, because an exit on this
+         * map must stand on a rim mouth its baked top-down ground already has, and the south lawn
+         * has none until the art pass adds one (`docs/pipeline-trial-log.md`, friction).
+         * The first time it plays Scene 2.1 on the way down.
+         */
+        npcs: [
+          ...map.npcs,
+          {
+            id: 'coast_road_sign',
+            name: 'Coast road',
+            pos: { x: 16, y: 15 },
+            sprite: 'world.route_sign',
+            interaction: 'route-sign',
+            when: ACT1_OVER,
+            node: 'mq02_coast_road',
+            // Later trips replay only the road's last beat, Parcel at the trough, then the market.
+            routes: [{ when: visited('mq02_coast_road'), node: 'mq02_coast_parcel' }],
+          },
         ],
         // The demo's ending: the first step in from the east road after the walk home.
         triggers: [

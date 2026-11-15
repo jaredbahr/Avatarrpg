@@ -78,6 +78,36 @@ const SCENES: Readonly<Record<string, Scene>> = {
       'A village clearing ringed by trees, thickest in the corners. A road of flagstones crosses the whole picture left to right through the middle, two tiles deep, and runs out through the east gate at the right edge where the flagstones give way to bare earth. At the west edge the road enters through a shallow flooded ford and pond. Four timber houses, two above the road and two below, each an open cutaway rectangle of timber walls round a visible floor of planks with a doorway opening onto a paved path that leads to the road. Between the houses above the road a paved yard opens off the road. One shallow canal enters from the west edge along row 6: nine water cells, a dry stone footbridge, then three more water cells at its east end. There is no canal along the south edge; below the road the matching paved yard has small market and garden edges, and its south lawn continues into meadow. Grass everywhere else, worn to paths near the doors.',
     light: 'Soft mid-morning light, no long shadows.',
   },
+  /*
+   * RG-02, the pipeline-trial slice. Written from the script's build list
+   * (`docs/story/scripts/act2-sparks.md`) for the map rows as they stand; the region's real art
+   * is top-down PixelLab boards (ADR 0103, 0104), so these packs are the composition record, not
+   * the art route.
+   */
+  saltstep_market: {
+    place: 'Saltstep, a market town built out over a grey bay.',
+    scene:
+      'A packed-sand quay crosses the picture left to right just above the middle, with a road of flagstones coming in at the left edge. North of it a strip of grass holds two timber warehouses, the right one a freight office with a clean brass plate. South of the quay the bay is deep, still water, and plank platforms stand out in it on piles: three near the quay, one further out on a narrow walk, and a ferry landing on the right. Tall painted level poles stand along the platform edges. Trees close the top corners and edges.',
+    light: 'Flat grey coastal daylight; the water darker than the planks.',
+  },
+  saltstep_pontoon: {
+    place: 'The freight pontoon at Saltstep, where the handlers load the barges.',
+    scene:
+      'A broad deck of weathered planks on the water, ragged at its edges, with deep harbour water all round it. A cast-iron hand pump in its crate stands near the left end, in two places. A short two-plank-wide gangway, its brake lever at its far end, joins the deck to a smaller platform on the right, where a heavy timber winch with a crane arm stands; the platform runs on to the right edge as a gangway toward a barge beyond the picture.',
+    light: 'Grey afternoon light off the water, the tide on the turn.',
+  },
+  emberwatch_parade: {
+    place: 'Emberwatch, an old military outpost across the bay, reopened for civilians.',
+    scene:
+      'A long barracks wall of grey stone runs the whole width along the top, its old slogans painted over. Below it a wide parade ground of packed sand is covered in beans drying on old tent canvas, with a spear rack used as a bean trellis. Grass rims the ground. A timber jetty juts into deep water at the lower left, where the ferry lands. A gap in the right edge leads on to the power yard.',
+    light: 'Early evening, the outpost lamps not yet lit.',
+  },
+  emberwatch_power_yard: {
+    place: 'The power yard at Emberwatch, where the live line comes in.',
+    scene:
+      'A walled yard of bare earth. Along the top edge a line of timber poles carries a live cable, a fence you can see over. At the top right a rain cistern of stone has overflowed, and standing water spreads across the yard in two broad puddles, one beside the line and one lower down. Down the right side a second row of poles holds a dead copper spur. A gate in the left wall leads back to the parade ground.',
+    light: 'Night after rain, lit by the yard lamps; the puddles catch the light.',
+  },
 };
 
 /** The game's own tones for the terrains a map holds, for the painting to sit near. */

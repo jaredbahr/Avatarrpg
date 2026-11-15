@@ -17,9 +17,12 @@ describe('region assets (ADR 0111 §4)', () => {
     for (const path of sharedMusic) expect(seen.has(path), path).toBe(false);
   });
 
-  it("gives the demo region its five boards and its three area tracks; the title's is shared", () => {
+  it("gives the demo region its five boards and its three area tracks; the title's is shared; RG-02 none yet", () => {
     const { regions, sharedMusic } = regionAssets();
-    expect(regions.map((region) => region.id)).toEqual(['ba_dan_valley']);
+    expect(regions.map((region) => region.id)).toEqual(['ba_dan_valley', 'saltstep_emberwatch']);
+    // RG-02, the pipeline trial: placeholder art and no area track yet, so nothing to budget.
+    expect(regions[1]?.artDirs).toEqual([]);
+    expect(regions[1]?.musicFiles).toEqual([]);
     expect(regions[0]?.artDirs).toEqual([
       'art/topdown/ba-dan/',
       'art/topdown/forest-road/',
