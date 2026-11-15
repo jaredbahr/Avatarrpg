@@ -210,6 +210,7 @@ describe('content builders preserve their authored values', () => {
       ['portrait.mira', 'art/portraits/mira.png', 'earth'],
       ['portrait.gao', 'art/portraits/gao.png', 'earth'],
       ['portrait.hanru', 'art/portraits/hanru.png', 'nonbender'],
+      ['portrait.bo_shan', 'art/portraits/bo_shan.png', 'earth'],
       ['portrait.pella', 'art/portraits/pella.png', 'air'],
       ['portrait.dorin', 'art/portraits/dorin.png', 'earth'],
       ['portrait.ruon', 'art/portraits/ruon.png', 'neutral'],

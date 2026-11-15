@@ -230,7 +230,6 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     readBy: [
       'map:ba_dan_village',
       'map:quarry_floor',
-      'story:welcome_home_mira',
       'story:demo_complete',
       'story:pella_home',
       'journal:bo_shan_cart',

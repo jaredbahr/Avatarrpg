@@ -52,6 +52,11 @@ CAST = {
            'half-smile, short dark hair greying at the temples under a soft brown cloth cap, a knee-length muted olive-green padded coat '
            'with a plain leather belt, holding a plain wooden spear upright; practical, few words, kind without saying so; '
            'an androgynous look, neither clearly a man nor a woman, no moustache or beard'),
+ 'bo_shan': ('pella.png', 'a broad-shouldered nineteen-year-old young man, the village cart driver and a minor stone-mover',
+             'his sister Pella\'s family look; he is a new person, not a child: light-brown skin, messy dark brown hair with a few straw bits in it, '
+             'a big boastful grin with a chipped front tooth and warm, tired, big-hearted eyes, a muted moss-green work tunic with the sleeves rolled to '
+             'the elbow, an ochre linen scarf, a worn brown leather harness strap across the chest, a coil of cart reins over one shoulder, '
+             'and one hand held up showing off a small pebble of rock floating above his palm; no beard, no armour, no weapon'),
  'sen': ('gao.png', 'a tall lanky man in his thirties, the tea keeper',
          'his friendly pose; he is a new person: narrow kind face with a slightly wry smile, short dark hair under a grey headband, a slate-grey quilted vest over a brick-red shirt, a white towel over one shoulder, a tan sash, holding out a dented tin kettle in one hand and a chipped cup with a blue handle in the other'),
 }
