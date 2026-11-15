@@ -149,7 +149,7 @@ each extra unit from the battle's seeded cursor, only in encounters that have gu
 and the AI's `scoreAbility` are untouched and still draw nothing. The headless simulator lends a table
 guest an AI profile, as it does the party, so `npm run balance` plays guest fights to the end.
 
-## The win condition: decided, built next
+## The win condition: decided (built: see the 2026-11-15 amendment below)
 
 Scene 2.5 as merged (#814, owner decisions of 2026-11-15) settles it: **win** by stopping the winch (a
 party member or Veyra stands at the winch brake at the end of a round) **or** by defeating the handlers;
@@ -194,3 +194,112 @@ whenever a unit stops on the cell, is what the script says and gives the handler
 - "Ally turn" becomes "Guest turn" on the acting card, for Ruon as well.
 - The combat HUD reads "who plays this unit" through `Session.controllerFor`, which covers heroes and
   table guests alike; the hand-off memory is now the person who took the tablet, not a unit.
+
+## Amendment, 2026-11-15: objective win conditions and round limits
+
+The win condition the section above named is built. It is a contract change (a new encounter field, a
+new way for a battle to end, a new overlay kind both backends draw), so it is recorded here rather than
+in a new ADR: it exists for this ADR's fight and follows from it.
+
+### The data
+
+Two optional encounter fields (`src/core/types.ts`, zod in `src/content/schemas.ts`):
+
+```ts
+type EncounterObjective = {
+  readonly kind: 'holdAtRoundEnd'; // a friendly unit stands on one of `cells` when a round ends
+  readonly cells: readonly Vec2[]; // the winch brake
+  readonly label: string; // the header line, written by the writing pass
+};
+
+interface EncounterDef {
+  // ...
+  readonly objective?: EncounterObjective;
+  /** Lost if not won by the end of this round (Scene 2.5: 6). 1–50. */
+  readonly loseAfterRound?: number;
+}
+```
+
+Two changes from the sketch above, both for later fights:
+
+- **The clock is its own field**, not `objective.byRound`. "Win before round N" is useful without an
+  objective (a fight against the tide, defeat everyone first), and a later objective kind may want
+  a clock of its own meaning. `loseAfterRound` works with or without an objective.
+- **The objective is a union on `kind`**, a discriminated union in the schema, so reaching an exit or
+  protecting a unit is one more member, with its own fields, not a set of optional keys on this one.
+
+**Validation** (`validateContent`, held by `src/content/objectives.test.ts`): every objective cell is in
+bounds and walkable, listed once, not a party spawn and not under a map prop (the fight would open won,
+or could never be won), and no story ally or guest starts on one. An enemy may start on one: guarding
+it is the point.
+
+### The rules
+
+`src/core/rules/objectives.ts`, used by the turn hand-off (`src/core/state/turnFlow.ts`):
+
+- **Held at the end of a round, wins.** When the turn pointer wraps, and before the next round's
+  upkeep (walls expiring, terrain ticking), `roundEndOutcome` looks for a living party member or
+  guest (faction `party` or `ally`) with any cell of its footprint on an objective cell. One there
+  seals the battle as a victory, the log says "Kaya holds the objective. The fight is won!", and
+  the round is left on the one that ended.
+- **The last round ends without a hold, loses.** Checked in the same place, after the hold, so holding
+  on the final round still wins. The log says "Out of time. This fight is lost." `battleOutcome`
+  also reads `round > loseAfterRound` as a defeat, so a save whose content later shortened the limit
+  settles on load rather than playing on.
+- **Every enemy down still wins, at once**, mid-round, as ever. **The party down still loses, first:**
+  the round-end check runs only while `battleOutcome` says the fight is active, so a guest on the
+  brake never outranks a wiped party.
+- **No randomness.** Nothing here draws from the RNG; `previewAbility` and `scoreAbility` are untouched.
+  An encounter without either field takes the old path exactly (the round-end check returns before it
+  reads anything).
+
+### The AI
+
+`src/core/rules/ai.ts`, flat points on the same scale as an ability's score, all 0 without an objective
+(so the shipped fights play as before):
+
+- **The party's side** (AI guests, and the party in the headless simulator): standing on an objective
+  cell is worth `OBJECTIVE_HOLD` (60, more than a kill's 25 plus its damage, so a guest on the brake
+  does not step off for one); every step away costs `OBJECTIVE_PULL` (3).
+- **Enemies**: standing on it is worth `OBJECTIVE_BLOCK` (24, about a kill); every step further than
+  adjacent costs `OBJECTIVE_GUARD` (1.5), so the rest gather round it without all queueing for it.
+- **First move.** A unit not on an objective cell that can reach a free one this turn walks there first
+  (the safest reachable cell, then the cheapest), then plays its turn from there. The values also
+  enter every move the planner compares (as the difference from where the unit stands) and the
+  no-attack reposition, so a guest out of reach closes on the cell and a holder stays put.
+- Enemies contest a held cell the way they fight anyone: by attacking the holder. A dedicated "hit
+  whoever is on the brake" bias is left until the trial encounter shows it is needed.
+
+### Presentation
+
+- **The board**: a new overlay kind, `objective`, from the scene's view model (the renderer reads no
+  content; `combatObjective.ts` builds one layer object per objective so the outline caches hold),
+  drawn under every other overlay, on everyone's turn, while the fight is on. On the top-down board it
+  is part of the organic wash layer both backends already draw (`topdown/wash.ts`): a mint wash
+  (`OBJECTIVE_RGB`, a colour no other overlay, surface or faction uses), a ring at each cell's foot so it
+  still reads with a figure on it, and a small pennant in the cell's upper corner. Under High contrast and
+  on the orthographic board it is a cell overlay in `OVERLAY.objective`/`objectiveEdge`, through the
+  shared `overlayColors` both backends read. Board-correctness parity holds by construction: both
+  backends draw the same layer from the same function.
+- **The header**: under the encounter's name and round, a flag mark, the label in bold and a chip with
+  the rounds left ("3 rounds left", "Last round!" in the warning tone). It is `role="status"` with the
+  accessible name "Goal: <label>. 3 rounds left"; all sizes are rem and tokens. With a round limit and
+  no objective the goal reads "Defeat every enemy".
+- **The tip**: the first fight with an objective queues a one-time combat tip, ahead of the others: "To
+  win, be standing on the flag spot when a round ends. The top bar counts the rounds." (flag
+  `guidance.tip.objective`, as the other tips).
+
+### Saves
+
+**No save field and no migration.** The hold is read off the board at the moment a round ends and the
+clock off `battle.round`; a battle won or lost that way is sealed in `phase`, which is already saved.
+`serialize.test.ts` round-trips a mid-round save with a hero on the cell and shows the loaded game
+finishes the round and wins exactly as the unsaved one does. Old saves load unchanged; the same content
+contract as the guest rules applies if an encounter's objective or limit is edited under a save.
+
+### Story text
+
+None. Every label in this change is a test placeholder ("Placeholder objective"); no shipped encounter
+has an objective yet. Scene 2.5's encounter, with its label and `loseAfterRound: 6`, comes with the trial
+region's content, and the writing pass owns the label and could give the time-out its own line (the
+crate reaching the barge) later through a `timeUpText` on the objective.

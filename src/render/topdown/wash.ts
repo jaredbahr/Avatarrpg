@@ -11,6 +11,9 @@
  * - **Area**: the armed ability's area as an ember wash; every figure in it gets a hit ring, cream
  *   for the party and red for the rest.
  * - **Path**: paired footprints along `view.path` and a ring at its end.
+ * - **Objective**: the encounter's objective cells (ADR 0116's 2026-11-15 amendment) as a mint wash
+ *   under every other overlay, all fight long, with a ring at each cell's foot (it still reads with a
+ *   figure standing there) and a small pennant in its upper corner.
  * - **Cover**: a shield pip by the aimed target's ring when it is in cover (`hasCover` with the
  *   board's roster), struck through when the ability ignores cover (`requiresLineOfSight: false`).
  *
@@ -33,6 +36,8 @@ export const AREA_RGB: Rgb = [214, 92, 70];
 export const TARGET_RGB: Rgb = [242, 140, 110];
 export const PARTY_RGB: Rgb = [242, 212, 122];
 export const ENEMY_RGB: Rgb = [242, 120, 96];
+/** The objective's mint: no other overlay, surface or faction uses it. */
+export const OBJECTIVE_RGB: Rgb = [120, 220, 160];
 /** The shadow colour, for the footprints' print and the pips' outline. */
 const INK: Rgb = [50, 33, 37];
 
@@ -62,6 +67,12 @@ export interface CoverPip {
   readonly kind: 'covered' | 'ignored';
 }
 
+/** The objective's pennant, its top-left corner at world px (x, y). */
+export interface Pennant {
+  readonly x: number;
+  readonly y: number;
+}
+
 export interface WashSpec {
   readonly grid: Grid;
   /** Drawn in order; a later wash lies over an earlier one. */
@@ -70,6 +81,8 @@ export interface WashSpec {
   readonly steps: { readonly from: Vec2; readonly path: readonly Vec2[] } | null;
   readonly rings: readonly Ring[];
   readonly pips: readonly CoverPip[];
+  /** Absent: none. */
+  readonly pennants?: readonly Pennant[];
 }
 
 /** A cell's foot point in world px (`cellX`, `cellY` in `head.js`). */
@@ -240,6 +253,29 @@ function layPip(d: Uint8ClampedArray, BW: number, BH: number, pip: CoverPip): vo
     for (let k = 0; k < 7; k++) px(d, BW, BH, pip.x - 1 + k, pip.y + 6 - k, ENEMY_RGB);
 }
 
+/** A 6×10 pennant on a pole, by row: 1 the outline and pole, 2 the mint fill. */
+const PENNANT = [
+  '110000',
+  '122100',
+  '122221',
+  '122221',
+  '122100',
+  '110000',
+  '100000',
+  '100000',
+  '100000',
+  '100000',
+] as const;
+
+function layPennant(d: Uint8ClampedArray, BW: number, BH: number, flag: Pennant): void {
+  PENNANT.forEach((row, y) =>
+    [...row].forEach((v, x) => {
+      if (v === '1') px(d, BW, BH, flag.x + x, flag.y + y, INK);
+      if (v === '2') px(d, BW, BH, flag.x + x, flag.y + y, OBJECTIVE_RGB);
+    }),
+  );
+}
+
 /** The whole overlay layer for `spec`: board-sized RGBA, one texel a world px. */
 export function washImage(spec: WashSpec): RgbaImage {
   const BW = spec.grid.width * CS,
@@ -250,6 +286,7 @@ export function washImage(spec: WashSpec): RgbaImage {
   if (spec.steps) laySteps(data, BW, BH, spec.steps.from, spec.steps.path);
   for (const ring of spec.rings) layRing(data, BW, BH, ring);
   for (const pip of spec.pips) layPip(data, BW, BH, pip);
+  for (const flag of spec.pennants ?? []) layPennant(data, BW, BH, flag);
   return { width: BW, height: BH, data };
 }
 
@@ -276,11 +313,21 @@ export function washSpec(view: MapView, square = SQUARE_FOOTPRINTS): WashSpec {
   const move = layer('move'),
     targets = layer('target'),
     area = layer('area'),
-    bonus = layer('rangeBonus');
+    bonus = layer('rangeBonus'),
+    objective = layer('objective');
   const cells = (u: MapView['units'][number]) => footprintCells(u.pos, u.size, square);
   const living = view.units.filter((u) => !u.fallen);
   const washes: WashArea[] = [];
   const rings: Ring[] = [];
+  const pennants: Pennant[] = [];
+  // The objective lies under everything else and shows whatever is armed.
+  if (objective.length) {
+    washes.push({ cells: objective, color: OBJECTIVE_RGB });
+    for (const cell of objective) {
+      rings.push({ ...footOf([cell]), color: OBJECTIVE_RGB, w: 12, h: 5 });
+      pennants.push({ x: cell.x * CS + CS - 9, y: cell.y * CS + 2 });
+    }
+  }
   if (area.length) {
     washes.push({ cells: area, color: AREA_RGB });
     const hit = new Set(area.map(posKey));
@@ -322,6 +369,7 @@ export function washSpec(view: MapView, square = SQUARE_FOOTPRINTS): WashSpec {
     steps: view.path.length && view.pathFrom ? { from: view.pathFrom, path: view.path } : null,
     rings,
     pips,
+    ...(pennants.length ? { pennants } : {}),
   };
 }
 
@@ -341,6 +389,7 @@ export function washKey(spec: WashSpec): string {
     spec.steps && [spec.steps.from, spec.steps.path],
     spec.rings,
     spec.pips,
+    spec.pennants ?? [],
   ]);
 }
 
@@ -357,7 +406,12 @@ let last: { key: string; image: RgbaImage | null } | null = null;
 /** The overlay layer for `view`, rebuilt only when what it shows changes; null when it is empty. */
 export function washLayer(view: MapView, square = SQUARE_FOOTPRINTS): RgbaImage | null {
   const spec = washSpec(view, square);
-  const empty = !spec.washes.length && !spec.steps && !spec.rings.length && !spec.pips.length;
+  const empty =
+    !spec.washes.length &&
+    !spec.steps &&
+    !spec.rings.length &&
+    !spec.pips.length &&
+    !spec.pennants?.length;
   const key = empty ? '' : washKey(spec);
   if (last?.key === key) return last.image;
   last = { key, image: empty ? null : washImage(spec) };
