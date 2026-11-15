@@ -33,6 +33,7 @@ import { BattleDraft } from '../state/battleDraft';
 import { targetableTiles, usableAbilities } from '../rules/abilities';
 import { reachable } from '../rules/grid';
 import { canMove, isAlive } from '../rules/stats';
+import { isTableControlled } from '../rules/guests';
 
 export type SimOutcome = 'victory' | 'defeat' | 'stalemate';
 
@@ -155,11 +156,14 @@ function hasLegalAction(content: ContentIndex, state: GameState, actor: Unit): b
 
 export const DEFAULT_MAX_ROUNDS = 60;
 
-/** The AI has no party profile, so the sim lends the party one. */
+/**
+ * The AI has no party profile, so the sim lends the party one, and the same
+ * to a guest the table would control (ADR 0116): nobody at the table here.
+ */
 function drivePartyWithAi(state: GameState): GameState {
   if (!state.battle) return state;
   const units: Unit[] = state.battle.units.map((unit) =>
-    unit.faction === 'party' ? { ...unit, ai: pickProfile(unit) } : unit,
+    isTableControlled(unit) ? { ...unit, ai: pickProfile(unit) } : unit,
   );
   return { ...state, battle: { ...state.battle, units } };
 }

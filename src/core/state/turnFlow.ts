@@ -9,6 +9,7 @@
  */
 
 import { advanceTurn, battleOutcome, endedOnTimeLimit } from '../rules/turnOrder';
+import { guestHasFallen, isGuest } from '../rules/guests';
 import { isAlive } from '../rules/stats';
 import type { BattleDraft } from './battleDraft';
 
@@ -16,10 +17,15 @@ import type { BattleDraft } from './battleDraft';
 export function settleOutcome(draft: BattleDraft): void {
   if (draft.phase !== 'active') return;
   const battle = draft.toBattle();
-  const outcome = battleOutcome(battle);
+  const encounter = draft.content.encounters.get(draft.encounterId);
+  const outcome = battleOutcome(battle, encounter);
   if (outcome === 'active') return;
   if (endedOnTimeLimit(battle)) {
     draft.message('The fight has gone on too long — the party pulls back to regroup.');
+  } else if (outcome === 'defeat' && guestHasFallen(battle.units, encounter)) {
+    // The one defeat a table might not see coming, so it is said out loud (ADR 0116).
+    const fallen = battle.units.find((unit) => isGuest(unit) && !isAlive(unit));
+    if (fallen) draft.message(`${fallen.name} has fallen. This fight is lost.`);
   }
   draft.phase = outcome;
   draft.emit({ type: 'battleEnded', outcome });
@@ -38,7 +44,10 @@ export function advanceToNextTurn(draft: BattleDraft): void {
     }
 
     if (!advance.unitId) return;
-    if (battleOutcome(draft.toBattle()) !== 'active') return;
+    if (
+      battleOutcome(draft.toBattle(), draft.content.encounters.get(draft.encounterId)) !== 'active'
+    )
+      return;
 
     const skipped = draft.beginTurn(advance.unitId);
     const unit = draft.unit(advance.unitId);

@@ -251,8 +251,12 @@ export interface Unit {
   readonly cooldowns: Readonly<Record<string, number>>;
   readonly statuses: readonly StatusInstance[];
 
+  /**
+   * `none` means people take this unit's turns: every party member, and a
+   * guest whose encounter declares `control: 'table'` (ADR 0116).
+   */
   readonly ai: AiProfile;
-  /** Story allies (Ruon) leave the party when the battle ends. */
+  /** Story allies and guests (faction `ally`) leave when the battle ends. */
   readonly temporary: boolean;
   /** Asset manifest key for the unit's painter. */
   readonly sprite: string;
@@ -416,6 +420,44 @@ export interface EncounterPlacement {
 }
 
 /**
+ * How a guest ally's turns are taken (ADR 0116).
+ *
+ * - `ai`: the guest plays itself through the enemy AI, on the party's side. The default.
+ * - `table`: the people at the table take its turns, one person per round in rotation.
+ */
+export type GuestControl = 'ai' | 'table';
+
+/** A guest's level: a fixed number, or an offset from the party's rounded mean level. */
+export type GuestLevel = number | { readonly partyOffset: number };
+
+/**
+ * A unit that fights on the party's side for one battle and is then gone
+ * (ADR 0116). It is never a party member: it earns no XP, never joins the
+ * roster, and nothing that happens to it in the fight is carried out of it.
+ *
+ * Exactly one of `characterId` (a playable character's kit, levelled like a
+ * party member) and `enemyId` (an enemy stat block and ability list) names
+ * what it fights with; `validateContent` holds that.
+ */
+export interface GuestAllyDef {
+  readonly characterId?: string;
+  readonly enemyId?: string;
+  /** Defaults to the encounter's `expectedLevel`, as story allies do. */
+  readonly level?: GuestLevel;
+  readonly pos: Vec2;
+  /** Defaults to `ai`. */
+  readonly control?: GuestControl;
+  /** The AI profile an `ai` guest plays with. Defaults to `aggressive`. */
+  readonly ai?: 'aggressive' | 'cautious' | 'support';
+  /** Shown instead of the character's or enemy's own name. */
+  readonly name?: string;
+  /** Character kits only: picks for the kit's `choose` entries; the first option otherwise. */
+  readonly chosen?: readonly string[];
+  /** Character kits only: the discipline past the gate; the first path otherwise. */
+  readonly discipline?: string;
+}
+
+/**
  * An alternative roster for an encounter.
  *
  * The point is that the fight you remember is not quite the fight you get: three
@@ -469,8 +511,18 @@ export interface EncounterDef {
   readonly name: string;
   readonly mapId: string;
   readonly enemies: readonly EncounterPlacement[];
-  /** Story allies that fight alongside the party for this battle only. */
+  /**
+   * Story allies that fight alongside the party for this battle only: the
+   * shorthand for an `ai` guest built from an enemy at the encounter's level.
+   */
   readonly allies: readonly EncounterPlacement[];
+  /** Guest allies (ADR 0116), placed after `allies` and before the enemies. */
+  readonly guests?: readonly GuestAllyDef[];
+  /**
+   * When true, the fight is lost the moment any guest or story ally falls.
+   * Absent or false: a fallen guest is only a fallen guest, and the fight goes on.
+   */
+  readonly loseIfGuestFalls?: boolean;
   /** Enemies added only when a flag is set (Jin's mercenaries at the boss). */
   readonly conditionalEnemies: readonly {
     readonly flag: string;
