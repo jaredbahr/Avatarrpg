@@ -17,6 +17,7 @@
 import type { Condition, ResidentProfile, StoryNode } from '../../core/types';
 import { RETURNEE_IDS } from '../residents/returnees';
 import { RETURNEES_HOME } from './return';
+import { LOST_OBJECTIVE } from './lost';
 
 const RETURNING_PROFILES = Object.fromEntries(
   RETURNEE_IDS.map((id) => [id, 'returning']),
@@ -90,6 +91,8 @@ export const ACT1_NODES: readonly StoryNode[] = [
     objective: 'Talk to Elder Mira, then take the east road to the quarry.',
     objectiveTargetId: 'elder_mira',
     objectiveVariants: [
+      // After a Driller loss, the card opens onto this hub (C-01, C-16).
+      { ...LOST_OBJECTIVE, objectiveTargetId: null },
       {
         when: RETURNEES_HOME,
         text: 'The workers are home. Talk with Mira, Pella, Gao or Dorin, or visit the river.',
@@ -927,43 +930,127 @@ export const ACT1_NODES: readonly StoryNode[] = [
     next: 'act1_victory',
     onDefeat: 'defeat_boss',
   },
+  /*
+   * The Driller loss (story bible C-01, C-02; owner, 2026-11-14): the saga
+   * goes on from here. The party gets out the way canon tells it, through a
+   * storm drain the quarry crews cut by hand, on a shout from behind the
+   * barred gallery doors. Mira and Dorin meet them on the road, and the night
+   * at home (`LOST_STORY` in lost.ts) leads to the next morning's cart, with
+   * Dorin at the reins (saga outline, decision 10). Wen's voice (partyVoices)
+   * replaces the first node's lines only.
+   */
   {
     id: 'defeat_boss',
     kind: 'dialogue',
     speaker: 'The Quarry',
     portrait: 'portrait.narrator',
     lines: [
-      'The driller blocks the ramp. You scramble up the loose stone beside it while the drill tears into the slope.',
-      'By the switchback, you have to stop. The engine keeps running below.',
-      'Mira finds you there with Dorin and a handcart. “Sit down,” she says. “We can talk at home.”',
+      'The driller swings across the foot of the ramp and stops there, engine running. The way out is shut.',
+      'You fall back against the barred gallery doors, out of the drill’s reach.',
+    ],
+    next: 'defeat_boss_drain',
+  },
+  {
+    id: 'defeat_boss_drain',
+    kind: 'dialogue',
+    speaker: 'The Quarry',
+    portrait: 'portrait.narrator',
+    lines: [
+      'Through the timber at your back, someone shouts. “The storm drain! Left of the ramp, under the grate!”',
+      'The grate is rusted, but it lifts. Below it, a drain cut by hand runs off into the dark, just high enough to crawl.',
+      'At every turn, someone has scratched an arrow into the wall and a tally of how far. The marks are in a dozen different hands.',
+      'Behind you the drill keeps going. Then there is only running water, and your own breathing.',
+    ],
+    variants: [
+      {
+        // Escorted, he could have stayed behind in the dark. He does not.
+        when: { kind: 'flag', key: 'ruon_spared', op: 'set' },
+        lines: [
+          'Through the timber at your back, someone shouts. “The storm drain! Left of the ramp, under the grate!”',
+          'The grate is rusted, but it lifts. Below it, a drain cut by hand runs off into the dark. Ruon goes down last and pulls the grate shut over his own head.',
+          'At every turn, someone has scratched an arrow into the wall and a tally of how far. The marks are in a dozen different hands.',
+          'Behind you the drill keeps going. Then there is only running water, and your own breathing.',
+        ],
+      },
+    ],
+    next: 'defeat_boss_road',
+  },
+  {
+    id: 'defeat_boss_road',
+    kind: 'dialogue',
+    speaker: 'The Forest Road',
+    portrait: 'portrait.narrator',
+    lines: [
+      'The drain lets out among the reeds of the stream below the quarry wall. You climb out grey to the knees.',
+      'It is getting dark by the time you reach the road. A lantern is coming up it: Dorin, pushing a handcart, and Mira beside him.',
+    ],
+    next: 'defeat_boss_dorin',
+  },
+  {
+    id: 'defeat_boss_dorin',
+    kind: 'dialogue',
+    speaker: 'Gate Guard Dorin',
+    portrait: 'portrait.dorin',
+    lines: [
+      'I saw the dust go up over the ridge. Mira had her shawl on before I’d finished telling her.',
+    ],
+    next: 'defeat_boss_mira',
+  },
+  {
+    id: 'defeat_boss_mira',
+    kind: 'dialogue',
+    speaker: MIRA,
+    portrait: 'portrait.mira',
+    lines: [
+      'Sit down, all of you. Whoever is most tired rides in the cart.',
+      'We can talk at home.',
+    ],
+    next: 'defeat_boss_fork',
+  },
+  {
+    id: 'defeat_boss_fork',
+    kind: 'dialogue',
+    speaker: 'The Forest Road',
+    portrait: 'portrait.narrator',
+    lines: [
+      'At the fork above Ba Dan, a cart stands at the side of the road. It has been emptied, and one wheel is split.',
+      'An ostrich horse is tied to it, chewing. Somebody has fed it.',
+      'Mira knows the cart at once: Bo-shan’s. Under the seat, Dorin finds a folded note with his own name on it.',
     ],
     next: 'act1_lost',
   },
   {
     /*
-     * The one defeat that genuinely ends the act rather than rejoining it.
-     * No compensating XP: there is no next fight in Act 1 to arrive at, and
-     * the two branches still land inside the level band the next act expects.
+     * The loss is resumable (C-01; ADR 0047's open question, answered
+     * 2026-11-14): the quarry stays occupied, the five stay held, and Ba Dan
+     * reads this flag for its occupied state (residents, NPC routes, map
+     * objectives). No compensating XP: there is no later Act I fight to
+     * arrive at, and the loss route still ends the act inside the band the
+     * next act expects (`progression.test.ts` asserts it).
      */
     id: 'act1_lost',
     kind: 'flags',
     set: { act1_lost: true },
-    next: 'act1_epilogue_lost',
+    next: 'lost_home_table',
   },
   {
+    /*
+     * A chapter break, not an ending (C-01): the departure lines that used to
+     * sit on this card now play in Ba Dan (`lost_departure`, C-32), and the
+     * card opens onto the occupied village. A save made when this was the
+     * terminal card keeps its node id and simply gains "Continue exploring".
+     */
     id: 'act1_epilogue_lost',
     kind: 'end',
     title: 'The Quarry Keeps Running',
     lines: [
-      'Stone carts leave the quarry again. At the fork, each one takes the coast road past Ba Dan.',
-      'Mira stretches the evening rice with broth. Families still come to her door asking for news from the galleries.',
-      'Grumbler’s crew rolls Bo-shan’s cart down to the fork, emptied, one wheel split, and leaves it there. Under the seat, a worker has tucked a note for Dorin: Bo-shan, the four messengers and the crews are alive.',
+      'Stone carts leave the quarry again. At the fork, each one takes the coast road past Ba Dan, with a guard walking beside it.',
       'The driller is still down there. Its parts came from Republic City; someone paid to bring them all this way.',
-      'Gao patches the wheel with what he has in the shop. Pella watches every nail. “His deliveries are still waiting,” she tells you. “Take the cart for him. Bring it back with him on it.”',
-      'Dorin writes himself a travel permit, signs it, reads it twice and stamps it. Then he climbs up and takes the reins.',
+      'Bo-shan’s cart takes the coast road too, with Dorin at the reins and his permit buttoned into his coat. There is room in the back, and you are in it.',
     ],
     teaser:
       'Across the bay, lamps burn in a Fire Nation outpost closed nine years ago. A supply boat ties up at its jetty.',
+    next: 'village_explore',
   },
   {
     id: 'act1_victory',

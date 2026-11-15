@@ -120,9 +120,13 @@ export const INTERLUDES: Readonly<Record<string, InterludeDef>> = {
   road_depart: { title: 'Into the Pines', shots: ['road', 'road'] },
   quarry_descent: { title: 'The Bottom of the Quarry', shots: ['quarry', 'quarry', 'quarry'] },
   act1_epilogue: { title: 'A Road Home', shots: ['rescue', 'rescue', 'rescue', 'rescue'] },
+  // The Driller loss (C-01, C-16): the crowded table, the morning cart, then the card.
+  lost_home_table: { title: 'The Table Stays Open', shots: ['mira', 'mira', 'mira'] },
+  lost_departure: { title: 'Patched', shots: ['village', 'village'] },
+  lost_departure_road: { title: 'Dorin Takes the Reins', shots: ['village', 'village'] },
   act1_epilogue_lost: {
-    title: 'The Table Stays Open',
-    shots: ['village', 'mira', 'gate', 'quarry', 'village', 'village', 'bay'],
+    title: 'The Coast Road',
+    shots: ['gate', 'quarry', 'village', 'bay'],
   },
   // Bo-shan takes the reins (C-32): the empty-cart painting stands in until the art batch.
   cart_departure: {

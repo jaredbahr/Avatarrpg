@@ -6,10 +6,13 @@ import { reasonMarkers } from '../story/reasons';
 import { RETURNEES_HOME, RETURNEES_RETURNING, VILLAGE_HOMECOMINGS_COMPLETE } from '../story/return';
 import { RETURNEE_PRESENTATIONS } from '../residents/returnees';
 import { SQ01_HAS_LIST, SQ01_RESOLVED } from '../story/sq01Cabbages';
+import { LOST_OBJECTIVE } from '../story/lost';
 
 const visited = (nodeId: string): Condition => ({ kind: 'visited', nodeId });
 const unvisited = (nodeId: string): Condition => ({ kind: 'not', of: visited(nodeId) });
 const rescued: Condition = { kind: 'flag', key: 'act1_complete', op: 'set' };
+/** A Driller loss (C-01): the quarry is still held, and the valley shows it. */
+const lost: Condition = { kind: 'flag', key: 'act1_lost', op: 'set' };
 const route = (
   pos: Vec2,
   toMapId: string,
@@ -61,6 +64,7 @@ export function connectAct1(map: MapDef): MapDef {
         ...map,
         objective: 'Meet the villagers, visit the riverside, or follow the east road.',
         objectiveVariants: [
+          LOST_OBJECTIVE,
           {
             when: VILLAGE_HOMECOMINGS_COMPLETE,
             text: "You've caught up with the village. Rest by the river, or explore the roads.",
@@ -156,6 +160,11 @@ export function connectAct1(map: MapDef): MapDef {
             text: 'The roadblock is gone. Follow the road west to Ba Dan.',
             objectiveTargetId: 'ba_dan_village',
           },
+          {
+            when: lost,
+            text: 'The quarry is still held. Ba Dan is west.',
+            objectiveTargetId: 'ba_dan_village',
+          },
         ],
         exits: [
           route(
@@ -221,7 +230,11 @@ export function connectAct1(map: MapDef): MapDef {
             pos: { x: 11, y: 10 },
             sprite: 'prop.cart',
             node: 'sq01_sled',
-            when: { kind: 'all', of: [SQ01_HAS_LIST, { kind: 'not', of: rescued }] },
+            // Not after a Driller loss either: its outcomes count on Dorin's handcart.
+            when: {
+              kind: 'all',
+              of: [SQ01_HAS_LIST, { kind: 'not', of: rescued }, { kind: 'not', of: lost }],
+            },
             routes: [{ when: SQ01_RESOLVED, node: 'sq01_sled_again' }],
           },
           {
@@ -232,6 +245,7 @@ export function connectAct1(map: MapDef): MapDef {
             node: 'forest_dema',
             routes: [
               { when: rescued, node: 'dema_home' },
+              { when: lost, node: 'dema_lost' },
               {
                 when: { kind: 'flag', key: 'world.ducks_seen', op: 'set' },
                 node: 'forest_dema_again',
@@ -281,6 +295,7 @@ export function connectAct1(map: MapDef): MapDef {
         objective: 'Approach the watch at the gate, or take the road back to Ba Dan.',
         objectiveVariants: [
           { when: rescued, text: 'The gate is open. Follow the forest road west to Ba Dan.' },
+          { when: lost, text: 'The quarry is still held. The forest road leads west to Ba Dan.' },
         ],
         exits: [
           route(
@@ -326,6 +341,10 @@ export function connectAct1(map: MapDef): MapDef {
             when: rescued,
             text: 'Ba Dan lies west, past the quarry gate. Kuan is at the rest stop.',
           },
+          {
+            when: lost,
+            text: 'Someone is watching the far end of the cutting. Kuan is at the rest stop; Ba Dan lies west.',
+          },
         ],
         exits: [
           route(
@@ -343,8 +362,16 @@ export function connectAct1(map: MapDef): MapDef {
             'East → Quarry Floor',
             'east',
             mouth(19, [4, 5, 6, 7]),
-            { kind: 'any', of: [visited('after_ambush'), visited('trade_chosen')] },
-            'Jin’s people are waiting further along the cutting.',
+            // After a Driller loss the quarry is held again (C-16); MQ-11 frees it. Before the
+            // ambush the crossing at x8 always comes first, so the one hint serves both.
+            {
+              kind: 'all',
+              of: [
+                { kind: 'any', of: [visited('after_ambush'), visited('trade_chosen')] },
+                { kind: 'not', of: lost },
+              ],
+            },
+            'Someone is watching the far end of the cutting. Not this way, not yet.',
           ),
         ],
         triggers: [
@@ -392,6 +419,7 @@ export function connectAct1(map: MapDef): MapDef {
             node: 'cutting_tea',
             routes: [
               { when: rescued, node: 'sen_home' },
+              { when: lost, node: 'sen_lost' },
               {
                 when: { kind: 'flag', key: 'world.tea_shared', op: 'set' },
                 node: 'cutting_tea_again',

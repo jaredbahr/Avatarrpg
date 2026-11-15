@@ -126,6 +126,17 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
     },
   },
   {
+    // A Driller loss (C-02): how the party got out, and what the note said.
+    id: 'storm_drain',
+    mapId: 'quarry_floor',
+    title: 'Out through the storm drain',
+    hint: 'Someone behind the gallery doors knows a way out.',
+    found:
+      'Crawled out through a storm drain the crews cut by hand, after someone behind the gallery doors shouted where the grate was. A note under Bo-shan’s seat says he, the four messengers and the crews are alive.',
+    when: { kind: 'flag', key: 'act1_lost', op: 'set' },
+    hintWhile: { kind: 'flag', key: 'act1_lost', op: 'set' },
+  },
+  {
     id: 'galleries',
     mapId: 'quarry_floor',
     title: 'Out of the galleries',

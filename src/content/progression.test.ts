@@ -419,6 +419,27 @@ describe('progression', () => {
     }
   });
 
+  it('carries on after a Driller loss into the same band the next act expects (C-01)', () => {
+    /*
+     * A Driller loss used to end the story; it now carries on into Act II
+     * (owner, 2026-11-14). The boss pays nothing on a loss, so this is the
+     * route most likely to fall out of the band, and it is asserted on its
+     * own rather than left out of "clean". It must also reach the occupied
+     * village's card, not stop somewhere on the way.
+     */
+    const bossLosses = ALL.filter((w) =>
+      w.steps.some((s) => s.lost && s.encounterId === 'enc_grumbler'),
+    );
+    expect(bossLosses.length, 'no route loses to the Driller').toBeGreaterThan(0);
+    for (const walk of bossLosses) {
+      const level = levelForXp(walk.finalXp);
+      expect(walk.endedAt).toBe('act1_epilogue_lost');
+      expect(walk.flags.act1_lost).toBe(true);
+      expect(level, `${walk.finalXp} XP after losing to the Driller`).toBeGreaterThanOrEqual(3);
+      expect(level, `${walk.finalXp} XP after losing to the Driller`).toBeLessThanOrEqual(5);
+    }
+  });
+
   it('keeps every enemy XP value positive except the story ally', () => {
     for (const enemy of CONTENT_BUNDLE.enemies) {
       if (enemy.id === 'ruon_ally') {

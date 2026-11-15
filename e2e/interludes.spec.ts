@@ -195,8 +195,9 @@ test('act1_victory frees the workers and walks on home without an end card', asy
   expect(await page.evaluate(() => window.fnt?.app.state?.flags)).toEqual(flags);
 });
 
+// The Driller loss card (C-01): a chapter break now, after the night at home and the morning cart.
 for (const [node, title, art] of [
-  ['act1_lost', 'The Quarry Keeps Running', 'ba-dan.webp'],
+  ['act1_epilogue_lost', 'The Quarry Keeps Running', 'quarry-gate.webp'],
 ] as const) {
   test(`${node} shows only its own outcome and can replay without changing flags`, async ({
     page,
@@ -206,9 +207,13 @@ for (const [node, title, art] of [
     await expect(page.locator('.interlude-art')).toHaveAttribute('src', new RegExp(art));
     await page.getByRole('button', { name: 'Read summary' }).click();
     await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible();
+    // The saga carries on from here (owner, 2026-11-14).
+    await expect(
+      page.getByRole('button', { name: 'Continue exploring', exact: true }),
+    ).toBeVisible();
     await page.getByRole('button', { name: 'Replay scene', exact: true }).click();
-    // Four lines, Pella's ask and Dorin at the reins, then the teaser.
-    await expect(page.locator('.line-count')).toHaveText('1 of 7');
+    // The guarded carts, the driller, the cart on the coast road, then the teaser.
+    await expect(page.locator('.line-count')).toHaveText('1 of 4');
     expect(await page.evaluate(() => window.fnt?.app.state?.flags)).toEqual(flags);
   });
 }
