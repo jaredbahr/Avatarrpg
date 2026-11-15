@@ -234,8 +234,8 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
      * the level scaling's earth defence bonus, and `raise_rubble` keeps feeding
      * the boss cover. No 150-XP mercenary matches that, and the next one up
      * (the sergeant, 210) breaks the 10% budget rule at 570. Erring toward
-     * "both roads are passable" is the right side to err on for a choice the
-     * story explicitly says has no right answer.
+     * "both roads are passable" is the right side to err on for a hard choice
+     * whose cost the story keeps in its words, not in the boss fight.
      */
     variants: [
       {

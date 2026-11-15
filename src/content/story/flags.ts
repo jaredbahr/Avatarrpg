@@ -324,10 +324,11 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     key: 'lost_ambush',
     type: 'boolean',
     values: [true],
-    meaning: 'Jin’s mercenaries beat the party in the Cutting (escort branch only).',
+    meaning:
+      'Jin’s mercenaries beat the party in the Cutting and took Ruon’s dispatch satchel, not Ruon (escort branch only).',
     arc: 'Demo · The Cutting',
     status: 'informational',
-    note: 'Unlike the other losses, no line or recap reads it yet; ruon_carried_you carries the story.',
+    note: 'No line or recap reads it yet; ruon_carried_you and jin_has_satchel carry the story.',
     setBy: ['story:lost_ambush'],
     readBy: [],
   },
@@ -340,6 +341,18 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     status: 'informational',
     note: '“The sort of thing a later act should remember about him” (act1.ts). Unread until then.',
     setBy: ['story:lost_ambush'],
+    readBy: [],
+  },
+  {
+    key: 'jin_has_satchel',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'Jin holds Ruon’s dispatch satchel, his orders and every delivery he signed for: seized in the Cutting, or handed over with him in the trade.',
+    arc: 'Demo · The Cutting',
+    status: 'informational',
+    note: 'Story bible C-10. Nothing reads it yet; MQ-02’s paper trail should, as Jin bargains over evidence.',
+    setBy: ['story:lost_ambush', 'story:trade_payment'],
     readBy: [],
   },
   {
