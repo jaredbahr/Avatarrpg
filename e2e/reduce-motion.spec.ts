@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { PNG } from 'pngjs';
@@ -56,6 +57,20 @@ const preferences = [
   { name: 'motion on', media: 'no-preference', saved: false, reduced: false },
 ] as const;
 const reducedPreferences = preferences.filter(({ reduced }) => reduced);
+
+test('OS reduced motion snaps transitions before app preferences load', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.setContent('<main><p style="transition: font-size 240ms">Preview</p></main>');
+  await page.addStyleTag({
+    content: await readFile(new URL('../src/styles/a11y.css', import.meta.url), 'utf8'),
+  });
+  const text = page.getByText('Preview', { exact: true });
+  await expect(text).toHaveCSS('transition-duration', '0.24s');
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(text).toHaveCSS('transition-duration', '0s');
+});
+
 const boards = [
   {
     name: 'Ba Dan',
