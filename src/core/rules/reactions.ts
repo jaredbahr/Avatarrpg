@@ -67,7 +67,7 @@ export function precedingLedgeDrop(
 }
 
 /** A unit standing where a reaction lands. */
-export interface CaughtUnit {
+interface CaughtUnit {
   readonly unitId: string;
   readonly name: string;
   readonly friendly: boolean;
@@ -97,7 +97,7 @@ export interface StatusForecast {
   readonly clearedStatuses: readonly StatusId[];
 }
 
-export interface PropAffectedUnit {
+interface PropAffectedUnit {
   readonly unitId: string;
   readonly name: string;
   readonly friendly: boolean;
@@ -471,7 +471,7 @@ export function forecastReactions(
 }
 
 /** Apply the status table without changing the live unit or spending RNG. */
-export function previewStatus(
+function previewStatus(
   content: ContentIndex,
   unit: Unit,
   caster: Unit,

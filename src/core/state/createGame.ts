@@ -639,7 +639,7 @@ export function reviveParty(party: readonly Unit[]): Unit[] {
 }
 
 /** A quarter of max HP back after a won fight, so a party without a healer copes. */
-export const POST_VICTORY_HEAL = 0.25;
+const POST_VICTORY_HEAL = 0.25;
 
 export function restAfterVictory(party: readonly Unit[]): Unit[] {
   return party.map((member) => ({

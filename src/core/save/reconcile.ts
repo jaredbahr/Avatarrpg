@@ -101,7 +101,7 @@ export function reconcileWorld(content: ContentIndex, state: GameState): GameSta
   return holds ? settled : { ...settled, world: { ...settled.world, talk: null } };
 }
 
-export type BattleReconcileWarning =
+type BattleReconcileWarning =
   | { readonly kind: 'missing-map'; readonly mapId: string }
   | { readonly kind: 'disconnected-snap'; readonly unitId: string; readonly pos: Vec2 }
   | { readonly kind: 'no-free-cell'; readonly unitId: string };

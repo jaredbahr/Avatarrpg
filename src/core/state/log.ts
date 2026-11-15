@@ -10,7 +10,7 @@ import type { BattleState, ContentIndex, DayPhase, GameEvent, Unit } from '../ty
 import { obscurementMissLine } from '../rules/obscurementPresentation';
 import { NATION_WORD } from '../story/conditions';
 
-export const MAX_LOG_LINES = 120;
+const MAX_LOG_LINES = 120;
 
 function nameOf(units: readonly Unit[] | undefined, id: string | null): string {
   if (!id) return 'Something';

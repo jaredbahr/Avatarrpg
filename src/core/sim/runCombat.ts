@@ -38,7 +38,7 @@ import { isTableControlled } from '../rules/guests';
 export type SimOutcome = 'victory' | 'defeat' | 'stalemate';
 
 /** A headless policy executes one complete party activation through the reducer. */
-export type SimPartyTurn = (content: ContentIndex, state: GameState, unitId: string) => StepResult;
+type SimPartyTurn = (content: ContentIndex, state: GameState, unitId: string) => StepResult;
 
 export interface SimOptions {
   readonly seed: number | string;
@@ -104,7 +104,7 @@ export interface SimResult {
   readonly diagnostics?: SimDiagnostics;
 }
 
-export interface SimIdleTurn {
+interface SimIdleTurn {
   /** Zero-based activation index; each is one runAiTurn command by default. */
   readonly commandIndex: number;
   readonly round: number;
@@ -112,7 +112,7 @@ export interface SimIdleTurn {
   readonly faction: Unit['faction'];
 }
 
-export interface SimDiagnostics {
+interface SimDiagnostics {
   /** Activation-driver calls; one runAiTurn command each when no policy is supplied. */
   readonly commandCount: number;
   readonly idleTurns: readonly SimIdleTurn[];

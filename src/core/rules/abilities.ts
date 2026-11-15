@@ -384,7 +384,7 @@ export function targetableTiles(
 /* Preview                                                             */
 /* ------------------------------------------------------------------ */
 
-export interface PreviewTarget {
+interface PreviewTarget {
   readonly unitId: string;
   readonly name: string;
   readonly friendly: boolean;
