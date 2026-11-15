@@ -217,8 +217,11 @@ content for a route of 30–40 minutes) puts a forty-hour game far past any sing
       (`npm run ids:ledger` adds new ones; it never removes). A retired id needs a row in `src/content/idAliases.ts`,
       which `applyIdAliases` (`src/core/save/aliases.ts`) applies first on load; `savedIds.test.ts` holds the ledger,
       content and aliases together.
-- [ ] **Saves outside the browser:** localStorage can be wiped (iPad storage pressure, a PC browser profile reset).
-      Keep JSON export prominent; consider a reminder after each region.
+- [ ] **Saves outside the browser** (#772): a Safari tab on the iPad deletes a site's storage after seven days of
+      browser use without a tap in the game; the Home Screen app is exempt but starts with its own empty storage. The
+      verified rules, the defences built (the game asks to be kept, one line on the title and Save menu, "Save a copy" at
+      a region's end, Save, Storage check) and the ten-minute iPad check are in `docs/device-matrix.md`, "Where the
+      saves live". Open until the iPad table there is filled in.
 - [ ] Save size per region: `sizeBudget.test.ts` today; extend with one checkpoint per region.
 
 ## 5. Devices
@@ -241,7 +244,8 @@ host allows it, and guests on a phone or TV usually have only a controller or to
 gamepad (or Steam Input mapping a controller to mouse and keys) matters; check with the actual friends first.
 
 **Adding a browser game to Steam (unverified, test in the trial):** "Add a Non-Steam Game" pointing at Chrome or Edge
-with launch options such as `--app=<game URL>` and a dedicated `--user-data-dir` (keeps saves in one profile). Not
+with launch options such as `--app=<game URL>` and a dedicated `--user-data-dir` (keeps saves in one profile; never
+Edge's `--kiosk`, which runs InPrivate and keeps nothing: `docs/device-matrix.md`, "Where the saves live"). Not
 verified here: whether Remote Play **Together** invites work for a non-Steam shortcut (Steam documents it for Steam
 games), whether the Steam overlay attaches to a Chromium window, and whether a packaged wrapper (Electron, Tauri) would
 be needed instead.
