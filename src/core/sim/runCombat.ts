@@ -7,12 +7,12 @@
  *  1. **Correctness.** A fight that never terminates, produces NaN HP, or
  *     diverges between two runs of the same seed is a bug that would otherwise
  *     only show up on a Saturday with four kids watching.
- *  2. **Balance.** Win rate per encounter at the level the slice expects, so
- *     tuning is a number rather than a feeling.
+ *  2. **Balance.** Win rate, party HP left, rounds and deaths per encounter at
+ *     the level the slice expects, so tuning is a number rather than a feeling
+ *     (`balance.ts`, ADR 0112).
  *
  * The party is driven by the same AI as the enemies. That flatters neither
- * side: a real party plays better than this, which is why the target band is
- * 70-85% rather than 50%.
+ * side: a real party plays better than this, so the numbers are a floor.
  */
 
 import { RngCursor, seedFromString } from '../rng';
