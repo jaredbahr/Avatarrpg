@@ -20,6 +20,11 @@ export interface RouteOptions {
   readonly reduceMotion: boolean;
   /** Real turns played in each fight before it is ended in the state. */
   readonly turnsPerFight: number;
+  /**
+   * Pointer positions in one sweep of the board (28 when left out). Each is a frame redrawn, which
+   * a software WebGL rasteriser takes seconds over.
+   */
+  readonly sweepSteps?: number;
   /** Says what the driver is doing, for a run that has to be diagnosed. */
   readonly log?: (line: string) => void;
   /**
@@ -189,10 +194,9 @@ async function autopilotParty(page: Page): Promise<void> {
  * Moves a pointer across the map, as a hand hovering over the board does: each tile it crosses
  * changes the hover highlight, and with an action picked, the range and path overlays with it.
  */
-async function sweepPointer(page: Page): Promise<void> {
+async function sweepPointer(page: Page, steps = 28): Promise<void> {
   const box = await page.locator('.map-canvas').first().boundingBox();
   if (!box) return;
-  const steps = 28;
   for (let step = 0; step <= steps; step++) {
     const across = 0.12 + (0.76 * step) / steps;
     const down = 0.3 + 0.4 * ((step % 7) / 6);
@@ -254,7 +258,7 @@ async function fight(page: Page, options: RouteOptions, lose: boolean): Promise<
       else if (now.activeFaction === 'party') {
         // Pick Move and hover the board before acting, so the overlays are drawn and redrawn.
         if (await click(page, 'button.action-button', 'Move', 'prefix')) {
-          await sweepPointer(page);
+          await sweepPointer(page, options.sweepSteps);
           await page.keyboard.press('Escape');
           await settle(page);
         }
@@ -413,7 +417,7 @@ export async function playRoute(page: Page, options: RouteOptions): Promise<void
         }
         if (swept !== game.location.mapId) {
           swept = game.location.mapId;
-          await sweepPointer(page);
+          await sweepPointer(page, options.sweepSteps);
         }
         const target = walkTarget(goal, game);
         if (!target) throw new Error(`Exploring with nothing to walk to: ${JSON.stringify(goal)}`);

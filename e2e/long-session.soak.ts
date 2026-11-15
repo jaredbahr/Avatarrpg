@@ -19,7 +19,8 @@
  *   npm run soak:browser -- --project canvas  # one backend
  *
  * FNT_SOAK_CYCLES sets the number of cycles, FNT_SOAK_MOTION=on plays every walk and cast in real
- * time (several times slower), and FNT_SOAK_STACKS=1 records where each surviving canvas and
+ * time (several times slower), FNT_SOAK_SWEEP sets how many pointer positions each sweep of the
+ * board takes (28; fewer shortens a software-WebGL run), and FNT_SOAK_STACKS=1 records where each surviving canvas and
  * listener was created (useful against `npm run dev`, where the frames are readable). The samples
  * and verdicts are written to `.shots/soak/<project>.json` (or under FNT_SOAK_OUT).
  */
@@ -31,6 +32,7 @@ import { installProbe, type ProbeSample } from './soak/probe';
 import { newGameFromTitle, playRoute, titleLoadAndQuit, type RouteOptions } from './soak/route';
 
 const CYCLES = Number(process.env.FNT_SOAK_CYCLES ?? 12);
+const SWEEP = process.env.FNT_SOAK_SWEEP ? Number(process.env.FNT_SOAK_SWEEP) : undefined;
 const WARMUP = Number(process.env.FNT_SOAK_WARMUP ?? 2);
 const MOTION = process.env.FNT_SOAK_MOTION === 'on';
 const STACKS = process.env.FNT_SOAK_STACKS === '1';
@@ -171,6 +173,7 @@ test('a long session neither leaks nor outgrows its bounds', async ({ page }, in
   const options: RouteOptions = {
     reduceMotion: !MOTION,
     turnsPerFight: 3,
+    ...(SWEEP === undefined ? {} : { sweepSteps: SWEEP }),
     ...(process.env.FNT_SOAK_TRACE === '1' ? { log: (line: string) => console.log(line) } : {}),
   };
   const t0 = Date.now();
