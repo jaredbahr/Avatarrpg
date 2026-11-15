@@ -98,6 +98,10 @@ pipelines, and then the older four-way hero sheets, the 128 px quarry and Cuttin
   one PR per issue.
 - **Agents:** orchestrate and judge art with the strongest model. Spin up cheaper subagents (Sonnet or Haiku) for
   mechanical or well-briefed visual work.
+- **DeepSeek:** a one-shot, self-contained task (boilerplate, test scaffolds, log or diff summaries) can go to
+  DeepSeek with `python3 scripts/deepseek.py "<brief>" -f <files> [--code --out F]` (`--help` for the rest). It never
+  touches the repo, and its output is a draft you verify before it is committed. Never use it for art, story text or
+  judgment calls. In cloud sessions the proxy adds the key; elsewhere set `DEEPSEEK_API_KEY`.
 
 ## Non-negotiables
 
