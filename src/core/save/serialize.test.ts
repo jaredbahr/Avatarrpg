@@ -19,7 +19,7 @@ import { RngCursor } from '../rng';
 import { apply } from '../state/reducer';
 import { unitAbilities } from '../rules/abilities';
 import { createBattle, createGame } from '../state/createGame';
-import { reconcileDisciplines } from './reconcile';
+import { reconcileBattleResult, reconcileDisciplines } from './reconcile';
 import type { ContentIndex, GameState } from '../types';
 import { weatherAt } from '../rules/obscurement';
 import {
@@ -91,6 +91,139 @@ function sizeTwoBattleState(): GameState {
   const battle = createBattle(CONTENT, seeded, 'enc_grumbler', rng);
   return { ...seeded, screen: 'combat', rng: rng.state, battle };
 }
+
+/**
+ * A mid-battle save with guest allies (ADR 0116): an AI character guest, an AI
+ * enemy guest and a table guest, a few turns in. Guests add no field to the
+ * save (faction `ally`, and `ai: 'none'` for the table guest), so this is the
+ * round trip that proves it, and that loading keeps them where they were.
+ */
+function guestBattleState(): { content: ContentIndex; state: GameState } {
+  const base = CONTENT.encounters.get('enc_forest_road');
+  if (!base) throw new Error('missing the Forest Road');
+  const content: ContentIndex = {
+    ...CONTENT,
+    encounters: new Map(CONTENT.encounters).set(base.id, {
+      ...base,
+      variants: [],
+      loseIfGuestFalls: true,
+      guests: [
+        { characterId: 'sura', pos: { x: 4, y: 5 }, level: { partyOffset: 1 } },
+        { enemyId: 'ruon_ally', pos: { x: 5, y: 6 } },
+        { characterId: 'bo', pos: { x: 4, y: 7 }, control: 'table' },
+      ],
+    }),
+  };
+  const seeded = createGame(content, {
+    seed: 'save-round-trip-guests',
+    party: [{ characterId: 'kaya', level: 2, autoChoose: true }],
+    startNode: 'battle_forest_road',
+  });
+  const rng = new RngCursor(seeded.rng);
+  const battle = createBattle(content, seeded, 'enc_forest_road', rng);
+  let state: GameState = { ...seeded, screen: 'combat', rng: rng.state, battle };
+  for (let i = 0; i < 6 && state.battle?.phase === 'active'; i++) {
+    const b = state.battle;
+    const actor = b.units.find((unit) => unit.id === b.order[b.turnIndex]);
+    state = apply(
+      content,
+      state,
+      actor && actor.ai === 'none' ? { type: 'endTurn', unitId: actor.id } : { type: 'runAiTurn' },
+    ).state;
+  }
+  return { content, state };
+}
+
+describe('save round trip with guest allies', () => {
+  it('survives a round trip unchanged, guests and their control modes included', () => {
+    const { content, state: before } = guestBattleState();
+    expect(before.battle?.phase).toBe('active');
+    const guestsBefore = before.battle?.units.filter((unit) => unit.faction === 'ally') ?? [];
+    expect(guestsBefore.map((unit) => unit.ai)).toEqual(['aggressive', 'aggressive', 'none']);
+
+    const result = deserialize(serialize(before, META));
+    if (!result.ok) throw new Error(result.error);
+    const after = stateFromBlob(result.blob);
+    expect(after).toEqual(before);
+
+    // The load path's repair pass leaves a healthy guest battle alone.
+    expect(reconcileBattleResult(content, after).state).toEqual(before);
+  });
+});
+
+/**
+ * A mid-battle save in an objective fight (ADR 0116's 2026-11-15 amendment): a
+ * party member on the placeholder objective cell part-way through round 1, with
+ * a round limit. The objective adds no save field (the hold is read off the
+ * board at the end of the round, the clock off `round`), so the round trip must
+ * be exact, and the loaded game must finish the round and win as the unsaved
+ * one does.
+ */
+function objectiveBattleState(): { content: ContentIndex; state: GameState } {
+  const base = CONTENT.encounters.get('enc_forest_road');
+  if (!base) throw new Error('missing the Forest Road');
+  const goal = { x: 5, y: 8 };
+  const content: ContentIndex = {
+    ...CONTENT,
+    encounters: new Map(CONTENT.encounters).set(base.id, {
+      ...base,
+      variants: [],
+      reinforcements: [],
+      objective: { kind: 'holdAtRoundEnd', cells: [goal], label: 'Placeholder objective' },
+      loseAfterRound: 6,
+    }),
+  };
+  const seeded = createGame(content, {
+    seed: 'save-round-trip-objective',
+    party: [
+      { characterId: 'kaya', level: 2, autoChoose: true },
+      { characterId: 'riko', level: 2, autoChoose: true },
+    ],
+    startNode: 'battle_forest_road',
+  });
+  const rng = new RngCursor(seeded.rng);
+  const built = createBattle(content, seeded, 'enc_forest_road', rng);
+  const battle = {
+    ...built,
+    units: built.units.map((u) => (u.characterId === 'kaya' ? { ...u, pos: goal } : u)),
+  };
+  let state: GameState = { ...seeded, screen: 'combat', rng: rng.state, battle };
+  for (let i = 0; i < 2 && state.battle?.phase === 'active'; i++) state = step(content, state);
+  return { content, state };
+}
+
+function step(content: ContentIndex, state: GameState): GameState {
+  const b = state.battle;
+  const actor = b?.units.find((unit) => unit.id === b.order[b.turnIndex]);
+  return apply(
+    content,
+    state,
+    actor && actor.ai === 'none' ? { type: 'endTurn', unitId: actor.id } : { type: 'runAiTurn' },
+  ).state;
+}
+
+describe('save round trip in an objective fight', () => {
+  it('survives a round trip unchanged and still wins at the end of the round', () => {
+    const { content, state: before } = objectiveBattleState();
+    expect(before.battle?.phase).toBe('active');
+    expect(before.battle?.round).toBe(1);
+
+    const result = deserialize(serialize(before, META));
+    if (!result.ok) throw new Error(result.error);
+    const after = stateFromBlob(result.blob);
+    expect(after).toEqual(before);
+    expect(reconcileBattleResult(content, after).state).toEqual(before);
+
+    let unsaved = before;
+    let loaded = after;
+    for (let i = 0; i < 40 && unsaved.battle?.phase === 'active'; i++) {
+      unsaved = step(content, unsaved);
+      loaded = step(content, loaded);
+    }
+    expect(unsaved.battle?.phase).toBe('victory');
+    expect(loaded).toEqual(unsaved);
+  });
+});
 
 describe('save round trip', () => {
   it('retains explicit participant identity metadata while legacy session rows remain valid', () => {

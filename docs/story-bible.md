@@ -222,11 +222,54 @@ The owner settled these where the canon documents disagreed or were silent. They
   their aunt Nala, who keeps the house. Nala is the adult at home through Acts II and III, and one more reason
   his leaving costs something.
 - **Pella writes to the cart.** With Bo-shan gone she has no scene in Acts II and III, so she sends one letter to
-  each act's camp, carried by a courier (Jinu, when he is in the party). The lists get longer and the anger at
+  each act's camp, carried by a courier (Jinu, when she is in the party). The lists get longer and the anger at
   Bo-shan sharper from letter to letter, and the MQ-11 reunion answers them.
 - **Meren Sen tells Veyra in person.** Veyra's mother comes to the assembly (MQ-10) and tells her daughter to her
   face that Rusk was the official who held back the rescue equipment in the Blackreed Flood. This gives outline
   decision 18's turn a person and a scene. Beats 18 and 19 of the outline are amended to match.
+
+### Owner decisions (2026-11-15, act scripts)
+
+The owner reviewed the four act scripts in [docs/story/scripts/](story/scripts/) on 2026-11-15 and accepted
+their open items as recommended. Each script lists what was accepted under "Decided (owner, 2026-11-15)".
+These rank with the lists above.
+
+- **Full dialogue for Acts II to V is written,** in `docs/story/scripts/` (`act2-sparks.md`,
+  `act3-currents.md`, `act4-weight.md`, `act5-balance.md`). Act II's first region is build-grade. Acts III to
+  V count as plan-grade until each is built: their lines are the starting point for that region's story PR,
+  not a promise of final wording. This extends "How far the scripts go" above.
+- **The trial slice is Saltstep market plus Emberwatch** (MQ-02 and MQ-03), with Veyra's guest-ally fight and
+  one side fight. Its build list is at the end of `act2-sparks.md`.
+- **MQ-14 is "The Engine in Revolt".** Proposed item 1 below is approved: three phases and a table vote
+  between the three endings; a lost final battle offers "Try again" or "Carry on", and "Carry on" leads to the
+  vote with its costs counted. The bible's rule that a defeat forces E-03 is superseded.
+- **Veyra's last choice is tied to how the fights went.** She puts the key down (DLG-11) if the party wins
+  its way to the release. Otherwise she refuses, is removed from command, and testifies later. In every
+  ending she has given up command and testified (outline decision 17).
+- **Veyra keeps Rusk** after her mother tells her who he was ("I cannot replace the head of security in four
+  days"). She still sees the wage packet at Saltstep in MQ-02 and has it logged.
+- **Ruon has two outcomes,** not three: supervised repair, or contesting part of the hearing while serving
+  restrictions. The bible's "remains detained after unresolved testimony" is removed. He names the harmed
+  workers before DLG-08 begins, and in Act V he runs a gang of six under Daiyu; Renn's brace crew is separate.
+- **Aru's table is at Causeway in MQ-05.** An amendment to the bible, which puts the Northern healing house's
+  outreach room at Saltstep (TR-02; PQ-03): the room stays at Saltstep, and Aru is in Causeway with a folding
+  table when the five teachers are offered.
+- **Optional side fights in every region.** Optional, XP-paying fights (bandit camps, sparring, side-quest
+  fights) so a table can level toward the discipline path it wants. Each has people with reasons, a win and a
+  carry-on that both pay XP, and no main clue. The scripts list a few per act (SF-2.1 onward). The first
+  region's is a cistern-water fight beside Luli's live line, which pays off Pella's shipped line about
+  lightning crossing a puddle.
+- **`Party:` lines are tappable choice text with no speaker.** The bible's `Player` lines are shown as choices
+  the table taps; no hero voices them.
+- **Latch asks the cart's owner,** not the party, to ride the tailgate; a party's earlier refusal stands.
+  MQ-09 has both the heist and the public inspection, a quiet close, then the fall. The Still Keeper's
+  audience in MQ-07 carries the outline's reveal inside the bible's limits. SQ-14's variant, Amri in the
+  carved chair, Jin's watch-book entry, Rusk's spillway fight for every table, Bera as the worker Veyra later
+  answers to, the old water road, Pella's extra sealed letters and the new names are all approved as written.
+- **Continuity with the shipped Act I.** MQ-02's evidence is the maker's-plate rubbing, Bo-shan's delivery
+  book and the crates' stencil; after a Driller loss the party holds only Gao's receipt, and the book stays in
+  the Driller's cab until MQ-11. Bo-shan was held about two to three weeks. Stone carts still stop at Gao's
+  trough in occupied Ba Dan.
 
 ## Fan-work rule
 
@@ -679,7 +722,8 @@ canon Avatar names this page could think of):
 Proposed on 2026-11-14 by the lore review, to reconcile places where two documents, or the documents and the
 shipped demo, disagree. Each stays proposed until the owner says yes.
 
-1. **The final mission is the outline's.** MQ-14 is "The Engine in Revolt": three phases and a table vote between
+1. **Approved 2026-11-15** (see [Owner decisions (2026-11-15, act scripts)](#owner-decisions-2026-11-15-act-scripts)).
+   **The final mission is the outline's.** MQ-14 is "The Engine in Revolt": three phases and a table vote between
    the three endings (outline decisions 6 and 7; beat 23). The bible's earlier title for it, "The Current We
    Keep", and its rule that a defeat forces ending E-03, are superseded. A lost final battle offers "Try again"
    or "Carry on" like any other, and "Carry on" plays the vote with the fronts the party failed to hold counted

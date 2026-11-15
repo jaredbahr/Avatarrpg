@@ -187,9 +187,18 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       return { before, after, pixels: PNG.sync.read(png).data };
     };
     const first = await capture('reduced-smoke-first');
+    // The hold is asserted on both clocks below: the draw time and the view's
+    // own time. The scene reads its time at the start of a frame, before the
+    // draw, so the two intervals differ by however much the two frames' draws
+    // differ (999.9 ms against 1000 on CI run 43694475932). Wait for both.
     await page.waitForFunction(
-      (at) => (window.topdownAmbienceProbe?.latest?.drawnAt ?? 0) >= at + 1000,
-      first.after.frame.drawnAt,
+      (at) => {
+        const latest = window.topdownAmbienceProbe?.latest;
+        return Boolean(
+          latest && latest.drawnAt >= at.drawnAt + 1000 && latest.time >= at.time + 1000,
+        );
+      },
+      { drawnAt: first.after.frame.drawnAt, time: first.after.frame.time },
     );
     const second = await capture('reduced-smoke-second');
     expect(first.before.backend).toBe(renderer);

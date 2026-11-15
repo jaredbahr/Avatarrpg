@@ -1,10 +1,10 @@
 # CI cost rule (Jared, 2026-09-21) — read before editing the triggers below.
 #
-# One full run of this workflow fans out to about 16 ubuntu jobs (verify, seven
-# Playwright e2e shards, seven gallery shards), bills roughly 265 runner-minutes
-# (about $2; the second, third and fourth WebKit shards, added on 2026-10-04,
-# 2026-10-31 and 2026-11-15, each repeat about five minutes of checkout, install
-# and build),
+# One full run of this workflow fans out to about 17 ubuntu jobs (verify, eight
+# Playwright e2e shards, seven gallery shards), bills roughly 270 runner-minutes
+# (about $2; the second to fifth WebKit shards, added on 2026-10-04, 2026-10-31
+# and 2026-11-15, each repeat about five minutes of checkout, install and
+# build),
 # and it ran 172 times on 2026-09-18. Billed Actions went from $0 a
 # day to $67 a day. That cannot be sustained, so:
 #
@@ -45,9 +45,15 @@ on:
 
 # A newer run of the same event on the same ref supersedes an older one. The
 # event name is part of the key so a nightly cannot cancel a push run.
+# Exception (owner, 2026-11-15): runs for pushes to `main` never cancel each
+# other, because the Pages deploy ships the newest main commit whose CI fully
+# passed, and a commit whose run was cancelled can never be that commit. The
+# cost is that a burst of merges now runs one full ~260 runner-minute CI per
+# merge instead of one for the last of them; the key includes the SHA so they
+# queue side by side rather than replace each other.
 concurrency:
-  group: ci-${{ github.event_name }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.event_name }}-${{ github.ref }}${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && format('-{0}', github.sha) || '' }}
+  cancel-in-progress: ${{ github.event_name != 'push' || github.ref != 'refs/heads/main' }}
 
 jobs:
   verify:
@@ -182,22 +188,31 @@ jobs:
           # third, so every shard would be cancelled at the limit once checkout,
           # install and build are added. WebKit takes four shards; the job limit
           # and every case budget are unchanged.
-          - label: WebKit iPad 1/4
+          # Four shards still left the third at 56 minutes of tests on run
+          # 43677621942: Playwright splits by test count, and the two longest
+          # WebKit files (quarry-return, about 16 minutes, and
+          # settings-persistence, about 12) are neighbours, so they landed
+          # together. Five shards measure at most 43 minutes on those timings.
+          - label: WebKit iPad 1/5
             browser: webkit
             artifact: webkit-1
-            projects: --project=ipad-landscape --project=ipad-portrait --shard=1/4
-          - label: WebKit iPad 2/4
+            projects: --project=ipad-landscape --project=ipad-portrait --shard=1/5
+          - label: WebKit iPad 2/5
             browser: webkit
             artifact: webkit-2
-            projects: --project=ipad-landscape --project=ipad-portrait --shard=2/4
-          - label: WebKit iPad 3/4
+            projects: --project=ipad-landscape --project=ipad-portrait --shard=2/5
+          - label: WebKit iPad 3/5
             browser: webkit
             artifact: webkit-3
-            projects: --project=ipad-landscape --project=ipad-portrait --shard=3/4
-          - label: WebKit iPad 4/4
+            projects: --project=ipad-landscape --project=ipad-portrait --shard=3/5
+          - label: WebKit iPad 4/5
             browser: webkit
             artifact: webkit-4
-            projects: --project=ipad-landscape --project=ipad-portrait --shard=4/4
+            projects: --project=ipad-landscape --project=ipad-portrait --shard=4/5
+          - label: WebKit iPad 5/5
+            browser: webkit
+            artifact: webkit-5
+            projects: --project=ipad-landscape --project=ipad-portrait --shard=5/5
     # Each runner executes one shard on a machine of its own.
     timeout-minutes: 60
     steps:

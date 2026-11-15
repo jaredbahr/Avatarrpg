@@ -11,7 +11,6 @@ import {
   waitForIdle,
   webglAvailable,
 } from './helpers';
-import { paintedTileCentre } from './projection';
 
 type Renderer = 'canvas' | 'webgl';
 type Corner = 'northWest' | 'northEast' | 'southWest' | 'southEast';
@@ -40,21 +39,68 @@ const DEVICES = [
 
 const CORNERS: readonly Corner[] = ['northWest', 'northEast', 'southWest', 'southEast'];
 
-/** The same cell edge inset by three CSS pixels, using the shared painted projection helper. */
-async function insideCorner(page: Page, pos: Vec2, corner: Corner) {
-  const origin = await paintedTileCentre(page, pos);
-  const nextColumn = await paintedTileCentre(page, { x: pos.x + 1, y: pos.y });
-  const nextRow = await paintedTileCentre(page, { x: pos.x, y: pos.y + 1 });
-  if (!origin || !nextColumn || !nextRow) return null;
-  const width = Math.hypot(nextColumn.x - origin.x, nextColumn.y - origin.y);
-  const height = Math.hypot(nextRow.x - origin.x, nextRow.y - origin.y);
-  const insetX = 3 / width;
-  const insetY = 3 / height;
-  const u = corner.endsWith('East') ? 1 - insetX : insetX;
-  const v = corner.startsWith('south') ? 1 - insetY : insetY;
-  // paintedTileCentre adds 0.5 internally, so fractional inputs keep the
-  // shared camera affine and backing-store stretch for all test points.
-  return paintedTileCentre(page, { x: pos.x + u - 0.5, y: pos.y + v - 0.5 });
+interface Aim {
+  /** Where to tap, or null for the read that only closes the sweep. */
+  readonly point: { x: number; y: number } | null;
+  /** Resolutions the observer has recorded so far. */
+  readonly prior: number;
+  /** The newest resolution and the scene's pending tile: the previous tap's result. */
+  readonly observation: PickObservation | null;
+  readonly pending: Vec2 | null;
+}
+
+/**
+ * Where to tap for `pos`, projected through the camera as it is now, together
+ * with what the previous tap did, in one page round trip.
+ *
+ * A centre is the cell's middle; a corner is the same cell edge inset by three
+ * CSS pixels. The projection is `paintedGroundPoint`'s (the camera affine and
+ * the backing-store stretch). Under CI's software WebGL every page read waits
+ * for a frame of about two seconds, so the sweep reads once a tap: the old five
+ * reads a centre and eight a corner ran the WebGL cases past their budget on
+ * reads alone (runs 43681230211 and 43689551715). Nothing runs between a tap
+ * and the next read, so the previous tap's result is the same as it was
+ * straight after the tap.
+ */
+async function aimAt(page: Page, pos: Vec2 | null, corner: Corner | null): Promise<Aim | null> {
+  return page.evaluate(
+    ({ pos, corner }) => {
+      const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+      const camera = window.fnt?.app.rendererCamera();
+      if (!canvas || !camera) return null;
+      const m = camera.groundTransform;
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const ground = (p: { x: number; y: number }) => {
+        const x = p.x * camera.tile;
+        const y = p.y * camera.tile;
+        return {
+          x: rect.left + ((m.a * x + m.c * y + m.tx) * rect.width) / (canvas.width / dpr),
+          y: rect.top + ((m.b * x + m.d * y + m.ty) * rect.height) / (canvas.height / dpr),
+        };
+      };
+      const trace = window.__topdownEveryCellTrace;
+      const scene = (window.fnt?.app as unknown as { scene?: { pending?: Vec2 | null } })?.scene;
+      const result = {
+        prior: trace?.resolutions.length ?? 0,
+        observation: trace?.resolutions.at(-1) ?? null,
+        pending: scene?.pending ?? null,
+      };
+      if (!pos) return { point: null, ...result };
+      let point = ground({ x: pos.x + 0.5, y: pos.y + 0.5 });
+      if (corner) {
+        const nextColumn = ground({ x: pos.x + 1.5, y: pos.y + 0.5 });
+        const nextRow = ground({ x: pos.x + 0.5, y: pos.y + 1.5 });
+        const width = Math.hypot(nextColumn.x - point.x, nextColumn.y - point.y);
+        const height = Math.hypot(nextRow.x - point.x, nextRow.y - point.y);
+        const u = corner.endsWith('East') ? 1 - 3 / width : 3 / width;
+        const v = corner.startsWith('south') ? 1 - 3 / height : 3 / height;
+        point = ground({ x: pos.x + u, y: pos.y + v });
+      }
+      return { point, ...result };
+    },
+    { pos, corner },
+  );
 }
 
 /**
@@ -105,28 +151,35 @@ async function installScenePickObserver(page: Page): Promise<void> {
   });
 }
 
-async function assertTouchPicked(page: Page, point: { x: number; y: number }, pos: Vec2) {
-  const prior = await page.evaluate(() => window.__topdownEveryCellTrace?.resolutions.length ?? 0);
-  await page.touchscreen.tap(point.x, point.y);
-  const observed = await page.evaluate((count) => {
-    const trace = window.__topdownEveryCellTrace;
-    return {
-      resolutionCount: (trace?.resolutions.length ?? 0) - count,
-      observation: trace?.resolutions.at(-1) ?? null,
-    };
-  }, prior);
-  expect(observed.resolutionCount).toBeGreaterThan(0);
-  expect(observed.observation).toMatchObject({
-    pointerType: 'touch',
-    intent: 'tap',
-    tile: pos,
-  });
-
-  const sceneState = await page.evaluate(() => {
-    const scene = (window.fnt?.app as unknown as { scene?: { pending?: Vec2 | null } })?.scene;
-    return scene?.pending ?? null;
-  });
-  expect(sceneState).toEqual(pos);
+/**
+ * Taps cells one after another and checks each tap's pick with the read that
+ * aims the next one (see `aimAt`); `finish` reads the last tap's result.
+ */
+function touchSweep(page: Page) {
+  let last: { aim: Aim; pos: Vec2 } | null = null;
+  const check = (now: Aim) => {
+    if (!last) return;
+    const { aim, pos } = last;
+    expect(now.prior - aim.prior, `a resolution for (${pos.x},${pos.y})`).toBeGreaterThan(0);
+    expect(now.observation).toMatchObject({ pointerType: 'touch', intent: 'tap', tile: pos });
+    expect(now.pending).toEqual(pos);
+  };
+  return {
+    async tap(pos: Vec2, corner: Corner | null, missing: string) {
+      const aim = await aimAt(page, pos, corner);
+      expect(aim?.point, missing).toBeTruthy();
+      if (!aim?.point) throw new Error(missing);
+      check(aim);
+      await page.touchscreen.tap(aim.point.x, aim.point.y);
+      last = { aim, pos };
+    },
+    async finish() {
+      const now = await aimAt(page, null, null);
+      if (!now) throw new Error('No camera after the sweep.');
+      check(now);
+      last = null;
+    },
+  };
 }
 
 const grid = buildGrid(TOPDOWN_FIXTURE);
@@ -229,28 +282,23 @@ for (const renderer of ['canvas', 'webgl'] as const satisfies readonly Renderer[
         expect(centreCount).toBe(54 - blockedFixtureCells.length);
         for (const blocked of blockedFixtureCells)
           expect(walkableKeys.has(`${blocked.x},${blocked.y}`)).toBe(false);
-        for (const pos of walkable) {
-          const point = await paintedTileCentre(page, pos);
-          expect(point, `missing painted centre for (${pos.x},${pos.y})`).not.toBeNull();
-          if (!point) throw new Error(`Missing painted centre for (${pos.x},${pos.y}).`);
-          await assertTouchPicked(page, point, pos);
-        }
+        const sweep = touchSweep(page);
+        for (const pos of walkable)
+          await sweep.tap(pos, null, `missing painted centre for (${pos.x},${pos.y})`);
 
         const cornerCounts: Record<string, number> = {};
         for (const { category, pos } of cornerCells) {
           expect(walkableKeys.has(`${pos.x},${pos.y}`), `${category} must be walkable`).toBe(true);
           let count = 0;
           for (const corner of CORNERS) {
-            const point = await insideCorner(page, pos, corner);
-            expect(point, `missing ${corner} point for ${category}`).not.toBeNull();
-            if (!point) throw new Error(`Missing ${corner} point for ${category}.`);
-            await assertTouchPicked(page, point, pos);
+            await sweep.tap(pos, corner, `missing ${corner} point for ${category}`);
             count += 1;
           }
           cornerCounts[category] = count;
           expect(count, `corner samples for ${category}`).toBe(CORNERS.length);
         }
 
+        await sweep.finish();
         const counts = await page.evaluate(() => ({
           pointerDowns: window.__topdownEveryCellTrace?.pointerDowns.length ?? 0,
           resolutions: window.__topdownEveryCellTrace?.resolutions.length ?? 0,
