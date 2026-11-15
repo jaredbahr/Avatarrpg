@@ -55,7 +55,7 @@ const NODES: readonly StoryNode[] = [
     id: 'mq03_emberwatch_explore',
     kind: 'explore',
     mapId: 'emberwatch_parade',
-    objective: 'Look around Emberwatch. The power yard is east.',
+    objective: 'Look around Emberwatch, or go east to the power yard.',
     next: 'mq03_emberwatch_explore',
   },
   say(
@@ -91,7 +91,7 @@ const NODES: readonly StoryNode[] = [
     id: 'mq03_power_yard_explore',
     kind: 'explore',
     mapId: 'emberwatch_power_yard',
-    objective: 'The power yard. Luli keeps the line here.',
+    objective: 'Talk to Luli in the power yard, or go west to the parade ground.',
     next: 'mq03_power_yard_explore',
   },
   say(
