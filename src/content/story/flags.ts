@@ -58,6 +58,7 @@ export const FLAG_ARCS = [
   'Side story · SQ-01 Too Many Cabbages',
   'Side story · SQ-02 A Very Official Gate',
   'Side story · SQ-03 Gao’s Other Ledger',
+  'Act II · Saltstep',
   'Saga · Nation standing',
   'Saga · Disciplines',
   'App · Guidance',
@@ -398,6 +399,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'story:plant_chair_decline_road',
       'story:sq03_hook',
       'story:sq03_jar',
+      'story:mq02_freight_clerk',
       'journal:gate_wages',
     ],
   },
@@ -501,6 +503,13 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'story:cutting_after_explore',
       'story:plant_chair_decline_lost',
       'story:hanru_watch',
+      'story:mq02_coast_driver',
+      'story:mq02_parcel',
+      'story:mq02_stall_reads',
+      'story:mq02_pump_driver',
+      'story:mq02_galleries',
+      'story:mq02_ferry_driver',
+      'story:sf21_driver',
       'resident:lw.npc.mira',
       'resident:lw.npc.gao',
       'resident:lw.npc.dorin',
@@ -749,6 +758,40 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
   },
 
   /* ----------------------------------------------- Nation standing (reserved prefix) */
+  /* --------------------------------------------- Act II · Saltstep (RG-02, MQ-02) */
+  {
+    key: 'lost_saltstep_docks',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'The table chose "Carry on" after losing the winch fight at the Saltstep freight pontoon: the tenth crate went to Emberwatch, and Veyra hooked the pay packet out of the water.',
+    arc: 'Act II · Saltstep',
+    status: 'live',
+    setBy: ['story:mq02_winch_lost'],
+    readBy: ['story:mq02_safety_materials', 'story:mq02_public_witnesses'],
+  },
+  {
+    key: 'inquiry_public',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'Scene 2.7: the table voted to have the customs clerk read the pay packet out at the level pole. The market heard, and Emberwatch is warned.',
+    arc: 'Act II · Saltstep',
+    status: 'live',
+    setBy: ['story:mq02_vote'],
+    readBy: ['map:saltstep_market', 'story:mq02_market_explore'],
+  },
+  {
+    key: 'inquiry_quiet',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'Scene 2.7: the table voted to seal a copy of the pay packet and carry it quietly across the bay. Nobody at Emberwatch is warned.',
+    arc: 'Act II · Saltstep',
+    status: 'live',
+    setBy: ['story:mq02_vote'],
+    readBy: ['map:saltstep_market', 'story:mq02_market_explore'],
+  },
   {
     key: 'standing.earth',
     type: 'number',
