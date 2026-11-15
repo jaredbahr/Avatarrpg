@@ -341,9 +341,22 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   `actorGrounding.test.ts` and `propGrounding.test.ts` hold it.
 - **Sprite cache sizes are device pixels.** Pass CSS size × `dpr`, or the
   sprite comes out soft on a Surface or an iPad. Both the sprite cache and the
-  Pixi texture map are bounded LRUs because iOS caps canvas memory; do not
-  hold a texture from `Texture.from` outside that map, and always pass
+  Pixi texture map are bounded LRUs because the tablet counts every canvas; do
+  not hold a texture from `Texture.from` outside that map, and always pass
   `skipCache` so a destroyed texture is never handed back for its canvas.
+- **Whoever owns a canvas gives it back** (ADR 0112). A canvas that is only
+  dropped keeps its backing store until the collector reaches it, and a sitting
+  that made canvases faster than it collected them held twenty times what it
+  used. Call `releaseCanvas` (`src/render/canvasRelease.ts`) when a cache
+  evicts or clears, when a backend is destroyed, and when a layer replaces its
+  picture; use `releaseCanvasSoon` when evicting in the middle of a frame;
+  resize a scratch canvas in place rather than making another. Anything added
+  to the window or the document belongs in a constructor that runs once a page
+  or is removed by the same owner's unmount: `App.start()` runs on every return
+  to the title. `npm run soak:browser` plays whole sittings on both backends
+  and fails on any count that rises with each one; it is not in the
+  pull-request gate, so a new owner also gets a unit test under a fake page
+  (`src/render/canvasLifetime.test.ts` shows how).
 - **A refit must not eat a pinch zoom.** The `Renderer`'s observer calls the
   scene's `onViewportChange` after every canvas box change, and the HUD
   changes that box on most turns. `CombatScene.refit()` refits only when the
