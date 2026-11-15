@@ -27735,6 +27735,156 @@
     "image_id": "4775f340-0176-5eac-8aa1-71ac04b512c2",
     "source_image_id": "4775f340-0176-5eac-8aa1-71ac04b512c2"
    }
+  },
+  {
+   "name": "rg02_portrait_veyra_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "fadc9402-cf1f-48f5-ad54-1cc15dfca50a",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of a woman engineer in her mid-forties, ...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 6021.0654640625,
+   "balance_after": 6015.0654640625,
+   "secs": 38,
+   "notes": "",
+   "ids": {
+    "background_job_id": "fadc9402-cf1f-48f5-ad54-1cc15dfca50a",
+    "image_id": "e692e96a-64af-5617-8b19-25172071260a",
+    "source_image_id": "e692e96a-64af-5617-8b19-25172071260a"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_portrait_tavi_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "7a677d22-4d86-4334-9ee7-0080b94b46b1",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of a ferry pilot in their thirties, in t...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 6015.0654640625,
+   "balance_after": 6009.0654640625,
+   "secs": 43,
+   "notes": "",
+   "ids": {
+    "background_job_id": "7a677d22-4d86-4334-9ee7-0080b94b46b1",
+    "image_id": "da46566e-f639-5484-bc8d-0735490208a2",
+    "source_image_id": "da46566e-f639-5484-bc8d-0735490208a2"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_portrait_luli_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "baffe43e-a17b-4ea3-9226-4760f65d099d",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of a sturdy woman in her early forties w...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 6009.0654640625,
+   "balance_after": 6003.0654640625,
+   "secs": 55,
+   "notes": "",
+   "ids": {
+    "background_job_id": "baffe43e-a17b-4ea3-9226-4760f65d099d",
+    "image_id": "b9c4525b-af54-5f05-8026-68da682083c8",
+    "source_image_id": "b9c4525b-af54-5f05-8026-68da682083c8"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_portrait_customs_clerk_B",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "96e08382-365b-45d5-88fe-772d616b280b",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of a fussy thin harbour customs clerk in...",
+    "no_background": false,
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 6003.0654640625,
+   "balance_after": 5997.0654640625,
+   "secs": 43,
+   "notes": "",
+   "ids": {
+    "background_job_id": "96e08382-365b-45d5-88fe-772d616b280b",
+    "image_id": "94135efe-b3df-520a-b36e-42e9380355b3",
+    "source_image_id": "94135efe-b3df-520a-b36e-42e9380355b3"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_portrait_tavi_B_s23",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "4030bc61-4d0d-4b66-a507-e70c9a4e50bc",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Highly detailed pixel art bust portrait of a ferry pilot in their thirties, in t...",
+    "no_background": false,
+    "seed": 23
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 5997.0654640625,
+   "balance_after": 5991.0654640625,
+   "secs": 42,
+   "notes": "",
+   "ids": {
+    "background_job_id": "4030bc61-4d0d-4b66-a507-e70c9a4e50bc",
+    "image_id": "67685a34-5c57-54d7-9100-593e4eeb823b",
+    "source_image_id": "67685a34-5c57-54d7-9100-593e4eeb823b"
+   },
+   "region": "saltstep_emberwatch"
   }
  ],
  "end_balance": 16728.0,
