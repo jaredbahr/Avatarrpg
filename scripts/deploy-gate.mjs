@@ -25,10 +25,11 @@ const BROWSER_JOB_NAMES = [
   'E2E Chromium touch 1/3',
   'E2E Chromium touch 2/3',
   'E2E Chromium touch 3/3',
-  'E2E WebKit iPad 1/4',
-  'E2E WebKit iPad 2/4',
-  'E2E WebKit iPad 3/4',
-  'E2E WebKit iPad 4/4',
+  'E2E WebKit iPad 1/5',
+  'E2E WebKit iPad 2/5',
+  'E2E WebKit iPad 3/5',
+  'E2E WebKit iPad 4/5',
+  'E2E WebKit iPad 5/5',
 ];
 // How many first-parent commits of main `select` inspects, newest first.
 const MAX_WALK = 50;
