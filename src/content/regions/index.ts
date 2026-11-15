@@ -28,4 +28,10 @@ export const REGION_MUSIC: Readonly<Record<string, MusicTrackId>> = Object.fromE
   REGIONS.flatMap((region) => Object.entries(region.music)),
 );
 
-export type { RegionContent, RegionManifest, StoryGroup, TopDownSceneSource } from './types';
+export type {
+  LevelBand,
+  RegionContent,
+  RegionManifest,
+  StoryGroup,
+  TopDownSceneSource,
+} from './types';
