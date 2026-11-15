@@ -275,6 +275,40 @@ export function pixiActorDepth(
 }
 
 /**
+ * Destroys a renderer and what Pixi 8.20 would otherwise keep of it for the life of the page.
+ * A scene makes a renderer and a long sitting makes hundreds; measured, each one destroyed with
+ * `destroy(false)` left a bind group, a uniform group, six `Float32Array`s and three resource
+ * hashes behind (ADR 0112), because:
+ *
+ * - `FilterSystem.destroy()` does not destroy its bind group, which stays subscribed to the
+ *   pooled pass textures and to `Texture.EMPTY`, and so is kept alive by them with the filter
+ *   uniforms it holds; the back-buffer system's shader stays subscribed to `Texture.WHITE` the
+ *   same way;
+ * - each resource hash subscribes once to the `unload` of every source it uploads, and is never
+ *   unsubscribed from the two sources every renderer shares;
+ * - the global pools (pass textures, canvases, batches) are only emptied on request.
+ *
+ * One renderer is alive at a time (a scene unmounts before the next mounts), so emptying the
+ * shared pools here takes nothing from anybody; they refill on the next frame drawn.
+ *
+ * What still stays, and cannot be reached from here: Pixi names each renderer's graphics and mesh
+ * programs uniquely (`graphics-vertex-19`) and keeps every program's whole source as a key in a
+ * module map (`createIdFromString`), about 13 KB a renderer. Only one renderer for the whole page
+ * would end that (ADR 0112).
+ */
+export function releaseRenderer(renderer: WebGLRenderer): void {
+  const filters = renderer.filter as unknown as
+    { _globalFilterBindGroup?: { destroy(): void } | null } | undefined;
+  filters?._globalFilterBindGroup?.destroy();
+  const backBuffer = renderer.backBuffer as unknown as
+    { _bigTriangleShader?: { destroy(): void } | null } | undefined;
+  backBuffer?._bigTriangleShader?.destroy();
+  Texture.EMPTY.source.unload();
+  Texture.WHITE.source.unload();
+  renderer.destroy({ removeView: false, releaseGlobalResources: true });
+}
+
+/**
  * A small canvas holding a black gradient, for the board's edge shading and
  * the vignette: one texture each, stretched over whatever it has to cover.
  * `side` is which edge of the canvas the dark end sits on.
@@ -641,7 +675,7 @@ export class PixiBackend implements RenderBackend {
     // `destroy()` can land while init is still in flight.
     if (this.destroyed) {
       app.stage.destroy({ children: true });
-      app.renderer.destroy(true);
+      releaseRenderer(app.renderer);
       return;
     }
 
@@ -811,7 +845,7 @@ export class PixiBackend implements RenderBackend {
     this.dropCastShadows();
     this.clearPixelSprites();
     this.app?.stage.destroy({ children: true });
-    this.app?.renderer.destroy(false);
+    if (this.app) releaseRenderer(this.app.renderer);
     this.app = null;
     this.groundFilter = null;
     this.shadowFilter = null;

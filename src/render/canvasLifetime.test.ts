@@ -14,7 +14,8 @@ vi.mock('../content/assets/manifest', () => ({
 vi.mock('./painters/registry', () => ({ resolvePainter: () => ({ draw: () => undefined }) }));
 
 import { Canvas2DBackend } from './backends/canvas2d';
-import { PixiBackend } from './backends/pixi';
+import { Texture, type WebGLRenderer } from 'pixi.js';
+import { PixiBackend, releaseRenderer } from './backends/pixi';
 import { releaseCanvas, releaseCanvasSoon } from './canvasRelease';
 import { DecorSheets } from './decorSheets';
 import { StrokeRasterer } from './fx/pixelStrokes';
@@ -203,6 +204,37 @@ describe('the WebGL backend', () => {
     expect(lostContexts).toBe(1);
     expect(heldPixels()).toBe(0);
     Reflect.set(PixiBackend, 'supported', null);
+  });
+});
+
+describe('a destroyed WebGL renderer', () => {
+  it('takes with it what Pixi would keep: the filter bind group, the shared pools, its hashes', () => {
+    const bindGroup = { destroy: vi.fn() };
+    const backBufferShader = { destroy: vi.fn() };
+    const destroy = vi.fn();
+    const unloaded: string[] = [];
+    const onEmpty = (): void => void unloaded.push('empty');
+    const onWhite = (): void => void unloaded.push('white');
+    Texture.EMPTY.source.once('unload', onEmpty);
+    Texture.WHITE.source.once('unload', onWhite);
+    releaseRenderer({
+      filter: { _globalFilterBindGroup: bindGroup },
+      backBuffer: { _bigTriangleShader: backBufferShader },
+      destroy,
+    } as unknown as WebGLRenderer);
+    // Left alive, the bind group stays subscribed to pooled textures and keeps its uniforms: a
+    // uniform group and six Float32Arrays per scene mount, measured.
+    expect(bindGroup.destroy).toHaveBeenCalledOnce();
+    expect(backBufferShader.destroy).toHaveBeenCalledOnce();
+    // Each renderer's hashes wait on the unload of the two textures every renderer shares.
+    expect(unloaded.sort()).toEqual(['empty', 'white']);
+    expect(destroy).toHaveBeenCalledWith({ removeView: false, releaseGlobalResources: true });
+  });
+
+  it('survives a Pixi whose internals have moved', () => {
+    const destroy = vi.fn();
+    expect(() => releaseRenderer({ destroy } as unknown as WebGLRenderer)).not.toThrow();
+    expect(destroy).toHaveBeenCalledOnce();
   });
 });
 
