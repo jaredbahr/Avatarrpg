@@ -113,8 +113,16 @@ for (const renderer of ['canvas', 'webgl'] as const satisfies readonly Renderer[
         const point = await paintedTileCentre(page, to);
         expect(point, 'no camera to map the tile through').not.toBeNull();
         if (!point) return;
+        const dbg = () => page.evaluate((pt) => {
+          const app = window.fnt!.app;
+          const hit = document.elementFromPoint(pt.x, pt.y);
+          return { pos: app.state?.location.pos, busy: app.boardBusy(), anim: app.animator.busy(performance.now()), cam: app.rendererCamera(), hit: hit?.className, toasts: [...document.querySelectorAll('.toast')].map((t) => t.textContent), followers: app.followerPositions?.(), party: app.partyPositions?.() };
+        }, point);
+        console.log('PROBE hop-before', JSON.stringify({ to, point, ...(await dbg()) }));
         await page.mouse.click(point.x, point.y);
+        console.log('PROBE hop-clicked', JSON.stringify(await dbg()));
         await waitForIdle(page);
+        console.log('PROBE hop-idle', JSON.stringify(await dbg()));
         await expect
           .poll(async () => page.evaluate(() => window.fnt?.app.state?.location.pos))
           .toEqual(to);

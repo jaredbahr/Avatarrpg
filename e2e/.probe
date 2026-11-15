@@ -1,5 +1,1 @@
---project=ipad-landscape exploration-dock -g normal
---project=ipad-landscape long-conversation-layout -g "short Largest"
---project=ipad-landscape topdown-presentation -g Recentre
---project=ipad-landscape topdown-quarry
---project=ipad-portrait gestures -g reflow
+--project=ipad-landscape topdown-quarry -g "quarry_gate walks in exploration" --repeat-each=10
