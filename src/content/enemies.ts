@@ -205,8 +205,8 @@ export const ENEMIES: readonly EnemyDef[] = [
 
   /*
    * RG-02, the pipeline-trial slice (Saltstep and Emberwatch). PLACEHOLDERS: the stat blocks are
-   * first guesses at level-1 figures, not yet swept by the balance simulator; the sprites borrow
-   * Act I figures until the region's art exists; the descriptions wait for the writing pass.
+   * first guesses at level-1 figures, not yet swept by the balance simulator; the descriptions
+   * wait for the writing pass. The sprites are the region's own (`tools/rg02chars.py`).
    * Shared content, not region content: a region cannot carry its own enemies yet (ADR 0111 §1),
    * so these ship in the boot chunk (see `docs/pipeline-trial-log.md`, friction).
    */
@@ -222,7 +222,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     abilities: ['club_swing'],
     ai: 'aggressive',
     xp: 120,
-    sprite: 'unit.enemy.thug',
+    sprite: 'unit.enemy.freighthandler',
     description:
       '[Writer placeholder] One of the handlers loading the freight pontoon at Saltstep. Paid by the crate.',
   },
@@ -236,7 +236,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     abilities: ['club_swing', 'bandit_rush'],
     ai: 'aggressive',
     xp: 100,
-    sprite: 'unit.enemy.bruiser',
+    sprite: 'unit.enemy.rigger',
     description:
       '[Writer placeholder] A laid-off line rigger, cutting down the dead copper spur in the Emberwatch power yard.',
   },
@@ -256,7 +256,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     abilities: ['strike', 'shield_bash', 'rally'],
     ai: 'aggressive',
     xp: 1,
-    sprite: 'unit.enemy.sergeant',
+    sprite: 'unit.ally.veyra',
     description: '[Writer placeholder] Veyra, fighting beside you on the freight pontoon.',
   },
 ];

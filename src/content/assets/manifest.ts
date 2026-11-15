@@ -162,6 +162,8 @@ const TOPDOWN_ACTIONS: Partial<
   wen: { cast: 'attack', by: { spark: ['gauntlet_spark', 'electrified_glove', 'shock_mine'] } },
   deserter: { cast: 'attack', by: { throw: ['oil_flask', 'torch_toss'] } },
   driller: { cast: 'slam', idle: 'rumble' },
+  // RG-02: Veyra's pressure lance is her blow; the signal flare is her rally.
+  veyra: { cast: 'lance', by: { flare: ['rally'] } },
 };
 
 /** A sheet's `actionMap`, from `TOPDOWN_ACTIONS` (its own `attack` for a sheet not listed there). */
@@ -291,6 +293,10 @@ export const TOPDOWN_KEYS: Readonly<Record<string, readonly [TopdownName, string
   // their placeholder names (`dema`, `sen`) so the shipped sheets and portraits stay put.
   'npc.dema': ['dema', 'earth'],
   'npc.sen': ['sen', 'earth'],
+  // RG-02 (Saltstep and Emberwatch): Veyra, the guest ally, and the region's two enemies.
+  'unit.ally.veyra': ['veyra', 'neutral'],
+  'unit.enemy.freighthandler': ['freighthandler', 'enemy'],
+  'unit.enemy.rigger': ['rigger', 'enemy'],
 };
 
 /**
@@ -368,6 +374,10 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'unit.enemy.sergeant': topdownSheet('sergeant', 'unit.enemy.sergeant', 'enemy'),
   'unit.enemy.driller': topdownSheet('driller', 'unit.enemy.driller', 'enemy'),
   'unit.ally.ruon': topdownSheet('ruon', 'unit.ally.ruon', 'neutral'),
+  // RG-02 (Saltstep and Emberwatch): the freight pontoon's handlers, Sabi's riggers and Veyra.
+  'unit.enemy.freighthandler': topdownSheet('freighthandler', 'unit.enemy.freighthandler', 'enemy'),
+  'unit.enemy.rigger': topdownSheet('rigger', 'unit.enemy.rigger', 'enemy'),
+  'unit.ally.veyra': topdownSheet('veyra', 'unit.ally.veyra', 'neutral'),
 
   /* --------------------------------------------------------------- NPCs */
   // The residents (issue #284), drawn top-down since T7 retired their G sheets. The shrine figure shares Mira's.

@@ -234,11 +234,14 @@ lists them.
 - Missing from the script and so not shown: SF-2.1's "the riggers put down their cutters" and the carry-on
   narration ("they get away over the wall with one coil"), which the script gives as prose, not lines.
 
-## Art production: the portraits
+## Art production, by batch
 
-RG-02's four style B portraits (ADR 0107): Veyra, Tavi Ren, Luli and the customs clerk, made by
-`prototypes/topdown/tools/portraits_b.py --prefix rg02_` from the nearest existing portrait (Jin's, Hanru's, Dema's,
-Sen's) as Dema and Sen were, and wired to their speakers in the region's story. Booked under `rg02_portrait_`, tagged
-`saltstep_emberwatch`. **30 credits** against an estimate of 72: five calls of 6, one of them Tavi's retake at seed 23
-(the seed-11 take kept Hanru's spearhead on the ferry pole). The balance read 6,021 before and 5,991 after. The other
-art batches and the region's running total are logged with their own PRs (#839 and after).
+The owner approved the estimate above (about 1,040 credits, ±50%) on 2026-11-15, with a hard stop at 1,560. Every
+job is booked in `prototypes/topdown/ledger.json` under `rg02_` and tagged `saltstep_emberwatch`, so
+`python3 tools/ledger_audit.py` totals the region. Credits are each job's own booked usage; the balance is read
+before and after each batch as a cross-check (the key is shared with other projects).
+
+| Batch                                                           | Estimate | Booked | Balance before → after                                                          | Notes                                                                                                                                                                                                                                                                                                                                                                                             |
+| --------------------------------------------------------------- | -------: | -----: | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. Characters: Veyra, the freight handler, the rigger           |      390 |    468 | 6,806 → 6,036 (with batch 2's first 302 booked alongside: 767 booked, 770 fell) | 3 bases, 16 clips of 8 headings, then retakes: the handler's swing and hit (east, west: smears, a red patch), Veyra's hit (four headings: a blade, blood) and flare (west), and a second knockout group for Veyra and the rigger (both sat up in the south), and Veyra's north-east flare (its first cel stood 2 px below her idle). The rigger's second group was not better and is not shipped. |
+| 3. Portraits, style B: Veyra, Tavi Ren, Luli, the customs clerk |       72 |     30 | 6,021 → 5,991                                                                   | `portraits_b.py --prefix rg02_` from the nearest existing portrait (Jin's, Hanru's, Dema's, Sen's), as Dema and Sen were; five calls of 6, one of them Tavi's retake at seed 23 (seed 11 kept Hanru's spearhead on the ferry pole).                                                                                                                                                               |
