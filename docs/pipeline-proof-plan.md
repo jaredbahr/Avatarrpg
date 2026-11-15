@@ -154,7 +154,9 @@ costs above: tilesets 4 × 15, objects 25 × 5, three enemies × (base + idle, w
 - [ ] **Flag registry** (#493): `src/content/flags.ts` declares every flag with its owner region, meaning and type;
       `validateContent` rejects a flag that is read but never set, set but never read, or not declared.
 - [ ] **Cross-region continuity test:** for each region entry, the set of flags that can be true or false there,
-      generated from the graph; a later region may only read flags its entry set can hold.
+      generated from the graph; a later region may only read flags its entry set can hold. **Partly done
+      (ADR 0112):** `docs/save-history.md` lists what each part of the story reads from the others, and
+      `saveHistory.test.ts` holds old saves to it; the per-entry value sets are not computed.
 - [ ] **Character availability:** who is in the party or alive at each node, so a line never has an absent speaker
       (the writing guide already asks for this by hand).
 
@@ -211,14 +213,24 @@ content for a route of 30–40 minutes) puts a forty-hour game far past any sing
 
 ### Plan: a region-one save loads years later
 
-- [ ] **Release fixtures:** each tagged release adds its golden saves under `fixtures/golden/<version>/`, never
-      regenerated; CI loads every one and plays a few commands from it.
+- [x] **Release fixtures** (ADR 0112): `npm run saves:release -- <id>` freezes a release under
+      `src/core/save/fixtures/releases/<id>/`: the golden route's saves and a snapshot of the story that wrote
+      them. The index holds every file's hash, so a release is never regenerated. `saveHistory.test.ts` loads
+      every one and plays it forward down today's route to the ending card, against a new game. The first
+      release is the existing `golden/v5` corpus (2026-11-08). **Left:** freezing one on every deploy.
+- [x] **History** (#773, ADR 0112): a save file records a history revision; backfill rules
+      (`src/content/story/flagBackfills.ts`) answer, once, for history the story started recording after the
+      save was written; a flag that gains a write under a release must say how that release's saves answer
+      (`oldSaves` in the flag registry). `docs/save-history.md` is the generated report.
 - [x] **Content ids are forever** (#765): every id a save may hold is recorded in `src/content/ids.ledger.json`
       (`npm run ids:ledger` adds new ones; it never removes). A retired id needs a row in `src/content/idAliases.ts`,
       which `applyIdAliases` (`src/core/save/aliases.ts`) applies first on load; `savedIds.test.ts` holds the ledger,
       content and aliases together.
-- [ ] **Saves outside the browser:** localStorage can be wiped (iPad storage pressure, a PC browser profile reset).
-      Keep JSON export prominent; consider a reminder after each region.
+- [ ] **Saves outside the browser** (#772): a Safari tab on the iPad deletes a site's storage after seven days of
+      browser use without a tap in the game; the Home Screen app is exempt but starts with its own empty storage. The
+      verified rules, the defences built (the game asks to be kept, one line on the title and Save menu, "Save a copy" at
+      a region's end, Save, Storage check) and the ten-minute iPad check are in `docs/device-matrix.md`, "Where the
+      saves live". Open until the iPad table there is filled in.
 - [ ] Save size per region: `sizeBudget.test.ts` today; extend with one checkpoint per region.
 
 ## 5. Devices
@@ -241,7 +253,8 @@ host allows it, and guests on a phone or TV usually have only a controller or to
 gamepad (or Steam Input mapping a controller to mouse and keys) matters; check with the actual friends first.
 
 **Adding a browser game to Steam (unverified, test in the trial):** "Add a Non-Steam Game" pointing at Chrome or Edge
-with launch options such as `--app=<game URL>` and a dedicated `--user-data-dir` (keeps saves in one profile). Not
+with launch options such as `--app=<game URL>` and a dedicated `--user-data-dir` (keeps saves in one profile; never
+Edge's `--kiosk`, which runs InPrivate and keeps nothing: `docs/device-matrix.md`, "Where the saves live"). Not
 verified here: whether Remote Play **Together** invites work for a non-Steam shortcut (Steam documents it for Steam
 games), whether the Steam overlay attaches to a Chromium window, and whether a packaged wrapper (Electron, Tauri) would
 be needed instead.

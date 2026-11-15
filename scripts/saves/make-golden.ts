@@ -5,6 +5,11 @@
  * The Driller mid-battle snapshot is taken before that adapter, after real
  * turn commands against the unmodified encounter. Importing this file is pure;
  * only direct CLI execution writes files, and existing different bytes fail.
+ *
+ * The route is a list of legs, one per checkpoint, so it can also be resumed:
+ * `playForward` takes a loaded save standing at one checkpoint and plays the
+ * rest of today's route from it (ADR 0112). `saveHistory.test.ts` does that to
+ * every frozen save and compares where it ends up with a fresh game.
  */
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
@@ -21,6 +26,7 @@ import {
 import { createGame } from '../../src/core/state/createGame';
 import { apply } from '../../src/core/state/reducer';
 import { evaluate } from '../../src/core/story/conditions';
+import { optionAvailable } from '../../src/core/story/storyEngine';
 import { exitCells } from '../../src/core/story/world';
 import type { Command, GameState, Vec2 } from '../../src/core/types';
 
@@ -46,21 +52,43 @@ export interface GoldenSave {
 const SAVED_AT = 1_700_000_000_000;
 const MAX_BYTES = 200_000;
 const CHARACTERS = ['kaya', 'nilak', 'bo', 'riko'] as const;
+/** The welcome-home crossing in Ba Dan: the first step in from the east road. */
+const WELCOME_HOME: Vec2 = { x: 20, y: 7 };
 
-function generateParty(partySize: 1 | 4): readonly GoldenSave[] {
+/** Past the last checkpoint, `playForward` reads on to the demo's ending card. */
+export const ROUTE_ENDING = 'ending';
+export type RoutePlace = GoldenCheckpoint | typeof ROUTE_ENDING;
+
+export interface RouteStop {
+  readonly checkpoint: RoutePlace;
+  readonly state: GameState;
+}
+
+/** A new game for the corpus: the same seed and party every time. */
+export function newGoldenGame(partySize: 1 | 4): GameState {
   const characterIds = CHARACTERS.slice(0, partySize);
-  let state = createGame(CONTENT, {
+  return createGame(CONTENT, {
     seed: `golden-save-corpus-486-party-${partySize}`,
     party: characterIds.map((characterId) => ({ characterId })),
     startNode: STORY_ENTRY,
   });
-  const session: SessionMeta = {
-    players: state.party.map((unit) => ({ name: unit.name, unitId: unit.id })),
-    soloPlay: partySize === 1,
-  };
-  const saves: GoldenSave[] = [];
-  const context = () =>
-    `party ${partySize}, ${state.story.nodeId ?? 'no story'}, ${state.location.mapId}`;
+}
+
+/**
+ * Plays the route's legs after `from` (every leg when `from` is null) and
+ * returns the game at each checkpoint it reaches. Throws, naming where it
+ * stood, when today's content will not let the game continue.
+ */
+function playRoute(
+  start: GameState,
+  from: GoldenCheckpoint | null,
+  label: string,
+  onCheckpoint?: (name: GoldenCheckpoint, state: GameState) => void,
+  toEnding = false,
+): readonly RouteStop[] {
+  let state = start;
+  const stops: RouteStop[] = [];
+  const context = () => `${label}, ${state.story.nodeId ?? 'no story'}, ${state.location.mapId}`;
   const requireState = (ok: boolean, message: string): void => {
     if (!ok) throw new Error(`${context()}: ${message}`);
   };
@@ -128,17 +156,24 @@ function generateParty(partySize: 1 | 4): readonly GoldenSave[] {
     }
     requireState(state.pendingChoices.length === 0, 'reward choices did not terminate');
   };
-  const story = (): void => {
+  const story = (anyChoice = false): void => {
     for (let guard = 0; guard < 150; guard++) {
       if (state.screen === 'combat') return;
       choosePending();
-      if (state.screen !== 'dialogue') return;
+      // The app reads a story node by its kind on either story screen, so a save that stopped on
+      // an ending which has since become a scene simply reads on (ADR 0112).
+      if (state.screen !== 'dialogue' && state.screen !== 'ended') return;
       const node = CONTENT.story.get(state.story.nodeId ?? '');
       if (!node) throw new Error(`${context()}: missing story node`);
+      if (node.kind === 'end') return;
       if (node.kind === 'dialogue') issue({ type: 'advanceDialogue' });
       else if (node.kind === 'choice' && (node.id === 'gate_parley' || node.id === 'ruon_choice'))
         issue({ type: 'chooseOption', optionIndex: 0 }); // Walk up; then escort Ruon.
-      else throw new Error(`${context()}: unexpected dialogue/choice ${node.kind}`);
+      else if (node.kind === 'choice' && anyChoice) {
+        const optionIndex = node.options.findIndex((option) => optionAvailable(state, option));
+        requireState(optionIndex >= 0, `no option of ${node.id} is open`);
+        issue({ type: 'chooseOption', optionIndex });
+      } else throw new Error(`${context()}: unexpected dialogue/choice ${node.kind}`);
     }
     throw new Error(`${context()}: dialogue did not terminate`);
   };
@@ -153,7 +188,7 @@ function generateParty(partySize: 1 | 4): readonly GoldenSave[] {
   const travel = (destination: string): void => {
     for (let guard = 0; guard < 20; guard++) {
       if (state.location.mapId === destination && state.screen === 'explore') return;
-      if (state.screen === 'dialogue') {
+      if (state.screen === 'dialogue' || state.screen === 'ended') {
         // In particular, the real forest_return_arrival dialogue transfers the
         // returning residents into their resting profiles and enters Ba Dan.
         story();
@@ -206,17 +241,8 @@ function generateParty(partySize: 1 | 4): readonly GoldenSave[] {
       `wrong ${name} checkpoint identity; expected ${screen}/${nodeId}`,
     );
     requireState(state.pendingChoices.length === 0, `${name} has unresolved rewards`);
-    const json =
-      serialize(state, {
-        label: `Golden ${partySize}: ${name}`,
-        summary: `${name}; walk-up/escort route; forced victories for compatibility fixtures`,
-        savedAt: SAVED_AT,
-        session,
-      }) + '\n';
-    requireState(Buffer.byteLength(json, 'utf8') < MAX_BYTES, `${name} exceeds the 200 KB limit`);
-    const parsed = deserialize(json);
-    if (!parsed.ok) throw new Error(`${context()}: generated invalid ${name}: ${parsed.error}`);
-    saves.push({ partySize, checkpoint: name, filename: `party-${partySize}-${name}.json`, json });
+    onCheckpoint?.(name, state);
+    stops.push({ checkpoint: name, state });
   };
   const forceVictoryAndResolve = (encounterId: string): void => {
     const battle = state.battle;
@@ -241,77 +267,167 @@ function generateParty(partySize: 1 | 4): readonly GoldenSave[] {
     );
   };
 
-  issue({ type: 'enterNode', nodeId: STORY_ENTRY });
-  checkpoint('new-game', STORY_ENTRY, 'dialogue');
-  story();
-  checkpoint('ba-dan', 'village_explore', 'explore');
-  travel('forest_road');
-  reachNode('road_depart', { x: 19, y: 4 });
-  story();
-  reachNode('battle_forest_road', { x: 19, y: 4 });
-  requireState(
-    state.battle?.phase === 'active' && state.battle.round === 1,
-    'forest checkpoint must precede combat actions',
-  );
-  checkpoint('before-forest', 'battle_forest_road', 'combat');
-  forceVictoryAndResolve('enc_forest_road');
-  checkpoint('after-forest', 'after_forest', 'dialogue');
-  story();
-  travel('quarry_gate');
-  reachNode('gate_parley', { x: 19, y: 5 });
-  checkpoint('quarry-gate', 'gate_parley', 'dialogue');
-  story();
-  forceVictoryAndResolve('enc_quarry_gate');
-  story();
-  requireState(
-    state.flags.ruon_spared === true && state.flags.ruon_traded !== true,
-    'expected the actual escort choice',
-  );
-  travel('ambush_road');
-  checkpoint('cutting', 'cutting_explore', 'explore');
-  reachNode('battle_ambush', { x: 19, y: 4 });
-  forceVictoryAndResolve('enc_ambush');
-  story();
-  travel('quarry_floor');
-  reachNode('quarry_descent', { x: 17, y: 5 });
-  story();
-  requireState(
-    state.battle?.encounterId === 'enc_grumbler' && state.battle.phase === 'active',
-    'expected the unmodified active Driller encounter',
-  );
-  for (let turn = 0; turn < 3; turn++) {
-    const battle = state.battle;
-    if (!battle || battle.phase !== 'active')
-      throw new Error(`${context()}: Driller fight ended before the mid-battle checkpoint`);
-    const actor = battle.units.find((unit) => unit.id === battle.order[battle.turnIndex]);
-    if (!actor || actor.hp <= 0) throw new Error(`${context()}: no living active actor`);
-    if (actor.ai === 'none') issue({ type: 'endTurn', unitId: actor.id });
-    else issue({ type: 'runAiTurn' });
-  }
-  requireState(state.battle?.phase === 'active', 'mid-battle checkpoint is no longer active');
-  checkpoint('driller-mid', 'battle_grumbler', 'combat');
-  forceVictoryAndResolve('enc_grumbler');
-  requireState(state.flags.act1_complete === true, 'Driller resolution did not complete the act');
-  checkpoint('driller-won', 'act1_epilogue', 'dialogue');
-  // The workers-are-free beat reads through to the walk home on the quarry floor.
-  story();
-  travel('ambush_road');
-  travel('quarry_gate');
-  travel('forest_road');
-  travel('ba_dan_village');
-  requireState(
-    RETURNEE_IDS.every((id) => state.world.residentProfiles[id] === 'resting'),
-    'the real homecoming did not settle every returnee',
-  );
-  checkpoint('home', 'village_return_explore', 'explore');
-  requireState(saves.length === GOLDEN_CHECKPOINTS.length, 'incomplete checkpoint corpus');
+  /** One leg per checkpoint: what takes the game from the checkpoint before it to this one. */
+  const legs: Readonly<Record<GoldenCheckpoint, () => void>> = {
+    'new-game': () => {
+      issue({ type: 'enterNode', nodeId: STORY_ENTRY });
+      checkpoint('new-game', STORY_ENTRY, 'dialogue');
+    },
+    'ba-dan': () => {
+      story();
+      checkpoint('ba-dan', 'village_explore', 'explore');
+    },
+    'before-forest': () => {
+      travel('forest_road');
+      reachNode('road_depart', { x: 19, y: 4 });
+      story();
+      reachNode('battle_forest_road', { x: 19, y: 4 });
+      requireState(
+        state.battle?.phase === 'active' && state.battle.round === 1,
+        'forest checkpoint must precede combat actions',
+      );
+      checkpoint('before-forest', 'battle_forest_road', 'combat');
+    },
+    'after-forest': () => {
+      forceVictoryAndResolve('enc_forest_road');
+      checkpoint('after-forest', 'after_forest', 'dialogue');
+    },
+    'quarry-gate': () => {
+      story();
+      travel('quarry_gate');
+      reachNode('gate_parley', { x: 19, y: 5 });
+      checkpoint('quarry-gate', 'gate_parley', 'dialogue');
+    },
+    cutting: () => {
+      story();
+      forceVictoryAndResolve('enc_quarry_gate');
+      story();
+      requireState(
+        state.flags.ruon_spared === true && state.flags.ruon_traded !== true,
+        'expected the actual escort choice',
+      );
+      travel('ambush_road');
+      checkpoint('cutting', 'cutting_explore', 'explore');
+    },
+    'driller-mid': () => {
+      reachNode('battle_ambush', { x: 19, y: 4 });
+      forceVictoryAndResolve('enc_ambush');
+      story();
+      travel('quarry_floor');
+      reachNode('quarry_descent', { x: 17, y: 5 });
+      story();
+      requireState(
+        state.battle?.encounterId === 'enc_grumbler' && state.battle.phase === 'active',
+        'expected the unmodified active Driller encounter',
+      );
+      for (let turn = 0; turn < 3; turn++) {
+        const battle = state.battle;
+        if (!battle || battle.phase !== 'active')
+          throw new Error(`${context()}: Driller fight ended before the mid-battle checkpoint`);
+        const actor = battle.units.find((unit) => unit.id === battle.order[battle.turnIndex]);
+        if (!actor || actor.hp <= 0) throw new Error(`${context()}: no living active actor`);
+        if (actor.ai === 'none') issue({ type: 'endTurn', unitId: actor.id });
+        else issue({ type: 'runAiTurn' });
+      }
+      requireState(state.battle?.phase === 'active', 'mid-battle checkpoint is no longer active');
+      checkpoint('driller-mid', 'battle_grumbler', 'combat');
+    },
+    'driller-won': () => {
+      forceVictoryAndResolve('enc_grumbler');
+      requireState(
+        state.flags.act1_complete === true,
+        'Driller resolution did not complete the act',
+      );
+      checkpoint('driller-won', 'act1_epilogue', 'dialogue');
+    },
+    home: () => {
+      // The workers-are-free beat reads through to the walk home on the quarry floor.
+      story();
+      travel('ambush_road');
+      travel('quarry_gate');
+      travel('forest_road');
+      travel('ba_dan_village');
+      requireState(
+        RETURNEE_IDS.every((id) => state.world.residentProfiles[id] === 'resting'),
+        'the real homecoming did not settle every returnee',
+      );
+      checkpoint('home', 'village_return_explore', 'explore');
+    },
+  };
+
+  /** From home: the first step in from the east road, the welcome home, and the ending card. */
+  const ending = (): void => {
+    requireState(state.location.mapId === 'ba_dan_village', 'the ending starts at home');
+    for (let guard = 0; guard < 20 && state.screen === 'explore'; guard++)
+      issue({ type: 'walkTo', pos: WELCOME_HOME });
+    story(true);
+    const node = CONTENT.story.get(state.story.nodeId ?? '');
+    requireState(
+      node?.kind === 'end' && state.screen === 'ended',
+      'the welcome home did not reach an ending card',
+    );
+    stops.push({ checkpoint: ROUTE_ENDING, state });
+  };
+
+  const first = from === null ? 0 : GOLDEN_CHECKPOINTS.indexOf(from) + 1;
+  for (const name of GOLDEN_CHECKPOINTS.slice(first)) legs[name]();
+  if (toEnding) ending();
+  return stops;
+}
+
+/** A fresh game played down the whole route: the game at every checkpoint. */
+export function playFresh(partySize: 1 | 4): readonly RouteStop[] {
+  return playRoute(newGoldenGame(partySize), null, `party ${partySize}`, undefined, true);
+}
+
+/**
+ * A loaded save standing at `from`, played down the rest of today's route.
+ * `label` names the save in the error when the story will not let it continue.
+ */
+export function playForward(
+  start: GameState,
+  from: GoldenCheckpoint,
+  label: string,
+): readonly RouteStop[] {
+  return playRoute(start, from, label, undefined, true);
+}
+
+function generateParty(partySize: 1 | 4, history: number): readonly GoldenSave[] {
+  const start = newGoldenGame(partySize);
+  const session: SessionMeta = {
+    players: start.party.map((unit) => ({ name: unit.name, unitId: unit.id })),
+    soloPlay: partySize === 1,
+  };
+  const saves: GoldenSave[] = [];
+  playRoute(start, null, `party ${partySize}`, (name, state) => {
+    const json =
+      serialize(state, {
+        label: `Golden ${partySize}: ${name}`,
+        summary: `${name}; walk-up/escort route; forced victories for compatibility fixtures`,
+        savedAt: SAVED_AT,
+        session,
+        history,
+      }) + '\n';
+    if (Buffer.byteLength(json, 'utf8') >= MAX_BYTES)
+      throw new Error(`party ${partySize}: ${name} exceeds the 200 KB limit`);
+    const parsed = deserialize(json);
+    if (!parsed.ok)
+      throw new Error(`party ${partySize}: generated invalid ${name}: ${parsed.error}`);
+    saves.push({ partySize, checkpoint: name, filename: `party-${partySize}-${name}.json`, json });
+  });
+  if (saves.length !== GOLDEN_CHECKPOINTS.length) throw new Error('incomplete checkpoint corpus');
   return saves;
 }
 
-export async function generateGoldenSaves(): Promise<readonly GoldenSave[]> {
+/**
+ * The corpus from today's content. `history` is the history revision stamped
+ * on each file (ADR 0112): the content's own for a release, 0 for the format
+ * corpus, whose files predate revisions.
+ */
+export async function generateGoldenSaves(history = 0): Promise<readonly GoldenSave[]> {
   const options = await resolveConfig(fileURLToPath(import.meta.url));
   if (!options) throw new Error('Golden generation requires the repository Prettier configuration');
-  const saves = [1, 4].flatMap((size) => generateParty(size as 1 | 4));
+  const saves = [1, 4].flatMap((size) => generateParty(size as 1 | 4, history));
   return Promise.all(
     saves.map(async (save) => {
       const json = await format(save.json, { ...options, parser: 'json', filepath: save.filename });

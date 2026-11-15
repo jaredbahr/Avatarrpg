@@ -40,7 +40,8 @@ const roleTiles = (state: GameState) =>
 
 describe('background roles on the village (W8)', () => {
   it('staff the gate at midday before victory, and stand the household adult by Pella', () => {
-    const state = at({ x: 3, y: 7 });
+    // After Mira's briefing: before it Pella sits at Mira's table (DLG-01).
+    const state = at({ x: 3, y: 7 }, ['mira_intro']);
     expect(state.world.clock.phase).toBe('midday');
     expect(backgroundFigures(CONTENT, VILLAGE, state)).toEqual([
       { id: 'bg.relief_watch', label: 'Relief watch', sprite: 'npc.guard', pos: POST },
@@ -65,7 +66,10 @@ describe('background roles on the village (W8)', () => {
 
   it('keep an approach to Pella off the household adult beside her', () => {
     // From here the first tile beside Pella that `findApproach` tries is the yard itself.
-    const result = apply(CONTENT, at({ x: 12, y: 14 }), { type: 'walkTo', pos: { x: 11, y: 12 } });
+    const result = apply(CONTENT, at({ x: 12, y: 14 }, ['mira_intro']), {
+      type: 'walkTo',
+      pos: { x: 11, y: 12 },
+    });
     expect(result.state.screen).toBe('dialogue');
     expect(distance(result.state.location.pos, { x: 11, y: 12 })).toBe(1);
     expect(roleTiles(result.state).has(posKey(result.state.location.pos))).toBe(false);

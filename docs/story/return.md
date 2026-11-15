@@ -22,71 +22,71 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 flowchart TD
   n13["cart_departure<br/>Ba Dan: Bo-shan’s cart comes down from the quarry floor with on…"]
   n18["cutting_return_explore<br/>Explore ambush_road: The workers are returning to Ba Dan. Ba Da…"]:::entry
-  n26["dema_home<br/>Lanfen: The crews came past. A few stopped to ask about the str…"]:::entry
-  n27(["demo_complete<br/>Home to Ba Dan"])
-  n32["dorin_home<br/>Gate Guard Dorin: I saw them coming round the bend. Pella was t…"]:::entry
-  n39["forest_return_arrival<br/>The West Road: The road bends, and Ba Dan is below: cooking smo…"]:::entry
-  n40["forest_return_arrived<br/>Set flags"]
-  n41["forest_return_explore<br/>Explore forest_road: The five workers are returning. Continue w…"]:::entry
-  n44["gao_home<br/>Gao the Shopkeeper: Leave your packs by the door. There is rice…"]:::entry
-  n45["gao_home_cold<br/>Gao the Shopkeeper: The workers are home. I am glad of that. Th…"]:::entry
-  n51["gate_return_explore<br/>Explore quarry_gate: The workers are returning. The gate is ope…"]:::entry
-  n88["pella_home<br/>Pella: My brother is home. Bo-shan. He came through the gate an…"]:::entry
-  n101["quarry_after_explore<br/>Explore quarry_floor: The five workers are returning with you. …"]:::entry
-  n126["reunion_all_right<br/>Bo-shan: I’m all right."]
-  n127["reunion_bowl<br/>Mira’s Table: Mira sets his covered bowl in front of him and li…"]
-  n128["reunion_hot<br/>Elder Mira: Careful. It’s hot."]
-  n129["reunion_i_did<br/>Bo-shan: I did."]
-  n130["reunion_kept<br/>Pella: She kept making it. In case you came back hungry."]
-  n131["reunion_run<br/>Mira’s Table: Pella comes down the lane at a run. She reaches B…"]
-  n132["reunion_shaking<br/>Pella: You’re shaking."]
-  n133["reunion_sit<br/>Bo-shan: I know. Let me sit down a minute."]
-  n134["reunion_sleeve<br/>Mira’s Table: She keeps hold of his sleeve all the way to the t…"]
-  n135["reunion_sorry<br/>Bo-shan: I’m sorry."]
-  n136["reunion_thanks<br/>Bo-shan: Thank you."]
-  n137["reunion_tuesday<br/>Pella: You said Tuesday."]
-  n138["reunion_waited<br/>Pella: I waited by the road."]
-  n146["riverside_mira_home<br/>Elder Mira: I spent the morning moving beds. Everyone wants the…"]:::entry
-  n155["sen_home<br/>Kuan: They came through just ahead of you. Filled this bench an…"]:::entry
-  n198["village_return_explore<br/>Explore ba_dan_village: The workers are home. Talk with Mira, P…"]:::entry
-  n199["welcome_home_dorin<br/>Gate Guard Dorin: The crew says you knocked on the quarry gate …"]
-  n200["welcome_home_gao<br/>Gao the Shopkeeper: Bowls are on the table, and there’s more in…"]
-  n201["welcome_home_mira<br/>Elder Mira: There you are! Dorin rang the gate bell so hard tha…"]:::entry
-  n202["welcome_home_supper<br/>Ba Dan: Lamps come on along the canal. Gao carries out a pot of…"]
-  n143["riverside_explore — exit to riverside / part 1"]:::external
-  n13 -->|"Next"| n27
-  n18 -->|"Legacy/audit exit (live map exits differ)"| n51
-  n26 -->|"Next"| n41
-  n27 -->|"Continue after ending"| n198
-  n32 -->|"Next"| n198
-  n39 -->|"Next"| n40
-  n40 -->|"set: (none); resident profiles: lw.npc.amri=#quot;resting#quot;, lw.npc.bo_shan=#quot;resting#quot;, lw.npc.hesra=#quot;resting#quot;, lw.npc.leto=#quot;resting#quot;, lw.npc.senn_messenger=#quot;resting#quot;"| n198
-  n41 -->|"Legacy/audit exit (live map exits differ)"| n39
-  n44 -->|"Next"| n198
-  n45 -->|"Next"| n198
-  n51 -->|"Legacy/audit exit (live map exits differ)"| n41
-  n88 -->|"Next"| n198
-  n101 -->|"Legacy/audit exit (live map exits differ)"| n18
-  n126 -->|"Next"| n132
-  n127 -->|"Next"| n128
-  n128 -->|"Next"| n136
-  n129 -->|"Next"| n138
-  n130 -->|"Next"| n200
-  n131 -->|"Next"| n126
-  n132 -->|"Next"| n133
-  n133 -->|"Next"| n134
-  n134 -->|"Next"| n137
-  n135 -->|"Next"| n127
-  n136 -->|"Next"| n130
-  n137 -->|"Next"| n129
-  n138 -->|"Next"| n135
-  n146 -->|"Next"| n143
-  n155 -->|"Next"| n18
-  n198 -->|"Legacy/audit exit (live map exits differ)"| n201
-  n199 -->|"Next"| n202
-  n200 -->|"Next"| n199
-  n201 -->|"Next"| n131
-  n202 -->|"Next"| n13
+  n31["dema_home<br/>Lanfen: The crews came past. A few stopped to ask about the str…"]:::entry
+  n33(["demo_complete<br/>Home to Ba Dan"])
+  n38["dorin_home<br/>Gate Guard Dorin: I saw them coming round the bend. Pella was t…"]:::entry
+  n45["forest_return_arrival<br/>The West Road: The road bends, and Ba Dan is below: cooking smo…"]:::entry
+  n46["forest_return_arrived<br/>Set flags"]
+  n47["forest_return_explore<br/>Explore forest_road: The five workers are returning. Continue w…"]:::entry
+  n50["gao_home<br/>Gao the Shopkeeper: Leave your packs by the door. There is rice…"]:::entry
+  n51["gao_home_cold<br/>Gao the Shopkeeper: The workers are home. I am glad of that. Th…"]:::entry
+  n58["gate_return_explore<br/>Explore quarry_gate: The workers are returning. The gate is ope…"]:::entry
+  n107["pella_home<br/>Pella: My brother came home. Bo-shan. He came through the gate …"]:::entry
+  n122["quarry_after_explore<br/>Explore quarry_floor: The five workers are returning with you. …"]:::entry
+  n147["reunion_all_right<br/>Bo-shan: I’m all right."]
+  n148["reunion_bowl<br/>Mira’s Table: Mira sets his covered bowl in front of him and li…"]
+  n149["reunion_hot<br/>Elder Mira: Careful. It’s hot."]
+  n150["reunion_i_did<br/>Bo-shan: I did."]
+  n151["reunion_kept<br/>Pella: She kept making it. In case you came back hungry."]
+  n152["reunion_run<br/>Mira’s Table: Pella comes down the lane at a run. She reaches B…"]
+  n153["reunion_shaking<br/>Pella: You’re shaking."]
+  n154["reunion_sit<br/>Bo-shan: I know. Let me sit down a minute."]
+  n155["reunion_sleeve<br/>Mira’s Table: She keeps hold of his sleeve all the way to the t…"]
+  n156["reunion_sorry<br/>Bo-shan: I’m sorry."]
+  n157["reunion_thanks<br/>Bo-shan: Thank you."]
+  n158["reunion_tuesday<br/>Pella: You said Tuesday."]
+  n159["reunion_waited<br/>Pella: I waited by the road."]
+  n167["riverside_mira_home<br/>Elder Mira: I spent the morning moving beds. Everyone wants the…"]:::entry
+  n176["sen_home<br/>Kuan: They came through just ahead of you. Filled this bench an…"]:::entry
+  n220["village_return_explore<br/>Explore ba_dan_village: The workers are home. Talk with Mira, P…"]:::entry
+  n221["welcome_home_dorin<br/>Gate Guard Dorin: The crew says you knocked on the quarry gate …"]
+  n222["welcome_home_gao<br/>Gao the Shopkeeper: Bowls are on the table, and there’s more in…"]
+  n223["welcome_home_mira<br/>Elder Mira: There you are! Dorin rang the gate bell so hard tha…"]:::entry
+  n224["welcome_home_supper<br/>Ba Dan: Lamps come on along the canal. Gao carries out a pot of…"]
+  n164["riverside_explore — exit to riverside / part 1"]:::external
+  n13 -->|"Next"| n33
+  n18 -->|"Legacy/audit exit (live map exits differ)"| n58
+  n31 -->|"Next"| n47
+  n33 -->|"Continue after ending"| n220
+  n38 -->|"Next"| n220
+  n45 -->|"Next"| n46
+  n46 -->|"set: (none); resident profiles: lw.npc.amri=#quot;resting#quot;, lw.npc.bo_shan=#quot;resting#quot;, lw.npc.hesra=#quot;resting#quot;, lw.npc.leto=#quot;resting#quot;, lw.npc.senn_messenger=#quot;resting#quot;"| n220
+  n47 -->|"Legacy/audit exit (live map exits differ)"| n45
+  n50 -->|"Next"| n220
+  n51 -->|"Next"| n220
+  n58 -->|"Legacy/audit exit (live map exits differ)"| n47
+  n107 -->|"Next"| n220
+  n122 -->|"Legacy/audit exit (live map exits differ)"| n18
+  n147 -->|"Next"| n153
+  n148 -->|"Next"| n149
+  n149 -->|"Next"| n157
+  n150 -->|"Next"| n159
+  n151 -->|"Next"| n222
+  n152 -->|"Next"| n147
+  n153 -->|"Next"| n154
+  n154 -->|"Next"| n155
+  n155 -->|"Next"| n158
+  n156 -->|"Next"| n148
+  n157 -->|"Next"| n151
+  n158 -->|"Next"| n150
+  n159 -->|"Next"| n156
+  n167 -->|"Next"| n164
+  n176 -->|"Next"| n18
+  n220 -->|"Legacy/audit exit (live map exits differ)"| n223
+  n221 -->|"Next"| n224
+  n222 -->|"Next"| n221
+  n223 -->|"Next"| n152
+  n224 -->|"Next"| n13
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

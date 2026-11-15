@@ -1,0 +1,52 @@
+[
+  {
+    "id": "2026-11-08-golden-v5",
+    "saves": "../../golden/v5",
+    "files": {
+      "history.json": "dd3d3162dcbeb3704d13a99178e8ad85acf49de0e67da1a1896401a4318e7338",
+      "party-1-after-forest.json": "7973e6a6e10ba11a2792f2f597dbc4aa997e4716459efef5fcf2809e2f2ca179",
+      "party-1-ba-dan.json": "8b462ebb37ce6b3d63904318904132bb9af9f04deb49011a17bf64126ae3b5c0",
+      "party-1-before-forest.json": "03cc6bedccd534d16a998ffb3297d8d48eb12e8561a13db0231c85b235f5306f",
+      "party-1-cutting.json": "c58da5423a781e655b848c9b94f1764368f799de38c7b88a2db21f88c57f3397",
+      "party-1-driller-mid.json": "121bc75a4f237921386dc9e6b80687d2f4c11ae129236b196b494a920267e85e",
+      "party-1-driller-won.json": "f58ad54fbf76c48aadfc5cc7dc4dd92e4d5fb10eb3e26717616aa00a45e3bb1a",
+      "party-1-home.json": "192f25cfd9cf0be02181b959e40551fc437b5892ac40a5e8c0c2ebec461e95c1",
+      "party-1-new-game.json": "137de03bf7c0eb45f9feb653e0fa88ab21e4bdd6d21fc691d2dd88bb0801b4db",
+      "party-1-quarry-gate.json": "be0f265a8e05d1139e2695d462a9bce8dad5a8a09371499ce4d1391804a84c05",
+      "party-4-after-forest.json": "9cf60fd1c773b017487b02e5c862cf3ceda30cb4472e64c8b41f63881f1bd49b",
+      "party-4-ba-dan.json": "6515c860a17ca4992b4e5c91f08ab6762265ea566a25e817fe11794f47d65553",
+      "party-4-before-forest.json": "5421e21bf72cb017a1b01ad95012823c1f9eb5aeae059b9a3ca5858606cec467",
+      "party-4-cutting.json": "3e72ad1b29ab6276a04ab2ce46884f4e3e1c425f844769de83522299759e0a80",
+      "party-4-driller-mid.json": "51a030ab53f79e672c3d32c56a73895f05be9018fd0269de949010833c73fbe0",
+      "party-4-driller-won.json": "b60852f1e648c62d15a4d52c026d60f4adc076b345ba892f923ecf4d8bc73ac2",
+      "party-4-home.json": "f9ef2b3dc2c389275f83b337920eeed8c0dc2315cdf19b18d92f6884d7c802fb",
+      "party-4-new-game.json": "92ce6b5d040f7593fbd759efa9765aef1c83c389ea5e473fad7317840942017f",
+      "party-4-quarry-gate.json": "628cff5a85ab2c3f6975e91eaeba8a6e5c81b0a64c70e6407e361782e6a96401"
+    }
+  },
+  {
+    "id": "2026-11-15-demo",
+    "saves": "saves",
+    "files": {
+      "history.json": "022a35b441da96ff2e6f14747117d1dd8f606d4a365afb7cf4ee712a09723a71",
+      "party-1-new-game.json": "9d859a7bb4b3d26b4b0b6f73064fb3f50e29ee17810161cfde56e4052322e930",
+      "party-1-ba-dan.json": "49fdac283948255b7da26e287daf97ba424624c7f20158c74d2366f7c93db464",
+      "party-1-before-forest.json": "4095a332711c5a834f5bffd01e0e1429ef98d7d4cd5da04c9eb4ea774c6d20e6",
+      "party-1-after-forest.json": "6201e56f5dcdc28a81fd93f178c72b1744a68d536316f48f3041dfe1e3039107",
+      "party-1-quarry-gate.json": "b68366e6f049bcd5317aa818173b6a0d9ced6d678c17f8619821e6e66ff26a5e",
+      "party-1-cutting.json": "76e1cd8493169e513190263527c091450ef657ca64ec998ced646a59efd75e78",
+      "party-1-driller-mid.json": "974725d0bd7612f32f6789375e4ad1587831f557533a79ad53d9bb1537d0b480",
+      "party-1-driller-won.json": "d3e2c7d6d9169b13feee23b328832617c30cbfa3cc1b5fb556a749a4f4a4b3eb",
+      "party-1-home.json": "eb2d7224393b9cd3581fe12b6a43cb4fb2177b4ce3e7f42846bcb4570718894b",
+      "party-4-new-game.json": "3fd87c4c3fe24e89e3bac8f7d844dd81319fdf12aa125f5ffbeb4c6ce860f08d",
+      "party-4-ba-dan.json": "fcacc58be05c4b6061a65c6ef8f89f771d01bf74154544116dc1cc8932638146",
+      "party-4-before-forest.json": "01dc03a6e03a03df357e3738266f73c05182d008dcaab27bac241280646399bc",
+      "party-4-after-forest.json": "dd010f5639f96b5e0681ab33422740ff25d5d6c1c324ab93711041c9b5d3167e",
+      "party-4-quarry-gate.json": "ddc0de702653613a36daa32dcc97729eb78e8d6dfbbe8f93103b686a0c3561fd",
+      "party-4-cutting.json": "858ec629332b127106ccb76c254e765ce96547a405139274f87a1b2ffb3834cd",
+      "party-4-driller-mid.json": "4d038ff7f6a3bcdcac93305832c4833641a8c0184349ba0b9e78801eeb835cf6",
+      "party-4-driller-won.json": "87f32502468eda379ff9c1f4abc9fff2d56f4b280d95861d6216dae3fcb64f89",
+      "party-4-home.json": "9edf07a2e056558b865d0a9d3c5e71483e67e9ee50cd3b28f4f9473c893db8e3"
+    }
+  }
+]

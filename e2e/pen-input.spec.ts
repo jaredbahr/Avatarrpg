@@ -2,7 +2,14 @@ import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { CONTENT } from '../src/content';
 import { previewWalk } from '../src/app/world/walking';
-import { enterNode, resetStorage, startGame, takeTurn, waitForIdle } from './helpers';
+import {
+  enterNode,
+  resetStorage,
+  settleMapCanvas,
+  startGame,
+  takeTurn,
+  waitForIdle,
+} from './helpers';
 import { groundPoint, paintedTileCentre } from './projection';
 import type { Point } from './projection';
 
@@ -178,6 +185,10 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     }) => {
       await enterNode(page, 'village_explore');
       await waitForIdle(page);
+      // The dock and objective fill in after the scene mounts and the camera
+      // refits through the ResizeObserver; project road tiles only once the
+      // camera holds still and the backing store matches the canvas box.
+      await settleMapCanvas(page);
       expect(await page.evaluate(() => window.fnt!.app.state?.location.pos)).toEqual({
         x: 3,
         y: 7,

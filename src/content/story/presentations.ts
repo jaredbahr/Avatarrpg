@@ -81,6 +81,10 @@ const NPC_PRESENTATIONS: readonly (readonly [string, string, WorldStage?])[] = [
   ['pella_home', 'ba_dan_village'],
   ['dorin_directions', 'ba_dan_village'],
   ['dorin_home', 'ba_dan_village'],
+  // Occupied Ba Dan after a Driller loss (lost.ts).
+  ['mira_lost', 'ba_dan_village'],
+  ['gao_lost', 'ba_dan_village'],
+  ['pella_lost', 'ba_dan_village'],
   // A Ba Dan day (ADR 0047 W6): every conversation node, so a scene keeps its map.
   ['plant_chair', 'ba_dan_village'],
   ['plant_chair_seat', 'ba_dan_village'],
@@ -139,6 +143,7 @@ const NPC_PRESENTATIONS: readonly (readonly [string, string, WorldStage?])[] = [
   ['forest_dema', 'forest_road'],
   ['forest_dema_again', 'forest_road'],
   ['dema_home', 'forest_road'],
+  ['dema_lost', 'forest_road'],
   ['forest_return_arrival', 'forest_road'],
   // SQ-01: Bo-shan's tipped sled, east of the roadblock.
   ['sq01_sled', 'forest_road'],
@@ -169,6 +174,7 @@ const NPC_PRESENTATIONS: readonly (readonly [string, string, WorldStage?])[] = [
   ['cutting_tea', 'ambush_road'],
   ['cutting_tea_again', 'ambush_road'],
   ['sen_home', 'ambush_road'],
+  ['sen_lost', 'ambush_road'],
 ] as const;
 
 const world = (mapId: string, stage?: WorldStage): WorldPresentation =>

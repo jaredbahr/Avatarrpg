@@ -103,10 +103,11 @@ test.describe('the village', () => {
     await expect
       .poll(async () => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
       .toBe('mira_intro');
-    // The east crossing reaches the dry paving beside her table.
+    // A crossing reaches the dry paving beside her table: the west side, since
+    // Pella sits on Mira's east side for this first talk (DLG-01).
     await expect
       .poll(async () => page.evaluate(() => window.fnt?.app.state?.location.pos))
-      .toEqual({ x: 12, y: 4 });
+      .toEqual({ x: 10, y: 5 });
   });
 
   test('the gate names the road and leads to it', async ({ page }) => {
