@@ -37,8 +37,17 @@ describe('the authored combat turn cycle', () => {
       timeout: 60_000,
     },
     async (ctx) => {
-      expect(encounters).toHaveLength(4);
-      expect(cases).toHaveLength(312);
+      expect(encounters).toEqual(
+        expect.arrayContaining([
+          'enc_forest_road',
+          'enc_quarry_gate',
+          'enc_ambush',
+          'enc_grumbler',
+          'enc_mq02_winch',
+          'enc_sf21_wet_ground',
+        ]),
+      );
+      expect(cases).toHaveLength(encounters.length * sizes.length * trials);
       expect(new Set(cases.map((item) => item.seed)).size).toBe(cases.length);
       const started = performance.now();
       const run = pool.run(cases, ctx.signal);
