@@ -29,7 +29,7 @@ Other scripts:
 | `npm run verify`              | typecheck + lint + format + unit/content/sim tests (before a PR)                  |
 | `npm run ci:local`            | full CI verify job (adds build, budgets, art, balance) — green before any push    |
 | `npm test`                    | vitest: rules, content validation, deterministic combat sim                       |
-| `npm run balance`             | headless AI-vs-AI win-rate report per encounter                                   |
+| `npm run balance`             | headless AI-vs-AI report per encounter; `balance:check` is the CI tripwire        |
 | `npm run replay -- SAVE.json` | inspect an exported save and its reconciled prose log                             |
 | `npm run docs:content`        | regenerate the [content reference](docs/content-reference.md) from source content |
 | `npm run docs:story`          | regenerate the [story route diagrams](docs/story/README.md) from source content   |
@@ -326,8 +326,12 @@ identical XP by construction.
 ### Where the numbers currently sit
 
 `npm run balance` runs every encounter many times with the AI driving both
-sides. `BALANCE_SIZES` picks the table sizes and `BALANCE_VARIANTS=1` reports
-each roster variant separately. At 60 trials per encounter per table size:
+sides, on Story and on Hard, and prints the win rate, party HP left, rounds and
+deaths with 95% intervals. `BALANCE_SIZES` picks the table sizes and
+`BALANCE_VARIANTS=1` reports each roster variant separately.
+`npm run balance:check` compares a fixed sweep with the committed baseline
+(`scripts/balance/baseline.json`, [ADR 0112](docs/adr/0112-balance-tripwire.md)).
+The table below is an older snapshot, at 60 trials per encounter per table size:
 
 | Encounter              | 1 player | 3 players | 4 players | 6 players |
 | ---------------------- | -------- | --------- | --------- | --------- |
