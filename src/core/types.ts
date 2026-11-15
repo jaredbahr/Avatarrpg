@@ -1262,7 +1262,7 @@ export interface StoryOption {
  * write the line once and add a variant only where somebody would genuinely say
  * something different.
  */
-interface DialogueVariant {
+export interface DialogueVariant {
   readonly when: Condition;
   readonly speaker?: string;
   readonly portrait?: string;
