@@ -49,7 +49,7 @@ html[data-input='gamepad'] input:focus {
 html[data-input='keyboard'] .action-row > button::after,
 html:is([data-input='keyboard'], [data-input='gamepad'])
   :is(
-    [data-input-default],
+    .input-default,
     [data-conversation-control='next'],
     [data-interlude-control='next'],
     [data-vote-control]
@@ -69,7 +69,7 @@ html:is([data-input='keyboard'], [data-input='gamepad'])
 /* The way on carries the confirm glyph: Enter, A, or the pad's own mark. */
 html:is([data-input='keyboard'], [data-input='gamepad'])
   :is(
-    [data-input-default],
+    .input-default,
     [data-conversation-control='next'],
     [data-interlude-control='next'],
     [data-vote-control]

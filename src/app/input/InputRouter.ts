@@ -35,7 +35,7 @@ const FOCUSABLE =
   'button, a[href], input, select, textarea, summary, [tabindex]:not([tabindex="-1"])';
 /** The one control `confirm` presses when nothing has focus: the way on. */
 const DEFAULT_CONTROL =
-  '[data-input-default], [data-conversation-control="next"], [data-interlude-control="next"], [data-vote-control]';
+  '.input-default, [data-conversation-control="next"], [data-interlude-control="next"], [data-vote-control]';
 const MODAL = '[role="dialog"][aria-modal="true"]';
 /** A held arrow key repeats as fast as the OS says; a cursor that fast cannot be stopped on a tile. */
 const KEY_REPEAT_EVERY_MS = 110;
@@ -88,7 +88,11 @@ function ownsKey(target: EventTarget | null, action: InputAction | null): boolea
       target.matches('[role="slider"], [role="tab"]')
     );
   if (action === 'confirm')
-    return target.matches('button, a[href], input, select, summary, [role="button"], [tabindex]');
+    // A dialog's heading takes focus (tabindex -1) but answers no key; the
+    // conversation panel does, with a handler of its own.
+    return target.matches(
+      'button, a[href], input, select, summary, [role="button"], [tabindex]:not([tabindex="-1"]), .conversation-panel',
+    );
   return false;
 }
 
@@ -356,11 +360,20 @@ export class InputRouter {
   /* Gamepad                                                           */
   /* ---------------------------------------------------------------- */
 
+  /** Every pad the browser will show us; none where the page may not ask (a restricted frame). */
+  private gamepads(): readonly (Gamepad | null)[] {
+    try {
+      return navigator.getGamepads?.() ?? [];
+    } catch {
+      return [];
+    }
+  }
+
   /** Polls every connected pad once a frame while there is one; all of them feed one stream. */
   private poll = (): void => {
     if (this.polling) cancelAnimationFrame(this.polling);
     this.polling = 0;
-    const connected = (navigator.getGamepads?.() ?? []).filter(
+    const connected = this.gamepads().filter(
       (pad): pad is Gamepad => pad !== null && pad.connected,
     );
     if (connected.length === 0) {
@@ -388,8 +401,8 @@ export class InputRouter {
       const actions = reader.step(snapshot, now);
       const look = padPan(snapshot);
       const trigger = padZoom(snapshot);
-      if (actions.length > 0 || look.x !== 0 || look.y !== 0 || trigger !== 0)
-        this.setDevice('gamepad', padFamily(pad.id));
+      // A press says a pad is in use; a stick at rest can drift, so an axis alone does not.
+      if (actions.length > 0) this.setDevice('gamepad', padFamily(pad.id));
       for (const { action, repeat } of actions) this.route({ action, device: 'gamepad', repeat });
       held ??= reader.held;
       if (Math.abs(look.x) + Math.abs(look.y) > Math.abs(pan.x) + Math.abs(pan.y)) pan = look;

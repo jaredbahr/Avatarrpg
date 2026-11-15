@@ -2,6 +2,21 @@
 
 ## 0.2.11 — release candidate
 
+- Play without touch (ADR 0112, #753, #491). One action layer sits between
+  the devices and the game: a key or a gamepad button becomes an action
+  (move, confirm, cancel, next target, an action-bar slot, end turn, inspect,
+  map, pause, look around), and one router delivers it to the open dialog,
+  the scene, or the controls on screen. A screen made of ordinary buttons
+  needs no input code. In a fight the arrow keys or the d-pad move a cursor
+  that only stands on legal tiles and shows the same forecast a tap does;
+  out in the world they walk the party, a tile a press and on while held.
+  The map is a tab stop, a mouse right click backs out of an aim, the
+  hand-off card names the device and ignores a held button, and hints show
+  the glyphs of the device last used. In Settings, Left and Right change a
+  choice and Up and Down move between settings. `keyboard-flow.spec.ts` and
+  `gamepad-play.spec.ts` each play from the title to the end of the first
+  fight with one device alone; a real controller and Steam Remote Play are
+  a manual checklist in `docs/device-matrix.md`.
 - Make the forest road feel alive (ADR 0056). Its pines lean in a wind that
   travels across the board, and on WebGL a faint band of light crosses the
   grass under each gust while pine needles drift in the air. When the ambush

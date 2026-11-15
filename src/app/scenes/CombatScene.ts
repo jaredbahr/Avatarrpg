@@ -265,7 +265,7 @@ interface OverlayBuild {
 
 /** Marks the one control `confirm` presses when nothing has focus (ADR 0112 §1). */
 function defaultControl<T extends HTMLElement>(control: T): T {
-  control.dataset.inputDefault = '';
+  control.className = `${control.className} input-default`.trim();
   return control;
 }
 
@@ -1499,7 +1499,7 @@ export class CombatScene implements Scene {
     const scene = this.host?.querySelector<HTMLElement>('.combat-scene');
     if (!this.pointerless || this.suspended || !scene || scene.closest('[inert]')) return;
     if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
-    const card = scene.querySelector<HTMLElement>('.combat-overlays [data-input-default]');
+    const card = scene.querySelector<HTMLElement>('.combat-overlays .input-default');
     const buttons = this.actionButtons().filter((candidate) => !candidate.disabled);
     const bar =
       this.zone === 'bar' && this.isPlayerTurn()

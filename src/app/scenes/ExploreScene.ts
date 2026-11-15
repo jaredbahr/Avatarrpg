@@ -1609,7 +1609,10 @@ export class ExploreScene implements Scene {
   inputHints(): readonly InputHint[] {
     if (this.conversationMode || this.suspended || this.app.state?.screen !== 'explore') return [];
     const primary = this.hudButtons()[0];
-    const label = primary?.firstChild?.nextSibling?.textContent;
+    // The button's own word (Talk, Inspect, Walk), without its mark or its sub-line.
+    const label = [...(primary?.childNodes ?? [])].find(
+      (node) => node.nodeType === Node.TEXT_NODE,
+    )?.textContent;
     return [
       { key: 'move', label: 'Walk' },
       ...(primary && !primary.disabled && label ? [{ key: 'confirm', label } as const] : []),
