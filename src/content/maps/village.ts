@@ -22,6 +22,9 @@ import { SQ01_RESOLVED } from '../story/sq01Cabbages';
 import { SQ02_RESOLVED } from '../story/sq02OfficialGate';
 import { SQ03_RESOLVED } from '../story/sq03GaosLedger';
 
+/** After a Driller loss (C-16): the occupied village's conversations come first. */
+const LOST = { kind: 'flag', key: 'act1_lost', op: 'set' } as const;
+
 export const BA_DAN_VILLAGE: MapDef = {
   id: 'ba_dan_village',
   projection: 'topdown',
@@ -128,6 +131,7 @@ export const BA_DAN_VILLAGE: MapDef = {
       sprite: 'npc.elder',
       node: 'mira_intro',
       routes: [
+        { when: LOST, node: 'mira_lost' },
         // Once the maker-plate rubbing is in her hands, she never asks for it again (#628).
         { when: { kind: 'flag', key: 'rubbing_given', op: 'set' }, node: 'mira_rubbing_kept' },
         { when: { kind: 'flag', key: 'act1_complete', op: 'set' }, node: 'mira_epilogue' },
@@ -140,6 +144,15 @@ export const BA_DAN_VILLAGE: MapDef = {
       sprite: 'npc.shopkeeper',
       node: 'gao_friendly',
       routes: [
+        // After a loss, his word on the occupied valley comes first, once; then
+        // SQ-03 and the plant's chair, which still fit, and then the same word again.
+        {
+          when: {
+            kind: 'all',
+            of: [LOST, { kind: 'not', of: { kind: 'visited', nodeId: 'gao_lost' } }],
+          },
+          node: 'gao_lost',
+        },
         // LW-S-BD-01 (ADR 0047 §8): an afternoon break, once. The homecoming
         // comes first, and before victory so does his objection to the trade.
         {
@@ -207,6 +220,7 @@ export const BA_DAN_VILLAGE: MapDef = {
           },
           node: 'sq03_jar',
         },
+        { when: LOST, node: 'gao_lost' },
         {
           when: {
             kind: 'all',
@@ -228,6 +242,7 @@ export const BA_DAN_VILLAGE: MapDef = {
       sprite: 'npc.kid',
       node: 'pella_tips',
       routes: [
+        { when: LOST, node: 'pella_lost' },
         // SQ-01: once her homecoming is heard, the corrected list of helpers.
         {
           when: {
@@ -307,6 +322,8 @@ export const BA_DAN_VILLAGE: MapDef = {
             of: [
               { kind: 'phase', in: ['dawn', 'evening'] },
               { kind: 'flag', key: 'scene.bd03_handover', op: 'unset' },
+              // Dorin is away driving the cart after a loss: nobody to hand over to.
+              { kind: 'flag', key: 'act1_lost', op: 'unset' },
             ],
           },
           node: 'handover_scene',

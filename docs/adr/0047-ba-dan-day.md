@@ -1,8 +1,8 @@
 # ADR 0047: A believable Ba Dan day — phase-resolved residents
 
 **Status:** accepted direction, 2026-09-22; not implemented. Jared decided the eight design
-questions (D1–D8) on 2026-09-22. One question stays open for him: an Act I defeat and MQ-11 (see
-"Open question").
+questions (D1–D8) on 2026-09-22. The one open question, an Act I defeat and MQ-11, was answered on
+2026-11-14: an Act I loss is resumable (see the amendment under "Open question for Jared").
 
 Builds on ADRs 0010, 0011, 0017, 0022, 0030 and 0039. It implements Slice A ("a believable Ba Dan
 day") of the living world guide, `Avatar-RPG-Living-Tidemark-Reach.md` §19.7, with its companion
@@ -582,11 +582,30 @@ liberation. Making defeat resumable changes the main story, so Slice A does not 
 covered only by the resolver state class `act1_lost` (tests 4–7). Jared to decide whether, and in
 which slice, an Act I loss becomes resumable.
 
+**Amendment (2026-11-14, owner): an Act I loss is resumable.** Answered with the saga outline: after a
+Driller loss with "Carry on", the saga continues from that state, with the quarry still occupied and
+the five still held until MQ-11 frees them, and MQ-02 has independent evidence
+([story-bible.md](../story-bible.md), owner decisions 2026-11-14; rows C-01 and C-24). It lands with
+the story bible's group D, as content only:
+
+- `act1_epilogue_lost` keeps its id and title and becomes a chapter break: it gains
+  `next: 'village_explore'`, so the card offers "Continue exploring". A save made when it was terminal
+  already sits on that node with `act1_lost` set; it loads unchanged and continues, with no migration.
+- `act1_lost` stops being resolver-only. The village keeps its occupied evidence (§8 `variants`), and
+  Dorin is away driving Bo-shan's cart (saga outline, decision 10): his record takes an `absent`
+  override while `act1_lost` holds. The guard rota keeps exactly one gate watch: Hanru takes the post
+  at dawn, morning and afternoon, the relief watch keeps midday, and the evening and night are Hanru's
+  as before. This is the one place Hanru is out by day; the bounded schedule above still holds on every
+  other route. The dawn handover (LW-S-BD-03) does not offer itself while Dorin is away.
+- Ba Dan's NPCs route to occupied-state conversations (`src/content/story/lost.ts`); the Cutting's
+  exit to the quarry floor is shut until MQ-11.
+
 ## Conflicts between the guide and current code
 
 - **Duplicate people today:** Mira and Dorin on two maps and hard-coded as riverside actors; fixed
   by binding (§2, §4).
-- **An Act I loss is terminal:** see "Open question for Jared".
+- **An Act I loss was terminal:** resumable since 2026-11-14; see the amendment under "Open question
+  for Jared".
 - **The five missing:** "four people" plus Bo-shan (`act1.ts:58, 135`) agrees with the guide; none
   has a runtime actor.
 - **Predicate strings** (§18.5–18.7): the DSL has only flags, visits, party, standing and size

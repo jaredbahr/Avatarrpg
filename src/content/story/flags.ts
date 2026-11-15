@@ -165,6 +165,11 @@ export const LATE_SCENES: Readonly<Record<string, OldSavesAnswer>> = {
     answer: 'open',
     why: 'The welcome home waits at the village gate for any save that has walked home and not yet seen it.',
   },
+  gao_lost: {
+    upTo: '2026-11-15-demo',
+    answer: 'open',
+    why: 'Read only by its own once-only gate on Gao after a Driller loss. A release save that lost sat on the terminal card, so it has not heard it and hears it first when it carries on.',
+  },
 };
 
 /* The hub flag: read nearly everywhere after the quarry. */
@@ -365,7 +370,10 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     readBy: [
       'map:ambush_road',
       'story:mira_epilogue',
+      'story:defeat_boss_drain',
       'story:demo_complete',
+      'story:lost_home_table',
+      'story:hanru_watch',
       'follower:follower.ruon',
       'journal:gate_wages',
     ],
@@ -384,6 +392,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'story:mira_epilogue',
       'story:welcome_home_gao',
       'story:demo_complete',
+      'story:gao_lost',
       'story:plant_chair',
       'story:plant_chair_decline_home',
       'story:plant_chair_decline_road',
@@ -476,11 +485,28 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     key: 'act1_lost',
     type: 'boolean',
     values: [true],
-    meaning: 'The party lost to the Driller: the quarry keeps running and the act ends there.',
+    meaning:
+      'The party lost to the Driller and carried on: the quarry stays occupied, the five stay held, and Dorin drives the cart until MQ-11.',
     arc: 'Demo · Quarry floor',
     status: 'live',
     setBy: ['story:act1_lost'],
-    readBy: ['resident:lw.npc.mira', 'resident:lw.npc.gao'],
+    readBy: [
+      'map:ba_dan_village',
+      'map:forest_road',
+      'map:quarry_gate',
+      'map:ambush_road',
+      'story:village_explore',
+      'story:riverside_mira',
+      'story:forest_explore',
+      'story:cutting_after_explore',
+      'story:plant_chair_decline_lost',
+      'story:hanru_watch',
+      'resident:lw.npc.mira',
+      'resident:lw.npc.gao',
+      'resident:lw.npc.dorin',
+      'resident:lw.npc.hanru',
+      'journal:storm_drain',
+    ],
   },
 
   // Each present hero's reason to keep going (reasons.ts; saga outline decision 22).
