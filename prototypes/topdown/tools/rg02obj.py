@@ -43,6 +43,11 @@ IT = {
     'copper_spur': ('a dead length of copper cable hanging slack between two short leaning wooden poles, a coil of copper on the ground beneath', 64, 56, 72, 64),
     'workshop_bench': ('a public workshop bench: a heavy wooden workbench with a vice, hand tools, a small brass regulator part and a coil of wire on it', 52, 36, 64, 48),
     'outpost_lamp': ('an old iron outpost lamp on a stone base, a big round glass lantern on top, unlit', 22, 56, 48, 64),
+    # The parade ground's back wall (row 1, 22 cells) beside the barracks, and the power yard's fence (row 1 and
+    # column 17): pieces repeated along the map's blocked cells, so each has plain ends that meet the next one.
+    'parade_wall': ('a straight section of old outpost wall: weathered red-ochre plaster with a few cream painted patches, a low grey stone foundation, a dark tiled coping along the top; straight front view, horizontal base, plain cut ends left and right so sections join, no door, no window, no side wall; it fills the canvas, no empty margin', 120, 64, 120, 72),
+    'yard_fence': ('a straight section of rough wooden yard fence: three horizontal weathered planks nailed to square posts at each end; straight front view, horizontal base; it fills the canvas width, no empty margin', 80, 36, 80, 48),
+    'yard_fence_side': ('a straight section of the same rough wooden yard fence running straight away from the viewer: seen end-on, a narrow upright strip of square posts one behind the other with the plank ends between them', 16, 56, 48, 64),
     'tool_crates': ('two stacked plain wooden supply crates with rope handles and a small sack beside them', 36, 32, 48, 48),
     # Bo-shan's delivery cart (Act I's ending; the story bible: Parcel is an ostrich horse), seen from the side so
     # the bird and the cart both read.
