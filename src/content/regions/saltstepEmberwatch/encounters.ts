@@ -2,8 +2,8 @@
  * Saltstep and Emberwatch's fights (RG-02, the trial slice).
  *
  * - `enc_mq02_winch` (Scene 2.5, main line): the freight handlers on the pontoon, with Veyra fighting
- *   beside the party as an AI guest (ADR 0116). Today it is won by defeating the handlers; the
- *   script's other win, stopping the winch, waits for the objective rule (below).
+ *   beside the party as an AI guest (ADR 0116). Won by holding the winch brake at a round's end or
+ *   by defeating the handlers; lost if the crate reaches the barge (six rounds).
  * - `enc_sf21_wet_ground` (SF-2.1, optional): Sabi's riggers in the power yard. It pays its XP on a
  *   win and on "Carry on" alike.
  *
@@ -12,6 +12,7 @@
  */
 import type { EncounterDef, EncounterPlacement } from '../../../core/types';
 import { writerPlaceholder } from './placeholders';
+import { WINCH_BRAKE_CELLS } from './maps';
 
 const at = (x: number, y: number, enemyId: string): EncounterPlacement => ({
   enemyId,
@@ -44,18 +45,17 @@ export const SALTSTEP_EMBERWATCH_ENCOUNTERS: readonly EncounterDef[] = [
      */
     allies: [at(5, 5, 'veyra_guest')],
     /*
-     * TODO(objective-hold): the script's other win, "a party member or Veyra stands at the winch
-     * brake at the end of a round", and its other loss, "the crate reaches the barge" in six
-     * rounds, plug in here once `EncounterDef.objective` lands (ADR 0116's next change, PR
-     * branch `claude/objective-hold`):
-     *
-     *   objective: {
-     *     kind: 'holdAtRoundEnd',
-     *     cells: WINCH_BRAKE_CELLS, // (13, 4), in `maps.ts`
-     *     byRound: 6,
-     *     label: <the writing pass's top-bar line>,
-     *   },
+     * The script's other win and its other loss (ADR 0116, objective fights, #827): a party member
+     * or Veyra standing at the winch brake when a round ends stops the winch and wins; not won by
+     * the end of round six, the crate reaches the barge and the fight is lost. Defeating the
+     * handlers still wins too.
      */
+    objective: {
+      kind: 'holdAtRoundEnd',
+      cells: WINCH_BRAKE_CELLS,
+      label: writerPlaceholder('Stop the winch'),
+    },
+    loseAfterRound: 6,
     conditionalEnemies: [],
     // Three heroes and Veyra: a guest counts as a friendly body in the roster scaling (ADR 0116).
     baselinePartySize: 4,
@@ -67,7 +67,9 @@ export const SALTSTEP_EMBERWATCH_ENCOUNTERS: readonly EncounterDef[] = [
     variants: [],
     intro:
       'Across the pontoon, the freight handlers have the tenth crate in a crane sling. It swings out over the water. One strap is already fraying.',
-    tip: writerPlaceholder('Stop the handlers before the crate reaches the barge.'),
+    tip: writerPlaceholder(
+      'Stand at the winch brake when a round ends, before the crate reaches the barge.',
+    ),
   },
   {
     id: 'enc_sf21_wet_ground',
