@@ -118,8 +118,20 @@ for (const renderer of ['canvas', 'webgl'] as const satisfies readonly Renderer[
           const hit = document.elementFromPoint(pt.x, pt.y);
           return { pos: app.state?.location.pos, busy: app.boardBusy(), anim: app.animator.busy(performance.now()), cam: app.rendererCamera(), hit: hit?.className, toasts: [...document.querySelectorAll('.toast')].map((t) => t.textContent), followers: app.followerPositions?.(), party: app.partyPositions?.() };
         }, point);
+        await page.evaluate(() => {
+          const w = window as unknown as { __ev?: unknown[] };
+          if (w.__ev) return;
+          w.__ev = [];
+          for (const type of ['pointerdown', 'pointerup', 'pointercancel', 'pointermove'])
+            document.addEventListener(type, (e) => w.__ev!.push([type, Math.round(e.timeStamp), Math.round(performance.now())]), true);
+          let last = performance.now();
+          const tick = () => { const n = performance.now(); if (n - last > 250) w.__ev!.push(['longframe', Math.round(last), Math.round(n)]); last = n; requestAnimationFrame(tick); };
+          requestAnimationFrame(tick);
+        });
+        const t0 = Date.now();
         console.log('PROBE hop-before', JSON.stringify({ to, point, ...(await dbg()) }));
         await page.mouse.click(point.x, point.y);
+        console.log('PROBE taplog', JSON.stringify({ nodeMs: Date.now() - t0, ev: await page.evaluate(() => { const w = window as unknown as { __ev: unknown[] }; const e = w.__ev; w.__ev = []; return e; }) }));
         console.log('PROBE hop-clicked', JSON.stringify(await dbg()));
         await waitForIdle(page);
         console.log('PROBE hop-idle', JSON.stringify(await dbg()));
