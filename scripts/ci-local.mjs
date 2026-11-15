@@ -25,10 +25,11 @@ const STEPS = [
   { name: 'art:validate', run: 'npm run art:validate' },
   { name: 'check:assets', run: 'npm run check:assets' },
   {
-    name: 'balance',
-    run: 'npm run balance',
-    // The exact env overrides the workflow sets for the cheap tripwire sweep.
-    env: { BALANCE_TRIALS: '40', BALANCE_DISCIPLINE_TRIALS: '6' },
+    name: 'balance tripwire',
+    run: 'npm run balance:check',
+    // The exact env override the workflow sets: a cheap discipline sweep. The
+    // tripwire's own settings are fixed in scripts/balance/gate.ts.
+    env: { BALANCE_DISCIPLINE_TRIALS: '6' },
   },
 ];
 

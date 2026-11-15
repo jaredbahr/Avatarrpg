@@ -150,7 +150,8 @@ npm run ci:local # the full CI verify job mirror (typecheck, lint, format,
 npm run verify   # the faster subset: typecheck + lint + format:check + tests.
                  # It is not the whole CI gate — use ci:local before a push.
 npm test         # vitest
-npm run balance  # simulator win-rate report
+npm run balance  # simulator report: win rate, HP left, rounds, deaths (Story and Hard)
+npm run balance:check    # the CI tripwire: a fixed sweep against the committed baseline
 npm run e2e      # Playwright (builds first; uses the preinstalled Chromium)
 ```
 
@@ -158,7 +159,32 @@ The balance report reads two environment variables: `BALANCE_SIZES=1,2,3,4,5,6`
 for the table sizes to sweep and `BALANCE_VARIANTS=1` to report every roster
 variant on its own line instead of averaging over whichever ones the seeds drew.
 Use the second one whenever you touch a variant — an unpinned run hides a variant
-that is budget-legal but win-rate-illegal inside the average.
+that is budget-legal but win-rate-illegal inside the average. `BALANCE_TRIALS` sets
+the trials a row, and `BALANCE_DIFFICULTY=story` or `=hard` narrows the report to one
+difficulty (it shows both by default). Every rate and mean is printed with a 95%
+interval.
+
+**The balance tripwire (ADR 0114).** `npm run balance:check` is the CI step. It runs a
+fixed sweep (set in `scripts/balance/gate.ts`: both difficulties, 1, 3 and 6 players,
+every roster variant on its own row) and compares the win rate, HP left, rounds and
+deaths of each row with `scripts/balance/baseline.json`. On Story every row wins every
+trial, so the win rate cannot show a change there; the other three measures can.
+
+- It fails only on a shift that is both statistically significant and at least the
+  measure's minimum size, so ordinary AI and content changes pass **without touching
+  the baseline**. Do not regenerate it to be tidy.
+- It also fails when the rows differ (a new encounter or variant, a removed one,
+  another trial count), and on an anomaly.
+- Every comparison is against the committed baseline, so small drifts add up and
+  eventually trip it.
+- When it fails and the change is intended, run `npm run balance:baseline`, commit the
+  file with the change, and paste the before/after table it prints into the PR
+  description with the reason. When the change is not intended, it is a regression.
+- It refuses `BALANCE_TRIALS`, `BALANCE_SIZES`, `BALANCE_VARIANTS`, `BALANCE_DIFFICULTY`
+  and `BALANCE_TUNING`, so a run is never compared with a baseline made at other
+  settings.
+- The old "70-85% for a full table" win-rate band is not a gate. Whether it still
+  applies is the owner's open decision (#777).
 
 Never run `npx playwright install` in the dev container — Chromium is already at
 `PLAYWRIGHT_BROWSERS_PATH`.
