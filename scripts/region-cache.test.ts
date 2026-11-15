@@ -26,9 +26,20 @@ const marsh: RegionManifest = {
 const regions = [start, marsh];
 
 describe('later regions offline', () => {
-  it('is inert while the start region is the only region', () => {
+  it('is inert while every region is the start region or its neighbour', () => {
+    // Saltstep and Emberwatch (RG-02) is Ba Dan valley's neighbour, so it is precached with it.
+    const first = REGIONS.find((region) => region.id === START_REGION_ID);
+    expect(REGIONS.every((r) => r.id === START_REGION_ID || first?.neighbours.includes(r.id))).toBe(
+      true,
+    );
     expect(PRECACHE_IGNORES).toEqual([]);
     expect(laterRegionRuntimeCaching(REGIONS, START_REGION_ID, 'b1')).toEqual([]);
+  });
+
+  it("precaches the start region's neighbours, which it cannot start without", () => {
+    const linked = { ...start, neighbours: [marsh.id] };
+    expect(laterRegionIgnores([linked, marsh], start.id)).toEqual([]);
+    expect(laterRegionRuntimeCaching([linked, marsh], start.id, 'b1')).toEqual([]);
   });
 
   it('leaves a later region out of the precache, its chunk and its art folders', () => {
