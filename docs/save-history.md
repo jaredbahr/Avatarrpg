@@ -125,6 +125,26 @@ Flags read in one part and written in another. A reader in a later region depend
 | ------------- | ----------------------------------------------------------------------- | -------------------- | ----------------------------------- |
 | `ruon_traded` | The table traded Captain Ruon to Jin for the inner gate key (branch B). | Ba Dan valley: Act 1 | `story:sq03_hook`, `story:sq03_jar` |
 
+### Saltstep and Emberwatch: maps, people and fights
+
+| Flag             | Means                                                                                                                                       | Written in                                     | Read here by          |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- | --------------------- |
+| `inquiry_public` | Scene 2.7: the table voted to have the customs clerk read the pay packet out at the level pole. The market heard, and Emberwatch is warned. | Saltstep and Emberwatch: MQ-02 Paper and Stone | `map:saltstep_market` |
+| `inquiry_quiet`  | Scene 2.7: the table voted to seal a copy of the pay packet and carry it quietly across the bay. Nobody at Emberwatch is warned.            | Saltstep and Emberwatch: MQ-02 Paper and Stone | `map:saltstep_market` |
+
+### Saltstep and Emberwatch: MQ-02 Paper and Stone
+
+| Flag          | Means                                                                                                                               | Written in           | Read here by                                                                                                                                          |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `act1_lost`   | The party lost to the Driller and carried on: the quarry stays occupied, the five stay held, and Dorin drives the cart until MQ-11. | Ba Dan valley: Act 1 | `story:mq02_coast_driver`, `story:mq02_ferry_driver`, `story:mq02_galleries`, `story:mq02_parcel`, `story:mq02_pump_driver`, `story:mq02_stall_reads` |
+| `ruon_traded` | The table traded Captain Ruon to Jin for the inner gate key (branch B).                                                             | Ba Dan valley: Act 1 | `story:mq02_freight_clerk`                                                                                                                            |
+
+### Saltstep and Emberwatch: Emberwatch (Scene 3.1 and SF-2.1)
+
+| Flag        | Means                                                                                                                               | Written in           | Read here by        |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------- | -------------------- | ------------------- |
+| `act1_lost` | The party lost to the Driller and carried on: the quarry stays occupied, the five stay held, and Dorin drives the cart until MQ-11. | Ba Dan valley: Act 1 | `story:sf21_driver` |
+
 ### Shared (disciplines, followers, the journal, the app)
 
 | Flag                             | Means                                                                                                                               | Written in                 | Read here by                                                       |

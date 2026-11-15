@@ -202,6 +202,63 @@ export const ENEMIES: readonly EnemyDef[] = [
     description:
       'Fights beside you on the road to his trial. His sabre hits hard, and his barked orders make a hero hit harder and truer.',
   },
+
+  /*
+   * RG-02, the pipeline-trial slice (Saltstep and Emberwatch). PLACEHOLDERS: the stat blocks are
+   * first guesses at level-1 figures, not yet swept by the balance simulator; the sprites borrow
+   * Act I figures until the region's art exists; the descriptions wait for the writing pass.
+   * Shared content, not region content: a region cannot carry its own enemies yet (ADR 0111 §1),
+   * so these ship in the boot chunk (see `docs/pipeline-trial-log.md`, friction).
+   */
+  {
+    id: 'freight_handler',
+    name: 'Freight Handler',
+    shortName: 'Handler',
+    element: 'nonbender',
+    size: 1,
+    // Sturdier than a quarry worker and without Rush, so they hold the gangway and the winch
+    // brake instead of charging off it (tuned with the winch objective, 2026-11-15).
+    stats: { maxHp: 48, maxAp: 4, maxMove: 4, power: 5, defense: 1, speed: 5, focus: 5 },
+    abilities: ['club_swing'],
+    ai: 'aggressive',
+    xp: 120,
+    sprite: 'unit.enemy.thug',
+    description:
+      '[Writer placeholder] One of the handlers loading the freight pontoon at Saltstep. Paid by the crate.',
+  },
+  {
+    id: 'line_rigger',
+    name: 'Line Rigger',
+    shortName: 'Rigger',
+    element: 'nonbender',
+    size: 1,
+    stats: { maxHp: 26, maxAp: 4, maxMove: 4, power: 5, defense: 1, speed: 6, focus: 5 },
+    abilities: ['club_swing', 'bandit_rush'],
+    ai: 'aggressive',
+    xp: 100,
+    sprite: 'unit.enemy.bruiser',
+    description:
+      '[Writer placeholder] A laid-off line rigger, cutting down the dead copper spur in the Emberwatch power yard.',
+  },
+  {
+    /*
+     * Veyra (AN-01) as a guest ally (ADR 0116), built from an enemy record because a character
+     * kit would put her on the party-setup roster. PLACEHOLDER KIT: the script gives her a
+     * pressure lance and a signal flare; until those abilities exist, Shield Bash stands in for
+     * the lance (it pushes) and Rally for the flare. Never an opponent, so `xp` is never paid; it
+     * is positive only because `progression.test.ts` allows a zero to the Cutting's Ruon alone.
+     */
+    id: 'veyra_guest',
+    name: 'Veyra',
+    element: 'nonbender',
+    size: 1,
+    stats: { maxHp: 36, maxAp: 4, maxMove: 4, power: 5, defense: 2, speed: 6, focus: 8 },
+    abilities: ['strike', 'shield_bash', 'rally'],
+    ai: 'aggressive',
+    xp: 1,
+    sprite: 'unit.enemy.sergeant',
+    description: '[Writer placeholder] Veyra, fighting beside you on the freight pontoon.',
+  },
 ];
 
 export const ENEMY_BY_ID: ReadonlyMap<string, EnemyDef> = new Map(ENEMIES.map((e) => [e.id, e]));

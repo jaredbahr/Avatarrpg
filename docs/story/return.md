@@ -31,62 +31,62 @@ flowchart TD
   n50["gao_home<br/>Gao the Shopkeeper: Leave your packs by the door. There is rice…"]:::entry
   n51["gao_home_cold<br/>Gao the Shopkeeper: The workers are home. I am glad of that. Th…"]:::entry
   n58["gate_return_explore<br/>Explore quarry_gate: The workers are returning. The gate is ope…"]:::entry
-  n107["pella_home<br/>Pella: My brother came home. Bo-shan. He came through the gate …"]:::entry
-  n122["quarry_after_explore<br/>Explore quarry_floor: The five workers are returning with you. …"]:::entry
-  n147["reunion_all_right<br/>Bo-shan: I’m all right."]
-  n148["reunion_bowl<br/>Mira’s Table: Mira sets his covered bowl in front of him and li…"]
-  n149["reunion_hot<br/>Elder Mira: Careful. It’s hot."]
-  n150["reunion_i_did<br/>Bo-shan: I did."]
-  n151["reunion_kept<br/>Pella: She kept making it. In case you came back hungry."]
-  n152["reunion_run<br/>Mira’s Table: Pella comes down the lane at a run. She reaches B…"]
-  n153["reunion_shaking<br/>Pella: You’re shaking."]
-  n154["reunion_sit<br/>Bo-shan: I know. Let me sit down a minute."]
-  n155["reunion_sleeve<br/>Mira’s Table: She keeps hold of his sleeve all the way to the t…"]
-  n156["reunion_sorry<br/>Bo-shan: I’m sorry."]
-  n157["reunion_thanks<br/>Bo-shan: Thank you."]
-  n158["reunion_tuesday<br/>Pella: You said Tuesday."]
-  n159["reunion_waited<br/>Pella: I waited by the road."]
-  n167["riverside_mira_home<br/>Elder Mira: I spent the morning moving beds. Everyone wants the…"]:::entry
-  n176["sen_home<br/>Kuan: They came through just ahead of you. Filled this bench an…"]:::entry
-  n220["village_return_explore<br/>Explore ba_dan_village: The workers are home. Talk with Mira, P…"]:::entry
-  n221["welcome_home_dorin<br/>Gate Guard Dorin: The crew says you knocked on the quarry gate …"]
-  n222["welcome_home_gao<br/>Gao the Shopkeeper: Bowls are on the table, and there’s more in…"]
-  n223["welcome_home_mira<br/>Elder Mira: There you are! Dorin rang the gate bell so hard tha…"]:::entry
-  n224["welcome_home_supper<br/>Ba Dan: Lamps come on along the canal. Gao carries out a pot of…"]
-  n164["riverside_explore — exit to riverside / part 1"]:::external
+  n236["pella_home<br/>Pella: My brother came home. Bo-shan. He came through the gate …"]:::entry
+  n251["quarry_after_explore<br/>Explore quarry_floor: The five workers are returning with you. …"]:::entry
+  n276["reunion_all_right<br/>Bo-shan: I’m all right."]
+  n277["reunion_bowl<br/>Mira’s Table: Mira sets his covered bowl in front of him and li…"]
+  n278["reunion_hot<br/>Elder Mira: Careful. It’s hot."]
+  n279["reunion_i_did<br/>Bo-shan: I did."]
+  n280["reunion_kept<br/>Pella: She kept making it. In case you came back hungry."]
+  n281["reunion_run<br/>Mira’s Table: Pella comes down the lane at a run. She reaches B…"]
+  n282["reunion_shaking<br/>Pella: You’re shaking."]
+  n283["reunion_sit<br/>Bo-shan: I know. Let me sit down a minute."]
+  n284["reunion_sleeve<br/>Mira’s Table: She keeps hold of his sleeve all the way to the t…"]
+  n285["reunion_sorry<br/>Bo-shan: I’m sorry."]
+  n286["reunion_thanks<br/>Bo-shan: Thank you."]
+  n287["reunion_tuesday<br/>Pella: You said Tuesday."]
+  n288["reunion_waited<br/>Pella: I waited by the road."]
+  n296["riverside_mira_home<br/>Elder Mira: I spent the morning moving beds. Everyone wants the…"]:::entry
+  n305["sen_home<br/>Kuan: They came through just ahead of you. Filled this bench an…"]:::entry
+  n356["village_return_explore<br/>Explore ba_dan_village: The workers are home. Talk with Mira, P…"]:::entry
+  n357["welcome_home_dorin<br/>Gate Guard Dorin: The crew says you knocked on the quarry gate …"]
+  n358["welcome_home_gao<br/>Gao the Shopkeeper: Bowls are on the table, and there’s more in…"]
+  n359["welcome_home_mira<br/>Elder Mira: There you are! Dorin rang the gate bell so hard tha…"]:::entry
+  n360["welcome_home_supper<br/>Ba Dan: Lamps come on along the canal. Gao carries out a pot of…"]
+  n293["riverside_explore — exit to riverside / part 1"]:::external
   n13 -->|"Next"| n33
   n18 -->|"Legacy/audit exit (live map exits differ)"| n58
   n31 -->|"Next"| n47
-  n33 -->|"Continue after ending"| n220
-  n38 -->|"Next"| n220
+  n33 -->|"Continue after ending"| n356
+  n38 -->|"Next"| n356
   n45 -->|"Next"| n46
-  n46 -->|"set: (none); resident profiles: lw.npc.amri=#quot;resting#quot;, lw.npc.bo_shan=#quot;resting#quot;, lw.npc.hesra=#quot;resting#quot;, lw.npc.leto=#quot;resting#quot;, lw.npc.senn_messenger=#quot;resting#quot;"| n220
+  n46 -->|"set: (none); resident profiles: lw.npc.amri=#quot;resting#quot;, lw.npc.bo_shan=#quot;resting#quot;, lw.npc.hesra=#quot;resting#quot;, lw.npc.leto=#quot;resting#quot;, lw.npc.senn_messenger=#quot;resting#quot;"| n356
   n47 -->|"Legacy/audit exit (live map exits differ)"| n45
-  n50 -->|"Next"| n220
-  n51 -->|"Next"| n220
+  n50 -->|"Next"| n356
+  n51 -->|"Next"| n356
   n58 -->|"Legacy/audit exit (live map exits differ)"| n47
-  n107 -->|"Next"| n220
-  n122 -->|"Legacy/audit exit (live map exits differ)"| n18
-  n147 -->|"Next"| n153
-  n148 -->|"Next"| n149
-  n149 -->|"Next"| n157
-  n150 -->|"Next"| n159
-  n151 -->|"Next"| n222
-  n152 -->|"Next"| n147
-  n153 -->|"Next"| n154
-  n154 -->|"Next"| n155
-  n155 -->|"Next"| n158
-  n156 -->|"Next"| n148
-  n157 -->|"Next"| n151
-  n158 -->|"Next"| n150
-  n159 -->|"Next"| n156
-  n167 -->|"Next"| n164
-  n176 -->|"Next"| n18
-  n220 -->|"Legacy/audit exit (live map exits differ)"| n223
-  n221 -->|"Next"| n224
-  n222 -->|"Next"| n221
-  n223 -->|"Next"| n152
-  n224 -->|"Next"| n13
+  n236 -->|"Next"| n356
+  n251 -->|"Legacy/audit exit (live map exits differ)"| n18
+  n276 -->|"Next"| n282
+  n277 -->|"Next"| n278
+  n278 -->|"Next"| n286
+  n279 -->|"Next"| n288
+  n280 -->|"Next"| n358
+  n281 -->|"Next"| n276
+  n282 -->|"Next"| n283
+  n283 -->|"Next"| n284
+  n284 -->|"Next"| n287
+  n285 -->|"Next"| n277
+  n286 -->|"Next"| n280
+  n287 -->|"Next"| n279
+  n288 -->|"Next"| n285
+  n296 -->|"Next"| n293
+  n305 -->|"Next"| n18
+  n356 -->|"Legacy/audit exit (live map exits differ)"| n359
+  n357 -->|"Next"| n360
+  n358 -->|"Next"| n357
+  n359 -->|"Next"| n281
+  n360 -->|"Next"| n13
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5
