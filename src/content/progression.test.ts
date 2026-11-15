@@ -4,6 +4,7 @@ import { levelForXp, xpForLevel } from '../core/rules/leveling';
 import { xpRoster } from '../core/state/createGame';
 import { evaluate } from '../core/story/conditions';
 import type { FlagValue, GameState, StoryNode } from '../core/types';
+import { REGIONS } from './regions';
 
 /**
  * Does the party actually arrive at the level each fight is tuned for?
@@ -441,6 +442,26 @@ describe('progression', () => {
       expect(level, `${walk.finalXp} XP after losing to the Driller`).toBe(winLevel);
       expect(level).toBeGreaterThanOrEqual(3);
       expect(level).toBeLessThanOrEqual(5);
+    }
+  });
+
+  it('enters the Act II region inside its level band on every route, won or lost (ADR 0011)', () => {
+    /*
+     * The region graph's first edge: Ba Dan's coast road opens on Saltstep and Emberwatch once
+     * Act I is over either way (`ACT1_OVER` in `maps/world.ts`). A party arrives with whatever
+     * the act paid it, so every route, a lost fight included, must land inside the band that
+     * region's fights are tuned for (`regions/bands.ts` holds the fights to the band).
+     */
+    const next = REGIONS.find((region) => region.id === 'saltstep_emberwatch');
+    expect(next, 'the region Act I opens onto').toBeDefined();
+    const band = next?.levelBand ?? { minLevel: 0, maxLevel: 0 };
+    for (const walk of ALL) {
+      const label = [...walk.decisions].map(([k, v]) => `${k}=${v}`).join(', ') || 'defaults';
+      const level = levelForXp(walk.finalXp);
+      expect(level, `route [${label}] enters on level ${level}`).toBeGreaterThanOrEqual(
+        band.minLevel,
+      );
+      expect(level, `route [${label}] enters on level ${level}`).toBeLessThanOrEqual(band.maxLevel);
     }
   });
 
