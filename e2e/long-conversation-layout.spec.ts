@@ -3,7 +3,7 @@ import type { Locator, Page } from '@playwright/test';
 import { CONTENT } from '../src/content';
 import { apply } from '../src/core/state/reducer';
 import { resolveDialogue } from '../src/core/story/storyEngine';
-import { enterNode, resetStorage, setLargeText, startGame } from './helpers';
+import { enterNode, resetStorage, setLargeText, startGame, wheelOver } from './helpers';
 
 // This bounded #492 regression covers body/option text, not the separately
 // owned speaker-name truncation (#378) or the complete all-screen audit.
@@ -115,11 +115,10 @@ async function sample(panel: Locator) {
 async function readAll(page: Page, panel: Locator) {
   let first = await sample(panel);
   if (first.panel.scrollTop > 0) {
-    await page.mouse.move(
-      (first.panel.left + first.panel.right) / 2,
-      (first.panel.top + first.panel.bottom) / 2,
-    );
-    await page.mouse.wheel(0, -5000);
+    await wheelOver(page, panel, -5000, {
+      x: (first.panel.left + first.panel.right) / 2,
+      y: (first.panel.top + first.panel.bottom) / 2,
+    });
     await expect.poll(() => panel.evaluate((element) => element.scrollTop)).toBe(0);
     first = await sample(panel);
   }
@@ -156,24 +155,19 @@ async function readAll(page: Page, panel: Locator) {
   );
   const samples = [first];
   await page.screenshot({ path: test.info().outputPath('reading-start.png') });
-  // Use physical wheel input at the panel, with overlapping viewfuls. Neither
-  // DOM scroll assignment nor forced focus can make an obscured line pass:
-  // each viewful is still sampled for what is really visible. Mobile WebKit
-  // has no Playwright wheel input, so there the panel scrolls by the same step,
-  // as setup-footer-overlap does; the overflow check above still applies.
-  const wheel = !(
-    page.context().browser()?.browserType().name() === 'webkit' && test.info().project.use.isMobile
-  );
+  // Scroll at the panel as a wheel would, with overlapping viewfuls (the iPad
+  // projects move the same box, see `wheelOver`). Neither DOM scroll assignment
+  // nor forced focus can make an obscured line pass: each viewful is still
+  // sampled for what is really visible.
   const stepPx = Math.max(48, Math.floor(first.panel.height / 3));
-  await page.mouse.move(
-    (first.panel.left + first.panel.right) / 2,
-    (first.panel.top + first.panel.bottom) / 2,
-  );
+  const centre = {
+    x: (first.panel.left + first.panel.right) / 2,
+    y: (first.panel.top + first.panel.bottom) / 2,
+  };
   for (let step = 0; step < 80; step++) {
     const previous = samples[samples.length - 1]!;
     if (previous.panel.scrollHeight - previous.panel.height - previous.panel.scrollTop <= 1) break;
-    if (wheel) await page.mouse.wheel(0, stepPx);
-    else await panel.evaluate((element, dy) => element.scrollBy(0, dy), stepPx);
+    await wheelOver(page, panel, stepPx, centre);
     await expect
       .poll(() => panel.evaluate((element) => element.scrollTop))
       .toBeGreaterThan(previous.panel.scrollTop);

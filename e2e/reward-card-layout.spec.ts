@@ -16,6 +16,7 @@ import {
   settleDialog,
   startGame,
   waitForIdle,
+  wheelOver,
 } from './helpers';
 
 // Phone profiles reproduce #492's shared card-grid overflow. The landscape
@@ -249,8 +250,7 @@ for (const profile of profiles) {
         body: JSON.stringify(bounds),
         contentType: 'application/json',
       });
-      await dialog.locator('.choice-cards').hover();
-      await page.mouse.wheel(0, 5000);
+      await wheelOver(page, dialog.locator('.choice-cards'), 5000);
       await reachable(page, dialog.getByRole('button', { name: 'Close', exact: true }));
       await page.screenshot({ path: info.outputPath('inspector-controls.png') });
       await page.keyboard.press('Enter');
