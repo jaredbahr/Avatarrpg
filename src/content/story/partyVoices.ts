@@ -160,7 +160,7 @@ export const VOICES = [
     character: 'wen',
     lines: [
       'I planned for the treads and the hose. Not for him parking the whole thing across the ramp. So: the loose stone.',
-      "The drill's still going down there. Mira's coming up the switchback with Dorin and a handcart. She's going to tell me to sit.",
+      'Back to the doors, out of its reach. Give me one moment to think.',
     ],
   },
 ] as const;

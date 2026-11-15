@@ -68,7 +68,7 @@ describe('the authored walk home', () => {
     );
   });
 
-  it('frees the workers into the walk home after victory and keeps defeat terminal', () => {
+  it('frees the workers into the walk home after victory, and a defeat carries on (C-01)', () => {
     const victory = CONTENT.story.get('act1_epilogue');
     const defeat = CONTENT.story.get('act1_epilogue_lost');
     if (victory?.kind !== 'dialogue' || defeat?.kind !== 'end') throw new Error('Missing endings');
@@ -77,8 +77,10 @@ describe('the authored walk home', () => {
     const ledger = CONTENT.story.get(victory.next);
     if (ledger?.kind !== 'dialogue') throw new Error('Missing the delivery book');
     expect(ledger.next).toBe('act1_evening');
-    expect(defeat.next).toBeUndefined();
+    // A chapter break that opens onto occupied Ba Dan (lost.test.ts walks it).
+    expect(defeat.next).toBe('village_explore');
     const lost = enterStoryNode(CONTENT, game(), 'act1_lost').state;
+    // The five stay held: a loss releases nobody.
     expect(lost.world.residentProfiles).toEqual({});
     const ended = apply(CONTENT, game(), { type: 'enterNode', nodeId: 'act1_victory' }).state;
     expect(ended.world.residentProfiles).toEqual(profiles('returning'));
