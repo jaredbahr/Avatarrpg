@@ -298,12 +298,16 @@ describe('PixelLab ledger audit CLI', () => {
       }
     });
 
-    it('tags every job in the shipped ledger with the demo region', () => {
+    it('tags every job in the shipped ledger with the demo region or the cutscene trial', () => {
       const result = run(['--json']);
       expect(result.status, result.stderr).toBe(0);
       const report = JSON.parse(result.stdout) as RegionReport;
       expect(report.untagged_jobs).toEqual([]);
-      expect(report.regions.map((region) => region.region)).toEqual(['ba_dan_valley']);
+      // `cutscene_trial`: the owner's one trial cutscene (2026-11-15), 50 credits, kept apart from the demo region.
+      expect(report.regions.map((region) => region.region).sort()).toEqual([
+        'ba_dan_valley',
+        'cutscene_trial',
+      ]);
     });
   });
 });
