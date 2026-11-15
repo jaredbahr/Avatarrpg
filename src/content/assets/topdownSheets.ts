@@ -751,7 +751,7 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
   },
   luli: {
     pages: 1,
-    frame: { w: 40, h: 51 },
+    frame: { w: 48, h: 51 },
     anchor: { x: 0.5, y: 0.941176 },
     footprint: 1,
     idleCels: [3, 3, 3, 3, 3, 3, 3, 3],
