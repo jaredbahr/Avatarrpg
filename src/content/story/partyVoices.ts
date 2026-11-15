@@ -8,7 +8,7 @@ export const VOICES = [
     character: 'tenzo',
     lines: [
       'That bench is quarry offcut. Someone hauled it up here just to have a seat.',
-      "Sen, keep the kettle on. When we bring the crews through, I'll help you feed them.",
+      "Kuan, keep the kettle on. When we bring the crews through, I'll help you feed them.",
       "I'll wash these cups first. That blue handle looks loose; does it come off?",
     ],
   },
@@ -27,7 +27,7 @@ export const VOICES = [
     lines: [
       "That's quarry grit. I've had nets come up full of it near a stone yard.",
       "The scratch here says the settling pit may be blocked. I'd ask there before digging up this bank.",
-      'The lower reeds are coated in it. The turtle-ducks will need somewhere else to nest.',
+      'The lower reeds are coated in it. The turtle ducks will need somewhere else to nest.',
     ],
   },
   {
@@ -35,15 +35,15 @@ export const VOICES = [
     character: 'bo',
     lines: [
       'I ran a crew three towns over. We stopped work when a gallery cracked. Lost a week of wages over it.',
-      'Ruon, those supports need replacing. You cannot keep people down there while that machine is running.',
-      'Let us through. You can talk to us yourself. Your crew can put the slings down.',
+      'There is fresh rubble under your east face. I can see it from here. Whoever gives the orders up there already knows what that means.',
+      'Open the gate and tell us yourself. Your crew can put the slings down.',
     ],
   },
   {
     node: 'forest_dema',
     character: 'lin_mei',
     lines: [
-      'Dema, the white silt reaches above the reeds. Has it been this high since the rain?',
+      'Lanfen, the white silt reaches above the reeds. Has it been this high since the rain?',
       'I can mark the bank here and compare it with the stone further up. That will show where the runoff is coming in.',
       'Leave the nest in your washing for now. The old nesting ground is still covered.',
     ],
@@ -61,9 +61,9 @@ export const VOICES = [
     node: 'dorin_directions',
     character: 'jinu',
     lines: [
-      "I've carried post up those switchbacks. Two hours. Allow longer when the steps are muddy.",
-      'Dorin, stay at the village gate. If we send anyone down ahead of us, they will need someone watching for them.',
-      "If we find anyone who can walk, I'll send them straight to you.",
+      "East road, then switchbacks, two hours. I'll count the bends going up. People walk better when they know how many are left.",
+      "There's a town up north that is all stairs. I counted four hundred and six. A boy on the top step told me I'd missed one.",
+      "Anyone who can walk, I'll send down to you with the number. You'll see them before you hear them. Tired people don't talk.",
     ],
   },
   {
@@ -95,7 +95,7 @@ export const VOICES = [
     node: 'forest_dema_again',
     character: 'sura',
     lines: [
-      'Is this stream any good for fishing, Dema? Back home I pulled one through the ice as long as your washing line.',
+      'Is this stream any good for fishing, Lanfen? Back home I pulled one through the ice as long as your washing line.',
       'Half your washing line. Nothing will bite in water this white, though. Somebody up at that quarry owes you an answer about the runoff.',
     ],
   },
@@ -103,8 +103,8 @@ export const VOICES = [
     node: 'defeat_gate',
     character: 'riko',
     lines: [
-      'All the way down the switchbacks under their stones, and I kept us in one line. Nobody fell behind.',
-      'Nobody followed. Now the gate is open and the wall is empty. Ruon is waiting in the yard, laying his sabre down.',
+      'Their slingers aimed low. Legs and shields, every stone. Nobody on that wall was trying to kill us.',
+      'We climb back, and the gate is open and the wall is empty. That was no rout. Somebody up there decided to stop.',
     ],
   },
   {
@@ -119,7 +119,7 @@ export const VOICES = [
     node: 'gate_kinship',
     character: 'lin_mei',
     lines: [
-      'Ruon, there are fresh falls on the east face. Old supports under a face like that get replaced before anyone works beneath it.',
+      'There are fresh falls on your east face. Old supports under a face like that get replaced before anyone works beneath it.',
       'Who was told about them? No, lower the slings and open the gate first. You can tell me in the yard.',
     ],
   },
@@ -151,7 +151,7 @@ export const VOICES = [
     node: 'quarry_assessment',
     character: 'bo',
     lines: [
-      'Hear that? They\'re shouting "Grumbler!" The driver knows every one of those voices.',
+      '"Grumbler." You only get a name like that from people who have eaten lunch beside you. He knows every voice behind those bars.',
       "Nobody parks anything on that ramp. Everyone in those galleries comes out that way, and I'll be counting heads when they do.",
     ],
   },
@@ -160,7 +160,7 @@ export const VOICES = [
     character: 'wen',
     lines: [
       'I planned for the treads and the hose. Not for him parking the whole thing across the ramp. So: the loose stone.',
-      "The drill's still going down there. Mira's coming up the switchback with Dorin and a handcart. She's going to tell me to sit.",
+      'Back to the doors, out of its reach. Give me one moment to think.',
     ],
   },
 ] as const;

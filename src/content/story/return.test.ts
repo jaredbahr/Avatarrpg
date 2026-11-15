@@ -33,8 +33,14 @@ function withProfiles(state: GameState, profile: ResidentProfile): GameState {
 }
 
 function finish(state: GameState): GameState {
-  for (let count = 0; state.screen === 'dialogue' && count < 12; count++) {
-    state = apply(CONTENT, state, { type: 'advanceDialogue' }).state;
+  for (let count = 0; state.screen === 'dialogue' && count < 24; count++) {
+    // Mira's table asks one question (DLG-01); every answer meets again at the bowl.
+    const choosing = CONTENT.story.get(state.story.nodeId ?? '')?.kind === 'choice';
+    state = apply(
+      CONTENT,
+      state,
+      choosing ? { type: 'chooseOption', optionIndex: 0 } : { type: 'advanceDialogue' },
+    ).state;
   }
   expect(state.screen).toBe('explore');
   return state;
@@ -62,18 +68,23 @@ describe('the authored walk home', () => {
     );
   });
 
-  it('frees the workers into the walk home after victory and keeps defeat terminal', () => {
+  it('frees the workers into the walk home after victory, and a defeat carries on (C-01)', () => {
     const victory = CONTENT.story.get('act1_epilogue');
     const defeat = CONTENT.story.get('act1_epilogue_lost');
     if (victory?.kind !== 'dialogue' || defeat?.kind !== 'end') throw new Error('Missing endings');
-    expect(victory.next).toBe('act1_evening');
-    expect(defeat.next).toBeUndefined();
+    // The cart's delivery book (reasons.ts) plays between the rescue and the walk home.
+    expect(victory.next).toBe('quarry_ledger');
+    const ledger = CONTENT.story.get(victory.next);
+    if (ledger?.kind !== 'dialogue') throw new Error('Missing the delivery book');
+    expect(ledger.next).toBe('act1_evening');
+    // A chapter break that opens onto occupied Ba Dan (lost.test.ts walks it).
+    expect(defeat.next).toBe('village_explore');
     const lost = enterStoryNode(CONTENT, game(), 'act1_lost').state;
+    // The five stay held: a loss releases nobody.
     expect(lost.world.residentProfiles).toEqual({});
-    if (!victory.next) throw new Error('Missing victory continuation');
     const ended = apply(CONTENT, game(), { type: 'enterNode', nodeId: 'act1_victory' }).state;
     expect(ended.world.residentProfiles).toEqual(profiles('returning'));
-    const returned = apply(CONTENT, ended, { type: 'enterNode', nodeId: victory.next }).state;
+    const returned = apply(CONTENT, ended, { type: 'enterNode', nodeId: ledger.next }).state;
     expect(returned.screen).toBe('explore');
     expect(returned.location.mapId).toBe('quarry_floor');
     expect(returned.flags).toEqual(ended.flags);
@@ -126,13 +137,23 @@ describe('the authored walk home', () => {
 
     let card = welcomed;
     const speakers: string[] = [];
-    for (let count = 0; card.screen === 'dialogue' && count < 12; count++) {
+    for (let count = 0; card.screen === 'dialogue' && count < 60; count++) {
       const node = CONTENT.story.get(card.story.nodeId ?? '');
       if (node?.kind === 'dialogue' && !speakers.includes(node.speaker))
         speakers.push(node.speaker);
       card = advanceDialogue(CONTENT, card).state;
     }
-    expect(speakers).toEqual(['Elder Mira', 'Gao the Shopkeeper', 'Gate Guard Dorin']);
+    // The reunion at Mira's table (DLG-07), then Gao and Dorin, then the narrator: the
+    // supper and the boot, and Bo-shan taking the reins.
+    expect(speakers).toEqual([
+      'Elder Mira',
+      'Mira’s Table',
+      'Bo-shan',
+      'Pella',
+      'Gao the Shopkeeper',
+      'Gate Guard Dorin',
+      'Ba Dan',
+    ]);
     expect(card.screen).toBe('ended');
     expect(card.story.nodeId).toBe('demo_complete');
 
@@ -159,7 +180,7 @@ describe('the authored walk home', () => {
     const gates = [
       [{}, 'knocked', 'knocked'],
       [{ gate_talked_through: true }, 'talked Captain Ruon', 'talked the quarry gate open'],
-      [{ gate_fire_bluff: true }, 'bluffed the deserter', 'stared the deserter'],
+      [{ gate_fire_bluff: true }, 'off his post', 'guard by the oil barrels'],
       [{ gate_fire_bluff: true, lost_quarry_gate: true }, 'drove you back', 'chased you down'],
     ] as const;
     for (const [flags, recapText, dorinText] of gates) {
@@ -177,8 +198,9 @@ describe('the authored walk home', () => {
     );
     expect(line('welcome_home_gao', { ruon_spared: true }, 1)).toContain('beside you');
     expect(line('welcome_home_gao', { ruon_traded: true }, 1)).toContain('Jin has him now');
-    expect(line('welcome_home_mira', { pella_asked: true }, 1)).toContain('Pella reached Bo-shan');
-    expect(line('welcome_home_mira', {}, 1)).toContain('soup');
+    // The reunion is staged now (C-14), so Mira no longer tells it for Pella.
+    for (const flags of [{}, { pella_asked: true }] as GameState['flags'][])
+      expect(line('welcome_home_mira', flags, 1)).toContain('run out of bowls');
   });
 
   it('allows an explicit later liberation without clearing the loss history', () => {

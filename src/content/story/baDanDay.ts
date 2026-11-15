@@ -2,8 +2,9 @@
  * A Ba Dan day (ADR 0047 §8, W6): Gao's plant scene (LW-S-BD-01), the gate
  * handover (LW-S-BD-03), Hanru's watch and the school notice.
  *
- * Voice for Hanru is set here, since the story bible is not available: few
- * words, practical, kind without saying so. Hanru uses they/them (D7).
+ * Hanru is canon NPC-25 (`docs/story-bible.md`): few words, practical, kind
+ * without saying so. Hanru uses they/them (ADR 0047 D7). The scene ids
+ * LW-S-BD-01 and -03 are ADR 0047's; the scenes are demo additions.
  *
  * No line claims time passing inside a conversation; the phase is fixed while
  * one is open. Scene memory uses the reserved `scene.` prefix and is written
@@ -13,6 +14,7 @@
 import type { Condition, StoryNode } from '../../core/types';
 
 const victory: Condition = { kind: 'flag', key: 'act1_complete', op: 'set' };
+const lost: Condition = { kind: 'flag', key: 'act1_lost', op: 'set' };
 const atDawn: Condition = { kind: 'phase', in: ['dawn'] };
 const both = (...of: Condition[]): Condition => ({ kind: 'all', of });
 
@@ -31,11 +33,11 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
     speaker: GAO,
     portrait: 'portrait.gao',
     prompt: 'Come in out of the sun. Sit down a minute.',
-    // A visit does not reset the custody disagreement (guide §04.2).
+    // A visit does not reset the custody disagreement (ADR 0047 §8).
     variants: [
       {
         when: { kind: 'flag', key: 'ruon_traded', op: 'set' },
-        lines: ['You can sit, if you like. It does not change what I think about Ruon.'],
+        lines: ['Sit if you want. I had a question for Ruon. I still have it.'],
       },
     ],
     options: [
@@ -50,6 +52,14 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
     kind: 'branch',
     flag: 'act1_complete',
     ifSet: 'plant_chair_decline_home',
+    ifUnset: 'plant_chair_decline_lost',
+  },
+  // After a Driller loss (C-16), his word on the occupied valley (lost.ts).
+  {
+    id: 'plant_chair_decline_lost',
+    kind: 'branch',
+    flag: 'act1_lost',
+    ifSet: 'gao_lost',
     ifUnset: 'plant_chair_decline_road',
   },
   {
@@ -224,6 +234,8 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
 
   /* ------------------------------------------------------------ Hanru's watch */
   // Evening and night on the post; at dawn, off watch on the handover verge.
+  // After a Driller loss, Dorin is away with the cart and Hanru keeps the gate
+  // by day as well (`residents/baDan.ts`).
   {
     id: 'hanru_watch',
     kind: 'dialogue',
@@ -235,6 +247,22 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
       'Dorin once wanted my fish prints on the notice board. They stay inside the hut.',
     ],
     variants: [
+      {
+        when: both(lost, { kind: 'flag', key: 'ruon_spared', op: 'set' }),
+        lines: [
+          'Dorin left me the gate, and a list. Most of the list is about the float.',
+          'Ruon asked me to lock him in the hut at night. I told him the door sticks. He hasn’t tried it.',
+          'The lamp by the east road stays lit now. Day and night.',
+        ],
+      },
+      {
+        when: lost,
+        lines: [
+          'Dorin left me the gate, and a list. Most of the list is about the float.',
+          'I only ask where people are going when they look lost. Most people look lost today.',
+          'The lamp by the east road stays lit now. Day and night.',
+        ],
+      },
       {
         when: atDawn,
         lines: [
@@ -286,7 +314,7 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
         when: victory,
         lines: [
           '“School this morning. Pupils home at midday.”',
-          'Underneath, in careful chalk: “PELLA IS AT SCHOOL. BO-SHAN, DO NOT MOVE MY STONES.”',
+          'Underneath, in careful chalk: “PELLA IS AT SCHOOL. NOBODY MOVE BO-SHAN’S STONE. IT IS HIS TURN.”',
         ],
       },
     ],

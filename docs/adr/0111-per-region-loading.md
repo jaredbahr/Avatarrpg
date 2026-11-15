@@ -1,8 +1,9 @@
 # ADR 0111: Regions as the unit of content, loading and budgets
 
-**Status:** §1 (the region manifest) accepted, 2026-11-14. §2 (per-region loading), §3 (caching and
-offline) and §4 (budgets) are proposed and land in their own PRs; §4 changes budget rules and waits
-for the owner. Builds on ADR 0011 (regions in the world model), ADR 0076 (asset families), ADR 0104
+**Status:** accepted, 2026-11-14. §1 (the region manifest) and §2 (per-region loading) were accepted
+first; the owner then decided §3 (offline for later regions), §4 (budgets) and the music trial on the
+same day (see "Owner decisions"). The §4 gates are live; §3's caching for later regions and the music
+trial are follow-up work. Builds on ADR 0011 (regions in the world model), ADR 0076 (asset families), ADR 0104
 (top-down scenes as assets), ADR 0108 (area music) and ADR 0109 (the JS budget). Answers "Scale and
 saves" in `docs/pipeline-proof-plan.md`.
 
@@ -62,17 +63,124 @@ authored: the next region gets its own story files from its first beat.
 (605,710 bytes each); the progression, golden-save, continuity and determinism tests pass
 unchanged.
 
-### 2. Per-region loading (proposed)
+### 2. Per-region loading
 
-To land in its own PR; this section is filled in there.
+**Chunks.** Each region's `manifest.ts` has `load: () => import('./content')`, so the bundler puts
+the region's data in a chunk of its own, named `assets/region-<folder>-<hash>.js`
+(`chunkFileNames` in `vite.config.ts`). The shared half of the index (`src/content/core.ts`) and the
+manifests stay in the boot chunk. `src/content/index.ts`, the full index, is for tests, scripts, the
+balance report and the dev-only validator; `src/app/regions.test.ts` fails if any shipped module in
+`src/app`, `src/render` or `src/main.ts` imports it, a region list, or anything a region's
+`content.ts` imports.
 
-### 3. Caching and offline (proposed)
+**The store.** `RegionStore` (`src/app/regions.ts`) owns the one `ContentIndex` the app hands every
+rules call: the core fields, plus region maps it fills **in place** as regions load. A region loads
+with its neighbours (data and top-down scenes, in parallel); a region is ready when it and every
+neighbour are in. Loaded regions are never removed. After each load the region maps are refilled in
+`REGIONS` order, so any set of loaded regions iterates as the full index does with the others left
+out: a first-match read gives the full index's answer whenever that answer is in a loaded region,
+which §1's neighbour rule guarantees for everything the current region can name. A failed fetch is
+forgotten so the next request tries again; a failed scene draws its region's bare boards, as a failed
+scene did at boot before.
 
-To land with §2.
+**When regions load.**
 
-### 4. Budgets (proposed, owner decision)
+| Moment                             | What waits                                                                                                                                  |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Boot                               | The autosave's region (the start region when there is none), before `App`                                                                   |
+| Title showing                      | The start region is fetched in the background, for New game and the preview                                                                 |
+| New game, riverside preview        | The start region, if not yet in                                                                                                             |
+| Load a save (slot, file, Continue) | The save's region (and its battle board's), before reconciling it                                                                           |
+| Every command                      | `App.dispatch` runs nothing until the party's region is ready; after it, the party's (possibly new) region and its neighbours start loading |
 
-To land as a draft PR; no budget number or rule changes before the owner agrees.
+With everything ready each of these is synchronous, as before; otherwise the app shows "Loading the
+next area…" and runs the action when the region is in. `src/core/` is unchanged and stays pure: it
+reads what it is handed.
+
+**Determinism.** The rules see the same records for the same command, so the same seed and commands
+give the same events. Tests, replays, the balance report and the golden saves use the full index.
+
+**Measured (demo):** the boot chunk went from 369.9 to 349.9 KB gz (`check-bundle-size.mjs`); the
+`ba_dan_valley` chunk is 21.9 KB gz; total JS 384.7 KB gz (was 382.8: the split costs about 2 KB of
+gzip context). Still in the boot chunk and region-specific, for a follow-up: story presentations and
+interludes, discovery markers, followers, journal notes, Ba Dan's routines and canal bridge
+(about 4 KB gz), which `src/app` imports by name.
+
+### 3. Caching and offline
+
+**Today nothing changes:** the demo is one region and it is the start region, so its chunk
+(`**/*.js`) and its scenes and boards (`art/topdown/**`) stay precached and the game plays offline
+after a first visit. Music still streams (ADR 0108).
+
+**Decided for later regions** (owner, 2026-11-14): the start region is precached at install; every
+other region's chunk (`assets/region-<folder>-*`) and art are left out of the precache
+(`scripts/precache.mjs`) and cached by the service worker the first time the party visits it
+(workbox `CacheFirst`), so a tablet plays offline anywhere it has already been. Rejected: precaching
+every region, which is simpler but grows the install with the saga. This is follow-up work; the
+demo, a single start region, needs none of it.
+
+**Implemented (2026-11-14).** `scripts/region-cache.mjs` derives everything from the region list, so a
+new region needs no edit: `PRECACHE_IGNORES` gains `assets/region-<folder>-*.js` (folder = the
+camelCased id) and `<scene folder>/**` for every region but the start region, workbox gets one
+`runtimeCaching` route (`CacheFirst`, matching those chunks and art folders) and the asset budget's
+precache total follows the same list. No message from `RegionStore` is needed: it imports the chunk
+and reads the scenes, and the worker caches what those fetches return, so the cache fills on the
+first visit. The cache is named for the build (`fnt-regions-<version>-<revision>`) and
+`region-cache-cleanup.js`, imported by the worker, deletes every older `fnt-regions-*` cache on
+activate; a hashed chunk would be safe alone, but scenes keep their names, so an update must not
+serve last build's. A later region is therefore fetched again once after an update. Music stays
+streamed: an `<audio>` element sends Range requests and a cached 206 cannot be kept. With one region
+the list is empty, so `sw.js` and the precache are unchanged.
+
+**Amended 2026-11-15 (RG-02, the pipeline trial; for the owner's review).** The start region's
+**neighbours are precached with it.** A region is ready only when its neighbours are loaded (§2), so
+once Ba Dan valley names Saltstep and Emberwatch (the coast-road link), a new game cannot run its
+first command until RG-02's chunk is in. Left to the runtime cache, which an update clears, the demo
+itself would not start offline after an update. `laterRegions` now leaves out the start region and
+its neighbours; RG-02's chunk (about 10 KB gz) and, later, its boards join the precache, inside the
+25 MB cap. Regions further out are still cached on their first visit, as decided.
+
+### 4. Budgets (accepted by the owner, 2026-11-14)
+
+One total per kind grows with every region and would need raising each time. Instead: a budget for
+what the core ships and one per region. **For the demo's one region every cap adds up to the old
+total**, so nothing grows today; each new region then brings its own caps
+instead of a raise. Measured on this branch:
+
+| Gate                 | Before (rule, number)                      | Now (rule, number)                                            | Demo now             |
+| -------------------- | ------------------------------------------ | ------------------------------------------------------------- | -------------------- |
+| JS per session       | all shipped JS ≤ 410 KB gz                 | boot JS + the largest region chunk ≤ **410 KB gz**            | 362.8 + 21.9 = 384.7 |
+| JS per region        | (none)                                     | each region chunk ≤ **40 KB gz**                              | 21.9                 |
+| Top-down art, shared | `topdown` family (boards included) ≤ 6 MiB | `topdown` family without region boards ≤ **4.5 MiB**          | 3.27 MB              |
+| Top-down art, region | (in the family)                            | each region's boards (its scenes' folders) ≤ **1.5 MiB**      | 1.39 MB              |
+| Audio, sound effects | `audio` family (all sound) ≤ 4 MiB         | sound effects ≤ **0.5 MiB**                                   | 0.16 MB              |
+| Audio, shared music  | (in the family)                            | music no region plays (the title) ≤ **0.75 MiB**              | 0.53 MB              |
+| Audio, region music  | (in the family)                            | each region's area music ≤ **2.75 MiB**                       | 2.66 MB              |
+| Precache             | ≤ 25 MB                                    | unchanged, ≤ **25 MB** (core plus every precached region, §3) | 10.43 MB             |
+| Other art families   | 4 MiB each; units 8.5; maps 6              | unchanged                                                     | unchanged            |
+
+(The caps are MiB, as the scripts have always measured; the report prints them as "MB".)
+
+`scripts/check-bundle-size.mjs` and `scripts/check-asset-budget.mjs` enforce exactly these gates; a
+region's files are found from its manifest (`scripts/region-assets.ts`). The audio check also fails
+when a music file is played by neither a region nor the title.
+
+**The audio rethink.** Music is most of the audio (3.19 of 3.35 MiB) and the reason it is out of
+room. With the split above, each region carries up to 2.75 MiB of its own music, streamed and never
+precached, so the next region's track does not break anything. On top of that the owner chose to
+trial a smaller format (below). Music is not cached for offline play today (ADR 0108).
+
+### Owner decisions (2026-11-14)
+
+1. **Budgets:** §4's structure and numbers are accepted as proposed: boot JS plus the largest region
+   chunk ≤ 410 KB gz; each region chunk ≤ 40 KB gz; shared top-down art ≤ 4.5 MiB; each region's
+   boards ≤ 1.5 MiB; sound effects ≤ 0.5 MiB; shared (title) music ≤ 0.75 MiB; each region's music
+   ≤ 2.75 MiB; the precache stays at 25 MB.
+2. **Offline for later regions:** the start region is precached at install; every other region is
+   cached for offline play the first time the party visits it (§3). Implementation is follow-up work.
+3. **Music:** try a smaller format, HE-AAC at about 64 kbps or similar, about a third smaller per
+   track. The owner listens and approves each track before it replaces the current file. The trial
+   is follow-up work.
 
 ## Consequences
 

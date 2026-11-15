@@ -51,6 +51,7 @@ import { canMove, effectiveStats, isAlive, statusDefs } from '../../core/rules/s
 import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
 import { coverCue } from './coverCue';
 import { activeUnit, upcomingOrder } from '../../core/rules/turnOrder';
+import { isGuest, isTableControlled } from '../../core/rules/guests';
 import { encounterText } from '../../core/story/encounterText';
 import { Renderer } from '../../render/renderer';
 import { usesIntegerZoom } from '../../render/projection';
@@ -64,7 +65,6 @@ import {
   weatherChipShortText,
   weatherChipText,
 } from '../../core/rules/obscurementPresentation';
-import { CONTENT } from '../../content';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
 import { ambienceFx, resolveFx } from '../../content/fx';
 import { ambientEmitters } from '../anim/ambience';
@@ -74,6 +74,7 @@ import { assetCanvas } from '../ui/assetCanvas';
 import { portraitKeyFor } from '../ui/PartyRoster';
 import { victoryNote, victoryResults, type VictoryRow } from '../ui/victoryResults';
 import { UI_MARKS, markKindFor } from '../ui/marks';
+import { objectiveLine, objectiveOverlay } from './combatObjective';
 import { iconMarkup } from '../ui/icons';
 import { paletteFor } from '../../render/palettes';
 import { paintElementGlyph } from '../../render/painters/glyphs';
@@ -125,14 +126,19 @@ import {
   combatTipEvents,
   combatTipFeatures,
   firstFightStage,
+  isGuidedFight,
   nextFirstFightStage,
   unseenCombatTips,
   type CombatTipFeature,
 } from './combatGuidance';
 
+/** What the HUD says while the AI acts; a guest is named as one (ADR 0116). */
 export function actingTurnCopy(unit: Pick<Unit, 'faction' | 'name'>): string {
-  return unit.faction === 'ally' ? `Ally turn · ${unit.name} is acting` : `${unit.name} is acting`;
+  return isGuest(unit) ? `Guest turn · ${unit.name} is acting` : `${unit.name} is acting`;
 }
+
+/** The visible tag a guest carries in the turn strip and the HUD (ADR 0116). */
+export const GUEST_TAG = 'Guest';
 
 const COMBAT_OPENING_HOLD_MS = 700;
 const COMBAT_OPENING_FOCUS_MS = 320;
@@ -279,7 +285,7 @@ export class CombatScene implements Scene {
   private inspector: UnitInspector | PropInspector | null = null;
   private readonly movementThreatQuery: ReturnType<typeof createMovementThreatQuery>;
 
-  /** Party unit whose owner last acknowledged the hand-off banner. */
+  /** The participant who last acknowledged the hand-off banner. */
   private handedOffTo: string | null = null;
   private bannerShownFor: string | null = null;
   private lastActiveId: string | null = null;
@@ -484,7 +490,9 @@ export class CombatScene implements Scene {
     this.syncPresentationClock();
     this.host = host;
     if (this.app.state)
-      this.queueCombatTips(combatTipFeatures(this.app.state, this.app.content.props));
+      this.queueCombatTips(
+        combatTipFeatures(this.app.state, this.app.content.props, this.app.content.encounters),
+      );
     this.freshBattleEntry = this.app.consumeFreshCombatEntry?.() ?? false;
     const approach = this.freshBattleEntry
       ? this.app.consumeCombatApproach(this.app.state?.battle?.mapId ?? '')
@@ -1074,7 +1082,16 @@ export class CombatScene implements Scene {
 
   private isPlayerTurn(): boolean {
     const unit = this.active();
-    return !!unit && unit.faction === 'party' && isAlive(unit);
+    return !!unit && isTableControlled(unit) && isAlive(unit);
+  }
+
+  /** "Nilak (Ava)", or "Veyra, guest (Ava)" for a table guest: who is acting, and who is playing. */
+  private turnLabel(unit: Unit): string {
+    if (!isGuest(unit)) return this.app.session.labelFor(unit);
+    const person = this.app.session.solo
+      ? undefined
+      : this.app.session.controllerFor(this.app.state, unit.id);
+    return person ? `${unit.name}, guest (${person.name})` : `${unit.name}, guest`;
   }
 
   private reachableCells() {
@@ -1438,9 +1455,9 @@ export class CombatScene implements Scene {
 
   private needsHandoff(): boolean {
     const unit = this.active();
-    if (!unit || unit.faction !== 'party') return false;
+    if (!unit || !isTableControlled(unit)) return false;
     if (this.app.session.solo) return false;
-    return this.app.session.needsHandoff(this.handedOffTo, unit.id);
+    return this.app.session.needsHandoffTo(this.handedOffTo, this.app.state, unit.id);
   }
 
   sync(): void {
@@ -1449,7 +1466,7 @@ export class CombatScene implements Scene {
     if (
       !this.app.settings?.combatGuidance ||
       battle.phase !== 'active' ||
-      battle.encounterId === 'enc_forest_road'
+      isGuidedFight(battle, this.app.content.encounters)
     ) {
       this.guidanceTipQueue = [];
       if (this.guidanceTipTimer != null && typeof window !== 'undefined')
@@ -1485,9 +1502,7 @@ export class CombatScene implements Scene {
       // change of human ownership needs another hand-off card.
       if (unit) {
         announce(
-          unit.faction === 'party'
-            ? `${this.app.session.labelFor(unit)}'s turn.`
-            : actingTurnCopy(unit),
+          isTableControlled(unit) ? `${this.turnLabel(unit)}'s turn.` : actingTurnCopy(unit),
         );
       }
       // The More list was opened for the last turn; the next player at the
@@ -1552,7 +1567,7 @@ export class CombatScene implements Scene {
     const unit = this.active();
     if (!battle || battle.phase !== 'active' || !unit) return;
     if (this.suspended || this.aiHeld || this.battleOpening) return;
-    if (unit.faction === 'party') return;
+    if (isTableControlled(unit)) return;
 
     if (this.presentationClock) {
       if (this.aiDueAt === null) {
@@ -1613,7 +1628,7 @@ export class CombatScene implements Scene {
     if (this.cameraGlide) return;
     const battle = this.battle();
     const unit = this.active();
-    if (!battle || battle.phase !== 'active' || !unit || unit.faction === 'party') {
+    if (!battle || battle.phase !== 'active' || !unit || isTableControlled(unit)) {
       this.stopAiTimer();
       return;
     }
@@ -1632,6 +1647,27 @@ export class CombatScene implements Scene {
   /* ---------------------------------------------------------------- */
   /* Rendering: chrome                                                 */
   /* ---------------------------------------------------------------- */
+
+  /**
+   * The objective line under the round (ADR 0116's 2026-11-15 amendment): a flag, the goal and
+   * the rounds left, read out whole as one status line so a screen reader hears the change.
+   */
+  private objectiveLineElement(goal: NonNullable<ReturnType<typeof objectiveLine>>): HTMLElement {
+    const line = el(
+      'div',
+      {
+        class: `combat-objective${goal.urgent ? ' urgent' : ''}`,
+        attrs: { role: 'status', 'aria-label': goal.spoken },
+      },
+      mark(UI_MARKS.flag, 'mark-inline combat-objective-mark'),
+      el('span', { class: 'visually-hidden', text: 'Goal: ' }),
+      el('span', { class: 'combat-objective-label', text: goal.label, title: goal.label }),
+    );
+    if (goal.rounds) {
+      line.appendChild(el('span', { class: 'combat-objective-rounds', text: goal.rounds }));
+    }
+    return line;
+  }
 
   private renderTopBar(): void {
     const bar = this.host?.querySelector<HTMLElement>('.combat-bar');
@@ -1656,6 +1692,7 @@ export class CombatScene implements Scene {
     clear(bar);
 
     const encounter = this.app.content.encounters.get(battle.encounterId);
+    const goal = battle.phase === 'active' ? objectiveLine(encounter, battle.round) : null;
     // The encounter's name on a plate, in the display face, with the round under it.
     bar.appendChild(
       el(
@@ -1684,6 +1721,7 @@ export class CombatScene implements Scene {
               ]
             : []),
         ),
+        ...(goal ? [this.objectiveLineElement(goal)] : []),
       ),
     );
     bar.appendChild(el('div', { class: 'spacer' }));
@@ -1895,25 +1933,32 @@ export class CombatScene implements Scene {
           ? this.app.content.characters.get(unit.characterId)
           : undefined;
       const chipName = definition?.shortName ?? unit.name;
+      // A guest is tagged on its chip, and its name says so to a screen reader
+      // (ADR 0116): it fights with the party but is not one of the heroes.
+      const guest = isGuest(unit);
+      const named = guest ? `${unit.name} (guest)` : unit.name;
 
       // The element class puts the unit's colour in --el, for the party's ring.
       const chip = el(
         'button',
         {
-          class: `turn-chip faction-${unit.faction} element-${unit.element}${isActive ? ' active' : ''}`,
+          class: `turn-chip faction-${unit.faction} element-${unit.element}${guest ? ' guest' : ''}${isActive ? ' active' : ''}`,
           attrs: {
             type: 'button',
-            'aria-label': `Focus ${unit.name}`,
+            'aria-label': `Focus ${named}`,
             ...(this.victoryPending || this.victoryBeat ? { disabled: '' } : {}),
           },
           onClick: () => this.focusUnit(unit.id),
         },
         assetCanvas(portraitKeyFor(this.app.content, unit), 2.4),
         el('span', { class: 'tiny', text: chipName }),
+        guest
+          ? el('small', { class: 'guest-tag', text: GUEST_TAG, attrs: { 'aria-hidden': 'true' } })
+          : null,
       );
       // A phone shows the waiting chips as faces alone and a long name
       // ellipses anywhere, so the full name always rides on the chip itself.
-      const who = player && player.name !== unit.name ? `${unit.name} (${player.name})` : unit.name;
+      const who = player && player.name !== unit.name ? `${unit.name} (${player.name})` : named;
       chip.title = `${who}: ${unit.hp}/${unit.base.maxHp} HP. Focus on the battlefield.`;
       strip.appendChild(chip);
     }
@@ -1968,11 +2013,14 @@ export class CombatScene implements Scene {
       this.clearPending();
     }
 
-    if (unit.faction !== 'party') {
+    if (!isTableControlled(unit)) {
       hud.appendChild(
         el(
           'div',
-          { class: `enemy-turn-card element-${unit.element}`, attrs: { 'aria-hidden': 'true' } },
+          {
+            class: `enemy-turn-card element-${unit.element}${isGuest(unit) ? ' guest' : ''}`,
+            attrs: { 'aria-hidden': 'true' },
+          },
           assetCanvas(
             portraitKeyFor(this.app.content, unit),
             3,
@@ -2009,11 +2057,14 @@ export class CombatScene implements Scene {
    */
   private guideStage(): number | null {
     const stage =
-      this.app.settings?.combatGuidance && this.app.state ? firstFightStage(this.app.state) : null;
+      this.app.settings?.combatGuidance && this.app.state
+        ? firstFightStage(this.app.state, this.app.content.encounters)
+        : null;
     const unit = stage === 1 ? this.active() : undefined;
     const battle = this.battle();
     const content = this.app.content;
-    return unit?.faction === 'party' &&
+    return unit &&
+      isTableControlled(unit) &&
       battle &&
       !knownAbilities(content, unit).some(
         (ability) =>
@@ -2084,7 +2135,7 @@ export class CombatScene implements Scene {
     before: GameState | null,
   ): void {
     if (!before || !this.app.settings.combatGuidance) return;
-    const stage = firstFightStage(before);
+    const stage = firstFightStage(before, this.app.content.encounters);
     if (stage === null) return;
     const next = nextFirstFightStage(stage, command, events, before);
     if (next !== null) {
@@ -2100,7 +2151,7 @@ export class CombatScene implements Scene {
       !state ||
       !state.battle ||
       state.battle.phase !== 'active' ||
-      state.battle.encounterId === 'enc_forest_road' ||
+      isGuidedFight(state.battle, this.app.content.encounters) ||
       !this.app.settings?.combatGuidance
     )
       return;
@@ -2130,7 +2181,7 @@ export class CombatScene implements Scene {
       !this.host ||
       !state?.battle ||
       state.battle.phase !== 'active' ||
-      state.battle.encounterId === 'enc_forest_road' ||
+      isGuidedFight(state.battle, this.app.content.encounters) ||
       this.guidanceTipQueue.length === 0
     ) {
       this.guidanceTipQueue = [];
@@ -2168,11 +2219,12 @@ export class CombatScene implements Scene {
 
   private unitPanel(unit: Unit): HTMLElement {
     const stats = effectiveStats(this.app.content, unit);
-    const player = this.app.session.participantForUnit(unit.id);
+    const player = this.app.session.controllerFor(this.app.state, unit.id);
+    const guest = isGuest(unit);
 
     const apPips = el('div', {
       class: 'pips',
-      attrs: { 'aria-label': `${unit.ap} action points` },
+      attrs: { role: 'img', 'aria-label': `${unit.ap} action points` },
     });
     for (let i = 0; i < Math.max(stats.maxAp, unit.ap); i++) {
       apPips.appendChild(el('span', { class: `pip${i < unit.ap ? ' pip-on' : ''}` }));
@@ -2212,7 +2264,19 @@ export class CombatScene implements Scene {
             el(
               'div',
               { class: 'stack tight' },
-              el('strong', { class: 'unit-name', text: unit.name }),
+              // A hero's name stands alone; a guest's carries its tag beside it.
+              guest
+                ? el(
+                    'div',
+                    { class: 'row tight' },
+                    el('strong', { class: 'unit-name', text: unit.name }),
+                    el('span', {
+                      class: 'chip chip-guest',
+                      text: GUEST_TAG,
+                      attrs: { title: 'Fights with you for this battle only' },
+                    }),
+                  )
+                : el('strong', { class: 'unit-name', text: unit.name }),
               player && player.name !== unit.name
                 ? el('span', { class: 'tiny muted', text: player.name })
                 : null,
@@ -2250,7 +2314,7 @@ export class CombatScene implements Scene {
     const bar = el('div', { class: 'hud-panel action-bar', attrs: { role: 'toolbar' } });
     bar.appendChild(this.abilityHeader(unit));
     const row = el('div', { class: 'action-row' });
-    const interactive = unit.faction === 'party' && this.isPlayerTurn();
+    const interactive = isTableControlled(unit) && this.isPlayerTurn();
     const cue = this.guideStage();
 
     const moveActive = this.mode.kind === 'move';
@@ -2836,10 +2900,15 @@ export class CombatScene implements Scene {
     if (!unit) return el('div');
     // The one place the optional names from setup appear; without one this is
     // the player name the card has always shown.
-    const who = this.app.session.handoffNameFor(unit.id) ?? unit.name;
+    const state = this.app.state;
+    const who = this.app.session.controllerHandoffName(state, unit.id) ?? unit.name;
+    const person = this.app.session.controllerFor(state, unit.id);
+    const playing = isGuest(unit) ? `Playing ${unit.name}, our guest` : `Playing ${unit.name}`;
 
-    if (this.bannerShownFor !== unit.id) {
-      this.bannerShownFor = unit.id;
+    // A table guest changes hands each round, so the card is keyed on both.
+    const shownFor = `${unit.id}|${person?.id ?? ''}`;
+    if (this.bannerShownFor !== shownFor) {
+      this.bannerShownFor = shownFor;
       announce(`Hand the tablet to ${who}.`);
     }
 
@@ -2851,11 +2920,11 @@ export class CombatScene implements Scene {
         { class: 'panel center' },
         el('p', { class: 'muted', text: 'Hand the tablet to' }),
         el('h1', { text: who }),
-        el('p', { class: 'muted', text: `Playing ${unit.name}` }),
+        el('p', { class: 'muted', text: playing }),
         button(
           "I'm ready",
           () => {
-            this.handedOffTo = unit.id;
+            this.handedOffTo = person?.id ?? null;
             this.renderHud();
           },
           { class: 'btn-primary btn-large' },
@@ -3103,7 +3172,7 @@ export class CombatScene implements Scene {
 
     // Resolved here, not in the renderer: the renderer never reads content.
     const props: RenderProp[] = battle.props.map((p) => {
-      const def = CONTENT.props.get(p.propId);
+      const def = this.app.content.props.get(p.propId);
       return {
         id: p.id,
         kind: p.propId,
@@ -3139,7 +3208,7 @@ export class CombatScene implements Scene {
         const rise = this.animatorForBoard.wallRise(now, pos);
         return rise === undefined ? pos : { ...pos, rise };
       }),
-      overlays,
+      overlays: this.withObjective(battle, overlays),
       obscuringTiles: this.obscuringTilesFor(battle),
       weatherIntensity: weatherAt(this.app.content, battle.encounterId, battle.round),
       climbMarkers,
@@ -3179,6 +3248,19 @@ export class CombatScene implements Scene {
     this.deliverTopdownSounds(now, wallNow);
     this.advanceTopdownAi(now);
   };
+
+  /**
+   * The encounter's objective cells under every other overlay while the fight is on (ADR 0116's
+   * 2026-11-15 amendment): a rule the board must show, on either backend and on everyone's turn.
+   */
+  private withObjective(
+    battle: BattleState,
+    overlays: readonly OverlayLayer[],
+  ): readonly OverlayLayer[] {
+    if (battle.phase !== 'active') return overlays;
+    const layer = objectiveOverlay(this.app.content.encounters.get(battle.encounterId));
+    return layer ? [layer, ...overlays] : overlays;
+  }
 
   /**
    * Automatic combat framing follows only an enlarged animated body. Manual

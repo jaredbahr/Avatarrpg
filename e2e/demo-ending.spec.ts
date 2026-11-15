@@ -6,8 +6,8 @@ import { completeAuthoredPlayback, resetStorage, settleLayout, waitForIdle } fro
 /**
  * The demo's ending (owner, 2026-11-11), on an iPad-landscape viewport in the top-down style: the
  * walk home from the Driller floor, the first step into Ba Dan, the welcome home from Mira, Gao and
- * Dorin that pays off this route's choices (the earthbender talked the gate open, Ruon escorted),
- * the demo-complete card, and "Play again with a different party" reaching party setup.
+ * Dorin that pays off this route's choices (the party talked the gate open, Ruon escorted),
+ * the supper and the boot, Bo-shan taking the reins, the demo-complete card, and "Play again with a different party" reaching party setup.
  */
 test.use({ viewport: { width: 1180, height: 820 }, hasTouch: true });
 
@@ -76,6 +76,12 @@ test('the walk home ends in a welcome home and a demo-complete card', async ({ p
   await nextLine(page);
   await nextLine(page);
   await nextLine(page);
+  // The reunion at Mira's table (DLG-07), staged one turn at a time.
+  await expect
+    .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
+    .toBe('reunion_run');
+  await expect(line).toContainText('Pella comes down the lane');
+  for (let index = 0; index < 14; index++) await nextLine(page);
   await expect
     .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
     .toBe('welcome_home_gao');
@@ -87,10 +93,21 @@ test('the walk home ends in a welcome home and a demo-complete card', async ({ p
   await expect
     .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
     .toBe('welcome_home_dorin');
-  // The earthbender talked the gate open on this route.
+  // The party talked the gate open on this route.
   await expect(line).toContainText('talked the quarry gate open');
   await nextLine(page);
   await nextLine(page);
+
+  // The supper, and a boot on a doorstep with a river shell in it (C-30).
+  await expect
+    .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
+    .toBe('welcome_home_supper');
+  for (let index = 0; index < 6; index++) await nextLine(page);
+  // Bo-shan takes the reins (C-32): a staged scene the table can skip.
+  await expect
+    .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
+    .toBe('cart_departure');
+  await page.getByRole('button', { name: 'Skip scene', exact: true }).click();
 
   const card = page.locator('.end-panel');
   await expect(card).toContainText('Demo complete');
@@ -100,7 +117,7 @@ test('the walk home ends in a welcome home and a demo-complete card', async ({ p
   await expect(card.locator('.end-recap li')).toContainText([
     'Kaya, level 4',
     'Nima, level 4',
-    'At the quarry gate, your earthbender talked Captain Ruon into opening it.',
+    'At the quarry gate, you talked Captain Ruon into opening it.',
     'You brought Captain Ruon home to answer to the families.',
   ]);
   await expect(card).not.toContainText('You traded Captain Ruon');

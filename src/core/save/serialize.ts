@@ -150,7 +150,7 @@ const gameState = z.object({
   battle: battle.nullable(),
   story: z.object({
     nodeId: z.string().nullable(),
-    deciderIndex: z.number(),
+    deciderIndex: z.number().int(),
     visited: z.array(z.string()),
     lineIndex: z.number(),
   }),
@@ -212,6 +212,13 @@ export const saveBlobSchema = z.object({
   label: z.string(),
   /** Human-readable summary shown on the slot button. */
   summary: z.string(),
+  /*
+   * The history revision of the content that wrote the file (ADR 0112,
+   * `backfill.ts`): which flag backfills it has already been given. Additive,
+   * like `difficulty`: a file from before revisions existed has had none, which
+   * is 0, so it needs no format bump.
+   */
+  history: z.number().int().min(0).default(0),
   state: gameState,
   session: sessionMeta,
 });
@@ -232,18 +239,28 @@ export interface SaveMeta {
   /** Milliseconds since the epoch. Passed in — core has no clock. */
   readonly savedAt: number;
   readonly session: SessionMeta;
+  /**
+   * The writer's history revision (`backfill.ts`). The app's save path passes
+   * the content's current one; omitted, the file is stamped 0, which is only
+   * right for a fixture that never meets a backfill rule.
+   */
+  readonly history?: number;
 }
 
 export function toBlob(state: GameState, meta: SaveMeta): SaveBlob {
-  return {
+  const blob = {
     magic: SAVE_MAGIC,
     format: SAVE_FORMAT_VERSION,
     savedAt: meta.savedAt,
     label: meta.label,
     summary: meta.summary,
+    // Left out at 0, which is what a reader takes a missing key to mean, so a
+    // file from before any backfill rule existed is written exactly as it was.
+    ...(meta.history ? { history: meta.history } : {}),
     state: state as DeepMutable<GameState>,
     session: meta.session,
   };
+  return blob as SaveBlob;
 }
 
 export function serialize(state: GameState, meta: SaveMeta): string {
@@ -260,7 +277,13 @@ export function serializeForExport(state: GameState, meta: SaveMeta): string {
 /* ------------------------------------------------------------------ */
 
 export type LoadResult =
-  { readonly ok: true; readonly blob: SaveBlob } | { readonly ok: false; readonly error: string };
+  | {
+      readonly ok: true;
+      readonly blob: SaveBlob;
+      /** What was repaired so the file could load, one line each. Absent when nothing was. */
+      readonly warnings?: readonly string[];
+    }
+  | { readonly ok: false; readonly error: string };
 
 /**
  * Validates and, where possible, upgrades a save.
@@ -433,6 +456,19 @@ export function deserialize(json: string): LoadResult {
     }
   }
 
+  // An unreadable history revision is repaired, not refused (ADR 0112): the campaign is worth
+  // more than the stamp. It reads as 0, so every backfill rule is offered again. A `set` rule
+  // never overwrites and a `node` rule adds a scene once, so that is safe; an `adjust` rule would
+  // add its delta a second time, which is the cost of a file damaged in exactly this field.
+  const warnings: string[] = [];
+  if (typeof raw === 'object' && raw !== null && 'history' in raw) {
+    const history = (raw as Record<string, unknown>).history;
+    if (typeof history !== 'number' || !Number.isInteger(history) || history < 0) {
+      raw = { ...raw, history: 0 };
+      warnings.push('The save had an unreadable history revision; it was loaded as revision 0.');
+    }
+  }
+
   const parsed = saveBlobSchema.safeParse(migrate(raw));
   if (!parsed.success) {
     const first = parsed.error.issues[0];
@@ -453,7 +489,9 @@ export function deserialize(json: string): LoadResult {
     }
   }
 
-  return { ok: true, blob: parsed.data };
+  return warnings.length
+    ? { ok: true, blob: parsed.data, warnings }
+    : { ok: true, blob: parsed.data };
 }
 
 /** The rules state out of a validated blob. */

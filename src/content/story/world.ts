@@ -2,6 +2,48 @@ import type { StoryNode } from '../../core/types';
 
 /** Explore nodes keep legacy story saves and the exact XP audit compatible. Routes live on maps. */
 export const WORLD_STORY: readonly StoryNode[] = [
+  /*
+   * The culvert (saga outline, decision 23; story bible C-29). One stone, two
+   * ripples, and nobody explains it. The trigger (`maps/world.ts`) watches the
+   * only crossing east of the pool, so every party on either branch sees it
+   * once on the way to the quarry floor. Sura, if present, hears it first
+   * (the outline's reason for her to keep going; PQ-04). No line names what
+   * lives in the water: the reveal ladder holds that until Act III.
+   */
+  {
+    id: 'cutting_culvert',
+    kind: 'dialogue',
+    speaker: 'The Cutting',
+    portrait: 'portrait.narrator',
+    lines: [
+      'The pool drains under the road through a culvert, a square mouth of cut stone furred with green.',
+      'A pebble rolls off the verge and drops into the water at the culvert mouth.',
+    ],
+    variants: [
+      {
+        when: { kind: 'partyHas', characterId: 'sura' },
+        speaker: 'Sura',
+        portrait: 'portrait.sura',
+        lines: [
+          'Hang on. Quiet a second. There is a culvert under the road; the pool drains through it.',
+          'Something just went in. I heard it hit the water.',
+          'Then I heard it go in again.',
+        ],
+      },
+    ],
+    next: 'cutting_culvert_ripple',
+  },
+  {
+    id: 'cutting_culvert_ripple',
+    kind: 'dialogue',
+    speaker: 'The Cutting',
+    portrait: 'portrait.narrator',
+    lines: [
+      'The water ripples once. A breath later, it ripples again.',
+      'Then the pool is still, and the road runs on east.',
+    ],
+    next: 'cutting_after_explore',
+  },
   {
     id: 'gate_escort_explore',
     kind: 'explore',
@@ -23,6 +65,14 @@ export const WORLD_STORY: readonly StoryNode[] = [
     mapId: 'forest_road',
     objective: 'Follow the road east to the quarry gate, past the roadblock. Ba Dan is west.',
     objectiveTargetId: 'quarry_gate',
+    objectiveVariants: [
+      {
+        // After a Driller loss, Lanfen's conversation comes back here (lost.ts).
+        when: { kind: 'flag', key: 'act1_lost', op: 'set' },
+        text: 'The quarry is still held. Ba Dan is west.',
+        objectiveTargetId: 'ba_dan_village',
+      },
+    ],
     next: 'battle_forest_road',
   },
   {
@@ -45,16 +95,23 @@ export const WORLD_STORY: readonly StoryNode[] = [
     kind: 'explore',
     mapId: 'ambush_road',
     objective: 'Follow the east path down to the quarry floor, or go back west to Ba Dan.',
+    objectiveVariants: [
+      {
+        // After a Driller loss, Kuan's conversation comes back here (lost.ts).
+        when: { kind: 'flag', key: 'act1_lost', op: 'set' },
+        text: 'Someone is watching the far end of the cutting. Ba Dan lies west.',
+      },
+    ],
     next: 'quarry_descent',
   },
   {
     id: 'forest_dema',
     kind: 'dialogue',
-    speaker: 'Dema',
+    speaker: 'Lanfen',
     portrait: 'portrait.dema',
     lines: [
       'Mind your feet. There are ducklings under that fern. Yes, the one you are about to step on.',
-      "They used to nest down by the stream. Now it's full of quarry silt, and I've got a turtle-duck sitting in my clean washing.",
+      "They used to nest down by the stream. Now it's full of quarry silt, and I've got a turtle duck sitting in my clean washing.",
       'If you are going up there, ask them about the runoff. The duck can keep whichever sock it took. I want my stream back.',
     ],
     next: 'forest_ducks_seen',
@@ -68,7 +125,7 @@ export const WORLD_STORY: readonly StoryNode[] = [
   {
     id: 'forest_dema_again',
     kind: 'dialogue',
-    speaker: 'Dema',
+    speaker: 'Lanfen',
     portrait: 'portrait.dema',
     lines: [
       'She has brought the ducklings over. I suppose the washing can wait.',
@@ -79,7 +136,7 @@ export const WORLD_STORY: readonly StoryNode[] = [
   {
     id: 'cutting_tea',
     kind: 'dialogue',
-    speaker: 'Sen',
+    speaker: 'Kuan',
     portrait: 'portrait.sen',
     lines: [
       'Cup? Mind the handle on the blue one. It comes off.',
@@ -97,7 +154,7 @@ export const WORLD_STORY: readonly StoryNode[] = [
   {
     id: 'cutting_tea_again',
     kind: 'dialogue',
-    speaker: 'Sen',
+    speaker: 'Kuan',
     portrait: 'portrait.sen',
     lines: [
       "Back already? I've put fresh water on.",

@@ -270,6 +270,13 @@
   padding-inline-start: var(--hairline);
 }
 
+html:is([data-large-text='on'], [data-large-text='huge']) .combat-bar .title-plate-name {
+  overflow: visible;
+  overflow-wrap: anywhere;
+  text-overflow: clip;
+  white-space: normal;
+}
+
 .title-plate-round {
   font-size: var(--fs-xs);
   color: var(--c-ink-dim);
@@ -295,6 +302,52 @@
 
 .weather-chip-short {
   display: none;
+}
+
+/* The fight's objective under the round (ADR 0116's 2026-11-15 amendment): a flag, the goal in
+ * bold and the rounds left on a chip, sized for a child to read from across the table. The board
+ * marks the same cells in the objective's mint; the chip turns to the warning tone on the last
+ * round. The label ellipses before the chip does, so the count is never cut. */
+.combat-objective {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-width: 0;
+  max-width: min(32rem, 60vw);
+  font-size: var(--fs-sm);
+  line-height: 1.2;
+  color: var(--c-ink);
+}
+
+.combat-objective-mark {
+  width: 1.15rem;
+  height: 1.15rem;
+  color: var(--c-ok);
+}
+
+.combat-objective-label {
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.combat-objective-rounds {
+  flex: 0 0 auto;
+  padding: 0.05rem var(--sp-1);
+  border: var(--hairline) solid var(--c-ok);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--c-ok) 22%, transparent);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.combat-objective.urgent .combat-objective-rounds {
+  border-color: var(--c-warn-line);
+  background: var(--c-warn-bg);
+  color: var(--c-warn-ink);
 }
 
 /*
@@ -378,6 +431,13 @@
 .chip-warn {
   border-color: var(--c-warn);
   color: var(--c-warn);
+}
+/* A guest ally's tag (ADR 0116): it fights with the party for one battle. */
+.chip-guest {
+  border-color: var(--c-ok);
+  background: color-mix(in srgb, var(--c-ok) 30%, transparent);
+  font-size: var(--fs-xs);
+  font-weight: 700;
 }
 
 /* ------------------------------------------------------------------ */
@@ -505,7 +565,10 @@
   color: var(--c-ink-faint);
 }
 
-.warn-note {
+/* The storage note (#772) says saves may be cleared; it reads like a warning
+   but is its own class, so "is site data blocked?" checks never match it. */
+.warn-note,
+.storage-note {
   color: var(--c-warn-ink);
   background: color-mix(in srgb, var(--c-warn-bg) 45%, transparent);
   border: var(--hairline) solid var(--c-warn-line);
@@ -513,6 +576,29 @@
   padding: var(--sp-2) var(--sp-3);
   font-size: var(--fs-sm);
   margin: 0;
+}
+
+/* The one line a child may have to read aloud to a parent: body size, not fine print. */
+.storage-note {
+  font-size: var(--fs-md);
+}
+
+/* The storage check (#772): label over answer, sized to be read off the iPad. */
+.storage-check {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: 0;
+}
+
+.storage-check dt {
+  color: var(--c-ink-faint);
+  font-size: var(--fs-sm);
+}
+
+.storage-check dd {
+  margin: 0;
+  font-size: var(--fs-lg);
 }
 
 /* ------------------------------------------------------------------ */
@@ -661,6 +747,11 @@
 
 .title-card .muted {
   color: var(--c-air);
+}
+
+/* On the dark plate the note's tint is too thin to carry its ink: solid paper. */
+.title-card .title-storage-note {
+  background: var(--c-warn-bg);
 }
 
 .btn-large {
@@ -1903,6 +1994,18 @@ html[data-contrast='high'] .explore-conversation::before {
 
 .turn-chip.faction-ally .painter {
   box-shadow: 0 0 0 2px var(--c-ok);
+}
+
+/* A guest's chip carries a small "Guest" tag under its face, kept visible
+ * even where a phone strip hides the waiting chips' names. */
+.turn-chip .guest-tag {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.1rem var(--sp-1);
+  border-radius: var(--radius);
+  border: var(--hairline) solid var(--c-ok);
+  background: color-mix(in srgb, var(--c-ok) 30%, transparent);
 }
 
 .turn-chip span {
@@ -3663,6 +3766,9 @@ html[data-contrast='high'] .hud-panel::after {
   max-height: 23rem;
   background: var(--c-bg-deep);
   border-radius: var(--radius);
+}
+.dialog .local-map {
+  flex-shrink: 0;
 }
 .local-map-north {
   position: absolute;

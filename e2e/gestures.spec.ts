@@ -117,6 +117,45 @@ async function swipe(page: Page, from: Point, to: Point): Promise<void> {
   );
 }
 
+/** The forest road board every fight here opens on. */
+const BOARD = { width: 20, height: 12 };
+
+/** Device pixels per world pixel, which integer zoom keeps whole. */
+const deviceScale = (cam: CameraInfo, dpr: number) => (cam.tilePx / cam.tile) * dpr;
+
+/** The lowest stop: the whole scale at or under the board's fit, never under N = dpr. */
+async function lowestStop(page: Page, cam: CameraInfo, dpr: number): Promise<number> {
+  const box = await page.locator('.map-canvas').boundingBox();
+  if (!box) throw new Error('no canvas');
+  const fit = Math.max(
+    0.35,
+    Math.min(
+      2.5,
+      (box.width - 24) / (BOARD.width * cam.tile),
+      (box.height - 24) / (BOARD.height * cam.tile),
+    ),
+  );
+  return Math.max(1, Math.floor(fit * dpr + 1e-6), dpr);
+}
+
+/**
+ * Opens or closes the combat log from the header, wherever the layout keeps it.
+ *
+ * A tablet held upright folds Log behind More (the compact portrait header,
+ * 66d9ebea), as a phone does, so the button is in the page but not on screen
+ * until the list opens. What these cases need is the reflow: the log panel
+ * taking height from the map, which is asserted on the panel itself.
+ */
+async function setLog(page: Page, open: boolean): Promise<void> {
+  const toggle = page.getByRole('button', { name: open ? /^Log$/ : /^Hide log$/ });
+  const more = page.getByRole('button', { name: 'More', exact: true });
+  if (await more.isVisible()) await more.click();
+  await toggle.click();
+  const panel = page.locator('.log-panel');
+  if (open) await expect(panel).toBeVisible();
+  else await expect(panel).toHaveCount(0);
+}
+
 async function openFight(page: Page, node = 'battle_forest_road'): Promise<void> {
   await resetStorage(page);
   await startGame(page, ['Elias'], ['kaya'], 'gestures-spec');
@@ -350,11 +389,10 @@ test.describe('zoom and pan', () => {
       ],
     );
     const zoomed = await camera(page);
-    await page.getByRole('button', { name: /^Log$/ }).click();
-    await expect(page.getByRole('button', { name: /^Hide log$/ })).toBeVisible();
+    await setLog(page, true);
     const withLog = await camera(page);
     expect(withLog.tilePx).toBeCloseTo(zoomed.tilePx, 3);
-    await page.getByRole('button', { name: /^Hide log$/ }).click();
+    await setLog(page, false);
     const withoutLog = await camera(page);
     expect(withoutLog.tilePx).toBeCloseTo(zoomed.tilePx, 3);
   });
@@ -391,7 +429,12 @@ test.describe('zoom and pan', () => {
         { x: point.x + 18, y: point.y },
       ],
     );
-    await expect.poll(async () => (await camera(page)).fitted).toBe(true);
+    // Out as far as the board goes. That is its lowest whole stop (ADR 0104), which `fitted`'s
+    // margin can miss: on an iPad (N >= dpr = 2) the 480 px board sits in a 497 px map, all of it
+    // on screen, under a fit of 0.985.
+    const dpr = await page.evaluate(() => window.devicePixelRatio || 1);
+    const low = await lowestStop(page, await camera(page), dpr);
+    await expect.poll(async () => deviceScale(await camera(page), dpr)).toBeCloseTo(low, 6);
     const fitted = await camera(page);
 
     await page.getByRole('button', { name: /water whip/i }).click();
@@ -405,11 +448,10 @@ test.describe('zoom and pan', () => {
     await expect(page.locator('.confirm-bar').filter({ hasText: /Confirm/ })).toBeVisible();
     const firstFooter = await camera(page);
     expect(firstFooter.tilePx).toBeGreaterThanOrEqual(fitted.tilePx - 0.5);
-    await page.getByRole('button', { name: /^Log$/ }).click();
-    await expect(page.getByRole('button', { name: /^Hide log$/ })).toBeVisible();
+    await setLog(page, true);
     const withLog = await camera(page);
     expect(withLog.tilePx).toBeGreaterThanOrEqual(firstFooter.tilePx - 0.5);
-    await page.getByRole('button', { name: /^Hide log$/ }).click();
+    await setLog(page, false);
 
     await page.getByRole('button', { name: /^Cancel$/ }).click();
     // The cancel affordance backs out of the target but leaves the ability in
@@ -491,26 +533,6 @@ test.describe('zoom and pan', () => {
  * Recentre goes back to the whole board at the largest stop that shows it.
  */
 test.describe('top-down integer zoom', () => {
-  const BOARD = { width: 20, height: 12 };
-
-  /** Device pixels per world pixel, which integer zoom keeps whole. */
-  const deviceScale = (cam: CameraInfo, dpr: number) => (cam.tilePx / cam.tile) * dpr;
-
-  /** The lowest stop: the whole scale at or under the board's fit, never under N = dpr. */
-  async function lowestStop(page: Page, cam: CameraInfo, dpr: number): Promise<number> {
-    const box = await page.locator('.map-canvas').boundingBox();
-    if (!box) throw new Error('no canvas');
-    const fit = Math.max(
-      0.35,
-      Math.min(
-        2.5,
-        (box.width - 24) / (BOARD.width * cam.tile),
-        (box.height - 24) / (BOARD.height * cam.tile),
-      ),
-    );
-    return Math.max(1, Math.floor(fit * dpr + 1e-6), dpr);
-  }
-
   async function wheel(page: Page, deltaY: number): Promise<void> {
     await page.evaluate((deltaY) => {
       const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');

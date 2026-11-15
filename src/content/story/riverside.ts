@@ -1,6 +1,7 @@
 import type { Condition, StoryNode } from '../../core/types';
 
 const rescued: Condition = { kind: 'flag', key: 'act1_complete', op: 'set' };
+const lost: Condition = { kind: 'flag', key: 'act1_lost', op: 'set' };
 
 export const RIVERSIDE_STORY: readonly StoryNode[] = [
   {
@@ -39,6 +40,17 @@ export const RIVERSIDE_STORY: readonly StoryNode[] = [
       'Dorin practises across the river at midday. He asks me to watch, but every time I look up he stops.',
       'There is a shrine past the practice ground. I took flowers on my way down. Mind the roots on the path.',
     ],
+    variants: [
+      {
+        // After a Driller loss (C-16): Dorin is away with the cart.
+        when: lost,
+        lines: [
+          'You found me. Sit down. That end of the bench is dry.',
+          'Up at the table, everyone asks me when. I come down here for an hour where nobody does.',
+          'Then I go back up. That is what the table is for.',
+        ],
+      },
+    ],
     next: 'riverside_explore',
   },
   {
@@ -58,8 +70,8 @@ export const RIVERSIDE_STORY: readonly StoryNode[] = [
         when: rescued,
         lines: [
           'I have to stay where Mira can see me. Bo-shan says that is a good rule. He never followed it.',
-          'He is resting. Mira says to let him, so I am letting him.',
-          'The flat stone is still his turn. I am keeping it until he is rested.',
+          'He has gone down the coast road with the cart. Mira says he will write.',
+          'The flat stone is still his turn. I am keeping it until he gets back.',
         ],
       },
     ],
@@ -84,7 +96,7 @@ export const RIVERSIDE_STORY: readonly StoryNode[] = [
     portrait: 'portrait.narrator',
     lines: [
       'Fresh flowers stand in a chipped jar beside the inscription.',
-      '“The river belongs to everyone downstream.”',
+      'The inscription is one line cut across the stone at knee height, with a year beside it too worn to read.',
       'The jar’s handle has been carefully mended with wire.',
     ],
     next: 'riverside_shrine_found',

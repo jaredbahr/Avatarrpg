@@ -12,11 +12,18 @@
 import type { MapDef } from '../../core/types';
 import { LEGEND } from './legend';
 import {
+  BA_DAN_CANAL_BRIDGE,
   BA_DAN_COURTYARD_FOOTPRINTS,
   BA_DAN_COURT_TREES,
   BA_DAN_DRESSING_FOOTPRINTS,
 } from './baDanLayout';
 import { RETURNEE_PRESENTATIONS } from '../residents/returnees';
+import { SQ01_RESOLVED } from '../story/sq01Cabbages';
+import { SQ02_RESOLVED } from '../story/sq02OfficialGate';
+import { SQ03_RESOLVED } from '../story/sq03GaosLedger';
+
+/** After a Driller loss (C-16): the occupied village's conversations come first. */
+const LOST = { kind: 'flag', key: 'act1_lost', op: 'set' } as const;
 
 export const BA_DAN_VILLAGE: MapDef = {
   id: 'ba_dan_village',
@@ -28,6 +35,18 @@ export const BA_DAN_VILLAGE: MapDef = {
   width: 24,
   height: 16,
   ambience: 'village',
+  // The courtyard's open air, with a pond tone that swells near the canal's water.
+  soundscape: 'courtyard',
+  // Bending practice (#284) on the south canal bank, east of the bridge's foot, inside the demo
+  // slice (x 0-13, y 0-9). The bends go north-west at a mark on the canal's near edge, so they burst
+  // over the open water. The bridge deck itself is within reach of Mira's table, a seat, where Wait
+  // keeps the slot; west of the bridge the house hides a follower.
+  practice: {
+    label: 'Canal bank',
+    anchor: { x: BA_DAN_CANAL_BRIDGE.x + 1, y: BA_DAN_CANAL_BRIDGE.y + 2 },
+    reach: 1,
+    mark: { x: 6, y: 7 },
+  },
   legend: {
     ...LEGEND,
     l: { terrain: 'stone', blocked: true, blocksSight: false },
@@ -112,6 +131,7 @@ export const BA_DAN_VILLAGE: MapDef = {
       sprite: 'npc.elder',
       node: 'mira_intro',
       routes: [
+        { when: LOST, node: 'mira_lost' },
         // Once the maker-plate rubbing is in her hands, she never asks for it again (#628).
         { when: { kind: 'flag', key: 'rubbing_given', op: 'set' }, node: 'mira_rubbing_kept' },
         { when: { kind: 'flag', key: 'act1_complete', op: 'set' }, node: 'mira_epilogue' },
@@ -124,6 +144,15 @@ export const BA_DAN_VILLAGE: MapDef = {
       sprite: 'npc.shopkeeper',
       node: 'gao_friendly',
       routes: [
+        // After a loss, his word on the occupied valley comes first, once; then
+        // SQ-03 and the plant's chair, which still fit, and then the same word again.
+        {
+          when: {
+            kind: 'all',
+            of: [LOST, { kind: 'not', of: { kind: 'visited', nodeId: 'gao_lost' } }],
+          },
+          node: 'gao_lost',
+        },
         // LW-S-BD-01 (ADR 0047 §8): an afternoon break, once. The homecoming
         // comes first, and before victory so does his objection to the trade.
         {
@@ -152,6 +181,46 @@ export const BA_DAN_VILLAGE: MapDef = {
           },
           node: 'plant_chair',
         },
+        // SQ-03, before the rescue only: once Gao has given his first word (`gao_friendly`) and,
+        // after the trade, his objection (`gao_cold`), the parcels.
+        {
+          when: {
+            kind: 'all',
+            of: [
+              { kind: 'not', of: SQ03_RESOLVED },
+              { kind: 'flag', key: 'act1_complete', op: 'unset' },
+              { kind: 'visited', nodeId: 'gao_friendly' },
+              {
+                kind: 'any',
+                of: [
+                  { kind: 'flag', key: 'ruon_traded', op: 'unset' },
+                  { kind: 'visited', nodeId: 'gao_cold' },
+                ],
+              },
+            ],
+          },
+          node: 'sq03_hook',
+        },
+        // SQ-03's return detail, once, after his homecoming: the jar.
+        {
+          when: {
+            kind: 'all',
+            of: [
+              SQ03_RESOLVED,
+              { kind: 'flag', key: 'act1_complete', op: 'set' },
+              {
+                kind: 'any',
+                of: [
+                  { kind: 'visited', nodeId: 'gao_home' },
+                  { kind: 'visited', nodeId: 'gao_home_cold' },
+                ],
+              },
+              { kind: 'not', of: { kind: 'visited', nodeId: 'sq03_jar' } },
+            ],
+          },
+          node: 'sq03_jar',
+        },
+        { when: LOST, node: 'gao_lost' },
         {
           when: {
             kind: 'all',
@@ -173,6 +242,19 @@ export const BA_DAN_VILLAGE: MapDef = {
       sprite: 'npc.kid',
       node: 'pella_tips',
       routes: [
+        { when: LOST, node: 'pella_lost' },
+        // SQ-01: once her homecoming is heard, the corrected list of helpers.
+        {
+          when: {
+            kind: 'all',
+            of: [
+              { kind: 'flag', key: 'act1_complete', op: 'set' },
+              { kind: 'visited', nodeId: 'pella_home' },
+              SQ01_RESOLVED,
+            ],
+          },
+          node: 'sq01_pella_list',
+        },
         { when: { kind: 'flag', key: 'act1_complete', op: 'set' }, node: 'pella_home' },
         { when: { kind: 'flag', key: 'pella_asked', op: 'set' }, node: 'pella_again' },
       ],
@@ -183,7 +265,47 @@ export const BA_DAN_VILLAGE: MapDef = {
       resident: 'lw.npc.dorin',
       sprite: 'npc.dorin',
       node: 'dorin_directions',
-      routes: [{ when: { kind: 'flag', key: 'act1_complete', op: 'set' }, node: 'dorin_home' }],
+      routes: [
+        // The homecoming comes first after the rescue.
+        {
+          when: {
+            kind: 'all',
+            of: [
+              { kind: 'flag', key: 'act1_complete', op: 'set' },
+              { kind: 'not', of: { kind: 'visited', nodeId: 'dorin_home' } },
+            ],
+          },
+          node: 'dorin_home',
+        },
+        // SQ-02: once he has given the directions, before the rescue, the side gate.
+        {
+          when: {
+            kind: 'all',
+            of: [
+              { kind: 'visited', nodeId: 'dorin_directions' },
+              { kind: 'flag', key: 'act1_complete', op: 'unset' },
+              { kind: 'not', of: SQ02_RESOLVED },
+            ],
+          },
+          node: 'sq02_hook',
+        },
+        {
+          when: {
+            kind: 'all',
+            of: [SQ02_RESOLVED, { kind: 'flag', key: 'act1_complete', op: 'unset' }],
+          },
+          node: 'sq02_after',
+        },
+        // After the rescue, once: how he brought the crews in.
+        {
+          when: {
+            kind: 'all',
+            of: [SQ02_RESOLVED, { kind: 'not', of: { kind: 'visited', nodeId: 'sq02_return' } }],
+          },
+          node: 'sq02_return',
+        },
+        { when: { kind: 'flag', key: 'act1_complete', op: 'set' }, node: 'dorin_home' },
+      ],
     },
     {
       // D7: a placeholder sprite, distinct from both of Dorin's.
@@ -200,6 +322,8 @@ export const BA_DAN_VILLAGE: MapDef = {
             of: [
               { kind: 'phase', in: ['dawn', 'evening'] },
               { kind: 'flag', key: 'scene.bd03_handover', op: 'unset' },
+              // Dorin is away driving the cart after a loss: nobody to hand over to.
+              { kind: 'flag', key: 'act1_lost', op: 'unset' },
             ],
           },
           node: 'handover_scene',

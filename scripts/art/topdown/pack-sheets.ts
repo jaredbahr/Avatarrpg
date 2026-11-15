@@ -36,8 +36,17 @@ import { format, resolveConfig } from 'prettier';
 export const SOURCE = 'prototypes/topdown/assets';
 export const OUT = 'public/art/topdown';
 export const DATA = 'src/content/assets/topdownSheets.ts';
-/** The T3 objects (`world.route_sign`, `world.school_notice`): plain trimmed PNGs under `objects/`. */
-export const OBJECTS = ['route_sign', 'school_notice'] as const;
+/**
+ * The standing objects packed as plain trimmed PNGs under `objects/`: T3's (`world.route_sign`, `world.school_notice`)
+ * and RG-02's cart with Parcel in harness (`world.parcel_cart`, `tools/rg02obj.py`).
+ */
+export const OBJECTS = ['route_sign', 'school_notice', 'parcel_cart'] as const;
+/** Each object's source folder under `SOURCE`. */
+const OBJECT_SOURCE: Readonly<Record<(typeof OBJECTS)[number], string>> = {
+  route_sign: 'objects_t3',
+  school_notice: 'objects_t3',
+  parcel_cart: 'objects_rg02',
+};
 export const OBJECTS_OUT = `${OUT}/objects`;
 
 /** Every file shipped under `public/art/topdown/`, the objects folder included. */
@@ -621,8 +630,9 @@ const ROSTER: readonly FigureSpec[] = [
     actions: {},
     timing: 'blow',
   },
-  // T10: the road keeper Dema and Sen, the Cutting's tea keeper, who borrowed Mira's and Gao's sheets, made as the
-  // guard was (`tools/t10residents.py`): idle and walk, eight headings.
+  // T10: the road keeper Lanfen and Kuan, the Cutting's tea keeper, who borrowed Mira's and Gao's sheets, made as the
+  // guard was (`tools/t10residents.py`): idle and walk, eight headings. The sheets keep their placeholder names,
+  // `dema` and `sen`.
   {
     name: 'dema',
     key: 'npc.dema',
@@ -639,6 +649,115 @@ const ROSTER: readonly FigureSpec[] = [
     folder: 't10_sen',
     idle: 'custom-standing at rest: the chest an@3b94f2',
     walk: 'walking-8-frames@ca010f',
+    stride: 30,
+    actions: {},
+    timing: 'blow',
+  },
+  // RG-02 (Saltstep and Emberwatch): Veyra, the guest ally, and the region's two enemies, made by
+  // `tools/rg02chars.py` like T5's sergeant: idle, walk, hit, knockout and a pose per ability.
+  {
+    name: 'veyra',
+    key: 'unit.ally.veyra',
+    folder: 'rg02_veyra',
+    idle: 'custom-standing at rest in a ready st@f524ff',
+    walk: 'walking-8-frames@ffa76d',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @1988d8',
+    // The second knockout group: the first (@883b0a) ended sitting up in the south, with a smear in the south-west.
+    ko: 'custom-knocked out: staggers back one@af94ca',
+    actions: {
+      lance: { anim: 'custom-a long spear-like thrust: grip@b7ebeb' },
+      flare: { anim: 'custom-a signal: raises the left arm @6a2f25' },
+    },
+    cast: 'lance',
+    timing: 'blow',
+  },
+  {
+    name: 'freighthandler',
+    key: 'unit.enemy.freighthandler',
+    folder: 'rg02_handler',
+    idle: 'custom-standing at rest in a ready st@6726e5',
+    walk: 'walking-8-frames@83cbd2',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @e01b6d',
+    ko: 'custom-knocked out: staggers back one@e1f789',
+    // The north knockout's seventh cel ghosts the hook beside the arm: it holds the sixth.
+    koCels: { north: 6 },
+    actions: { attack: { anim: 'custom-a heavy overhand swing: raises@76e231' } },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  {
+    name: 'rigger',
+    key: 'unit.enemy.rigger',
+    folder: 'rg02_rigger',
+    idle: 'custom-standing at rest in a ready st@435771',
+    walk: 'walking-8-frames@7c6def',
+    stride: 28,
+    hit: 'custom-a hit reaction: flinches from @727ef9',
+    ko: 'custom-knocked out: staggers back one@c3d146',
+    actions: { attack: { anim: 'custom-a quick two-handed lunge: step@64ddf1' } },
+    cast: 'attack',
+    timing: 'blow',
+  },
+  // RG-02's people (`tools/rg02chars.py`), made like the Ba Dan residents: the residents' idle and the walk, eight
+  // headings. Tavi Ren, the customs clerk, Luli, the bowl-seller, Jin's freight clerk and Emberwatch's retired cook.
+  {
+    name: 'tavi',
+    key: 'npc.tavi',
+    folder: 'rg02_tavi',
+    idle: 'custom-standing at rest: the chest an@2d906a',
+    walk: 'walking-8-frames@0cd4ad',
+    stride: 30,
+    actions: {},
+    timing: 'blow',
+  },
+  {
+    name: 'customsclerk',
+    key: 'npc.customsclerk',
+    folder: 'rg02_clerk',
+    idle: 'custom-standing at rest: the chest an@8bcd20',
+    walk: 'walking-8-frames@bb3c85',
+    stride: 30,
+    actions: {},
+    timing: 'blow',
+  },
+  {
+    name: 'luli',
+    key: 'npc.luli',
+    folder: 'rg02_luli',
+    idle: 'custom-standing at rest: the chest an@2632a4',
+    walk: 'walking-8-frames@19a291',
+    stride: 30,
+    actions: {},
+    timing: 'blow',
+  },
+  {
+    name: 'bowlseller',
+    key: 'npc.bowlseller',
+    folder: 'rg02_bowlseller',
+    idle: 'custom-standing at rest: the chest an@512bc9',
+    walk: 'walking-8-frames@85a3f6',
+    stride: 30,
+    actions: {},
+    timing: 'blow',
+  },
+  {
+    name: 'freightclerk',
+    key: 'npc.freightclerk',
+    folder: 'rg02_freightclerk',
+    idle: 'custom-standing at rest: the chest an@5bf13e',
+    walk: 'walking-8-frames@62c816',
+    stride: 30,
+    actions: {},
+    timing: 'blow',
+  },
+  {
+    name: 'cook',
+    key: 'npc.cook',
+    folder: 'rg02_cook',
+    idle: 'custom-standing at rest: the chest an@66be8a',
+    walk: 'walking-8-frames@dc5921',
     stride: 30,
     actions: {},
     timing: 'blow',
@@ -1474,9 +1593,10 @@ export async function packTopdownSheets(): Promise<Map<string, Uint8Array | stri
     if (sheet.data.actions) files.set(`${OUT}/${sheet.name}-actions.json`, json(sheet.actions));
     data[sheet.name] = { ...sheet.data, pages: laid.length };
   }
-  // T3: the Ba Dan objects, trimmed hard-alpha PNGs the scene loads by name (`prototypes/topdown/tools/t3objproc.py`).
+  // The standing objects, trimmed hard-alpha PNGs the scene loads by name (T3's `prototypes/topdown/tools/t3objproc.py`;
+  // RG-02's cut at alpha 128 and trimmed the same way from `tools/rg02obj.py`'s take).
   for (const name of OBJECTS) {
-    const bytes = readFileSync(join(SOURCE, 'objects_t3', `${name}.png`));
+    const bytes = readFileSync(join(SOURCE, OBJECT_SOURCE[name], `${name}.png`));
     files.set(`${OBJECTS_OUT}/${name}.png`, new Uint8Array(bytes));
     // A one-image atlas (every cel the image), so the object stands on its cell as a figure does
     // (`topdownObject` in the manifest).

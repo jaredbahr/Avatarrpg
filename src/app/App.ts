@@ -34,10 +34,11 @@ import type { AnimatorOptions } from './animator';
 import { Session } from './session';
 import { resetBallot } from './tableVote';
 import type { Participant, Player } from './session';
-import type { Settings, SlotId } from './storage/localSaves';
+import type { LoadedSave, Settings, SlotId } from './storage/localSaves';
 import {
   AUTOSAVE_ID,
   applySettings,
+  exportToFile,
   loadSettings,
   saveSettings,
   saveToSlot,
@@ -48,6 +49,10 @@ import {
   reconcileDisciplines,
   reconcileWorld,
 } from '../core/save/reconcile';
+import { applyIdAliases } from '../core/save/aliases';
+import { applyBackfills } from '../core/save/backfill';
+import { FLAG_BACKFILLS, HISTORY_REV } from '../content/story/flagBackfills';
+import { ID_ALIASES } from '../content/idAliases';
 import type { SessionMeta } from '../core/save/serialize';
 import { announce, clear, el } from './ui/dom';
 import { loadIcons } from './ui/icons';
@@ -56,12 +61,21 @@ import { setUiSink } from './audio/ui';
 import { MusicPlayer, musicFor } from './audio/music';
 import { WHEEL_LINES_SVG } from './ui/marks';
 import { Toasts } from './ui/Toasts';
+import {
+  SavePersistence,
+  onAppleMobile,
+  runningStandalone,
+  storageProbe,
+} from './storage/persistence';
+import { ensureStorageBorn, localStore, markCopySaved } from './storage/storageCheck';
 import { Stats } from './ui/Stats';
 import { Curtain } from './ui/Curtain';
 import { PauseMenu } from './ui/PauseMenu';
 import { LevelUpDialog } from './ui/LevelUpDialog';
 import { DisciplineDialog } from './ui/DisciplineDialog';
-import { RIVERSIDE_ENTRY } from '../content/maps/riverside';
+import { RIVERSIDE_ENTRY, RIVERSIDE_ID } from '../content/maps/riversideIds';
+import { START_REGION_ID } from '../content/regions';
+import type { RegionLoader } from './regions';
 import { villagePreviewState } from './village/previewState';
 import { TitleScene } from './scenes/TitleScene';
 import { PartySetupScene } from './scenes/PartySetupScene';
@@ -197,6 +211,18 @@ export class App {
   readonly session = new Session();
   readonly toasts: Toasts;
   /**
+   * Whether the browser keeps the saves (#772): asked after the first save
+   * written, and the title and Save menu warn while it does not.
+   */
+  readonly savePersistence = new SavePersistence(
+    storageProbe(),
+    runningStandalone,
+    () => {
+      if (this.scene?.name === 'title') this.scene.sync();
+    },
+    onAppleMobile,
+  );
+  /**
    * The watch (day and phase) whose handover bark has been shown (ADR 0047
    * §8). Held here rather than on the scene, so leaving the map and coming
    * back in the same watch does not say it again.
@@ -285,6 +311,8 @@ export class App {
     readonly content: ContentIndex,
     root: HTMLElement,
     readonly storyEntry: string,
+    /** Fills `content` with regions as the party needs them (ADR 0111 §2); absent, it is complete. */
+    private readonly regions?: RegionLoader,
   ) {
     this.host = root;
     this.settings = loadSettings();
@@ -323,6 +351,7 @@ export class App {
     this.toasts = new Toasts(this.overlayHost);
     this.stats = Stats.enabled() ? new Stats(this.overlayHost) : null;
     this.curtain = new Curtain(this.overlayHost);
+    void this.savePersistence.check();
 
     window.addEventListener('resize', () => this.requestResize());
     window.addEventListener('orientationchange', () => this.requestResize());
@@ -393,6 +422,12 @@ export class App {
   }
 
   showScene(scene: Scene, replaceRetained = false): void {
+    const active = document.activeElement;
+    const enterDialogueWithFocus =
+      scene.name === 'dialogue' &&
+      active instanceof HTMLElement &&
+      this.sceneHost.contains(active) &&
+      active.matches(':focus-visible');
     this.cancelRoute();
     this.syncMusic(scene.name);
     const previousInterlude = this.currentSceneIsInterlude;
@@ -530,6 +565,14 @@ export class App {
     this.setMood(this.defaultMood());
     scene.mount(this.dialogueHost ?? this.sceneHost);
     scene.sync();
+    // Layered dialogue manages its own focus. A full-stage interlude also
+    // needs a keyboard starting point when it replaces the focused scene.
+    if (enterDialogueWithFocus && !this.dialogueHost) {
+      const firstControl = this.sceneHost.querySelector<HTMLElement>(
+        '[data-interlude-control="next"], [data-conversation-control="next"], .choice-option:not(:disabled), .end-panel button',
+      );
+      firstControl?.focus({ preventScroll: true });
+    }
     // After the swap, never instead of it: see Curtain.
     if (!keepWorld) curtain?.reveal(scene.firstFrameSheetKeys?.() ?? [], scene.firstFrameReady?.());
   }
@@ -632,6 +675,29 @@ export class App {
     this.music.setDuck(battle !== null && (scene === 'combat' || scene === 'dialogue'));
   }
 
+  /**
+   * Null when every region in `pending` is loaded (each entry is a loader's answer, null when
+   * ready); otherwise one promise for them all, with a note on screen while the area loads.
+   */
+  private regionsPending(
+    pending: readonly (Promise<void> | null | undefined)[],
+  ): Promise<void> | null {
+    const waits = pending.filter((entry): entry is Promise<void> => entry instanceof Promise);
+    if (waits.length === 0) return null;
+    this.toasts.show('Loading the next area…');
+    return Promise.all(waits).then(() => undefined);
+  }
+
+  private readonly regionFailed = (error: unknown): void => {
+    console.error('A region did not load.', error);
+    this.toasts.show('That area could not load. Check the connection and try again.', 'warn');
+  };
+
+  /** Starts loading the party's region and its neighbours, if they are not loaded yet. */
+  private prefetchRegions(): void {
+    void this.regions?.pendingForMap(this.state?.location.mapId)?.catch(this.regionFailed);
+  }
+
   /** Discard the replaced state's queued animation and audio together. */
   private resetPlayback(): void {
     this.animator.clear();
@@ -641,6 +707,11 @@ export class App {
 
   startVillagePreview(): void {
     if (this.previewActive) return;
+    const wait = this.regionsPending([this.regions?.pendingForMap(RIVERSIDE_ID)]);
+    if (wait) {
+      void wait.then(() => this.startVillagePreview(), this.regionFailed);
+      return;
+    }
     this.cancelRoute();
     this.previewSnapshot = { state: this.state, session: this.session.toMeta() };
     this.state = villagePreviewState(this.content);
@@ -680,6 +751,14 @@ export class App {
     participants?: readonly Participant[],
     difficulty?: Difficulty,
   ): void {
+    const wait = this.regionsPending([this.regions?.pendingForRegion(START_REGION_ID)]);
+    if (wait) {
+      void wait.then(
+        () => this.newGame(players, slots, seed, participants, difficulty),
+        this.regionFailed,
+      );
+      return;
+    }
     if (this.previewActive) this.endVillagePreview();
     this.cancelRoute();
     this.freshCombatEntry = false;
@@ -690,6 +769,8 @@ export class App {
       startNode: this.storyEntry,
       ...(difficulty ? { difficulty } : {}),
     });
+    // A new game is played on this build's story from its first scene.
+    this.historyRev = HISTORY_REV;
 
     this.session.setPlayers(
       players.map((player, index) => ({
@@ -724,8 +805,39 @@ export class App {
     if (!this.previewActive) this.saveTo(AUTOSAVE_ID, `Autosave — ${this.placeLabel()}`);
   }
 
-  /** Installs a loaded save, replacing everything. */
-  adoptSave(state: GameState, session: SessionMeta | undefined): void {
+  /**
+   * The history revision the running game is at (ADR 0112): this build's, or a loaded file's
+   * when that is higher. Stamped on every save, so a file written by a newer build keeps its
+   * revision through an older one and is never given a rule a second time.
+   */
+  private historyRev = HISTORY_REV;
+
+  /** Installs a save read from a slot or a file, at the history revision the file records. */
+  adoptLoaded(save: LoadedSave): void {
+    this.adoptSave(save.state, save.session, save.blob.history);
+  }
+
+  /**
+   * Installs a loaded save, replacing everything. `history` is the file's history revision
+   * (`SaveBlob.history`); a game that never left this build's memory is at the current one.
+   */
+  adoptSave(saved: GameState, session: SessionMeta | undefined, history = HISTORY_REV): void {
+    // Content ids are forever: a retired id is renamed before anything reads it, the region
+    // lookup below included (`core/save/aliases.ts`). Idempotent, so the wait's re-entry is safe.
+    // Then a file older than a backfill rule gets that rule's answer for the history it could
+    // not record (ADR 0112, `core/save/backfill.ts`). The wait re-enters at the current
+    // revision, so a rule is never applied twice.
+    const state = applyBackfills(applyIdAliases(saved, ID_ALIASES), history, FLAG_BACKFILLS);
+    this.historyRev = Math.max(history, HISTORY_REV);
+    // A save from another region loads that region before it is reconciled against content.
+    const wait = this.regionsPending([
+      this.regions?.pendingForMap(state.location.mapId),
+      this.regions?.pendingForMap(state.battle?.mapId),
+    ]);
+    if (wait) {
+      void wait.then(() => this.adoptSave(state, session), this.regionFailed);
+      return;
+    }
     if (this.previewActive) this.endVillagePreview();
     this.cancelRoute();
     this.freshCombatEntry = false;
@@ -769,10 +881,20 @@ export class App {
     this.cancelRoute();
     const state = this.state;
     if (!state) return [];
+    // No command runs until the party's region and its neighbours are in the index, so the rules
+    // read everything a command can reach (ADR 0111 §2). Loaded, as after boot, this never waits.
+    const wait = this.regionsPending([this.regions?.pendingForMap(state.location.mapId)]);
+    if (wait) {
+      void wait.then(() => {
+        if (this.state === state) this.dispatch(command);
+      }, this.regionFailed);
+      return [];
+    }
 
     const unitsBefore = state.battle?.units ?? [];
     const result = apply(this.content, state, command);
     this.state = result.state;
+    this.prefetchRegions();
     // A reward pick only counts when it consumed a pending choice; a refusal
     // returns the same list, untouched.
     const choiceConsumed =
@@ -1033,8 +1155,33 @@ export class App {
       label: label ?? this.placeLabel(),
       summary: this.saveSummary(),
       session: this.session.toMeta(),
+      history: this.historyRev,
     });
     if (!result.ok && result.error) this.toasts.show(result.error, 'warn');
+    if (result.ok) {
+      // Stamped with the first save, not at boot: a browser that has saved
+      // nothing keeps an empty store (#772).
+      ensureStorageBorn(localStore(), Date.now());
+      void this.savePersistence.afterSave();
+    }
+    return result.ok;
+  }
+
+  /** Downloads the running game as a save file, and says whether it worked. */
+  exportSave(): boolean {
+    const state = this.state;
+    if (!state) return false;
+    const result = exportToFile(state, {
+      label: this.placeLabel(),
+      summary: this.saveSummary(),
+      session: this.session.toMeta(),
+      history: this.historyRev,
+    });
+    if (result.ok) markCopySaved(localStore(), Date.now());
+    this.toasts.show(
+      result.ok ? 'Save file downloaded.' : (result.error ?? 'Export failed.'),
+      result.ok ? 'info' : 'warn',
+    );
     return result.ok;
   }
 

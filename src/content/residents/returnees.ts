@@ -143,7 +143,7 @@ const door = (id: string, place: string, x: number, y: number): WorldAnchor => (
 
 /**
  * The road group sits on the open north verge at the west bend, beyond the x=4
- * departure trigger and clear of Dema. BD12-BD15 are honest south-lane contact
+ * departure trigger and clear of Lanfen. BD12-BD15 are honest south-lane contact
  * doors, not claims that painted workshops exist on today's village map.
  */
 export const RETURNEE_ANCHORS: readonly WorldAnchor[] = [
@@ -209,6 +209,15 @@ const WELCOME_WALK: Condition = {
   ],
 };
 
+/**
+ * Bo-shan took the reins the morning after the supper (`cart_departure`), and
+ * the end card sees the cart onto the coast road. From the card on he is not
+ * in Ba Dan, so free roam never shows him at home or asleep.
+ */
+const ON_THE_ROAD: Readonly<Partial<Record<ReturneeRecord['npc'], Condition>>> = {
+  bo_shan: { kind: 'visited', nodeId: 'demo_complete' },
+};
+
 const resident = (record: ReturneeRecord): ResidentDef => {
   const welcome = WELCOMERS[record.npc];
   const returning = slot(record.returning, record.npc, 'returning_together');
@@ -222,6 +231,17 @@ const resident = (record: ReturneeRecord): ResidentDef => {
     // No occupation is asserted: these are neutral safe appearances only.
     schedule: schedule({ ...recovery, activity: 'available' }, record.readyPhases),
     overrides: [
+      ...(ON_THE_ROAD[record.npc]
+        ? [
+            {
+              id: `${record.npc}_on_the_road`,
+              tier: 'presence' as const,
+              when: ON_THE_ROAD[record.npc] as Condition,
+              slots: {},
+              all: 'absent' as const,
+            },
+          ]
+        : []),
       {
         id: `${record.npc}_missing`,
         tier: 'presence',

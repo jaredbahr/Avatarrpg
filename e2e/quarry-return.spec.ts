@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { CONTENT, RETURNEE_IDS } from '../src/content';
+import { CONTENT, RETURNEE_IDS, STORY_PROLOGUE } from '../src/content';
 import { generateQuarryCheckpoints, quarryRouteBoundary } from '../scripts/e2e/quarry-checkpoints';
 import { previewAiPlan } from '../src/core/rules/ai';
 import { distance, reachable } from '../src/core/rules/grid';
@@ -251,7 +251,7 @@ async function continueStory(page: Page, custody: 'escort' | 'trade' = 'trade'):
       continue;
     }
     if (snapshot.nodeId === 'gate_parley') {
-      // Bo speaks to the earthbender.
+      // Bo talks to Ruon about the galleries.
       await timed('gateParley', 'click', () => page.locator('.choice-option').nth(2).click());
       continue;
     }
@@ -296,6 +296,21 @@ async function takeRoute(page: Page, label: string, mapId: string): Promise<void
   beginPhase(page, `route ${mapId}`);
   await page.getByRole('button', { name: 'Map', exact: true }).click();
   await page.getByRole('button', { name: label, exact: true }).click();
+  // The Cutting's culvert (C-29) plays once on the way east; read it, then carry on.
+  const stop = () =>
+    page.evaluate(() =>
+      window.fnt?.app.state?.story.nodeId === 'cutting_culvert'
+        ? 'culvert'
+        : window.fnt?.app.state?.location.mapId,
+    );
+  await expect.poll(stop).toMatch(new RegExp(`^(culvert|${mapId})$`));
+  if ((await stop()) === 'culvert') {
+    endPhase(page);
+    await continueStory(page);
+    beginPhase(page, `route ${mapId}`);
+    await page.getByRole('button', { name: 'Map', exact: true }).click();
+    await page.getByRole('button', { name: label, exact: true }).click();
+  }
   await expect.poll(() => page.evaluate(() => window.fnt?.app.state?.location.mapId)).toBe(mapId);
   await completeAuthoredPlayback(page);
   endPhase(page);
@@ -439,7 +454,16 @@ for (const custody of ['trade', 'escort'] as const) {
       body: JSON.stringify(liveBoundary),
       contentType: 'application/json',
     });
-    expect(quarryRouteBoundary(liveBoundary)).toEqual(fixture.projection);
+    // A new game opens on the storm prologue; the fixture starts at
+    // STORY_ENTRY by design (src/content/entry.ts), so the live route has
+    // visited exactly one node more, first.
+    expect(quarryRouteBoundary(liveBoundary)).toEqual({
+      ...fixture.projection,
+      story: {
+        ...fixture.projection.story,
+        visited: [STORY_PROLOGUE, ...fixture.projection.story.visited],
+      },
+    });
   });
 
   test(`${custody} 2/3: the gate route resolves the Driller and summary`, async ({ page }) => {
@@ -463,6 +487,11 @@ for (const custody of ['trade', 'escort'] as const) {
     // The workers-are-free beat leads straight into the walk home.
     await expect(page.getByRole('button', { name: 'Skip scene' })).toBeVisible();
     await page.getByRole('button', { name: 'Skip scene' }).click();
+    // Bo-shan's delivery book in the Driller's cab (C-31), then the walk home.
+    await expect
+      .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
+      .toBe('quarry_ledger');
+    await continueStory(page, custody);
     expect(await page.evaluate(() => window.fnt?.app.state?.flags.act1_complete)).toBe(true);
     await expect(page.locator('.title-plate-objective')).toContainText('west');
     await expectJournalObjective(page, 'Take the west path');
@@ -539,8 +568,7 @@ for (const custody of ['trade', 'escort'] as const) {
     expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe('mira_epilogue');
     await expect(page.locator('.dialogue-line')).toContainText('Bo-shan');
     await page.locator('.dialogue-panel button.btn-primary').click();
-    const custodyResponse =
-      custody === 'trade' ? 'where Jin delivered him' : 'taking Ruon’s statement';
+    const custodyResponse = custody === 'trade' ? 'where Jin took him' : 'taking Ruon’s statement';
     await expect(page.locator('.dialogue-line')).toContainText(custodyResponse);
     await page.locator('.dialogue-panel button.btn-primary').click();
     await page.locator('.dialogue-panel button.btn-primary').click();

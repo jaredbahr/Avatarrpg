@@ -54,9 +54,21 @@ not ticked for them and should be brought up to date.
       `TOPDOWN_SCENES`, `TOPDOWN_LAYOUTS` and `MAP_MUSIC` built from the list of regions (ADR 0111 §1).
 - [ ] **Move special cases into data:** guided-fight steps on the encounter, environment audio on the map, projectile
       look on the ability. Exit test: `grep` for map and encounter ids in `src/app` and `src/render` finds none.
-- [ ] **Region template and generator:** `scripts/content/new-region.ts <id>` writes the manifest, an empty map, a
-      two-node story file and a board stub, all passing `validateContent`.
+      **Partly done (#767):** the courtyard soundscape, the practice ground and the Forest Road's arrival shot are
+      map data (`MapDef.soundscape`, `practice`, `arrivalShot`), and `src/app/contentIdLiterals.test.ts` is the exit
+      test, with an allowlist that may only shrink. The guided first fight followed (#780: `EncounterDef.guidance`),
+      so the allowlist is empty and no map or encounter id is left in `src/app` or `src/render`. **Left:** the
+      projectile look (`SHOT_LOOKS` in `src/app/anim/choreography.ts`) is still keyed by ability id in app code.
+- [x] **Region template and generator** (#766): `npm run new:region -- <id> "<Name>"` writes
+      `src/content/regions/<camelId>/` (manifest, content, layouts, a placeholder map with one NPC and a two-node
+      story, every placeholder marked `TODO(region)`) and appends it to the three region lists; the result passes
+      `validateContent`. A conversation names its map on the node (`StoryNode.presentation`), so a region no longer
+      edits the shared `presentations.ts` registry. The board stub waits for the board-authoring item below.
 - [ ] **Regions and bands (W1, W6):** level band per region, world-graph checks in `validateContent`.
+      **Machinery in (#784):** `RegionManifest.levelBand` and `src/content/regions/bands.ts` check that a band is
+      a real range within the level cap and that every fight a region owns expects a level inside it. Ba Dan valley's
+      1–3 is a **placeholder** until the owner answers #784 (proposed bands for every saga region are there);
+      `bands.test.ts` lists placeholders. Left: the route check over the region graph (`progression.test.ts`).
 - [ ] **Board authoring:** extract the shared parts of `boards/baDan.ts`, `forestRoad.ts` and `quarry.ts` so a new
       board is mostly a declaration; measure lines per board before and after.
 
@@ -105,7 +117,11 @@ costs above: tilesets 4 × 15, objects 25 × 5, three enemies × (base + idle, w
 
 ### Gaps
 
-- [ ] A per-region cost roll-up: tag every ledger job with a region id; `ledger_audit.py` prints a total per region.
+- [x] A per-region cost roll-up (#783): a job's `region` (written by `pl.py run(..., region=)` or `PIXELLAB_REGION`)
+      or the ledger's `default_region` assigns it; `ledger_audit.py` prints booked credits per region and per endpoint
+      (asset type), JSON and text. Measured for the demo route, `ba_dan_valley`: 658 jobs, **5,711 booked credits**,
+      of which animation clips are 4,051 (289 jobs), objects 494, portrait edits 373, tilesets 300. The retired G1
+      ledgers (`art/source/*-g1/`) are not included.
 - [ ] The ledgers are split (`prototypes/topdown/ledger.json`, `art/source/forest-road-g1/ledger.json`,
       `art/source/fx-g1/ledger.json`); one ledger, or one audit over all of them.
 - [ ] A written model sheet per recurring character (description, palette, seed, character id) so a retake months
@@ -138,7 +154,9 @@ costs above: tilesets 4 × 15, objects 25 × 5, three enemies × (base + idle, w
 - [ ] **Flag registry** (#493): `src/content/flags.ts` declares every flag with its owner region, meaning and type;
       `validateContent` rejects a flag that is read but never set, set but never read, or not declared.
 - [ ] **Cross-region continuity test:** for each region entry, the set of flags that can be true or false there,
-      generated from the graph; a later region may only read flags its entry set can hold.
+      generated from the graph; a later region may only read flags its entry set can hold. **Partly done
+      (ADR 0112):** `docs/save-history.md` lists what each part of the story reads from the others, and
+      `saveHistory.test.ts` holds old saves to it; the per-entry value sets are not computed.
 - [ ] **Character availability:** who is in the party or alive at each node, so a line never has an absent speaker
       (the writing guide already asks for this by hand).
 
@@ -173,7 +191,7 @@ content for a route of 30–40 minutes) puts a forty-hour game far past any sing
 
 ### Plan: load per region
 
-- [ ] Split content into a **core bundle** (rules, abilities, party, shared UI) and **one data chunk per region**
+- [x] (ADR 0111 §2) Split content into a **core bundle** (rules, abilities, party, shared UI) and **one data chunk per region**
       (`import()` of the region manifest from section 1), loaded on entering the region and when a save is loaded.
 - [ ] Scenes, figures and portraits: load the current region's and its neighbours' instead of all at boot.
 - [ ] **Offline:** precache the core and the current region; runtime-cache the rest on first visit
@@ -195,12 +213,24 @@ content for a route of 30–40 minutes) puts a forty-hour game far past any sing
 
 ### Plan: a region-one save loads years later
 
-- [ ] **Release fixtures:** each tagged release adds its golden saves under `fixtures/golden/<version>/`, never
-      regenerated; CI loads every one and plays a few commands from it.
-- [ ] **Content ids are forever:** a story node, map, NPC or encounter id that a save may hold is never deleted or
-      renamed; removal goes through an alias table that `reconcile` reads. A test diffs ids against the last release.
-- [ ] **Saves outside the browser:** localStorage can be wiped (iPad storage pressure, a PC browser profile reset).
-      Keep JSON export prominent; consider a reminder after each region.
+- [x] **Release fixtures** (ADR 0112): `npm run saves:release -- <id>` freezes a release under
+      `src/core/save/fixtures/releases/<id>/`: the golden route's saves and a snapshot of the story that wrote
+      them. The index holds every file's hash, so a release is never regenerated. `saveHistory.test.ts` loads
+      every one and plays it forward down today's route to the ending card, against a new game. The first
+      release is the existing `golden/v5` corpus (2026-11-08). **Left:** freezing one on every deploy.
+- [x] **History** (#773, ADR 0112): a save file records a history revision; backfill rules
+      (`src/content/story/flagBackfills.ts`) answer, once, for history the story started recording after the
+      save was written; a flag that gains a write under a release must say how that release's saves answer
+      (`oldSaves` in the flag registry). `docs/save-history.md` is the generated report.
+- [x] **Content ids are forever** (#765): every id a save may hold is recorded in `src/content/ids.ledger.json`
+      (`npm run ids:ledger` adds new ones; it never removes). A retired id needs a row in `src/content/idAliases.ts`,
+      which `applyIdAliases` (`src/core/save/aliases.ts`) applies first on load; `savedIds.test.ts` holds the ledger,
+      content and aliases together.
+- [ ] **Saves outside the browser** (#772): a Safari tab on the iPad deletes a site's storage after seven days of
+      browser use without a tap in the game; the Home Screen app is exempt but starts with its own empty storage. The
+      verified rules, the defences built (the game asks to be kept, one line on the title and Save menu, "Save a copy" at
+      a region's end, Save, Storage check) and the ten-minute iPad check are in `docs/device-matrix.md`, "Where the
+      saves live". Open until the iPad table there is filled in.
 - [ ] Save size per region: `sizeBudget.test.ts` today; extend with one checkpoint per region.
 
 ## 5. Devices
@@ -223,7 +253,8 @@ host allows it, and guests on a phone or TV usually have only a controller or to
 gamepad (or Steam Input mapping a controller to mouse and keys) matters; check with the actual friends first.
 
 **Adding a browser game to Steam (unverified, test in the trial):** "Add a Non-Steam Game" pointing at Chrome or Edge
-with launch options such as `--app=<game URL>` and a dedicated `--user-data-dir` (keeps saves in one profile). Not
+with launch options such as `--app=<game URL>` and a dedicated `--user-data-dir` (keeps saves in one profile; never
+Edge's `--kiosk`, which runs InPrivate and keeps nothing: `docs/device-matrix.md`, "Where the saves live"). Not
 verified here: whether Remote Play **Together** invites work for a non-Steam shortcut (Steam documents it for Steam
 games), whether the Steam overlay attaches to a Chromium window, and whether a packaged wrapper (Electron, Tauri) would
 be needed instead.
@@ -231,13 +262,17 @@ be needed instead.
 ## 6. Proof trial
 
 A small region after the walk home, built through the loop above. Story content is a placeholder for the owner.
+The trial region is Saltstep and Emberwatch (MQ-02). It includes one new mechanic, the **guest ally**, for Veyra's
+fight beside the party (owner, 2026-11-14; [saga outline](story-outline.md#people), decision 15). It is new
+engine work that needs its own ADR, and it doubles as this trial's test that a region can add a mechanic cleanly.
 
-| Item    | Proposal                                                                                                        |
-| ------- | --------------------------------------------------------------------------------------------------------------- |
-| Size    | Two explore maps (a hub about Ba Dan's size, 24 × 16, and a smaller route map), one combat board                |
-| Beats   | Owner supplies about 5: arrival, a person with a problem, a choice with two outcomes, a fight, a return or hook |
-| Fights  | Two: one ordinary with a new enemy type, one harder with a combo set-up; no new boss, to keep render code out   |
-| New art | Two tilesets, about 20 objects, two enemy types and one NPC with full clips, three portraits, one area track    |
+| Item     | Proposal                                                                                                        |
+| -------- | --------------------------------------------------------------------------------------------------------------- |
+| Size     | Two explore maps (a hub about Ba Dan's size, 24 × 16, and a smaller route map), one combat board                |
+| Beats    | Owner supplies about 5: arrival, a person with a problem, a choice with two outcomes, a fight, a return or hook |
+| Fights   | Two: one ordinary with a new enemy type, one harder with a combo set-up; no new boss, to keep render code out   |
+| Mechanic | One: the guest ally, for Veyra's fight beside the party at the Saltstep docks (MQ-02; owner, 2026-11-14)        |
+| New art  | Two tilesets, about 20 objects, two enemy types and one NPC with full clips, three portraits, one area track    |
 
 ### What to measure
 
@@ -247,22 +282,25 @@ A small region after the walk home, built through the loop above. Story content 
 - KB gz added to the bundle (before the split) and to each asset family; region chunk size (after).
 - Load time of the region on the iPad (cold and warm); **unknown today**, no baseline recorded.
 - Saves from the demo route and from each trial checkpoint load on the trial build and on the build after.
+- For the guest ally: files and lines touched in `src/core/`, `src/app/` and `src/render/`, and whether the
+  encounter data alone can place, kit and drive a guest.
 
 ### Pass bar
 
-| Pipeline | Pass                                                                                                                                                  |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Content  | Zero changes in `src/core/`; zero map or encounter ids added to `src/app/` or `src/render/`; region added by its manifest plus one list entry         |
-| Art      | Every figure on-model at the first owner review or one retake; region cost within ±25% of the estimate made before generation                         |
-| Story    | Beat sheet approved in one round; validators, flag registry and continuity tests green; no line by an absent speaker in review                        |
-| Scale    | Region code and data load on entry, not at boot; core JS does not grow by more than the shared code the region adds; offline play of a visited region |
-| Saves    | Every v5 golden save and every demo-route save loads and reaches the trial region; new checkpoints added to the corpus                                |
-| Devices  | Trial played start to end with mouse and keyboard in a PC window and once over Steam Remote Play; iPad landscape still passes CI                      |
+| Pipeline | Pass                                                                                                                                                                         |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Content  | Zero changes in `src/core/` beyond the guest-ally mechanic; zero map or encounter ids added to `src/app/` or `src/render/`; region added by its manifest plus one list entry |
+| Mechanic | The guest ally lands as one general, data-driven addition behind its ADR: no Veyra- or MQ-02-specific code, and a second guest needs data only                               |
+| Art      | Every figure on-model at the first owner review or one retake; region cost within ±25% of the estimate made before generation                                                |
+| Story    | Beat sheet approved in one round; validators, flag registry and continuity tests green; no line by an absent speaker in review                                               |
+| Scale    | Region code and data load on entry, not at boot; core JS does not grow by more than the shared code the region adds; offline play of a visited region                        |
+| Saves    | Every v5 golden save and every demo-route save loads and reaches the trial region; new checkpoints added to the corpus                                                       |
+| Devices  | Trial played start to end with mouse and keyboard in a PC window and once over Steam Remote Play; iPad landscape still passes CI                                             |
 
 ### Order of work
 
 1. Region manifest and flag registry (no behaviour change); story bible skeleton for the owner.
 2. Per-region loading behind the manifest, with its ADR; release fixtures and the id-forever test.
 3. Keyboard and right-click basics; a desktop Playwright project.
-4. The trial region through the loop, measured.
+4. The guest-ally ADR, then the trial region through the loop, measured.
 5. A short report: measured cost and time per region, and what to fix before region three.

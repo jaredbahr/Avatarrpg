@@ -4,6 +4,8 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { version } from './package.json';
 import { PRECACHE_IGNORES } from './scripts/precache.mjs';
+import { REGIONS, START_REGION_ID } from './src/content/regions';
+import { laterRegionRuntimeCaching, regionCacheCleanupScript } from './scripts/region-cache.mjs';
 
 // Stamp the code being built so even an offline cached bundle identifies itself.
 function buildRevision(): string {
@@ -55,6 +57,10 @@ function omittedPixi(name: string): string {
  */
 const base = process.env.GH_PAGES_BASE ?? '/';
 
+// Later regions' region cache (ADR 0111 §3) is named for the build, so an update starts it clean.
+const regionBuild = `${version}-${buildRevision()}`;
+const REGION_CLEANUP = 'region-cache-cleanup.js';
+
 export default defineConfig({
   base,
   // Keep parallel worktree/dev-server dependency graphs isolated. Shared
@@ -74,8 +80,20 @@ export default defineConfig({
     // Vite passes terser `safari10: true` by default. That Safari 10/11 workaround
     // costs 0.7 KB gzipped and cannot matter: an es2022 target needs Safari 15.
     terserOptions: { compress: { passes: 2 }, safari10: false },
-    // The whole game is one bundle; 350 KB gzipped is the budget we verify in CI.
+    // The boot chunk is checked against its own budget in CI (`scripts/check-bundle-size.mjs`).
     chunkSizeWarningLimit: 900,
+    rollupOptions: {
+      output: {
+        // Each region's data is a chunk of its own (ADR 0111 §2), named after its folder so the
+        // budget gate and the service worker can tell which region a chunk belongs to.
+        chunkFileNames: (chunk) => {
+          const region = /[/\\]src[/\\]content[/\\]regions[/\\]([^/\\]+)[/\\]content\.ts$/.exec(
+            chunk.facadeModuleId ?? '',
+          )?.[1];
+          return region ? `assets/region-${region}-[hash].js` : 'assets/[name]-[hash].js';
+        },
+      },
+    },
   },
   server: {
     host: true,
@@ -341,6 +359,19 @@ export default defineConfig({
         }
       },
     },
+    {
+      // On activate the worker drops the region caches of older builds (`region-cache.mjs`). Only
+      // written once a second region exists; until then there is no region cache to clean.
+      name: 'region-cache-cleanup',
+      generateBundle() {
+        if (laterRegionRuntimeCaching(REGIONS, START_REGION_ID, regionBuild).length === 0) return;
+        this.emitFile({
+          type: 'asset',
+          fileName: REGION_CLEANUP,
+          source: regionCacheCleanupScript(regionBuild),
+        });
+      },
+    },
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'script-defer',
@@ -380,6 +411,12 @@ export default defineConfig({
           }),
         ],
         cleanupOutdatedCaches: true,
+        // ADR 0111 §3: every region but the start region is cached on its first visit.
+        runtimeCaching: laterRegionRuntimeCaching(REGIONS, START_REGION_ID, regionBuild),
+        importScripts:
+          laterRegionRuntimeCaching(REGIONS, START_REGION_ID, regionBuild).length > 0
+            ? [REGION_CLEANUP]
+            : [],
         navigateFallback: `${base}index.html`,
       },
       devOptions: {

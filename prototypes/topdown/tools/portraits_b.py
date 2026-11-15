@@ -4,7 +4,8 @@ Recipe: take the hand-drawn portrait (public/art/portraits/<id>.png), resize to 
 PixelLab /edit-image-pro-flash (method 'text', the B description below, seed 11, about 10 credits each).
 Run from this folder:  python3 portraits_b.py OUT_DIR id [id ...] [--seed N] [--base-dir DIR]
 (--base-dir points at the pre-B hand-drawn portraits when redoing one; git show e1c545a7^:public/art/portraits/<id>.png)
-Every call is booked in ../ledger.json as t9_portrait_<id>_B (a retry adds _s<seed>).
+Every call is booked in ../ledger.json as t9_portrait_<id>_B (a retry adds _s<seed>); `--prefix rg02_` books a region's
+portraits under its own prefix instead (RG-02: rg02_portrait_<id>_B, tagged by PIXELLAB_REGION).
 """
 import sys
 sys.path.insert(0, '.')
@@ -52,8 +53,34 @@ CAST = {
            'half-smile, short dark hair greying at the temples under a soft brown cloth cap, a knee-length muted olive-green padded coat '
            'with a plain leather belt, holding a plain wooden spear upright; practical, few words, kind without saying so; '
            'an androgynous look, neither clearly a man nor a woman, no moustache or beard'),
+ 'bo_shan': ('pella.png', 'a broad-shouldered nineteen-year-old young man, the village cart driver and a minor stone-mover',
+             'his sister Pella\'s family look; he is a new person, not a child: light-brown skin, messy dark brown hair with a few straw bits in it, '
+             'a big boastful grin with a chipped front tooth and warm, tired, big-hearted eyes, a muted moss-green work tunic with the sleeves rolled to '
+             'the elbow, an ochre linen scarf, a worn brown leather harness strap across the chest, a coil of cart reins over one shoulder, '
+             'and one hand held up showing off a small pebble of rock floating above his palm; no beard, no armour, no weapon'),
  'sen': ('gao.png', 'a tall lanky man in his thirties, the tea keeper',
          'his friendly pose; he is a new person: narrow kind face with a slightly wry smile, short dark hair under a grey headband, a slate-grey quilted vest over a brick-red shirt, a white towel over one shoulder, a tan sash, holding out a dented tin kettle in one hand and a chipped cup with a blue handle in the other'),
+
+ # RG-02 (Saltstep and Emberwatch), 2026-11-15: four new people, each from the nearest existing portrait as Dema and Sen
+ # were, described from the bible and the act II script and matched to their top-down sprites (`tools/rg02chars.py`).
+ 'veyra': ('jin.png', 'a woman engineer in her mid-forties, the director of a public-works cooperative',
+           'the calm upright pose; she is a new person: light brown skin, a calm direct face with fine lines at the eyes and a '
+           'faint wry half-smile, a long black braid threaded with silver-grey strands hanging over her left shoulder, a '
+           'practical dark-blue work coat with lighter blue mended cuffs and the sleeves pushed up, a brown leather tool belt '
+           'strap, a small carved wooden measuring rule held in one hand; no jewellery, no fur, no armour'),
+ 'tavi': ('hanru.png', 'a ferry pilot in their thirties',
+          'the steady pose; this is a new person: an androgynous look, neither clearly a man nor a woman, sun-browned skin, '
+          'short tousled black hair under a wide flat straw hat pushed back, weathered sea-green sleeveless jacket over a white '
+          'shirt with rolled sleeves, a coil of rope over one shoulder, a long wooden ferry pole held upright; easy-going, '
+          'patient, a small knowing smile; no beard, no moustache'),
+ 'luli': ('dema.png', 'a sturdy woman in her early forties who keeps the public power lines',
+          'her strong build; she is a new person, with no hat: warm tan skin, a round cheerful tired face mid-laugh, short '
+          'choppy black hair, a soot smudge on one cheek, a rust-red sleeveless work tunic over a dark grey long-sleeved shirt, '
+          'a thick brown leather apron, black rubber work gloves tucked in her belt, a ring of brass keys'),
+ 'customs_clerk': ('sen.png', 'a fussy thin harbour customs clerk in his fifties',
+                   'the upright pose; he is a new person: light skin, round wire spectacles, a neat grey moustache, a flat dark '
+                   'blue official cap, a buttoned slate-blue clerk jacket with brass buttons, a big brass seal hanging on a chain '
+                   'round his neck, a sheaf of papers held to his chest; earnest and indignant; no kettle, no cup, no towel'),
 }
 
 
@@ -76,6 +103,13 @@ REDO = {
                   'that holds the abacus against his chest, so the arm runs unbroken from the sleeve to the hand; both arms clearly attached to his shoulders, '
                   'nothing cut off or floating',
              style_extra=' Anatomy must be whole: every hand connects to an arm.'),
+  # RG-02, 2026-11-15: the seed-11 take kept Hanru's spearhead on Tavi's ferry pole.
+ 'tavi': dict(keep='the steady pose; this is a new person: an androgynous look, neither clearly a man nor a woman, sun-browned '
+                   'skin, short tousled black hair under a wide flat straw hat pushed back, weathered sea-green sleeveless jacket '
+                   'over a white shirt with rolled sleeves, a coil of rope over one shoulder, a long plain round wooden ferry pole '
+                   'held upright with a blunt rounded top end, no blade, no spearhead, no metal tip; easy-going, patient, a small '
+                   'knowing smile; no beard, no moustache',
+              style_extra=' The pole is plain wood from end to end; it is not a weapon.'),
 }
 
 # Not a person: the narrator speaks as the places of the route (docs/art/prompts/portraits/narrator.md). Its base is a rough
@@ -91,7 +125,7 @@ PLACES = {
 }
 
 
-def make(pid, out, seed=11, base_dir=None):
+def make(pid, out, seed=11, base_dir=None, prefix='t9_'):
     base, who, keep = CAST[pid] if pid in CAST else PLACES[pid]
     style = PLACE_STYLE if pid in PLACES else STYLE
     if seed != 11 and pid in REDO:
@@ -99,7 +133,7 @@ def make(pid, out, seed=11, base_dir=None):
     src = Image.open((Path(base_dir) if base_dir else PORTRAITS) / base).convert('RGBA')
     bg = Image.new('RGBA', src.size, CREAM + (255,)); bg.alpha_composite(src)
     canvas = bg.convert('RGB').resize((160, 160), Image.LANCZOS)
-    name = f't9_portrait_{pid}_B' + ('' if seed == 11 else f'_s{seed}')
+    name = f'{prefix}portrait_{pid}_B' + ('' if seed == 11 else f'_s{seed}')
     e, r = pl.run('/edit-image-pro-flash', {'image': pl.b64(canvas), 'method': 'text', 'description': style.format(who=who, keep=keep),
                                             'no_background': False, 'seed': seed}, name, estimate=10)
     lr = r['final'].get('last_response') or r['final']; ims = []; pl.images(lr, ims)
@@ -117,6 +151,9 @@ if __name__ == '__main__':
     base_dir = None
     if '--base-dir' in args:
         i = args.index('--base-dir'); base_dir = args[i + 1]; del args[i:i + 2]
+    prefix = 't9_'
+    if '--prefix' in args:
+        i = args.index('--prefix'); prefix = args[i + 1]; del args[i:i + 2]
     out, ids = args[0], args[1:]
     Path(out).mkdir(parents=True, exist_ok=True)
-    for pid in ids: make(pid, out, seed, base_dir)
+    for pid in ids: make(pid, out, seed, base_dir, prefix)

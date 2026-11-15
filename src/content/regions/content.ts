@@ -5,5 +5,9 @@
  */
 import type { RegionContent } from './types';
 import { BA_DAN_VALLEY_CONTENT } from './baDanValley/content';
+import { SALTSTEP_EMBERWATCH_CONTENT } from './saltstepEmberwatch/content';
 
-export const REGION_CONTENT: readonly RegionContent[] = [BA_DAN_VALLEY_CONTENT];
+export const REGION_CONTENT: readonly RegionContent[] = [
+  BA_DAN_VALLEY_CONTENT,
+  SALTSTEP_EMBERWATCH_CONTENT,
+];

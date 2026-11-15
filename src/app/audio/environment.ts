@@ -1,4 +1,4 @@
-import type { Grid, Vec2 } from '../../core/types';
+import type { Grid, MapDef, Vec2 } from '../../core/types';
 import { mulberry32 } from '../../render/fx/rng';
 
 export interface EnvironmentMix {
@@ -6,9 +6,16 @@ export interface EnvironmentMix {
   readonly pond: number;
 }
 
-/** Actual water cells are the only pond source; no second map or painted guess. */
-export function courtyardEnvironment(mapId: string, grid: Grid, listener: Vec2): EnvironmentMix {
-  if (mapId !== 'ba_dan_village') return { courtyard: false, pond: 0 };
+/**
+ * A map with the `courtyard` soundscape plays it; actual water cells are the only pond source, no
+ * second map or painted guess.
+ */
+export function courtyardEnvironment(
+  map: Pick<MapDef, 'soundscape'>,
+  grid: Grid,
+  listener: Vec2,
+): EnvironmentMix {
+  if (map.soundscape !== 'courtyard') return { courtyard: false, pond: 0 };
   let nearest = Infinity;
   grid.tiles.forEach((tile, index) => {
     if (tile.terrain !== 'water_deep' && tile.surface?.id !== 'water') return;

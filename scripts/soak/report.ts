@@ -10,10 +10,10 @@ import type { ContentIndex, Unit } from '../../src/core/types';
 
 export const DEFAULT_SOAK_TRIALS = 200;
 export const SOAK_SIZES = [1, 2, 3, 4, 5, 6] as const;
-export const MAX_ROUNDS_RATE = 0.01;
+const MAX_ROUNDS_RATE = 0.01;
 export const MAX_IDLE_EXAMPLES_PER_CELL = 20;
 
-export interface ReplayCase {
+interface ReplayCase {
   readonly encounterId: string;
   readonly variantId: string | null;
   readonly partySize: number;
@@ -23,25 +23,25 @@ export interface ReplayCase {
   readonly commandIndex: number;
 }
 
-export interface SoakFailure extends ReplayCase {
+interface SoakFailure extends ReplayCase {
   readonly kind: 'throw' | 'variant' | 'diagnostics' | 'anomaly';
   readonly stage: 'setup' | 'command' | 'result';
   readonly message: string;
 }
 
-export interface IdleExample extends ReplayCase {
+interface IdleExample extends ReplayCase {
   readonly round: number;
   readonly unitId: string;
   readonly faction: Unit['faction'];
 }
 
-export interface RoundSummary {
+interface RoundSummary {
   /** Null when every attempt threw, rather than reporting invented zero rounds. */
   readonly medianRounds: number | null;
   readonly maxRounds: number | null;
 }
 
-export interface SoakCounts extends RoundSummary {
+interface SoakCounts extends RoundSummary {
   readonly attempted: number;
   readonly completed: number;
   readonly throws: number;

@@ -27,6 +27,8 @@ art/source/ba-dan-true/guides/pieces.json
 art/source/ba-dan-true/pins.json
 art/source/ba-dan-true/pins-dressing.json
 art/source/ba-dan-true/walls/walls.json
+# The balance tripwire's baseline: written one row a line by `npm run balance:baseline` (ADR 0114).
+scripts/balance/baseline.json
 # Scratch written by the art tools and their tests (never tracked).
 .review/
 # The forest road G1 tools write these: the PixelLab job ledger and the pre-G1 scene they were cut back into.
@@ -40,3 +42,7 @@ prototypes/
 
 # Claude Code agent worktrees (full repo copies).
 .claude/worktrees/
+
+# The owner's story canon, committed verbatim as he supplied it (see docs/story-bible.md).
+docs/story/the-common-current-bible.md
+docs/story/living-world-expansion.md

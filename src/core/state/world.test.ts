@@ -17,8 +17,13 @@ function start(): GameState {
   });
   return apply(CONTENT, state, { type: 'enterNode', nodeId: 'village_explore' }).state;
 }
-const walk = (state: GameState, x: number, y: number) =>
-  apply(CONTENT, state, { type: 'walkTo', pos: { x, y } });
+/** A walk plays through the Cutting's culvert scene (C-29) on its way, as a player taps through it. */
+function walk(state: GameState, x: number, y: number): ReturnType<typeof apply> {
+  const result = apply(CONTENT, state, { type: 'walkTo', pos: { x, y } });
+  return result.state.story.nodeId === 'cutting_culvert'
+    ? walk(finishDialogue(result.state), x, y)
+    : result;
+}
 function finishDialogue(state: GameState): GameState {
   for (let guard = 0; guard < 40 && state.screen === 'dialogue'; guard++) {
     if (CONTENT.story.get(state.story.nodeId ?? '')?.kind !== 'dialogue') return state;

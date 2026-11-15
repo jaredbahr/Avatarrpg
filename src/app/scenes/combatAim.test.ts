@@ -38,16 +38,17 @@ interface AimScene {
  */
 function tap(tile: Vec2, mode: Mode = { kind: 'aim', abilityId: checkpoint.abilityId }): AimScene {
   const scene = Object.create(CombatScene.prototype) as unknown as AimScene;
+  const session = Session.fromMeta(checkpoint.session);
   scene.app = {
     state: checkpoint.state,
     content: CONTENT,
-    session: Session.fromMeta(checkpoint.session),
+    session,
     animator: { busy: vi.fn(() => false) },
     dispatch: vi.fn(),
   };
   scene.renderer = {};
   scene.victoryBeat = null;
-  scene.handedOffTo = checkpoint.casterId;
+  scene.handedOffTo = session.participantForUnit(checkpoint.casterId)?.id ?? '';
   scene.pending = null;
   scene.mode = mode;
   scene.skipBattleOpening = vi.fn(() => false);
@@ -69,9 +70,9 @@ function tap(tile: Vec2, mode: Mode = { kind: 'aim', abilityId: checkpoint.abili
 
 describe('combat tap aim acceptance', () => {
   it('uses the earned Grumbler turn and exact reloadable save', () => {
-    expect(checkpoint.transcript).toHaveLength(76);
+    expect(checkpoint.transcript).toHaveLength(91);
     expect(createHash('sha256').update(checkpoint.json).digest('hex')).toBe(
-      '239e03d8c767c969ea8efab4be1d8617a054aeb9747014dd8cf5667bebdb9c79',
+      'd3fceb3afe44f47ab5a0bb500f260f55c20a5f07f8f95dec9a61599d061baea9',
     );
     expect(loadQuarryCheckpoint(checkpoint.json)).toEqual(checkpoint.state);
     expect(checkpoint.state.battle).toMatchObject({

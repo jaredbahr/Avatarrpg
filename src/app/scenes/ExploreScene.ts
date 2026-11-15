@@ -9,7 +9,7 @@
  * is bigger than the viewport.
  */
 
-import { RIVERSIDE_ID } from '../../content/maps/riverside';
+import { RIVERSIDE_ID } from '../../content/maps/riversideIds';
 import { npcPresentationScale, triggerPresentationScale } from './exploreMarkerScale';
 import { evaluate } from '../../core/story/conditions';
 import {
@@ -771,12 +771,17 @@ export class ExploreScene implements Scene {
         class: 'local-map-follow',
         title: 'North-up map. Recenter the camera on your party.',
       });
-      follow.setAttribute('aria-label', 'Follow party');
-      follow.prepend(
-        this.localMap.element,
-        el('span', { class: 'local-map-north', text: 'N ↑', attrs: { 'aria-hidden': 'true' } }),
+      this.localMap.element.setAttribute('aria-hidden', 'true');
+      follow.prepend(this.localMap.element);
+      corner.append(
+        follow,
+        el('span', {
+          class: 'local-map-north',
+          text: 'N ↑',
+          attrs: { 'aria-hidden': 'true' },
+          style: { pointerEvents: 'none' },
+        }),
       );
-      corner.append(follow);
     }
   }
 
@@ -799,10 +804,12 @@ export class ExploreScene implements Scene {
     if (expanded)
       button.append(
         el('strong', { class: 'explore-objective-label tiny', text: 'Current objective' }),
+        document.createTextNode(' '),
       );
     button.append(el('span', { class: 'title-plate-objective', text: objective }));
     if (gate)
       button.append(
+        document.createTextNode(' '),
         el('span', {
           class: 'explore-objective-gate tiny muted',
           text: expanded ? gate : ` · ${gate}`,
@@ -1000,22 +1007,25 @@ export class ExploreScene implements Scene {
     const camera = this.renderer?.camera;
     if (!camera) return;
     const { mapId, pos } = state.location;
+    // The map's authored opening shot (`MapDef.arrivalShot`), until its story node is visited.
+    const shot = this.app.content.maps.get(mapId)?.arrivalShot;
     this.framingArrival =
       camera.projection === 'topdown' &&
-      mapId === 'forest_road' &&
-      pos.x === 1 &&
-      pos.y === 4 &&
-      !state.story.visited.includes('road_depart');
-    if (this.framingArrival) {
-      // Fit Dema and the party between the objective and dock, keeping whole
-      // pixel zoom and the camera's normal minimum tile size.
+      shot !== undefined &&
+      pos.x === shot.at.x &&
+      pos.y === shot.at.y &&
+      !state.story.visited.includes(shot.unlessVisited);
+    if (this.framingArrival && shot) {
+      // Fit the shot's rows, keeping whole pixel zoom and the camera's normal minimum tile size.
       const { width, height, dpr } = camera.viewport;
-      const tilePx = (Math.floor((height * dpr) / (4.25 * camera.tile)) * camera.tile) / dpr;
+      const tilePx = (Math.floor((height * dpr) / (shot.rows * camera.tile)) * camera.tile) / dpr;
       camera.fitExplore(Math.min(exploreTilePx('topdown', width), tilePx));
     }
     const vergeFits =
-      this.framingArrival && camera.viewport.height >= 4.25 * camera.tile * camera.scale;
-    camera.centreOn(vergeFits ? { x: pos.x, y: 2.25 } : pos);
+      this.framingArrival &&
+      shot !== undefined &&
+      camera.viewport.height >= shot.rows * camera.tile * camera.scale;
+    camera.centreOn(vergeFits && shot ? { x: pos.x, y: shot.centreY } : pos);
   }
 
   private followParty(): void {
@@ -1161,7 +1171,7 @@ export class ExploreScene implements Scene {
     // At a practice ground (issue #284), practice takes it the same way, and
     // stays put, disabled, while the party bends.
     const ground =
-      seat || (moving && !this.practising) ? null : practiceAt(this.map?.id, state.location.pos);
+      seat || (moving && !this.practising) ? null : practiceAt(this.map, state.location.pos);
     const look = seat
       ? button(
           'Wait',
@@ -1351,7 +1361,7 @@ export class ExploreScene implements Scene {
     const grid = this.grid;
     const now = performance.now();
     if (!state || !grid || this.conversationMode || this.app.animator.busy(now)) return;
-    const ground = practiceAt(this.map?.id, state.location.pos);
+    const ground = practiceAt(this.map, state.location.pos);
     if (!ground) return;
     const positions = this.ensureTrail(state, grid).positions(state.party.length);
     const casts = practiceCasts(this.app.content, state.party, positions, ground);
@@ -1564,7 +1574,7 @@ export class ExploreScene implements Scene {
     if (document.hidden) this.app.audio.clearEnvironment();
     else
       this.app.audio.updateEnvironment(
-        courtyardEnvironment(map.id, grid, walking ?? state.location.pos),
+        courtyardEnvironment(map, grid, walking ?? state.location.pos),
       );
     const scale = partyScale();
     const units: RenderUnit[] = state.party.map((member, index) => {
