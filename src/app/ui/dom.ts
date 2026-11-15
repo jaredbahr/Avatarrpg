@@ -8,6 +8,7 @@
  */
 
 import { uiSound } from '../audio/ui';
+import { watchPainterCanvas } from './painterWatch';
 
 type Child = Node | string | null | undefined | false;
 
@@ -127,6 +128,8 @@ export function painterCanvas(
   canvas.dataset.asset = assetKey;
   const ctx = canvas.getContext('2d');
   if (ctx) draw(ctx, px);
+  // Its store is given back when it leaves the page (`painterWatch.ts`).
+  watchPainterCanvas(canvas, px, draw);
   return canvas;
 }
 

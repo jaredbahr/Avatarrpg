@@ -16,6 +16,7 @@
 import { resolvePainter } from '../../render/painters/registry';
 import { sprites } from '../../render/spriteCache';
 import { painterCanvas } from './dom';
+import { fitWatchedCanvas } from './painterWatch';
 
 /** The size every pixel-art dialogue portrait is drawn at (ADR 0107). */
 export const PIXEL_PORTRAIT_PX = 160;
@@ -98,22 +99,8 @@ export function assetCanvas(assetKey: string, remSize: number, extraClass = ''):
  * The caller decides who sizes the box: clear the inline size to let CSS own it.
  */
 export function fitAssetToBox(canvas: HTMLCanvasElement): HTMLCanvasElement {
-  const assetKey = canvas.dataset.asset;
-  if (!assetKey || typeof ResizeObserver === 'undefined') return canvas;
-  let seen = false;
-  const observer = new ResizeObserver(() => {
-    if (!canvas.isConnected) {
-      if (seen) observer.disconnect();
-      return;
-    }
-    seen = true;
-    const px = Math.round(canvas.getBoundingClientRect().width * (window.devicePixelRatio || 1));
-    if (px <= 0 || px === canvas.width) return;
-    canvas.width = px;
-    canvas.height = px;
-    const ctx = canvas.getContext('2d');
-    if (ctx) drawAsset(ctx, assetKey, px);
-  });
-  observer.observe(canvas);
+  // The one observer that watches every painter canvas does the fitting (`painterWatch.ts`);
+  // an observer per portrait was never disconnected when a line was replaced before its layout.
+  fitWatchedCanvas(canvas);
   return canvas;
 }
