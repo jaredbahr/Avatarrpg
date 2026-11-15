@@ -4,5 +4,9 @@
  */
 import type { TopDownLayout } from '../topdownLayout';
 import { BA_DAN_VALLEY_LAYOUTS } from './baDanValley/layouts';
+import { SALTSTEP_EMBERWATCH_LAYOUTS } from './saltstepEmberwatch/layouts';
 
-export const REGION_LAYOUTS: readonly (readonly TopDownLayout[])[] = [BA_DAN_VALLEY_LAYOUTS];
+export const REGION_LAYOUTS: readonly (readonly TopDownLayout[])[] = [
+  BA_DAN_VALLEY_LAYOUTS,
+  SALTSTEP_EMBERWATCH_LAYOUTS,
+];

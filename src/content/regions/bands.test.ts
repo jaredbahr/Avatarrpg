@@ -12,7 +12,7 @@ describe('region level bands (ADR 0011, #784)', () => {
 
   it('lists the bands still waiting for the owner (#784)', () => {
     // When Jared answers #784, set the approved numbers, clear `placeholder` and shrink this list.
-    expect(placeholderBands(REGIONS)).toEqual(['ba_dan_valley']);
+    expect(placeholderBands(REGIONS)).toEqual(['ba_dan_valley', 'saltstep_emberwatch']);
   });
 
   const region = (minLevel: number, maxLevel: number): RegionManifest =>
