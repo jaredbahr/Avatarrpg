@@ -320,10 +320,14 @@ function describeLate(late: LateWrite): string {
   return `flag "${late.site.key}" ${what}, which release ${late.release} shipped without. It is read by ${shortList(late.readers)}.`;
 }
 
-const DECLARE =
-  'Say how that release\'s saves answer in its registry entry (src/content/story/flags.ts): oldSaves: { upTo: "<release>", sites: ["<area>"], answer: "backfill" | "open" | "unset", why }.';
-const DECLARE_SCENE =
-  'Say how that release\'s saves answer in LATE_SCENES (src/content/story/flags.ts): { upTo: "<release>", answer: "backfill" | "open" | "unset", why }.';
+/** The line to add, with the release and the site already filled in. */
+function declareFlag(release: string, area: string): string {
+  return `Say how that release's saves answer in its registry entry (src/content/story/flags.ts): oldSaves: { upTo: '${release}', sites: ['${area}'], answer: 'backfill' | 'open' | 'unset', why: '...' }.`;
+}
+
+function declareScene(release: string): string {
+  return `Say how that release's saves answer in LATE_SCENES (src/content/story/flags.ts): { upTo: '${release}', answer: 'backfill' | 'open' | 'unset', why: '...' }.`;
+}
 
 /**
  * Every late write and late scene that does not answer for the release's
@@ -383,7 +387,7 @@ export function checkReleases(input: HistoryInput): string[] {
       `flag "${late.site.key}"`,
       late.release,
       describeLate(late),
-      DECLARE,
+      declareFlag(late.release, late.site.area),
       registryEntryFor(input.registry, late.site.key)?.oldSaves,
       (rule) => 'key' in rule && rule.key === late.site.key,
       late.site.area,
@@ -393,7 +397,7 @@ export function checkReleases(input: HistoryInput): string[] {
       `scene "${late.node}"`,
       late.release,
       `scene "${late.node}" is read by a visited condition (${shortList(late.readers)}) and was added to a region release ${late.release} had already shipped, so a save of that release may be past the only road into it.`,
-      DECLARE_SCENE,
+      declareScene(late.release),
       Object.hasOwn(input.scenes, late.node) ? input.scenes[late.node] : undefined,
       (rule) => 'node' in rule && rule.node === late.node,
     );
@@ -619,7 +623,7 @@ export function checkSave(
       `${save} has visited ${site.area}, which sets "${site.key}" today, and does not hold it (read by ${shortList(readers)}). ${
         answer
           ? 'Its backfill rule did not reach this save: check the rule\'s "when" and "rev".'
-          : DECLARE
+          : `Say how saves from before that write answer in its registry entry (src/content/story/flags.ts): oldSaves: { upTo: '<newest release>', sites: ['${site.area}'], answer: 'backfill' | 'open' | 'unset', why: '...' }.`
       }`,
     );
   }

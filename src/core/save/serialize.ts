@@ -277,7 +277,13 @@ export function serializeForExport(state: GameState, meta: SaveMeta): string {
 /* ------------------------------------------------------------------ */
 
 export type LoadResult =
-  { readonly ok: true; readonly blob: SaveBlob } | { readonly ok: false; readonly error: string };
+  | {
+      readonly ok: true;
+      readonly blob: SaveBlob;
+      /** What was repaired so the file could load, one line each. Absent when nothing was. */
+      readonly warnings?: readonly string[];
+    }
+  | { readonly ok: false; readonly error: string };
 
 /**
  * Validates and, where possible, upgrades a save.
@@ -450,6 +456,19 @@ export function deserialize(json: string): LoadResult {
     }
   }
 
+  // An unreadable history revision is repaired, not refused (ADR 0112): the campaign is worth
+  // more than the stamp. It reads as 0, so every backfill rule is offered again. A `set` rule
+  // never overwrites and a `node` rule adds a scene once, so that is safe; an `adjust` rule would
+  // add its delta a second time, which is the cost of a file damaged in exactly this field.
+  const warnings: string[] = [];
+  if (typeof raw === 'object' && raw !== null && 'history' in raw) {
+    const history = (raw as Record<string, unknown>).history;
+    if (typeof history !== 'number' || !Number.isInteger(history) || history < 0) {
+      raw = { ...raw, history: 0 };
+      warnings.push('The save had an unreadable history revision; it was loaded as revision 0.');
+    }
+  }
+
   const parsed = saveBlobSchema.safeParse(migrate(raw));
   if (!parsed.success) {
     const first = parsed.error.issues[0];
@@ -470,7 +489,9 @@ export function deserialize(json: string): LoadResult {
     }
   }
 
-  return { ok: true, blob: parsed.data };
+  return warnings.length
+    ? { ok: true, blob: parsed.data, warnings }
+    : { ok: true, blob: parsed.data };
 }
 
 /** The rules state out of a validated blob. */

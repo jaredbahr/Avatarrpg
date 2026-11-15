@@ -866,6 +866,12 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     meaning: 'A one-time combat tip (cover, prop, status, surface.<id>) has been shown.',
     arc: 'App · Guidance',
     status: 'live',
+    oldSaves: {
+      upTo: GOLDEN_V5,
+      sites: ['app:app/scenes/CombatScene'],
+      answer: 'unset',
+      why: 'Each tip shows once per save. An older save has seen none, so it is shown each tip the first time it applies.',
+    },
     setBy: ['app:app/scenes/CombatScene'],
     readBy: ['app:app/scenes/CombatScene', 'app:app/scenes/combatGuidance'],
   },

@@ -758,6 +758,8 @@ export class App {
       startNode: this.storyEntry,
       ...(difficulty ? { difficulty } : {}),
     });
+    // A new game is played on this build's story from its first scene.
+    this.historyRev = HISTORY_REV;
 
     this.session.setPlayers(
       players.map((player, index) => ({
@@ -792,6 +794,13 @@ export class App {
     if (!this.previewActive) this.saveTo(AUTOSAVE_ID, `Autosave — ${this.placeLabel()}`);
   }
 
+  /**
+   * The history revision the running game is at (ADR 0112): this build's, or a loaded file's
+   * when that is higher. Stamped on every save, so a file written by a newer build keeps its
+   * revision through an older one and is never given a rule a second time.
+   */
+  private historyRev = HISTORY_REV;
+
   /** Installs a save read from a slot or a file, at the history revision the file records. */
   adoptLoaded(save: LoadedSave): void {
     this.adoptSave(save.state, save.session, save.blob.history);
@@ -808,6 +817,7 @@ export class App {
     // not record (ADR 0112, `core/save/backfill.ts`). The wait re-enters at the current
     // revision, so a rule is never applied twice.
     const state = applyBackfills(applyIdAliases(saved, ID_ALIASES), history, FLAG_BACKFILLS);
+    this.historyRev = Math.max(history, HISTORY_REV);
     // A save from another region loads that region before it is reconciled against content.
     const wait = this.regionsPending([
       this.regions?.pendingForMap(state.location.mapId),
@@ -1134,7 +1144,7 @@ export class App {
       label: label ?? this.placeLabel(),
       summary: this.saveSummary(),
       session: this.session.toMeta(),
-      history: HISTORY_REV,
+      history: this.historyRev,
     });
     if (!result.ok && result.error) this.toasts.show(result.error, 'warn');
     if (result.ok) void this.savePersistence.afterSave();
@@ -1149,7 +1159,7 @@ export class App {
       label: this.placeLabel(),
       summary: this.saveSummary(),
       session: this.session.toMeta(),
-      history: HISTORY_REV,
+      history: this.historyRev,
     });
     this.toasts.show(
       result.ok ? 'Save file downloaded.' : (result.error ?? 'Export failed.'),

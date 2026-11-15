@@ -30,7 +30,7 @@ describe('the app and the history revision (ADR 0112)', () => {
     for (const call of ['saveToSlot(slot, state, {', 'exportToFile(state, {']) {
       const at = app.indexOf(call);
       expect(at, call).toBeGreaterThan(-1);
-      expect(app.slice(at, app.indexOf('});', at)), call).toContain('history: HISTORY_REV');
+      expect(app.slice(at, app.indexOf('});', at)), call).toContain('history: this.historyRev');
     }
     // Nothing else in the app writes a save.
     const writers = files.filter((file) => /\b(saveToSlot|exportToFile)\(/.test(file.text));
@@ -51,6 +51,43 @@ describe('the app and the history revision (ADR 0112)', () => {
       expect(file.text, file.path).toContain('adoptLoaded(result.save)');
       expect(file.text, file.path).not.toMatch(/adoptSave\(result\.save/);
     }
+  });
+
+  it('stamps the higher of the file and this build, so an older build never lowers a file', () => {
+    const app = files.find((file) => file.path.endsWith('/App.ts'))?.text ?? '';
+    expect(app).toContain('this.historyRev = Math.max(history, HISTORY_REV);');
+    // And a new game starts at this build's revision, whatever was loaded before it.
+    const fresh = app.indexOf('const state = createGame(this.content, {');
+    expect(app.slice(fresh, fresh + 400)).toContain('this.historyRev = HISTORY_REV;');
+  });
+
+  it('loads a file whose revision is unreadable as revision 0, with a warning, never a refusal', () => {
+    const state = createGame(CONTENT, {
+      seed: 'history-repair',
+      party: [{ characterId: 'kaya' }],
+      startNode: STORY_ENTRY,
+    });
+    const blob = JSON.parse(
+      serialize(state, {
+        label: 'Slot 1',
+        summary: 'New game',
+        savedAt: 1_700_000_000_000,
+        session: { players: [{ name: 'Lorelai', unitId: 'p0' }] },
+        history: 2,
+      }),
+    ) as Record<string, unknown>;
+    for (const bad of [-1, 1.5, '1', null, true, {}]) {
+      const loaded = deserialize(JSON.stringify({ ...blob, history: bad }));
+      expect(loaded.ok, JSON.stringify(bad)).toBe(true);
+      if (!loaded.ok) continue;
+      expect(loaded.blob.history).toBe(0);
+      expect(loaded.warnings).toEqual([
+        'The save had an unreadable history revision; it was loaded as revision 0.',
+      ]);
+    }
+    const good = deserialize(JSON.stringify(blob));
+    expect(good.ok && good.blob.history).toBe(2);
+    expect(good.ok && good.warnings).toBeUndefined();
   });
 
   it('writes the revision into the file, and nothing at revision 0', () => {

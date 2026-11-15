@@ -2,7 +2,7 @@
   "release": "2026-11-08-golden-v5",
   "frozen": "2026-11-08",
   "commit": "982e5e65",
-  "note": "The story as the commit that wrote fixtures/golden/v5 had it, read back from that commit with the 2026-11-14 scanner. The demo route was one region then.",
+  "note": "The story as the commit that wrote fixtures/golden/v5 had it, read back from that commit with the 2026-11-14 scanner. The demo route was one region then. App writes were confirmed by searching that commit for each key.",
   "historyRev": 0,
   "rules": [],
   "regions": {
@@ -170,12 +170,7 @@
       "how": "entry",
       "values": ["set=true"]
     },
-    {
-      "key": "act1_lost",
-      "area": "story:act1_lost",
-      "how": "entry",
-      "values": ["set=true"]
-    },
+    { "key": "act1_lost", "area": "story:act1_lost", "how": "entry", "values": ["set=true"] },
     {
       "key": "gate_fire_bluff",
       "area": "story:gate_bluff",
@@ -188,18 +183,7 @@
       "how": "entry",
       "values": ["set=true"]
     },
-    {
-      "key": "guidance.tip.*",
-      "area": "app:app/scenes/CombatScene",
-      "how": "app",
-      "values": []
-    },
-    {
-      "key": "lost_ambush",
-      "area": "story:lost_ambush",
-      "how": "entry",
-      "values": ["set=true"]
-    },
+    { "key": "lost_ambush", "area": "story:lost_ambush", "how": "entry", "values": ["set=true"] },
     {
       "key": "lost_forest_road",
       "area": "story:lost_forest_road",
@@ -212,48 +196,23 @@
       "how": "entry",
       "values": ["set=true"]
     },
-    {
-      "key": "pella_asked",
-      "area": "story:pella_asked",
-      "how": "entry",
-      "values": ["set=true"]
-    },
-    {
-      "key": "riverside_drill",
-      "area": "app:app/village/VillageLife",
-      "how": "app",
-      "values": []
-    },
-    {
-      "key": "riverside_pet",
-      "area": "app:app/village/VillageLife",
-      "how": "app",
-      "values": []
-    },
+    { "key": "pella_asked", "area": "story:pella_asked", "how": "entry", "values": ["set=true"] },
+    { "key": "riverside_drill", "area": "app:app/village/VillageLife", "how": "app", "values": [] },
+    { "key": "riverside_pet", "area": "app:app/village/VillageLife", "how": "app", "values": [] },
     {
       "key": "riverside_shrine_found",
       "area": "story:riverside_shrine_found",
       "how": "entry",
       "values": ["set=true"]
     },
-    {
-      "key": "riverside_tea",
-      "area": "app:app/village/VillageLife",
-      "how": "app",
-      "values": []
-    },
+    { "key": "riverside_tea", "area": "app:app/village/VillageLife", "how": "app", "values": [] },
     {
       "key": "ruon_carried_you",
       "area": "story:lost_ambush",
       "how": "entry",
       "values": ["set=true"]
     },
-    {
-      "key": "ruon_paid",
-      "area": "story:trade_payment",
-      "how": "entry",
-      "values": ["set=true"]
-    },
+    { "key": "ruon_paid", "area": "story:trade_payment", "how": "entry", "values": ["set=true"] },
     {
       "key": "ruon_respects_you",
       "area": "story:gate_talked_through",
