@@ -217,6 +217,8 @@ test('Mira takes the maker-plate rubbing once', async ({ page }) => {
   await next.click();
   expect(await page.evaluate(() => window.fnt!.app.state!.story.nodeId)).toBe('mira_rubbing');
   await expect(page.locator('.dialogue-line')).toContainText('rubbing');
+  // Three lines: Mira keeps the rubbing and sends the province a copy (C-15).
+  await next.click();
   await next.click();
   await next.click();
   await expect(page.locator('.explore-conversation')).toBeHidden();
