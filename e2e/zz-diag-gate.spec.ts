@@ -4,7 +4,7 @@ import { enterNode, resetStorage, setLargeText, startGame } from './helpers';
 
 test.use({ viewport: { width: 844, height: 390 } });
 
-async function fonts(page: Page, tag: string) {
+export async function fonts(page: Page, tag: string) {
   const d = await page.evaluate(() => {
     const fs = (sel: string) => {
       const e = document.querySelector(sel);
