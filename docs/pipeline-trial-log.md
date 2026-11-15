@@ -233,3 +233,12 @@ lists them.
   exit labels, and the "The party" speaker label.
 - Missing from the script and so not shown: SF-2.1's "the riggers put down their cutters" and the carry-on
   narration ("they get away over the wall with one coil"), which the script gives as prose, not lines.
+
+## Art production: the portraits
+
+RG-02's four style B portraits (ADR 0107): Veyra, Tavi Ren, Luli and the customs clerk, made by
+`prototypes/topdown/tools/portraits_b.py --prefix rg02_` from the nearest existing portrait (Jin's, Hanru's, Dema's,
+Sen's) as Dema and Sen were, and wired to their speakers in the region's story. Booked under `rg02_portrait_`, tagged
+`saltstep_emberwatch`. **30 credits** against an estimate of 72: five calls of 6, one of them Tavi's retake at seed 23
+(the seed-11 take kept Hanru's spearhead on the ferry pole). The balance read 6,021 before and 5,991 after. The other
+art batches and the region's running total are logged with their own PRs (#839 and after).
