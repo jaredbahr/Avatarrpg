@@ -209,8 +209,12 @@ export function quarryCheckpointFacts(
 /* Field-level diff                                                     */
 /* ------------------------------------------------------------------ */
 
+/** The whole value as text: what two values are compared by. */
+const whole = (value: unknown): string => JSON.stringify(value) ?? 'undefined';
+
+/** A value as a failure prints it: cut for the eye, never for the comparison. */
 const show = (value: unknown): string => {
-  const text = JSON.stringify(value) ?? 'undefined';
+  const text = whole(value);
   return text.length > 120 ? `${text.slice(0, 117)}...` : text;
 };
 
@@ -228,29 +232,29 @@ function diffSequence(
   const lines: string[] = [];
   const count = (list: readonly unknown[]) => {
     const counts = new Map<string, number>();
-    for (const item of list) counts.set(show(item), (counts.get(show(item)) ?? 0) + 1);
+    for (const item of list) counts.set(whole(item), (counts.get(whole(item)) ?? 0) + 1);
     return counts;
   };
   const had = count(before);
   const has = count(after);
   const seen = new Map<string, number>();
   for (const [index, item] of before.entries()) {
-    const key = show(item);
+    const key = whole(item);
     const nth = (seen.get(key) ?? 0) + 1;
     seen.set(key, nth);
-    if (nth > (has.get(key) ?? 0)) lines.push(`${path}: - ${key} (was item ${index + 1})`);
+    if (nth > (has.get(key) ?? 0)) lines.push(`${path}: - ${show(item)} (was item ${index + 1})`);
   }
   seen.clear();
   for (const [index, item] of after.entries()) {
-    const key = show(item);
+    const key = whole(item);
     const nth = (seen.get(key) ?? 0) + 1;
     seen.set(key, nth);
     if (nth > (had.get(key) ?? 0)) {
       const previous = index > 0 ? `after ${show(after[index - 1])}` : 'first';
-      lines.push(`${path}: + ${key} (${previous})`);
+      lines.push(`${path}: + ${show(item)} (${previous})`);
     }
   }
-  if (lines.length === 0 && before.some((item, index) => show(item) !== show(after[index])))
+  if (lines.length === 0 && before.some((item, index) => whole(item) !== whole(after[index])))
     lines.push(`${path}: same items, new order: ${show(before)} -> ${show(after)}`);
   return lines;
 }
@@ -281,7 +285,7 @@ export function diffFacts(before: unknown, after: unknown, path = ''): string[] 
     }
     return lines;
   }
-  return show(before) === show(after) ? [] : [`${path}: ${show(before)} -> ${show(after)}`];
+  return whole(before) === whole(after) ? [] : [`${path}: ${show(before)} -> ${show(after)}`];
 }
 
 export const REPIN_COMMAND = 'npm run checkpoints -- --write';

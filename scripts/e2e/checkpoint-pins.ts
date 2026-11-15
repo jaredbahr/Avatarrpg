@@ -38,6 +38,33 @@ function optionValue(name: string): string | undefined {
   return value;
 }
 
+type SavedLog = { state?: { log?: unknown } };
+
+const logOf = (save: unknown): readonly unknown[] => {
+  const log = (save as SavedLog | null)?.state?.log;
+  return Array.isArray(log) ? log : [];
+};
+
+/** The save without its combat log, which the summary line below stands in for. */
+function withoutLog(save: unknown): unknown {
+  const blob = save as SavedLog | null;
+  if (!blob?.state) return save;
+  const { log: _log, ...state } = blob.state;
+  return { ...blob, state };
+}
+
+/** One line for the combat log: a retune rewrites all of it, and the fights table says why. */
+function logSummary(before: unknown, after: unknown): string[] {
+  const was = logOf(before);
+  const is = logOf(after);
+  if (JSON.stringify(was) === JSON.stringify(is)) return [];
+  const kept = new Set(was.map((line) => JSON.stringify(line)));
+  const fresh = is.filter((line) => !kept.has(JSON.stringify(line))).length;
+  return [
+    `save.state.log: ${was.length} -> ${is.length} lines, ${fresh} of them new (the combat log; not listed)`,
+  ];
+}
+
 function behaviourDiff(before: Record<string, CheckpointBehaviour>): string[] {
   const after = quarryCheckpointBehaviour();
   const lines: string[] = [];
@@ -52,7 +79,8 @@ function behaviourDiff(before: Record<string, CheckpointBehaviour>): string[] {
     const moved = [
       ...diffFacts(was.commandsByType, is.commandsByType, 'commands'),
       ...diffFacts(was.fights, is.fights, 'fights'),
-      ...diffFacts(was.save, is.save, 'save'),
+      ...diffFacts(withoutLog(was.save), withoutLog(is.save), 'save'),
+      ...logSummary(was.save, is.save),
     ];
     if (!parted && moved.length === 0) {
       lines.push(`${name}: identical (${is.commands} commands)`);

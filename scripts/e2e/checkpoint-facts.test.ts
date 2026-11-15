@@ -119,6 +119,15 @@ describe('fact diff', () => {
     ]);
   });
 
+  it('compares whole values, however long, and only shortens what it prints', () => {
+    const long = 'x'.repeat(300);
+    expect(diffFacts({ line: `${long}a` }, { line: `${long}b` }, 'node')).toEqual([
+      `node.line: "${'x'.repeat(116)}... -> "${'x'.repeat(116)}...`,
+    ]);
+    expect(diffFacts([`${long}a`], [`${long}b`], 'lines')).toHaveLength(2);
+    expect(diffFacts([`${long}a`], [`${long}a`], 'lines')).toEqual([]);
+  });
+
   it('treats a missing pin as every fact being new', () => {
     expect(diffFacts(undefined, { nodeId: 'a' }, 'trade.gate')).toEqual([
       'trade.gate: undefined -> {"nodeId":"a"}',
