@@ -61,7 +61,13 @@ import { setUiSink } from './audio/ui';
 import { MusicPlayer, musicFor } from './audio/music';
 import { WHEEL_LINES_SVG } from './ui/marks';
 import { Toasts } from './ui/Toasts';
-import { SavePersistence, runningStandalone, storageProbe } from './storage/persistence';
+import {
+  SavePersistence,
+  onAppleMobile,
+  runningStandalone,
+  storageProbe,
+} from './storage/persistence';
+import { ensureStorageBorn, localStore, markCopySaved } from './storage/storageCheck';
 import { Stats } from './ui/Stats';
 import { Curtain } from './ui/Curtain';
 import { PauseMenu } from './ui/PauseMenu';
@@ -208,9 +214,14 @@ export class App {
    * Whether the browser keeps the saves (#772): asked after the first save
    * written, and the title and Save menu warn while it does not.
    */
-  readonly savePersistence = new SavePersistence(storageProbe(), runningStandalone, () => {
-    if (this.scene?.name === 'title') this.scene.sync();
-  });
+  readonly savePersistence = new SavePersistence(
+    storageProbe(),
+    runningStandalone,
+    () => {
+      if (this.scene?.name === 'title') this.scene.sync();
+    },
+    onAppleMobile,
+  );
   /**
    * The watch (day and phase) whose handover bark has been shown (ADR 0047
    * §8). Held here rather than on the scene, so leaving the map and coming
@@ -1147,7 +1158,12 @@ export class App {
       history: this.historyRev,
     });
     if (!result.ok && result.error) this.toasts.show(result.error, 'warn');
-    if (result.ok) void this.savePersistence.afterSave();
+    if (result.ok) {
+      // Stamped with the first save, not at boot: a browser that has saved
+      // nothing keeps an empty store (#772).
+      ensureStorageBorn(localStore(), Date.now());
+      void this.savePersistence.afterSave();
+    }
     return result.ok;
   }
 
@@ -1161,6 +1177,7 @@ export class App {
       session: this.session.toMeta(),
       history: this.historyRev,
     });
+    if (result.ok) markCopySaved(localStore(), Date.now());
     this.toasts.show(
       result.ok ? 'Save file downloaded.' : (result.error ?? 'Export failed.'),
       result.ok ? 'info' : 'warn',
