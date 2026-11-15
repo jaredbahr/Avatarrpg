@@ -164,6 +164,12 @@ describe('heading vocabulary is a declared sheet capability', () => {
       ['npc.dorin', 'art/topdown/dorin.json'],
       ['npc.guard', 'art/topdown/guard.json'],
       ['npc.household', 'art/topdown/household.json'],
+      ['npc.tavi', 'art/topdown/tavi.json'],
+      ['npc.customsclerk', 'art/topdown/customsclerk.json'],
+      ['npc.luli', 'art/topdown/luli.json'],
+      ['npc.bowlseller', 'art/topdown/bowlseller.json'],
+      ['npc.freightclerk', 'art/topdown/freightclerk.json'],
+      ['npc.cook', 'art/topdown/cook.json'],
     ]);
   });
 
