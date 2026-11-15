@@ -33,7 +33,7 @@ async function dump(panel: Locator, tag: string) {
       st: element.scrollTop,
       sh: element.scrollHeight,
       cw: element.clientWidth,
-      ow: element.offsetWidth,
+      ow: (element as HTMLElement).offsetWidth,
       hov,
       active: document.activeElement?.className,
       out: out.filter((o) => o.index >= 5),
