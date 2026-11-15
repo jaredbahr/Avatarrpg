@@ -233,3 +233,14 @@ lists them.
   exit labels, and the "The party" speaker label.
 - Missing from the script and so not shown: SF-2.1's "the riggers put down their cutters" and the carry-on
   narration ("they get away over the wall with one coil"), which the script gives as prose, not lines.
+
+## Art production, by batch
+
+The owner approved the estimate above (about 1,040 credits, ±50%) on 2026-11-15, with a hard stop at 1,560. Every
+job is booked in `prototypes/topdown/ledger.json` under `rg02_` and tagged `saltstep_emberwatch`, so
+`python3 tools/ledger_audit.py` totals the region. Credits are each job's own booked usage; the balance is read
+before and after each batch as a cross-check (the key is shared with other projects).
+
+| Batch                                                 | Estimate | Booked | Balance before → after                                                          | Notes                                                                                                                                                                                                                                                                                                                     |
+| ----------------------------------------------------- | -------: | -----: | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. Characters: Veyra, the freight handler, the rigger |      390 |    465 | 6,806 → 6,036 (with batch 2's first 302 booked alongside: 767 booked, 770 fell) | 3 bases, 16 clips of 8 headings, then retakes: the handler's swing and hit (east, west: smears, a red patch), Veyra's hit (four headings: a blade, blood) and flare (west), and a second knockout group for Veyra and the rigger (both sat up in the south). The rigger's second group was not better and is not shipped. |
