@@ -450,7 +450,9 @@ export function formatFailure(result: GateResult): string {
 
 /**
  * What a regeneration changed, for the pull request: every measure that moved
- * by at least its minimum shift, tripped or not, then the count of the rest.
+ * by at least its minimum shift or by more than noise explains, tripped or
+ * not, then the count of the rest. A shift that is real but under the minimum
+ * is listed too, because it is the drift that adds up.
  */
 export function formatRegeneration(result: GateResult): string {
   const lines: string[] = [];
@@ -459,10 +461,13 @@ export function formatRegeneration(result: GateResult): string {
     for (const reason of result.structural) lines.push(`  - ${reason}`);
     lines.push('');
   }
-  const moved = result.comparisons.filter((comparison) => comparison.verdict.material);
+  const moved = result.comparisons.filter(
+    (comparison) => comparison.verdict.material || comparison.verdict.significant,
+  );
   if (moved.length > 0) {
     lines.push(
-      'Measures that moved by at least their minimum shift (* tripped the gate):',
+      'Measures that moved by at least their minimum shift, or by more than noise explains',
+      '(* tripped the gate: both):',
       '',
       table(
         [...COMPARISON_HEADER, ''],
@@ -476,8 +481,8 @@ export function formatRegeneration(result: GateResult): string {
   }
   const exact = result.comparisons.filter((comparison) => comparison.verdict.shift === 0).length;
   lines.push(
-    `${result.comparisons.length} measures compared: ${moved.length} moved by at least their ` +
-      `minimum shift, ${result.tripped.length} tripped, ${exact} are unchanged to the digit.`,
+    `${result.comparisons.length} measures compared: ${moved.length} listed above, ` +
+      `${result.tripped.length} tripped, ${exact} are unchanged to the digit.`,
     describeRule(result),
   );
   return lines.join('\n');

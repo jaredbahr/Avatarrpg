@@ -179,18 +179,20 @@ describe('compareWithBaseline', () => {
 
 describe('formatRegeneration', () => {
   it('lists what moved for the pull request, marking what would have tripped', () => {
-    const baseline = baselineOf([row(), other]);
+    const baseline = baselineOf([row({ deaths: { mean: 0.4, se: 0.005 } }), other]);
     const current = baselineOf([
-      row({ hpLeft: { mean: 0.6, se: 0.012 } }),
+      // Tripped: ten points of HP. Real but small: 0.1 of a death at a tiny spread.
+      row({ hpLeft: { mean: 0.6, se: 0.012 }, deaths: { mean: 0.5, se: 0.005 } }),
+      // Big but within noise: 0.6 of a round at a wide spread.
       { ...other, rounds: { mean: 6.4, se: 0.2 } },
     ]);
     const summary = formatRegeneration(compareWithBaseline(baseline, current));
     expect(summary).toContain('story / 3p / enc_test / base');
     expect(summary).toContain('-10.0 pts');
+    expect(summary).toContain('+0.10');
     expect(summary).toContain('enc_other / spare');
     expect(summary).toContain('+0.60');
-    expect(summary).toContain('8 measures compared: 2 moved');
-    expect(summary).toContain('1 tripped');
+    expect(summary).toContain('8 measures compared: 3 listed above, 1 tripped');
   });
 });
 
