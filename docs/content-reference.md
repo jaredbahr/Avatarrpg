@@ -173,7 +173,7 @@ Names are shown in authored content order within each entry; sections and record
 | Raise Rubble      | Character: Lin Mei, Enemy: Quarry Bender, Enemy: The Driller                           |   2 | 5     | tile            | yes           | rubble surface (center, permanent)                                                                                                                             |              2 | rubble              |
 | Rally             | Discipline: Field Craft, Enemy: Mercenary Sergeant, Enemy: Veyra                       |   2 | 5     | unit (ally)     | yes           | inspired for 2 rounds (100%, to hit); grant 1 AP to hit                                                                                                        |              3 | inspired            |
 | Rock Throw        | Character: Bo, Character: Lin Mei, Enemy: Quarry Bender                                |   1 | 5     | unit (enemy)    | yes           | earth damage 5 + 0.6× power                                                                                                                                    | 0 (every turn) | —                   |
-| Rush              | Enemy: Freight Handler, Enemy: Line Rigger, Enemy: Quarry Hauler, Enemy: Quarry Worker |   2 | 4     | tile            | yes           | dash                                                                                                                                                           |              2 | —                   |
+| Rush              | Enemy: Line Rigger, Enemy: Quarry Hauler, Enemy: Quarry Worker                         |   2 | 4     | tile            | yes           | dash                                                                                                                                                           |              2 | —                   |
 | Seismic Sense     | Discipline: Earth Shaping                                                              |   1 | 0     | self            | yes           | reveal surfaces; inspired for 2 rounds (100%, to self); cleanse blinded                                                                                        |              3 | inspired            |
 | Shatterpoint      | Discipline: Sound Bending                                                              |   3 | 7     | blast, radius 1 | yes           | air damage 13 + 1.1× power (ignores defense); stunned for 1 round (60%, to hit); push 2 tiles                                                                  |              4 | stunned             |
 | Shield Bash       | Discipline: Field Craft, Enemy: Veyra                                                  |   2 | 1     | unit (enemy)    | yes           | physical damage 6 + 0.6× power; push 1 tile; stunned for 1 round (35%, to hit); guarded for 1 round (100%, to self)                                            |              2 | stunned, guarded    |
@@ -208,8 +208,8 @@ Names are shown in authored content order within each entry; sections and record
 
 ### Freight Handler
 
-- Stats: defense 1, focus 5, maxAp 4, maxHp 30, maxMove 4, power 5, speed 5
-- Abilities: Club Swing, Rush
+- Stats: defense 1, focus 5, maxAp 4, maxHp 48, maxMove 4, power 5, speed 5
+- Abilities: Club Swing
 - XP: 120
 
 ### Line Rigger

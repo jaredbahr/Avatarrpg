@@ -439,7 +439,7 @@ flowchart TD
   n221 -->|"Next"| n179
   n222 -->|"Victory"| n224
   n222 -->|"Defeat"| n223
-  n223 -->|"set: lost_saltstep_docks=true; grant XP: 90"| n109
+  n223 -->|"set: lost_saltstep_docks=true; grant XP: 150"| n109
   n224 -->|"Next"| n151
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87

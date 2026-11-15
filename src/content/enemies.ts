@@ -216,8 +216,10 @@ export const ENEMIES: readonly EnemyDef[] = [
     shortName: 'Handler',
     element: 'nonbender',
     size: 1,
-    stats: { maxHp: 30, maxAp: 4, maxMove: 4, power: 5, defense: 1, speed: 5, focus: 5 },
-    abilities: ['club_swing', 'bandit_rush'],
+    // Sturdier than a quarry worker and without Rush, so they hold the gangway and the winch
+    // brake instead of charging off it (tuned with the winch objective, 2026-11-15).
+    stats: { maxHp: 48, maxAp: 4, maxMove: 4, power: 5, defense: 1, speed: 5, focus: 5 },
+    abilities: ['club_swing'],
     ai: 'aggressive',
     xp: 120,
     sprite: 'unit.enemy.thug',

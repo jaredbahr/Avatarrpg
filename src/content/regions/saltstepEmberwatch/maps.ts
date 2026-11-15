@@ -188,23 +188,25 @@ export const SALTSTEP_PONTOON: MapDef = {
   legend: LEGEND,
   /*
    * The pontoon deck (`w`) with the harbour all round it. The cast-iron pump crate (`c`, cover)
-   * stands near the party's end; the winch (`B`) is at the far end with its brake on the deck
-   * beside it, (13,4); the barge is the open water off the east edge, where the sling is heading.
+   * stands near the party's end. A two-wide gangway (11-12, rows 4-5) joins the deck to the winch
+   * platform; the winch brake is on the gangway itself, (12, 4), where the handlers stand, so
+   * stopping the winch means getting through them. The winch (`B`) is on the platform and the
+   * barge is the open water off the east edge, where the sling is heading.
    */
   rows: [
     'WWWWWWWWWWWWWWWWWWW',
-    'WWWwwwwwwwwwwwwWWWW',
-    'WWwwwwcwwwwwwwwwwWW',
-    'Wwwwwwcwwwwwwwbbwww',
-    'Wwwwwwwwwwwwwwbbwww',
+    'WWwwwwwwwwwWWWWWWWW',
+    'WwwwwwcwwwwWWWwwwWW',
+    'WwwwwwcwwwwWWwwBBww',
+    'WwwwwwwwwwwwwwwBBww',
     'WwwwwwwwwwwwwwwwwwW',
-    'WwwwwwwwwwwwwwwwwwW',
-    'WwwwwcwwwwwwwwwwwwW',
-    'WwwwwcwwwwwwwwwwwWW',
-    'WWwwwwwwwwwwwwwwWWW',
-    'WWWwwwwwwwwwwwwWWWW',
+    'WwwwwwwwwwwWWwwwwwW',
+    'WwwwwcwwwwwWWwwwwwW',
+    'WwwwwcwwwwwWWWwwwWW',
+    'WwwwwwwwwwwWWWWWWWW',
+    'WWwwwwwwwwwWWWWWWWW',
     'WWWWWWWWWWWWWWWWWWW',
-  ].map((row) => row.replace(/b/g, 'B')),
+  ],
   partySpawns: COMBAT_PARTY_SPAWNS,
   npcs: [],
   props: [],
@@ -218,7 +220,7 @@ export const SALTSTEP_PONTOON: MapDef = {
 };
 
 /** The winch brake (Scene 2.5): where a friendly unit must stand at a round's end to stop it. */
-export const WINCH_BRAKE_CELLS: readonly Vec2[] = [{ x: 13, y: 4 }];
+export const WINCH_BRAKE_CELLS: readonly Vec2[] = [{ x: 12, y: 4 }];
 
 export const EMBERWATCH_PARADE: MapDef = {
   id: 'emberwatch_parade',

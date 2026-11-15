@@ -25,10 +25,18 @@ export const SALTSTEP_EMBERWATCH_ENCOUNTERS: readonly EncounterDef[] = [
     name: 'The Sling',
     mapId: 'saltstep_pontoon',
     expectedLevel: 4,
+    /*
+     * The handlers hold the gangway and the winch: one stands on the brake itself, (12, 4), so the
+     * party has to shift or drop it before anyone can take the brake (Veyra's Shield Bash pushes),
+     * one beside it, and three behind on the platform (tuned 2026-11-15: a first-time table
+     * usually wins, holding the brake around rounds 3 to 5).
+     */
     enemies: [
-      at(16, 5, 'freight_handler'),
+      at(12, 4, 'freight_handler'),
+      at(12, 5, 'freight_handler'),
+      at(13, 4, 'freight_handler'),
+      at(14, 5, 'freight_handler'),
       at(16, 6, 'freight_handler'),
-      at(15, 2, 'freight_handler'),
     ],
     allies: [],
     /*
@@ -37,7 +45,7 @@ export const SALTSTEP_EMBERWATCH_ENCOUNTERS: readonly EncounterDef[] = [
      * guest (ADR 0116). She starts with the party at the west end of the deck. "Veyra cannot be
      * lost": `loseIfGuestFalls` stays unset, so a fallen guest stays down and the fight goes on.
      */
-    guests: [{ enemyId: 'veyra_guest', pos: { x: 5, y: 5 }, level: { partyOffset: 0 } }],
+    guests: [{ enemyId: 'veyra_guest', pos: { x: 2, y: 5 }, level: { partyOffset: 0 } }],
     /*
      * The script's other win and its other loss (ADR 0116, objective fights, #827): a party member
      * or Veyra standing at the winch brake when a round ends stops the winch and wins; not won by
@@ -54,9 +62,9 @@ export const SALTSTEP_EMBERWATCH_ENCOUNTERS: readonly EncounterDef[] = [
     // Three heroes and Veyra: a guest counts as a friendly body in the roster scaling (ADR 0116).
     baselinePartySize: 4,
     reinforcements: [
-      at(17, 5, 'freight_handler'),
-      at(16, 8, 'freight_handler'),
+      at(14, 6, 'freight_handler'),
       at(17, 6, 'freight_handler'),
+      at(15, 7, 'freight_handler'),
     ],
     variants: [],
     intro:

@@ -33,8 +33,8 @@ const TAVI = 'Tavi Ren';
 const CLERK = 'Customs clerk';
 const HANDLER = 'Freight handler';
 
-/** XP the winch fight pays a head (3 freight handlers at 120 over a baseline of 4 with Veyra). */
-export const WINCH_XP_PER_HEAD = 90;
+/** XP the winch fight pays a head (5 freight handlers at 120 over a baseline of 4 with Veyra). */
+export const WINCH_XP_PER_HEAD = 150;
 
 const say = (
   id: string,
