@@ -44,6 +44,12 @@ export type TopdownName =
   | 'veyra'
   | 'freighthandler'
   | 'rigger'
+  | 'tavi'
+  | 'customsclerk'
+  | 'luli'
+  | 'bowlseller'
+  | 'freightclerk'
+  | 'cook'
   | 'driller';
 
 export interface TopdownSheetData {
@@ -714,6 +720,90 @@ export const TOPDOWN_SHEETS: Readonly<Record<TopdownName, TopdownSheetData>> = {
     },
     clipData: true,
     actions: true,
+  },
+  tavi: {
+    pages: 1,
+    frame: { w: 34, h: 51 },
+    anchor: { x: 0.5, y: 0.941176 },
+    footprint: 1,
+    idleCels: [3, 3, 3, 2, 3, 3, 3, 3],
+    idleMs: 420,
+    walkCels: [8, 8, 8, 8, 8, 8, 8, 8],
+    walkCelMs: 28.846,
+    walkMsPerTile: 307.7,
+    cast: null,
+    clipData: false,
+    actions: false,
+  },
+  customsclerk: {
+    pages: 1,
+    frame: { w: 36, h: 48 },
+    anchor: { x: 0.5, y: 0.958333 },
+    footprint: 1,
+    idleCels: [3, 3, 3, 3, 3, 3, 3, 3],
+    idleMs: 420,
+    walkCels: [8, 8, 8, 8, 8, 8, 8, 8],
+    walkCelMs: 28.846,
+    walkMsPerTile: 307.7,
+    cast: null,
+    clipData: false,
+    actions: false,
+  },
+  luli: {
+    pages: 1,
+    frame: { w: 48, h: 51 },
+    anchor: { x: 0.5, y: 0.941176 },
+    footprint: 1,
+    idleCels: [3, 3, 3, 3, 3, 3, 3, 3],
+    idleMs: 420,
+    walkCels: [8, 8, 8, 8, 8, 8, 8, 8],
+    walkCelMs: 28.846,
+    walkMsPerTile: 307.7,
+    cast: null,
+    clipData: false,
+    actions: false,
+  },
+  bowlseller: {
+    pages: 1,
+    frame: { w: 38, h: 50 },
+    anchor: { x: 0.5, y: 0.96 },
+    footprint: 1,
+    idleCels: [3, 3, 3, 3, 3, 3, 3, 3],
+    idleMs: 420,
+    walkCels: [8, 8, 8, 8, 8, 8, 8, 8],
+    walkCelMs: 28.846,
+    walkMsPerTile: 307.7,
+    cast: null,
+    clipData: false,
+    actions: false,
+  },
+  freightclerk: {
+    pages: 1,
+    frame: { w: 32, h: 47 },
+    anchor: { x: 0.5, y: 0.957447 },
+    footprint: 1,
+    idleCels: [3, 3, 3, 3, 3, 3, 3, 3],
+    idleMs: 420,
+    walkCels: [8, 8, 8, 8, 8, 8, 8, 8],
+    walkCelMs: 28.846,
+    walkMsPerTile: 307.7,
+    cast: null,
+    clipData: false,
+    actions: false,
+  },
+  cook: {
+    pages: 1,
+    frame: { w: 44, h: 51 },
+    anchor: { x: 0.5, y: 0.941176 },
+    footprint: 1,
+    idleCels: [2, 2, 3, 3, 2, 3, 3, 3],
+    idleMs: 420,
+    walkCels: [8, 8, 8, 8, 8, 8, 8, 8],
+    walkCelMs: 28.846,
+    walkMsPerTile: 307.7,
+    cast: null,
+    clipData: false,
+    actions: false,
   },
   driller: {
     pages: 2,

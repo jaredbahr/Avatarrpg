@@ -30,16 +30,19 @@ const COMBAT_PARTY_SPAWNS: readonly Vec2[] = [
   { x: 3, y: 8 },
 ];
 
-/** Placeholder: the region's sprites until its art exists (listed in `docs/pipeline-trial-log.md`). */
-const PLACEHOLDER_SPRITE = {
-  bowlSeller: 'npc.household',
-  tavi: 'npc.guard',
-  freightClerk: 'npc.shopkeeper',
+/**
+ * The region's sprites (`docs/pipeline-trial-log.md`, "Art production"): its own people since the art batches; Miri's
+ * crates still borrow the barrel until the objects batch.
+ */
+const SPRITE = {
+  bowlSeller: 'npc.bowlseller',
+  tavi: 'npc.tavi',
+  freightClerk: 'npc.freightclerk',
   crates: 'prop.barrel',
-  customsClerk: 'npc.sen',
+  customsClerk: 'npc.customsclerk',
   veyra: 'unit.ally.veyra',
-  cook: 'npc.household',
-  luli: 'npc.hanru',
+  cook: 'npc.cook',
+  luli: 'npc.luli',
   // Sabi leads the riggers and wears their sheet (the art list: she shares it).
   sabi: 'unit.enemy.rigger',
 } as const;
@@ -116,7 +119,7 @@ export const SALTSTEP_MARKET: MapDef = {
       id: 'mq02_saltstep_arrival',
       node: 'mq02_saltstep_arrival',
       label: 'Saltstep',
-      sprite: 'prop.cart',
+      sprite: 'world.parcel_cart',
       when: { kind: 'not', of: ARRIVED },
       once: true,
       // The whole walkable column, so no route east from the coast road slips past it.
@@ -129,14 +132,14 @@ export const SALTSTEP_MARKET: MapDef = {
       id: 'mq02_bowl_seller',
       name: 'Bowl-seller',
       pos: { x: 5, y: 4 },
-      sprite: PLACEHOLDER_SPRITE.bowlSeller,
+      sprite: SPRITE.bowlSeller,
       node: 'mq02_bowl_seller',
     },
     {
       id: 'mq02_tavi',
       name: 'Tavi Ren',
       pos: { x: 20, y: 9 },
-      sprite: PLACEHOLDER_SPRITE.tavi,
+      sprite: SPRITE.tavi,
       node: 'mq02_tavi',
       // Scene 2.9: once the complaint has started, the ferry goes.
       routes: [{ when: VOTED, node: 'mq02_ferry' }],
@@ -145,7 +148,7 @@ export const SALTSTEP_MARKET: MapDef = {
       id: 'mq02_freight_clerk',
       name: 'Freight clerk',
       pos: { x: 16, y: 3 },
-      sprite: PLACEHOLDER_SPRITE.freightClerk,
+      sprite: SPRITE.freightClerk,
       node: 'mq02_freight_office',
       routes: [
         // Scene 2.8, after the vote.
@@ -157,7 +160,7 @@ export const SALTSTEP_MARKET: MapDef = {
       id: 'mq02_miri_crates',
       name: 'Lantern crates',
       pos: { x: 21, y: 7 },
-      sprite: PLACEHOLDER_SPRITE.crates,
+      sprite: SPRITE.crates,
       node: 'mq02_miri_crates',
       // Kaya's opening (the slice's first exchange only): the crates are her sister's shop's.
       routes: [{ when: { kind: 'partyHas', characterId: 'kaya' }, node: 'mq02_miri_crates_kaya' }],
@@ -168,7 +171,7 @@ export const SALTSTEP_MARKET: MapDef = {
       id: 'mq02_customs_clerk',
       name: 'Customs clerk',
       pos: { x: 12, y: 9 },
-      sprite: PLACEHOLDER_SPRITE.customsClerk,
+      sprite: SPRITE.customsClerk,
       node: 'mq02_stall_drifts',
       when: {
         kind: 'all',
@@ -281,14 +284,14 @@ export const EMBERWATCH_PARADE: MapDef = {
       id: 'mq03_retired_cook',
       name: 'Retired cook',
       pos: { x: 8, y: 4 },
-      sprite: PLACEHOLDER_SPRITE.cook,
+      sprite: SPRITE.cook,
       node: 'mq03_retired_cook',
     },
     {
       id: 'mq03_tavi',
       name: 'Tavi Ren',
       pos: { x: 7, y: 11 },
-      sprite: PLACEHOLDER_SPRITE.tavi,
+      sprite: SPRITE.tavi,
       node: 'mq03_tavi',
     },
   ],
@@ -345,7 +348,7 @@ export const EMBERWATCH_POWER_YARD: MapDef = {
       id: 'mq03_luli',
       name: 'Luli',
       pos: { x: 3, y: 9 },
-      sprite: PLACEHOLDER_SPRITE.luli,
+      sprite: SPRITE.luli,
       node: 'mq03_luli',
     },
     {
@@ -353,7 +356,7 @@ export const EMBERWATCH_POWER_YARD: MapDef = {
       id: 'sf21_sabi',
       name: 'Sabi',
       pos: { x: 16, y: 6 },
-      sprite: PLACEHOLDER_SPRITE.sabi,
+      sprite: SPRITE.sabi,
       node: 'sf21_wet_ground',
       when: { kind: 'not', of: { kind: 'visited', nodeId: 'sf21_wet_ground' } },
     },
