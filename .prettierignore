@@ -27,7 +27,7 @@ art/source/ba-dan-true/guides/pieces.json
 art/source/ba-dan-true/pins.json
 art/source/ba-dan-true/pins-dressing.json
 art/source/ba-dan-true/walls/walls.json
-# The balance tripwire's baseline: written one row a line by `npm run balance:baseline` (ADR 0112).
+# The balance tripwire's baseline: written one row a line by `npm run balance:baseline` (ADR 0114).
 scripts/balance/baseline.json
 # Scratch written by the art tools and their tests (never tracked).
 .review/

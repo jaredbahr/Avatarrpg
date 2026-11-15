@@ -1,5 +1,5 @@
 /**
- * The balance tripwire (ADR 0112): a committed baseline of the report's
+ * The balance tripwire (ADR 0114): a committed baseline of the report's
  * measures, and the rule that decides whether a new run has moved away from it.
  *
  * The simulator is deterministic, so unchanged code reproduces the baseline
@@ -64,7 +64,7 @@ export interface MeasureDef {
 }
 
 /**
- * The gated measures and their minimum practical effects (ADR 0112 has the
+ * The gated measures and their minimum practical effects (ADR 0114 has the
  * reasoning): five points of win rate, five points of party HP left, half a
  * round, and a quarter of a hero down per fight.
  */
@@ -177,7 +177,7 @@ export function baselineRowOf({ difficulty, size, row }: SweepRow): BaselineRow 
 export function buildBaseline(rows: readonly SweepRow[]): Baseline {
   return {
     about:
-      `Balance tripwire baseline (ADR 0112). Written only by \`${WRITE_COMMAND}\`; do not edit ` +
+      `Balance tripwire baseline (ADR 0114). Written only by \`${WRITE_COMMAND}\`; do not edit ` +
       'by hand. Rates are counts out of `trials`; means carry their standard error.',
     version: 1,
     settings: {

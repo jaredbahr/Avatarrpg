@@ -1,4 +1,4 @@
-# ADR 0112: The balance tripwire reads measures that still move, against a committed baseline
+# ADR 0114: The balance tripwire reads measures that still move, against a committed baseline
 
 **Status:** accepted, 2026-11-14 (#797, from #777 finding 8). Builds on ADR 0110 (the difficulty
 setting). It changes what the CI "Balance report" step fails on. It changes no fight, enemy, ability,

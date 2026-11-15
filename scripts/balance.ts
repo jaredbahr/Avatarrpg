@@ -20,7 +20,7 @@
  * discipline sweep, BALANCE_DISCIPLINE_TRIALS and BALANCE_DISCIPLINE_LEVEL.
  * `--json FILE` writes the rows as JSON.
  *
- * The tripwire (`--check`, ADR 0112) is what CI runs. Its sweep is fixed in
+ * The tripwire (`--check`, ADR 0114) is what CI runs. Its sweep is fixed in
  * `balance/gate.ts` and it refuses the overrides above, so a run is never
  * compared with a baseline made at other settings. It fails on a shift that is
  * both statistically significant and at least a measure's minimum size, on rows

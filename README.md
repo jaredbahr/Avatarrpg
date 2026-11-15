@@ -330,7 +330,7 @@ sides, on Story and on Hard, and prints the win rate, party HP left, rounds and
 deaths with 95% intervals. `BALANCE_SIZES` picks the table sizes and
 `BALANCE_VARIANTS=1` reports each roster variant separately.
 `npm run balance:check` compares a fixed sweep with the committed baseline
-(`scripts/balance/baseline.json`, [ADR 0112](docs/adr/0112-balance-tripwire.md)).
+(`scripts/balance/baseline.json`, [ADR 0114](docs/adr/0114-balance-tripwire.md)).
 The table below is an older snapshot, at 60 trials per encounter per table size:
 
 | Encounter              | 1 player | 3 players | 4 players | 6 players |

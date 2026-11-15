@@ -268,7 +268,7 @@ describe('balance', () => {
     for (const row of report.encounters) {
       // Deliberately wide: this asserts "playable", not "tuned". A shift in
       // the measured numbers is the balance tripwire's job, against its
-      // committed baseline (`npm run balance:check`, ADR 0112).
+      // committed baseline (`npm run balance:check`, ADR 0114).
       expect(row.winRate, `${row.encounterId} win rate`).toBeGreaterThan(0.4);
       expect(row.winRate, `${row.encounterId} win rate`).toBeLessThanOrEqual(1);
       expect(row.averageRounds, `${row.encounterId} length`).toBeGreaterThan(1);

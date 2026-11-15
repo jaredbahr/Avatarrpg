@@ -9,7 +9,7 @@
  *     only show up on a Saturday with four kids watching.
  *  2. **Balance.** Win rate, party HP left, rounds and deaths per encounter at
  *     the level the slice expects, so tuning is a number rather than a feeling
- *     (`balance.ts`, ADR 0112).
+ *     (`balance.ts`, ADR 0114).
  *
  * The party is driven by the same AI as the enemies. That flatters neither
  * side: a real party plays better than this, so the numbers are a floor.

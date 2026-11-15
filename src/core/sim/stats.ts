@@ -1,5 +1,5 @@
 /**
- * The statistics the balance report and its tripwire stand on (ADR 0112).
+ * The statistics the balance report and its tripwire stand on (ADR 0114).
  *
  * Everything here is arithmetic on numbers a simulation already produced: no
  * randomness, no clock. Three jobs:

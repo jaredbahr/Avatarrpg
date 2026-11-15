@@ -6,7 +6,7 @@
  * win rate is pinned at its ceiling (party HP left, rounds, party deaths).
  * Every trial's outcome is kept, so each number is derived from the same
  * trials and carries an interval (`stats.ts`); `npm run balance:check` compares
- * them with a committed baseline (ADR 0112).
+ * them with a committed baseline (ADR 0114).
  *
  * The 70-85% win-rate band this file used to state is not a gate. On Story
  * every fight wins every simulated trial, and whether that is the target is an

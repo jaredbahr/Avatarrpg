@@ -119,7 +119,7 @@ jobs:
         run: npm run check:assets
 
       - name: Balance report
-        # The balance tripwire (ADR 0112). Prints win rate, party HP left,
+        # The balance tripwire (ADR 0114). Prints win rate, party HP left,
         # rounds and deaths with 95% intervals for every encounter and roster
         # variant, on Story and Hard, at 1, 3 and 6 players, then compares them
         # with scripts/balance/baseline.json. It fails on a shift that is both

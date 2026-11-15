@@ -163,7 +163,7 @@ the trials a row, and `BALANCE_DIFFICULTY=story` or `=hard` narrows the report t
 difficulty (it shows both by default). Every rate and mean is printed with a 95%
 interval.
 
-**The balance tripwire (ADR 0112).** `npm run balance:check` is the CI step. It runs a
+**The balance tripwire (ADR 0114).** `npm run balance:check` is the CI step. It runs a
 fixed sweep (set in `scripts/balance/gate.ts`: both difficulties, 1, 3 and 6 players,
 every roster variant on its own row) and compares the win rate, HP left, rounds and
 deaths of each row with `scripts/balance/baseline.json`. On Story every row wins every

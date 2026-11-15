@@ -1,5 +1,5 @@
 {
-  "about": "Balance tripwire baseline (ADR 0112). Written only by `npm run balance:baseline`; do not edit by hand. Rates are counts out of `trials`; means carry their standard error.",
+  "about": "Balance tripwire baseline (ADR 0114). Written only by `npm run balance:baseline`; do not edit by hand. Rates are counts out of `trials`; means carry their standard error.",
   "version": 1,
   "settings": {"trials":120,"sizes":[1,3,6],"difficulties":["story","hard"],"perVariant":true},
   "rows": [
