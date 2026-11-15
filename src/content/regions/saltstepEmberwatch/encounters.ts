@@ -29,13 +29,20 @@ export const SALTSTEP_EMBERWATCH_ENCOUNTERS: readonly EncounterDef[] = [
       at(16, 6, 'freight_handler'),
       at(15, 2, 'freight_handler'),
     ],
-    allies: [],
     /*
      * Veyra (AN-01): an AI guest, as the script says, built from her placeholder enemy record
-     * (`veyra_guest` in `enemies.ts`) at the party's level. "Veyra cannot be lost": the encounter
-     * leaves `loseIfGuestFalls` unset, so a fallen guest stays down and the fight goes on.
+     * (`veyra_guest` in `enemies.ts`). ADR 0116's `allies` shorthand: an `ai` guest built from an
+     * enemy at the encounter's level (4, the level every Act I route ends on), tagged "Guest" in
+     * the HUD like any guest. "Veyra cannot be lost": `loseIfGuestFalls` stays unset, so a fallen
+     * guest stays down and the fight goes on.
+     *
+     * Not `guests: [{ enemyId: 'veyra_guest', pos, level: { partyOffset: 0 } }]`, the form the
+     * brief asked for: `src/core/state/encounterSpawns.test.ts` counts only `allies` as the
+     * party's side, so the first shipped `guests` entry fails it, and `src/core/` is not this
+     * trial's to change (`docs/pipeline-trial-log.md`, friction). Swap back once that test reads
+     * guests too.
      */
-    guests: [{ enemyId: 'veyra_guest', pos: { x: 5, y: 5 }, level: { partyOffset: 0 } }],
+    allies: [at(5, 5, 'veyra_guest')],
     /*
      * TODO(objective-hold): the script's other win, "a party member or Veyra stands at the winch
      * brake at the end of a round", and its other loss, "the crate reaches the barge" in six
@@ -68,15 +75,15 @@ export const SALTSTEP_EMBERWATCH_ENCOUNTERS: readonly EncounterDef[] = [
     mapId: 'emberwatch_power_yard',
     expectedLevel: 4,
     enemies: [
-      at(15, 3, 'line_rigger'),
-      at(16, 6, 'line_rigger'),
-      at(15, 8, 'line_rigger'),
-      at(17, 10, 'line_rigger'),
+      at(14, 3, 'line_rigger'),
+      at(15, 6, 'line_rigger'),
+      at(14, 8, 'line_rigger'),
+      at(16, 10, 'line_rigger'),
     ],
     allies: [],
     conditionalEnemies: [],
     baselinePartySize: 3,
-    reinforcements: [at(14, 2, 'line_rigger'), at(17, 9, 'line_rigger'), at(14, 10, 'line_rigger')],
+    reinforcements: [at(13, 2, 'line_rigger'), at(16, 9, 'line_rigger'), at(13, 10, 'line_rigger')],
     variants: [],
     intro:
       'The rain cistern has overflowed across the yard, and Luli’s live line runs along one side of it.',

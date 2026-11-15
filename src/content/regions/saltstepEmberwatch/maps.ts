@@ -8,10 +8,10 @@
  * - `saltstep_market` (explore, 24 x 16): the market on the water. Stalls on platforms, the quay,
  *   the ferry landing, Jin's freight office and Miri's lantern crates. Its west mouth is the coast
  *   road home to Ba Dan.
- * - `saltstep_pontoon` (combat, 20 x 12): the freight pontoon, the winch fight's board (Scene 2.5).
+ * - `saltstep_pontoon` (combat, 19 x 12): the freight pontoon, the winch fight's board (Scene 2.5).
  *   Water on every side; the party is brought here by the fight and taken back by the story.
  * - `emberwatch_parade` (explore, 24 x 16): the old outpost's parade ground, where the ferry lands.
- * - `emberwatch_power_yard` (combat, 20 x 12): the power yard, SF-2.1's board and an explore map,
+ * - `emberwatch_power_yard` (combat, 19 x 12): the power yard, SF-2.1's board and an explore map,
  *   with the live line along its north side and the overflowing cistern.
  */
 import type { MapDef, Vec2 } from '../../../core/types';
@@ -182,7 +182,7 @@ export const SALTSTEP_PONTOON: MapDef = {
   projection: 'topdown',
   name: 'The Freight Pontoon',
   kind: 'combat',
-  width: 20,
+  width: 19,
   height: 12,
   ambience: 'village',
   legend: LEGEND,
@@ -192,18 +192,18 @@ export const SALTSTEP_PONTOON: MapDef = {
    * beside it, (13,4); the barge is the open water off the east edge, where the sling is heading.
    */
   rows: [
-    'WWWWWWWWWWWWWWWWWWWW',
-    'WWWwwwwwwwwwwwwWWWWW',
-    'WWwwwwcwwwwwwwwwwWWW',
-    'Wwwwwwcwwwwwwwbbwwww',
-    'Wwwwwwwwwwwwwwbbwwww',
-    'WwwwwwwwwwwwwwwwwwWW',
-    'WwwwwwwwwwwwwwwwwwWW',
-    'WwwwwcwwwwwwwwwwwwWW',
-    'WwwwwcwwwwwwwwwwwWWW',
-    'WWwwwwwwwwwwwwwwWWWW',
-    'WWWwwwwwwwwwwwwWWWWW',
-    'WWWWWWWWWWWWWWWWWWWW',
+    'WWWWWWWWWWWWWWWWWWW',
+    'WWWwwwwwwwwwwwwWWWW',
+    'WWwwwwcwwwwwwwwwwWW',
+    'Wwwwwwcwwwwwwwbbwww',
+    'Wwwwwwwwwwwwwwbbwww',
+    'WwwwwwwwwwwwwwwwwwW',
+    'WwwwwwwwwwwwwwwwwwW',
+    'WwwwwcwwwwwwwwwwwwW',
+    'WwwwwcwwwwwwwwwwwWW',
+    'WWwwwwwwwwwwwwwwWWW',
+    'WWWwwwwwwwwwwwwWWWW',
+    'WWWWWWWWWWWWWWWWWWW',
   ].map((row) => row.replace(/b/g, 'B')),
   partySpawns: COMBAT_PARTY_SPAWNS,
   npcs: [],
@@ -296,7 +296,7 @@ export const EMBERWATCH_POWER_YARD: MapDef = {
   projection: 'topdown',
   name: 'The Power Yard',
   kind: 'combat',
-  width: 20,
+  width: 19,
   height: 12,
   ambience: 'quarry',
   legend: LEGEND,
@@ -311,18 +311,18 @@ export const EMBERWATCH_POWER_YARD: MapDef = {
    * are ordinary water, so lightning on them shocks as it does on the Forest Road.
    */
   rows: [
-    '####################',
-    '#FFFFFFFFFFFFFFFWWW#',
-    '#.....~~~~~~....WWW#',
-    '#....~~~~~~~~~...~~#',
-    '#.....~~~~~~~.....F#',
-    '=..........~~.....F#',
-    '=.................F#',
-    '#.........~~~.....F#',
-    '#........~~~~~....F#',
-    '#.................##',
-    '#..................#',
-    '####################',
+    '###################',
+    '#FFFFFFFFFFFFFFWWW#',
+    '#....~~~~~~....WWW#',
+    '#...~~~~~~~~~...~~#',
+    '#....~~~~~~~.....F#',
+    '=.........~~.....F#',
+    '=................F#',
+    '#........~~~.....F#',
+    '#.......~~~~~....F#',
+    '#................##',
+    '#.................#',
+    '###################',
   ],
   partySpawns: COMBAT_PARTY_SPAWNS,
   objective: 'The power yard. Luli keeps the line here.',
@@ -341,7 +341,7 @@ export const EMBERWATCH_POWER_YARD: MapDef = {
     {
       id: 'mq03_luli',
       name: 'Luli',
-      pos: { x: 4, y: 9 },
+      pos: { x: 3, y: 9 },
       sprite: PLACEHOLDER_SPRITE.luli,
       node: 'mq03_luli',
     },
@@ -349,7 +349,7 @@ export const EMBERWATCH_POWER_YARD: MapDef = {
       // SF-2.1, optional: the riggers are at the dead spur until the fight is over.
       id: 'sf21_sabi',
       name: 'Sabi',
-      pos: { x: 17, y: 6 },
+      pos: { x: 16, y: 6 },
       sprite: PLACEHOLDER_SPRITE.sabi,
       node: 'sf21_wet_ground',
       when: { kind: 'not', of: { kind: 'visited', nodeId: 'sf21_wet_ground' } },
