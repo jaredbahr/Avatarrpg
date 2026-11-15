@@ -76,3 +76,40 @@ test('Carry on follows the Forest Road defeat branch', async ({ page }) => {
     'defeat_forest',
   );
 });
+
+test('Carry on after the Driller goes home to occupied Ba Dan, not to a game over', async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await resetStorage(page, '?renderer=canvas');
+  await startGame(page, ['Ana'], ['kaya'], 'defeat-choice-driller');
+  await enterNode(page, 'battle_grumbler');
+  await page.waitForFunction(() => window.fnt?.app.state?.battle?.phase === 'active');
+  await waitForIdle(page);
+  await loseTheFight(page);
+
+  await page.locator('.result-panel').getByRole('button', { name: 'Carry on' }).click();
+  await page.waitForFunction(() => window.fnt?.app.state?.screen === 'dialogue');
+  // The escape, the night at Mira's table and the morning cart (C-02, C-16, C-32).
+  await page.evaluate(() => {
+    const app = window.fnt!.app;
+    for (let step = 0; step < 60 && app.state?.screen === 'dialogue'; step++)
+      app.dispatch({ type: 'advanceDialogue' });
+  });
+  const state = await page.evaluate(() => window.fnt!.app.state!);
+  expect(state.screen).toBe('ended');
+  expect(state.story.nodeId).toBe('act1_epilogue_lost');
+  expect(state.story.visited).toContain('lost_home_pella');
+  expect(state.flags.act1_lost).toBe(true);
+
+  await page.getByRole('button', { name: 'Read summary' }).click();
+  await expect(
+    page.getByRole('heading', { name: 'The Quarry Keeps Running', exact: true }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Continue exploring', exact: true }).click();
+  await expect(page.locator('.explore-scene')).toBeVisible();
+  const roam = await page.evaluate(() => window.fnt!.app.state!);
+  expect(roam.story.nodeId).toBe('village_explore');
+  expect(roam.location.mapId).toBe('ba_dan_village');
+  await expect(page.getByText('The quarry is still held.', { exact: false }).first()).toBeVisible();
+});

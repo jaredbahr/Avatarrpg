@@ -20,21 +20,21 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 
 ```mermaid
 flowchart TD
-  n142["riverside_dorin<br/>Dorin: I'm working on my footing. I keep doing well on the dry …"]:::entry
-  n143["riverside_explore<br/>Explore ba_dan_riverside: Take your time. Meet the neighbors, c…"]:::entry
-  n144["riverside_invitation<br/>Riverside path: “To the river.” An arrow points down the path."]:::entry
-  n145["riverside_mira<br/>Elder Mira: You found me. Sit down. That end of the bench is dr…"]:::entry
-  n147["riverside_pella<br/>Pella: I have to stay where Mira can see me. That is why I am s…"]:::entry
-  n148["riverside_shrine<br/>The riverside shrine: Fresh flowers stand in a chipped jar besi…"]:::entry
-  n149["riverside_shrine_found<br/>Set flags"]
-  n196["village_explore — exit to act1 / part 1"]:::external
-  n142 -->|"Next"| n143
-  n143 -->|"Legacy/audit exit (live map exits differ)"| n196
-  n144 -->|"Next"| n143
-  n145 -->|"Next"| n143
-  n147 -->|"Next"| n143
-  n148 -->|"Next"| n149
-  n149 -->|"set: riverside_shrine_found=true"| n143
+  n163["riverside_dorin<br/>Dorin: I'm working on my footing. I keep doing well on the dry …"]:::entry
+  n164["riverside_explore<br/>Explore ba_dan_riverside: Take your time. Meet the neighbors, c…"]:::entry
+  n165["riverside_invitation<br/>Riverside path: “To the river.” An arrow points down the path."]:::entry
+  n166["riverside_mira<br/>Elder Mira: You found me. Sit down. That end of the bench is dr…"]:::entry
+  n168["riverside_pella<br/>Pella: I have to stay where Mira can see me. That is why I am s…"]:::entry
+  n169["riverside_shrine<br/>The riverside shrine: Fresh flowers stand in a chipped jar besi…"]:::entry
+  n170["riverside_shrine_found<br/>Set flags"]
+  n218["village_explore — exit to act1 / part 1"]:::external
+  n163 -->|"Next"| n164
+  n164 -->|"Legacy/audit exit (live map exits differ)"| n218
+  n165 -->|"Next"| n164
+  n166 -->|"Next"| n164
+  n168 -->|"Next"| n164
+  n169 -->|"Next"| n170
+  n170 -->|"set: riverside_shrine_found=true"| n164
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5
