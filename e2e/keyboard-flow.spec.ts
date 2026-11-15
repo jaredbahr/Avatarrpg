@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { CONTENT } from '../src/content';
-import { resetStorage } from './helpers';
+import { resetStorage, waitForIdle } from './helpers';
 
 async function expectVisibleFocus(target: Locator): Promise<void> {
   await expect(target).toBeFocused();
@@ -137,7 +137,11 @@ test('the opening route uses the keyboard from title to a conversation on the Fo
     .poll(() => page.evaluate(() => window.fnt?.app.state?.location.mapId))
     .toBe('forest_road');
   // Wait for the actual board arrival before asking to talk. Scene state
-  // can name the next map while the animated village exit is still playing.
+  // can name the next map while the animated village exit is still playing:
+  // from Gao to the east road that walk is about nine seconds of playback
+  // (measured), so wait for the playback to end rather than racing it with
+  // the 10 s assertion default, which CI's WebKit lost.
+  await waitForIdle(page);
   await expect(page.locator('.title-plate-name')).toHaveText('The Forest Road');
   await expect(page.locator('canvas.map-canvas')).toHaveAttribute(
     'aria-label',
