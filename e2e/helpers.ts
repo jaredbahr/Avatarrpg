@@ -113,6 +113,48 @@ export async function webglAvailable(page: Page): Promise<boolean> {
   });
 }
 
+/**
+ * Turns the wheel over `target`, as a mouse or trackpad would.
+ *
+ * Playwright has no wheel input for mobile WebKit (the iPad projects): there
+ * `mouse.wheel` throws. A finger scrolls the same box a wheel would, the
+ * nearest one under the pointer that can still move that way, so on that
+ * engine the helper moves that box by the same distance. A spec that scrolls to
+ * read or reach something keeps its own checks on what is then visible and
+ * hit-testable; this only supplies the scroll. Four specs each grew their own
+ * copy of this fallback, one failure at a time, and `reward-card-layout` had
+ * none.
+ *
+ * `at` is a page point for the pointer; the default is the middle of `target`.
+ */
+export async function wheelOver(
+  page: Page,
+  target: Locator,
+  deltaY: number,
+  at?: { x: number; y: number },
+): Promise<void> {
+  if (at) await page.mouse.move(at.x, at.y);
+  else await target.hover();
+  try {
+    await page.mouse.wheel(0, deltaY);
+    return;
+  } catch (error) {
+    if (!(error instanceof Error) || !/not supported in mobile WebKit/i.test(error.message))
+      throw error;
+  }
+  await target.evaluate((element, dy) => {
+    const canMove = (box: Element): boolean => {
+      const overflow = getComputedStyle(box).overflowY;
+      if (overflow !== 'auto' && overflow !== 'scroll') return false;
+      const room = box.scrollHeight - box.clientHeight;
+      return dy > 0 ? box.scrollTop < room - 1 : box.scrollTop > 0;
+    };
+    let box: Element | null = element;
+    while (box && !canMove(box)) box = box.parentElement;
+    (box ?? document.scrollingElement ?? document.documentElement).scrollBy(0, dy);
+  }, deltaY);
+}
+
 export interface StartOptions {
   /**
    * Reduce motion is on by default here: the suite tests rules and UI, not

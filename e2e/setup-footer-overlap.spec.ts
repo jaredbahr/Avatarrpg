@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
-import { resetStorage, setLargeText } from './helpers';
+import { resetStorage, setLargeText, wheelOver } from './helpers';
 import type { LargeText } from './helpers';
 
 // #492's bounded setup regression. Recovery Tabs intentionally accommodate
@@ -79,8 +79,6 @@ for (const viewport of [
     test.use({ viewport: viewport.size });
     for (const size of ['off', 'on', 'huge'] satisfies LargeText[]) {
       test(`focused final path keeps its stats clear of the footer at ${size} text`, async ({
-        browserName,
-        isMobile,
         page,
       }, info) => {
         await resetStorage(page, '?renderer=canvas');
@@ -110,14 +108,8 @@ for (const viewport of [
         // Keep ordinary manual scrolling functional, including the longer selected
         // description below the cards. Intersection alone would miss an overlay.
         const panel = page.locator('.setup-panel');
-        if (browserName === 'webkit' && isMobile) {
-          // Mobile WebKit does not support Playwright wheel input.
-          await expect(panel).toHaveCSS('overflow-y', /^(auto|scroll)$/);
-          await panel.evaluate((element) => element.scrollTo(0, element.scrollHeight));
-        } else {
-          await panel.hover();
-          await page.mouse.wheel(0, 5000);
-        }
+        await expect(panel).toHaveCSS('overflow-y', /^(auto|scroll)$/);
+        await wheelOver(page, panel, 5000);
         await expect
           .poll(() =>
             panel.evaluate(
