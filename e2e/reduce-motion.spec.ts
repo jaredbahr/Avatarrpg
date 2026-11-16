@@ -58,17 +58,27 @@ const preferences = [
 ] as const;
 const reducedPreferences = preferences.filter(({ reduced }) => reduced);
 
-test('OS reduced motion snaps transitions before app preferences load', async ({ page }) => {
+test('OS reduced motion applies before app preferences load', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' });
-  await page.setContent('<main><p style="transition: font-size 240ms">Preview</p></main>');
+  await page.setContent(`
+    <style>@keyframes motion-probe { from { opacity: 1; } to { opacity: 0.9; } }</style>
+    <main>
+      <p style="transition: font-size 240ms; animation: motion-probe 480ms infinite">Preview</p>
+    </main>
+  `);
+  await page.addStyleTag({
+    content: await readFile(new URL('../src/styles/base.css', import.meta.url), 'utf8'),
+  });
   await page.addStyleTag({
     content: await readFile(new URL('../src/styles/a11y.css', import.meta.url), 'utf8'),
   });
   const text = page.getByText('Preview', { exact: true });
   await expect(text).toHaveCSS('transition-duration', '0.24s');
+  await expect(text).toHaveCSS('animation-duration', '0.48s');
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await expect(text).toHaveCSS('transition-duration', '0s');
+  await expect(text).toHaveCSS('animation-duration', '0.001s');
 });
 
 const boards = [
