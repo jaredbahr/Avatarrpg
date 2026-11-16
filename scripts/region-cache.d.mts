@@ -1,8 +1,4 @@
 import type { RegionManifest } from '../src/content/regions';
-export declare function laterRegions(
-  regions: readonly RegionManifest[],
-  startId: string,
-): RegionManifest[];
 export declare function laterRegionIgnores(
   regions: readonly RegionManifest[],
   startId: string,

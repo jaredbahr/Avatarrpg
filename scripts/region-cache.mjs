@@ -22,7 +22,7 @@ const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
  * new game runs; left to the runtime cache, the demo itself would not start offline after an
  * update cleared that cache (ADR 0111 §3, amended 2026-11-15 for RG-02).
  */
-export function laterRegions(regions, startId) {
+function laterRegions(regions, startId) {
   const start = regions.find((region) => region.id === startId);
   const needed = new Set([startId, ...(start?.neighbours ?? [])]);
   return regions.filter((region) => !needed.has(region.id));
