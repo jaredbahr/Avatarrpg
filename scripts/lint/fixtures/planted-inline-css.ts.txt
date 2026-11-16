@@ -1,0 +1,12 @@
+const inline = target.style;
+const length = `${viewportHeight}px`;
+inline.setProperty('--height', length);
+target['style']['color'] = 'red';
+const style = { border: '1px solid var(--c-line)' };
+el('div', { style });
+Object.assign(target.style, { width: '4' + 'px' });
+target.style.cssText = 'margin: 3px; color: var(--c-ink);';
+target.setAttribute('style', 'fill: blue;');
+const markup = `<span style="padding:5px">example</span>`;
+target.style.background = 'transparent';
+const ordinaryCopy = 'Use 90px and orange in the example';

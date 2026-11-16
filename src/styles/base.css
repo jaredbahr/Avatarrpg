@@ -5,14 +5,9 @@
  * --ui-scale, so the "Large text" setting scales the entire HUD (including the
  * 48px minimum touch targets) with one variable instead of a media query.
  *
- * Colour rules: every colour the UI uses is a token in :root. Nothing outside
- * this block writes a hex literal, so the art bible can be checked against one
- * list and a recolour is one edit here plus its mirror in
+ * UI colour literals belong in :root. Keep shared palette values aligned with
  * src/render/palettes.ts (the canvas cannot read custom properties per frame).
- * Alpha tints of a palette colour are derived with color-mix() rather than kept
- * as a parallel set of rgb triplets, which would be a fourth copy of the
- * palette to drift. Only scrims and shadows are plain black-alpha literals:
- * they are not palette colours.
+ * Derive alpha tints with color-mix() so they still follow their source colour.
  */
 
 :root {
@@ -31,7 +26,8 @@
   --c-panel-raised: #faf4e6;
   --c-paper-light: #fffdf6;
   --c-ink: #2b1d15;
-  --c-ink-dim: #5c4636;
+  --c-ink-dim-normal: #5c4636;
+  --c-ink-dim: var(--c-ink-dim-normal);
   --c-ink-faint: #8a6f55;
   --c-line: #b79b73;
   /* The outline every surface is drawn with: the art bible's brown ink, never black. */
@@ -41,6 +37,14 @@
   --c-gold-deep: #7d5a1c;
   --c-gold-hi: #e9c46a;
   --c-ink-on-gold: #241703;
+  --c-black: #000;
+  --c-white: #fff;
+
+  /* Overrides for the high-contrast setting. */
+  --c-line-contrast: #6b4f33;
+  --c-ink-dim-contrast: #3a2a1f;
+  --c-panel-contrast: #fbf6ea;
+  --c-ink-line-contrast: #2a1a10;
 
   /* Nation palettes. Used by the renderer and by UI accents alike. */
   --c-fire: #d1462f;
@@ -93,6 +97,7 @@
   --inset-edge: inset 0 0 0 1px var(--gold-hair), inset 0 1px 0 var(--paper-hair);
 
   /* Type scale. Seven steps; nothing outside this file picks its own size. */
+  --fs-root: 16px;
   --fs-xs: 0.75rem;
   --fs-sm: 0.85rem;
   --fs-md: 1rem;
@@ -114,6 +119,7 @@
 
   --radius: 0.5rem;
   --radius-lg: 1rem;
+  --radius-pill: 999px;
 
   /* The left-edge accent bar: element rows, status rows, reaction notes. In
      rem so it thickens with the Large-text setting instead of thinning into a
@@ -125,7 +131,15 @@
 
   /* Decorative edges are the one thing that must *not* scale with Large text:
      a 1.5px outline beside 24px type is a smudge. px on purpose. */
-  --hairline: 1px;
+  --stroke-pixel: 1px;
+  --stroke-bold: 2px;
+  --stroke-focus: 3px;
+  --stroke-emphasis: 4px;
+  --hairline: var(--stroke-pixel);
+  /* These fixed dimensions keep their current sizes at every text scale. */
+  --focus-ring-space: calc(var(--stroke-bold) + var(--stroke-focus));
+  --npc-label-gap: 6px;
+  --objective-pointer-max: 62px;
 
   /* Minimum touch target. The e2e suite asserts every action button meets it. */
   --tap: 3rem; /* 48px at --ui-scale: 1 */
@@ -146,11 +160,18 @@
   --dur-drift: 48s;
   /* The title art's cross-fade: slow on purpose, and read by TitleArtRotator. */
   --dur-title-fade: 1500ms;
+  /* Reduce motion preserves a single animation frame and snaps transitions. */
+  --dur-reduced-animation: 1ms;
+  --dur-snap: 0s;
   --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
   --ease-ink: cubic-bezier(0.65, 0, 0.35, 1);
 
   /* Stacking, bottom to top. */
+  --z-title-glow: -1;
   --z-panel-footer: 1;
+  --z-stage-head: 1;
+  --z-interlude-caption: 1;
+  --z-interlude-bar: 2;
   --z-banner: 20;
   /* Under the dialog overlay: a toast never covers an open sheet. */
   --z-toast: 30;
@@ -189,7 +210,7 @@
 }
 
 html {
-  font-size: calc(16px * var(--ui-scale));
+  font-size: calc(var(--fs-root) * var(--ui-scale));
   height: 100%;
 }
 
@@ -290,7 +311,7 @@ button {
   border: var(--hairline) solid var(--c-line);
   border-radius: var(--radius);
   background-color: var(--surface-1);
-  box-shadow: inset 0 1px 0 var(--paper-hair);
+  box-shadow: inset 0 var(--stroke-pixel) 0 var(--paper-hair);
   transition:
     background-color calc(var(--dur-fast) * var(--motion-scale)) var(--ease-out),
     border-color calc(var(--dur-fast) * var(--motion-scale)) var(--ease-out),
@@ -322,8 +343,8 @@ button:disabled {
 
 button:focus-visible,
 [tabindex]:focus-visible {
-  outline: 3px solid var(--c-gold-deep);
-  outline-offset: 2px;
+  outline: var(--stroke-focus) solid var(--c-gold-deep);
+  outline-offset: var(--stroke-bold);
 }
 
 .btn-primary {
@@ -333,8 +354,8 @@ button:focus-visible,
   color: var(--c-ink-on-gold);
   font-weight: 700;
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 35%),
-    inset 0 0 0 1px color-mix(in srgb, var(--c-gold-soft) 60%, transparent),
+    inset 0 var(--stroke-pixel) 0 color-mix(in srgb, var(--c-white) 35%, transparent),
+    inset 0 0 0 var(--stroke-pixel) color-mix(in srgb, var(--c-gold-soft) 60%, transparent),
     var(--shadow-1);
 }
 
@@ -361,7 +382,7 @@ button:focus-visible,
     var(--c-ok)
   );
   color: var(--c-paper-light);
-  text-shadow: 0 1px 0 rgb(0 0 0 / 25%);
+  text-shadow: 0 var(--stroke-pixel) 0 color-mix(in srgb, var(--c-black) 25%, transparent);
 }
 .btn-ok:hover:not(:disabled) {
   background-color: var(--c-ok);
@@ -502,9 +523,9 @@ canvas {
 
 .visually-hidden {
   position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
+  width: var(--stroke-pixel);
+  height: var(--stroke-pixel);
+  margin: calc(-1 * var(--stroke-pixel));
   padding: 0;
   overflow: hidden;
   clip: rect(0 0 0 0);

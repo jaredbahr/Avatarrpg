@@ -1,0 +1,21 @@
+/* A selector, a URL, quoted copy and a zero-length fallback are legitimate. */
+#abc {
+  content: "red 20px #fff";
+  background-image: url(https://example.invalid/2px/#abc);
+  inset: env(safe-area-inset-left, 0px);
+  animation-name: coral;
+  color: currentColor;
+}
+:root {
+  --not-a-root-token: #f320;
+}
+@media (min-width: 480px) {
+  .planted {
+    background: linear-gradient(rebeccapurple, var(--c-ink));
+    color: RGB(10 20 30 / 50%);
+    border-color: hsl(10 20% 50%);
+    width: calc(50% - 1.5PX);
+    z-index: var(--z-overlay, 4);
+    transition: opacity 0s cubic-bezier(0, 0, 1, 1);
+  }
+}
