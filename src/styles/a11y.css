@@ -29,9 +29,9 @@ html[data-reduce-motion='on'] {
 html[data-reduce-motion='on'] *,
 html[data-reduce-motion='on'] *::before,
 html[data-reduce-motion='on'] *::after {
-  animation-duration: 1ms !important;
+  animation-duration: var(--dur-reduced-animation) !important;
   animation-iteration-count: 1 !important;
-  transition-duration: 0s !important;
+  transition-duration: var(--dur-snap) !important;
   scroll-behavior: auto !important;
 }
 
@@ -48,9 +48,9 @@ html[data-reduce-motion='on'] .backdrop-wash {
   *,
   *::before,
   *::after {
-    animation-duration: 1ms !important;
+    animation-duration: var(--dur-reduced-animation) !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0s !important;
+    transition-duration: var(--dur-snap) !important;
     scroll-behavior: auto !important;
   }
 
@@ -68,14 +68,14 @@ html[data-reduce-motion='on'] .backdrop-wash {
 /* High-contrast panel edges for the tablet in bright light: darker lines on
    whiter paper, a thicker outline, and no paper grain behind the text. */
 html[data-contrast='high'] {
-  --c-line: #6b4f33;
-  --c-ink-dim: #3a2a1f;
-  --c-ink-faint: #5c4636;
-  --c-panel: #fbf6ea;
-  --c-ink-line: #2a1a10;
+  --c-line: var(--c-line-contrast);
+  --c-ink-dim: var(--c-ink-dim-contrast);
+  --c-ink-faint: var(--c-ink-dim-normal);
+  --c-panel: var(--c-panel-contrast);
+  --c-ink-line: var(--c-ink-line-contrast);
   --gold-hair: color-mix(in srgb, var(--c-gold) 45%, transparent);
-  --surface-1: #fffdf6;
-  --hairline: 2px;
+  --surface-1: var(--c-paper-light);
+  --hairline: var(--stroke-bold);
   --tex-grain: none;
   --wash-alpha: 0;
 }

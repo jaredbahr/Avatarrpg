@@ -2,7 +2,7 @@
 .interlude-scene > .top-bar {
   position: absolute;
   inset: 0 0 auto;
-  z-index: 2;
+  z-index: var(--z-interlude-bar);
   color: var(--c-paper-light);
   background: linear-gradient(180deg, var(--scrim-strong), transparent);
 }
@@ -126,7 +126,7 @@
 
 .interlude-caption {
   position: absolute;
-  z-index: 1;
+  z-index: var(--z-interlude-caption);
   inset: auto max(var(--sp-4), env(safe-area-inset-right, 0rem))
     max(var(--sp-4), env(safe-area-inset-bottom, 0rem))
     max(var(--sp-4), env(safe-area-inset-left, 0rem));
