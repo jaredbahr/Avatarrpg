@@ -37979,6 +37979,717 @@
     "object_id": "b84baf3f-ff9b-434f-8334-8cc03b087d10"
    },
    "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_ek_stall_green_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "dbf1ee60-af45-4bbe-b2ee-e36204842bb0",
+   "status": "completed",
+   "settings": {
+    "description": "a small Earth Kingdom market stall as in the Avatar animated style, an outer Ear...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 64,
+     "height": 64
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 5065.0654640625,
+   "balance_after": 5060.0654640625,
+   "secs": 31,
+   "notes": "",
+   "ids": {
+    "background_job_id": "dbf1ee60-af45-4bbe-b2ee-e36204842bb0",
+    "object_id": "f302af16-3093-44c5-815f-b5e6b01eba58"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_ek_stall_parasol_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "1699bc37-3dc0-44db-b1f5-bcf3ba8e68f6",
+   "status": "completed",
+   "settings": {
+    "description": "a small Earth Kingdom market stall as in the Avatar animated style, an outer Ear...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 64,
+     "height": 64
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 5060.0654640625,
+   "balance_after": 5055.0654640625,
+   "secs": 34,
+   "notes": "",
+   "ids": {
+    "background_job_id": "1699bc37-3dc0-44db-b1f5-bcf3ba8e68f6",
+    "object_id": "1b522962-5202-47c9-b5d9-c83b88ad222a"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_fish_crates_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "8a7a7f82-2e16-4551-b533-5add1c6449db",
+   "status": "completed",
+   "settings": {
+    "description": "a low stack of three open wooden fish crates brimming with silver fish and chipp...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 5055.0654640625,
+   "balance_after": 5050.0654640625,
+   "secs": 37,
+   "notes": "",
+   "ids": {
+    "background_job_id": "8a7a7f82-2e16-4551-b533-5add1c6449db",
+    "object_id": "a1d7d5be-7b35-46f2-b7e3-528a3119a1e4"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_fish_hang_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "51d3f309-0699-460c-95f5-2d7dea6d0b55",
+   "status": "completed",
+   "settings": {
+    "description": "a bamboo A-frame hung with strings of dried salted fish and dried squid, as in t...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 56,
+     "height": 56
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 14.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 5050.0654640625,
+   "balance_after": 5036.0654640625,
+   "secs": 30,
+   "notes": "",
+   "ids": {
+    "background_job_id": "51d3f309-0699-460c-95f5-2d7dea6d0b55",
+    "object_id": "9e30f0ba-30c0-4c45-8c51-1ee6a08a9276"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_ek_cart_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "3fea0034-f2d2-4c1a-8ac4-f41cb4ce12ef",
+   "status": "completed",
+   "settings": {
+    "description": "a two-wheeled Earth Kingdom merchant handcart as in the Avatar animated style, a...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 64,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 5036.0654640625,
+   "balance_after": 5031.0654640625,
+   "secs": 31,
+   "notes": "",
+   "ids": {
+    "background_job_id": "3fea0034-f2d2-4c1a-8ac4-f41cb4ce12ef",
+    "object_id": "6823f1b5-b1e0-447e-bab7-862f9bdb1785"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_clay_jars_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "f1dfd517-7aa0-4342-b588-8d530a1bb63e",
+   "status": "completed",
+   "settings": {
+    "description": "three big glazed brown clay storage jars with round wooden lids tied down with c...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 5031.0654640625,
+   "balance_after": 5026.0654640625,
+   "secs": 19,
+   "notes": "",
+   "ids": {
+    "background_job_id": "f1dfd517-7aa0-4342-b588-8d530a1bb63e",
+    "object_id": "82a18bf0-e4d5-4832-bfe3-a662f5425c1e"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_basket_tower_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "f7ecb08f-7101-498b-ba07-3447ef3c67ac",
+   "status": "completed",
+   "settings": {
+    "description": "a tall leaning stack of round woven bamboo baskets, a few holding silver fish an...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 52
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 5026.0654640625,
+   "balance_after": 5021.0654640625,
+   "secs": 20,
+   "notes": "",
+   "ids": {
+    "background_job_id": "f7ecb08f-7101-498b-ba07-3447ef3c67ac",
+    "object_id": "1051bd15-bc47-4ad2-8748-e3db8bcf71f0"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_lantern_post_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "7166279b-7299-4bb8-9edf-681c73729959",
+   "status": "completed",
+   "settings": {
+    "description": "a tall bamboo market lantern post as in the Avatar animated style, an outer Eart...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 72
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 14.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 5021.0654640625,
+   "balance_after": 5007.0654640625,
+   "secs": 25,
+   "notes": "",
+   "ids": {
+    "background_job_id": "7166279b-7299-4bb8-9edf-681c73729959",
+    "object_id": "08c8e169-5fea-4636-baef-897649246163"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_fish_mat_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "f4214e79-9335-42d2-bdc6-8d93c61a75de",
+   "status": "completed",
+   "settings": {
+    "description": "a woven reed mat lying completely flat on the ground, rows of silver fish and a ...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 64,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 5007.0654640625,
+   "balance_after": 5002.0654640625,
+   "secs": 31,
+   "notes": "",
+   "ids": {
+    "background_job_id": "f4214e79-9335-42d2-bdc6-8d93c61a75de",
+    "object_id": "087cc2ee-83de-4392-991c-e97865771184"
+   },
+   "region": "saltstep_emberwatch"
   }
  ],
  "end_balance": 16728.0,
