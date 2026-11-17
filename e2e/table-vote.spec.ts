@@ -80,19 +80,22 @@ test('three players vote 2-1, then a 1-1-1 tie goes to the decider', async ({ pa
   expect((await story(page)).deciderIndex).toBe(1);
 
   // Ben decides now, so Ben votes first and breaks the tie.
-  await enterNode(page, 'plant_chair_talk');
+  await enterNode(page, 'sq01_choice');
   await expect(panel.locator('.vote-banner')).toContainText('A tie goes to Ben.');
-  await vote(page, 'Ben', 'Admire the plant');
+  await vote(page, 'Ben', 'Send it home to Ba Dan');
   await handOff(page, 'Cleo');
-  await vote(page, 'Cleo', 'Ask about the puzzle box');
+  await vote(page, 'Cleo', 'Keep some for the trapped crews');
   await handOff(page, 'Ava');
-  await vote(page, 'Ava', 'Just sit', true);
+  await vote(page, 'Ava', 'Hide it all to bargain with', true);
   await expect(panel).toHaveAttribute('data-vote', 'tie');
   await expect(panel.locator('.vote-banner')).toContainText("It's a tie!");
   await expect(panel.locator('.vote-banner')).toContainText('Ben picks between the tied answers.');
   await expect(panel.locator('.choice-option.is-tied')).toHaveCount(3);
   const tieBefore = await page.evaluate(() => window.fnt!.app.state!);
-  await panel.locator('.choice-option').filter({ hasText: 'Ask about the puzzle box' }).click();
+  await panel
+    .locator('.choice-option')
+    .filter({ hasText: 'Keep some for the trapped crews' })
+    .click();
   const tieExpected = apply(CONTENT, tieBefore, { type: 'chooseOption', optionIndex: 1 }).state;
   expect(await story(page)).toEqual(tieExpected.story);
   expect((await story(page)).deciderIndex).toBe(2);
@@ -112,4 +115,24 @@ test('a single player skips the vote and chooses at once', async ({ page }) => {
   await panel.locator('.choice-option').filter({ hasText: 'Just sit' }).click();
   const expected = apply(CONTENT, before, { type: 'chooseOption', optionIndex: 2 }).state;
   expect(await story(page)).toEqual(expected.story);
+});
+
+test("a plain reply is the player in charge's alone, with no vote", async ({ page }) => {
+  await resetStorage(page, '?renderer=canvas');
+  await startGame(page, ['Ava', 'Ben', 'Cleo'], ['kaya', 'nilak', 'riko'], 'table-vote-reply', {
+    storyChoices: 'vote',
+  });
+  // Nothing here sets a flag or leads anywhere new, so nobody votes.
+  await enterNode(page, 'plant_chair_talk');
+  const panel = page.locator('.choice-panel');
+  await expect(panel).toBeVisible();
+  await expect(panel).not.toHaveAttribute('data-vote');
+  await expect(panel.locator('.vote-banner')).toHaveCount(0);
+  await expect(panel.locator('.decider-banner')).toContainText('the player in charge answers');
+  await expect(panel.locator('.decider-banner strong')).toHaveText('Ava');
+  const before = await page.evaluate(() => window.fnt!.app.state!);
+  await panel.locator('.choice-option').filter({ hasText: 'Just sit' }).click();
+  const expected = apply(CONTENT, before, { type: 'chooseOption', optionIndex: 2 }).state;
+  expect(await story(page)).toEqual(expected.story);
+  expect((await story(page)).deciderIndex).toBe(1);
 });

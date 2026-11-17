@@ -3987,6 +3987,11 @@ html[data-contrast='high'] .hud-panel::after {
   align-items: center;
   gap: var(--sp-4);
 }
+.explore-context .in-charge {
+  color: var(--c-gold-deep);
+  font-weight: 700;
+}
+
 .explore-context {
   display: flex;
   flex: 1 1 10rem;

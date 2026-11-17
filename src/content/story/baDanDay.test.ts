@@ -237,6 +237,8 @@ describe('a Ba Dan day: where and when each new conversation opens', () => {
           return node.options.map((option) => option.next);
         case 'branch':
           return [node.ifSet, node.ifUnset];
+        case 'branchWhen':
+          return [node.ifTrue, node.ifFalse];
         default:
           return [];
       }
