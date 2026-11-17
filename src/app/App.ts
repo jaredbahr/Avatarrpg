@@ -960,6 +960,18 @@ export class App {
         announce(event.label);
       }
       if (event.type === 'message') this.toasts.show(event.text);
+      if (event.type === 'leaderPassed' && this.state && !this.session.solo) {
+        // A shared tablet: say plainly who has the say now, once the walk has landed.
+        const name = this.session.decider(this.state)?.name;
+        if (name) {
+          const text = `${name} is in charge now`;
+          announce(text);
+          window.setTimeout(
+            () => this.toasts.show(text, 'info', 4500),
+            Math.max(0, this.animator.finishesAt - performance.now()),
+          );
+        }
+      }
       if (event.type === 'comboDiscovered') {
         const rule = this.content.combos.find((candidate) => candidate.id === event.comboId);
         if (!rule) continue;
