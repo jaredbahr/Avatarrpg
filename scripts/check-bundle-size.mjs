@@ -16,7 +16,9 @@ import { fileURLToPath } from 'node:url';
 // ADR 0094 had set 380 (2026-10-28); ADR 0074 had raised it to 360, ADR 0066 from 320 to 350.
 // ADR 0111 §4 (accepted by the owner, 2026-11-14): since regions load on demand, 410 is what one session
 // holds at most, the boot JS plus the largest region chunk, and each region chunk has its own cap.
-const BUDGET_KB = 410;
+// ADR 0111 amendment (450, owner, 2026-11-17): main reached 410 with the #846 playtest fixes still to land;
+// the owner chose headroom for the next regions over trimming first.
+const BUDGET_KB = 450;
 const REGION_CHUNK_BUDGET_KB = 40;
 const dist = resolve(dirname(fileURLToPath(import.meta.url)), '../dist');
 
