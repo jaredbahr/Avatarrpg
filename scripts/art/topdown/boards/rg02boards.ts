@@ -30,6 +30,9 @@ export const RG02_BOARDS: readonly TopDownBoard[] = [
       paths: [
         ...span(0, 20, 5, 6),
         ...span(2, 21, 3, 3),
+        ...span(1, 3, 1, 2),
+        ...span(10, 10, 1, 2),
+        ...span(20, 21, 1, 2),
         ...span(3, 3, 4, 7),
         ...span(11, 11, 4, 7),
         ...span(15, 15, 4, 7),

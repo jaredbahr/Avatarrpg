@@ -19,21 +19,21 @@ Saltstep, a market town built out over a grey bay.
 24 columns by 16 rows, counted from 0 at the top-left corner. The painting is the ground and what stands on it, nothing else: the game draws its own grid, movement contours, units, props and effects over it, so every edge in the painting that matters to the rules sits exactly on a tile edge.
 
 - Road (4 tiles): a 2×2 block at columns 0–1, rows 5–6 (middle left).
-- Trees (54 tiles): 53 tiles (top centre), row 0: columns 0–23; row 1: columns 0–2, 4, 9–13 and 19–23; row 2: columns 0, 2, 10, 12, 20 and 22–23; row 3: columns 0 and 23; row 4: columns 0 and 22–23; rows 5–7: column 23; one tile at column 0, row 7 (middle left).
+- Trees (49 tiles): 45 tiles (top centre), row 0: columns 0–23; row 1: columns 0, 4, 9, 11–13, 19 and 21–23; row 2: columns 0, 12 and 23; row 3: columns 0 and 23; row 4: columns 0 and 22–23; rows 5–7: column 23; one tile at column 2, row 2 (top left); one tile at column 10, row 2 (top centre); one tile at column 20, row 2 (top right); one tile at column 0, row 7 (middle left).
 - Timber walls (21 tiles): a 5×2 block at columns 14–18, rows 1–2 (top right); a 4×2 block at columns 5–8, rows 1–2 (top left); one tile at column 5, row 10 (middle left); one tile at column 18, row 10 (middle right); one tile at column 12, row 13 (bottom centre).
 - Barred timber gates (5 tiles): a 2×1 block at columns 19–20, row 8 (middle right); a 2×1 block at columns 5–6, row 9 (middle left); one tile at column 12, row 8 (the centre).
 - Stone walls (164 tiles): 152 tiles (bottom centre), row 7: columns 6–9 and 14; row 8: columns 0–2, 7–9, 14 and 23; row 9: columns 0–2, 7–9, 14, 17 and 22–23; row 10: columns 0–3, 6–10, 13–15, 17 and 21–23; row 11: columns 0–10, 13–15 and 17–23; rows 12–13: columns 0–10 and 13–23; rows 14–15: columns 0–23; a 2×1 block at columns 10–11, row 4 (top centre); a 2×1 block at columns 18–19, row 4 (top right); a 1×2 block at column 16, rows 7–8 (middle right); one tile at column 8, row 4 (top centre); one tile at column 13, row 4 (top centre); one tile at column 21, row 4 (top right); one tile at column 4, row 7 (middle left); one tile at column 12, row 7 (the centre); one tile at column 20, row 7 (middle right).
 - Sand (66 tiles): 66 tiles (the centre), row 4: columns 1–7, 9, 12, 14–17 and 20; rows 5–6: columns 2–21; row 7: columns 1–3, 5, 10–11, 13, 15, 17–19 and 21.
 - Plank floors (39 tiles): 14 tiles (bottom centre), row 8: columns 10–11 and 13; row 9: columns 10–13; rows 10–12: columns 11–12; row 13: column 11; 13 tiles (middle right), rows 5–7: column 22; row 8: columns 17–18 and 21–22; row 9: columns 18–21; row 10: columns 19–20; 7 tiles (middle left), row 8: columns 3–6; row 9: columns 3–4; row 10: column 4; 5 tiles (the centre), row 8: column 15; row 9: columns 15–16; rows 10–11: column 16.
-- Open ground everywhere else: grass (31 tiles).
+- Open ground everywhere else: grass (36 tiles).
 - The party enters from the left, standing at (1, 5), (1, 6), (2, 5), (2, 6), (1, 4), (2, 4); enemies come from the right. Paint nothing there that would read as an object to walk round.
 
 The rows as the rules read them:
 
 ```
 UUUUUUUUUUUUUUUUUUUUUUUU
-UUU,uBBBBuUUUuBBBBBuUUUU
-U,u,,BBBB,u,u,BBBBB,u,UU
+U,,,uBBBBu,UUuBBBBBu,UUU
+U,u,,BBBB,u,u,BBBBB,u,,U
 U,,,,,,,,,,,,,,,,,,,,,,U
 U:::::::n:nn:n::::nn:nUU
 ==::::::::::::::::::::wU

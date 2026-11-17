@@ -81,7 +81,8 @@ export const SALTSTEP_MARKET: MapDef = {
   ambience: 'village',
   legend: RG02_LEGEND,
   /*
-   * A fish quay curving along the bay. The town spills off the top edge (`U`, its houses), with
+   * A fish quay curving along the bay, an outer Earth Kingdom harbour town (the story bible's
+   * Tidemark Reach). The town spills off the top edge (`U`: houses, trees, a well, a shrine), with
    * Jin's freight office and the warehouse on the lane behind the quay (`B`); the sand quay runs
    * west to east on rows 4-7, the coast road coming in on its west end (rows 5-6), and the water
    * bites into it at an inlet (row 7). The jetties reach out at different lengths: the broth
@@ -92,8 +93,8 @@ export const SALTSTEP_MARKET: MapDef = {
    */
   rows: [
     'UUUUUUUUUUUUUUUUUUUUUUUU',
-    'UUU,uBBBBuUUUuBBBBBuUUUU',
-    'U,u,,BBBB,u,u,BBBBB,u,UU',
+    'U,,,uBBBBu,UUuBBBBBu,UUU',
+    'U,u,,BBBB,u,u,BBBBB,u,,U',
     'U,,,,,,,,,,,,,,,,,,,,,,U',
     'U:::::::n:nn:n::::nn:nUU',
     '==::::::::::::::::::::wU',

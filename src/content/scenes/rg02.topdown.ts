@@ -86,48 +86,49 @@ export const SALTSTEP_MARKET_TERRAIN = new Rg02Terrain({
 });
 
 export const SALTSTEP_MARKET_OBJECTS: readonly TopDownObject[] = [
-  // The town spilling off the top edge (`U`): a row of fishermen's cottages, harbour houses and narrow townhouses on
-  // row 0, a second rank in front of them where the lane narrows, and more roofs beyond the edge.
-  ...(
-    [
-      ['house_fisher', 0, 1],
-      ['house_harbour', 2, 3],
-      ['house_narrow', 4, 4],
-      ['house_fisher', 5, 6],
-      ['house_harbour', 7, 8],
-      ['house_narrow', 9, 9],
-      ['house_fisher', 10, 11],
-      ['house_harbour', 12, 13],
-      ['house_narrow', 14, 14],
-      ['house_harbour', 15, 16],
-      ['house_fisher', 17, 18],
-      ['house_narrow', 19, 19],
-      ['house_harbour', 20, 21],
-      ['house_fisher', 22, 23],
-    ] as const
-  ).map(([sprite, x0, x1], i) => {
-    const house = piece(`town_${x0}`, sprite, 'house', block(x0, x1, 0, 0), true);
-    return i % 3 === 1 ? flip(house) : house;
-  }),
-  piece('front_narrow_w', 'house_narrow', 'house', [[0, 1]], true),
-  piece('front_harbour_w', 'house_harbour', 'house', block(1, 2, 1, 1), true),
-  flip(piece('front_fisher_mid', 'house_fisher', 'house', block(10, 11, 1, 1), true)),
-  piece('front_narrow_mid', 'house_narrow', 'house', [[12, 1]], true),
-  piece('front_harbour_e', 'house_harbour', 'house', block(20, 21, 1, 1), true),
-  flip(piece('front_fisher_e', 'house_fisher', 'house', block(22, 23, 1, 1), true)),
-  piece('corner_narrow_w', 'house_narrow', 'house', [[0, 2]], true),
-  piece('corner_fisher_e', 'house_fisher', 'house', block(22, 23, 2, 2), true),
-  piece('corner_narrow_w3', 'house_narrow', 'house', [[0, 3]], true, { x: -6 }),
-  ext('beyond_a', 'house_harbour', 'house', block(1, 2, -1, -1), { base: -6 }),
-  ext('beyond_b', 'house_narrow', 'house', [[6, -1]], { base: -10 }),
-  ext('beyond_c', 'house_fisher', 'house', block(8, 9, -1, -1), { base: -4 }),
-  ext('beyond_d', 'house_harbour', 'house', block(13, 14, -1, -1), { base: -8 }),
-  ext('beyond_e', 'house_narrow', 'house', [[17, -1]], { base: -6 }),
-  ext('beyond_f', 'house_fisher', 'house', block(20, 21, -1, -1), { base: -10 }),
-  // The landmark: the lighthouse at the quay's east end, its foot on the rim.
+  // The town spilling off the top edge (`U`): Earth Kingdom cottages, shophouses and moon-door houses set loose along
+  // row 0 and staggered in front of it, with a pine, a well, a wayside shrine and washing between them, and more roofs
+  // and trees beyond the edge.
+  piece('town_cottage_a', 'ek_cottage', 'house', block(0, 1, 0, 0), true, { base: -6 }),
+  piece('town_pine_a', 'harbour_tree', 'tree', [[2, 0]], true),
+  flip(piece('town_shop_a', 'ek_shophouse', 'house', block(3, 4, 0, 0), true, { base: -10 })),
+  piece('town_laundry_a', 'laundry_line', 'prop', [[5, 0]], true, { x: 6 }),
+  piece('town_cottage_b', 'ek_cottage', 'house', block(6, 7, 0, 0), true, { base: -14 }),
+  flip(piece('town_pine_b', 'harbour_tree', 'tree', [[8, 0]], true, { base: -4 })),
+  piece('town_shrine', 'wayside_shrine', 'prop', [[9, 0]], true),
+  piece('town_shop_b', 'ek_shophouse', 'house', block(10, 11, 0, 0), true, { base: -4 }),
+  flip(piece('town_round_a', 'ek_house_round', 'house', [[12, 0]], true, { base: -12 })),
+  piece('town_well', 'stone_well', 'prop', [[13, 0]], true),
+  flip(piece('town_cottage_c', 'ek_cottage', 'house', block(14, 15, 0, 0), true, { base: -8 })),
+  piece('town_pine_c', 'harbour_tree', 'tree', [[16, 0]], true, { base: -2 }),
+  piece('town_shop_c', 'ek_shophouse', 'house', block(17, 18, 0, 0), true, { base: -12 }),
+  flip(piece('town_laundry_b', 'laundry_line', 'prop', [[19, 0]], true)),
+  piece('town_round_b', 'ek_house_round', 'house', [[20, 0]], true, { base: -6 }),
+  flip(piece('town_cottage_d', 'ek_cottage', 'house', block(21, 22, 0, 0), true, { base: -2 })),
+  flip(piece('town_pine_d', 'harbour_tree', 'tree', [[23, 0]], true, { base: -10 })),
+  piece('front_round_w', 'ek_house_round', 'house', [[0, 1]], true),
+  piece('front_cottage_mid', 'ek_cottage', 'house', block(11, 12, 1, 1), true),
+  flip(piece('front_shop_e', 'ek_shophouse', 'house', block(21, 22, 1, 1), true)),
+  piece('front_pine_e', 'harbour_tree', 'tree', [[23, 1]], true, { x: 6 }),
+  flip(piece('corner_pine_w', 'harbour_tree', 'tree', [[0, 2]], true, { x: -6 })),
+  piece('corner_well_e', 'stone_well', 'prop', [[23, 2]], true, { x: 6 }),
+  flip(piece('corner_round_w', 'ek_house_round', 'house', [[0, 3]], true, { x: -8 })),
+  ext('beyond_shop_a', 'ek_shophouse', 'house', block(1, 2, -1, -1), { base: -8 }),
+  ext('beyond_pine_a', 'harbour_tree', 'tree', [[4, -1]], { base: -2 }),
+  flip(ext('beyond_cottage_a', 'ek_cottage', 'house', block(7, 8, -1, -1), { base: -14 })),
+  ext('beyond_round_a', 'ek_house_round', 'house', [[10, -1]], { base: -4 }),
+  flip(ext('beyond_shop_b', 'ek_shophouse', 'house', block(14, 15, -1, -1), { base: -10 })),
+  ext('beyond_pine_b', 'harbour_tree', 'tree', [[18, -1]], { base: -6 }),
+  ext('beyond_cottage_b', 'ek_cottage', 'house', block(21, 22, -1, -1), { base: -2 }),
+  flip(ext('beyond_round_b', 'ek_house_round', 'house', [[3, -2]], { base: 4 })),
+  ext('beyond_pine_c', 'harbour_tree', 'tree', [[6, -2]], { base: 8 }),
+  ext('beyond_cottage_c', 'ek_cottage', 'house', block(12, 13, -2, -2), { base: 2 }),
+  flip(ext('beyond_round_c', 'ek_house_round', 'house', [[17, -2]], { base: 6 })),
+  ext('beyond_pine_d', 'harbour_tree', 'tree', [[20, -2]], { base: 4 }),
+  // The landmark: the harbour beacon at the quay's east end, its foot on the rim.
   piece(
-    'lighthouse',
-    'lighthouse',
+    'beacon',
+    'beacon_tower',
     'prop',
     [
       [23, 3],
@@ -143,7 +144,7 @@ export const SALTSTEP_MARKET_OBJECTS: readonly TopDownObject[] = [
   piece('west_barrels', 'barrels', 'prop', [[0, 4]], true, { x: -6 }),
   piece('west_pots', 'lobster_pots', 'prop', [[0, 7]], true, { x: -6, base: -12 }),
   // The warehouse and Jin's freight office on the lane, its freight stacked beside it.
-  piece('warehouse', 'warehouse', 'house', block(5, 8, 1, 2), true),
+  piece('warehouse', 'ek_warehouse', 'house', block(5, 8, 1, 2), true),
   piece('jin_office', 'jin_office', 'house', block(14, 16, 1, 2), true),
   piece('freight_a', 'tool_crates', 'prop', [[17, 1]], true),
   piece('freight_b', 'tool_crates', 'prop', [[18, 1]], true),
@@ -152,18 +153,18 @@ export const SALTSTEP_MARKET_OBJECTS: readonly TopDownObject[] = [
   // The lane (`u`): drying racks, crates, barrels and a gutting table.
   piece('lane_crates_w', 'crate_stack', 'prop', [[4, 1]], true),
   piece('lane_rack_a', 'drying_rack', 'prop', [[9, 1]], true),
-  piece('lane_rack_b', 'drying_rack', 'prop', [[13, 1]], true),
-  piece('lane_crates_e', 'crate_stack', 'prop', [[19, 1]], true),
+  piece('lane_shrine', 'wayside_shrine', 'prop', [[13, 1]], true),
+  piece('lane_laundry', 'laundry_line', 'prop', [[19, 1]], true),
   piece('lane_barrels', 'barrels', 'prop', [[2, 2]], true),
   flip(piece('lane_rack_c', 'drying_rack', 'prop', [[10, 2]], true)),
   piece('lane_table', 'fish_table', 'prop', [[12, 2]], true),
   piece('lane_pots', 'lobster_pots', 'prop', [[20, 2]], true),
-  // The quay (`n`): the fish shed, bunting, racks and baskets along the back; lamps, rope, nets and tables along the
+  // The quay (`n`): the fish shed, green and gold banners, racks and baskets along the back; lamps, rope, nets and tables along the
   // water. Rows 5-6 stay open.
   piece('handcart', 'handcart', 'prop', [[8, 4]], true),
   piece('fish_shed', 'awning_shed', 'prop', [[10, 4]], true),
   piece('baskets_north', 'fish_baskets', 'prop', [[11, 4]], true),
-  piece('bunting', 'bunting_poles', 'prop', [[13, 4]], true),
+  piece('banners', 'banner_poles', 'prop', [[13, 4]], true),
   piece('quay_rack', 'drying_rack', 'prop', [[18, 4]], true),
   flip(piece('baskets_east', 'fish_baskets', 'prop', [[19, 4]], true)),
   piece('quay_crates', 'crate_stack', 'prop', [[21, 4]], true),
@@ -256,7 +257,7 @@ export const SALTSTEP_PONTOON_OBJECTS: readonly TopDownObject[] = [
   piece('quay_crates_b', 'tool_crates', 'prop', [[9, 0]], true),
   piece('quay_drums_b', 'oil_drums', 'prop', [[10, 0]], true),
   piece('quay_pots', 'lobster_pots', 'prop', [[0, 0]], true, { x: -4, base: -14 }),
-  ext('yard_warehouse', 'warehouse', 'house', block(0, 3, -2, -2), { base: 8 }),
+  ext('yard_warehouse', 'ek_warehouse', 'house', block(0, 3, -2, -2), { base: 8 }),
   ext('yard_crane', 'dock_crane', 'prop', [[5, -1]], { base: -4 }),
   ext('yard_cargo_a', 'cargo_stack', 'prop', [[6, -1]], { base: -6 }),
   ext('yard_cargo_b', 'cargo_stack', 'prop', [[7, -2]], { base: 4 }),
@@ -270,7 +271,6 @@ export const SALTSTEP_PONTOON_OBJECTS: readonly TopDownObject[] = [
   ext('yard_crates_c', 'crate_stack', 'prop', [[0, -1]], { x: -10, base: -6 }),
   ext('yard_drums_b', 'oil_drums', 'prop', [[3, -1]], { base: -12 }),
   ext('yard_cart', 'handcart', 'prop', [[7, -1]], { x: 8, base: -14 }),
-  ext('yard_crane_b', 'dock_crane', 'prop', [[2, -2]], { x: 4, base: 2 }),
   ext('yard_rack', 'drying_rack', 'prop', [[8, -2]], { base: 6 }),
   ext('east_cargo', 'cargo_stack', 'prop', [[19, 3]], { x: 8, base: -4 }),
   ext('east_drums', 'oil_drums', 'prop', [[20, 3]], { x: 4, base: 6 }),
