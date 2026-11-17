@@ -1128,6 +1128,16 @@ export class ExploreScene implements Scene {
             : 'Drag to look around · Follow party to recenter'),
       }),
     );
+    // Whose say it is stays on screen, not only in the toast at a map change (#846).
+    const inCharge = this.app.session.solo ? undefined : this.app.session.decider(state);
+    if (inCharge)
+      context.appendChild(
+        el('span', {
+          class: 'tiny in-charge',
+          text: `In charge: ${inCharge.name}`,
+          attrs: { 'data-in-charge': inCharge.id },
+        }),
+      );
     if (moving && !this.practising) clear(context);
     if (this.practising)
       context.replaceChildren(
