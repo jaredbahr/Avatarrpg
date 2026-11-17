@@ -332,7 +332,8 @@ is asleep with his head in the basket again.
 **Driver (Bo-shan):** Stop fourteen. I've got a line for it in the book now. "Pear Halt. One pot, to be
 returned. One old woman, not to be argued with."
 
-> **Loss branch.** **Driver (Dorin):** I have written it in the watch book, for Bo-shan. "Stop fourteen is a place. Ninety
+> **Loss branch.** **Driver (Dorin):** I have written it in the watch book, for Bo-shan. "Stop fourteen is a
+> place. Ninety
 > people. I have met one. She is enough."
 
 > **If Yenna rode up —**
@@ -533,6 +534,8 @@ You'll want to write that down.
 
 **Shown:** cutscene candidate 1 (also works played). **Where:** the mirror pool.
 
+**Narrator:** Fenn has come along behind you with her shoes in her hand. For once she has nothing to say.
+
 **Narrator:** The pool is round and perfectly calm, and it shows nothing. Not the reeds, not the sky, not you.
 Under the surface the same ring of ripples spreads out, and spreads out, and spreads out.
 
@@ -553,6 +556,14 @@ chest a current turns slowly, like a hand stirring a bowl.
 **Still Keeper:** You went by at the stone room under the drying seeds. Someone was afraid for you. I kept it.
 
 **Narrator:** "Careful." Kesi's whisper.
+
+> **If MQ-06 or MQ-08 was played before this —** one line for each that was heard, before the Keeper goes on:
+>
+> **Still Keeper:** You went by where the road is iron. An old one counted her years. I kept it.
+> _Narrator:_ "...forty years."
+>
+> **Still Keeper:** You went by where the wind starts. Someone called up, and was not heard. I heard. I kept
+> it. _Narrator:_ "Hold the rail."
 
 **Still Keeper:** You went by where the new gate stuck. A small one laughed. You went by on the river road. A
 small one, far away, asked a thing on paper. I kept them. They are all here. None of them has gone.
@@ -794,7 +805,8 @@ is holding a basket with a goose in it.
 
 **Tram operator:** ...and don't lean on the downhill side! Did they get that?
 
-**Student:** I don't think they got the first part.
+**Student:** I don't think they got the first part. And it isn't my goose. It was in the basket when I picked
+the basket up.
 
 **Narrator:** In the rain barrel beside the station door, the water says, a breath late and perfectly clear:
 "Hold the rail."
@@ -838,7 +850,7 @@ flag. Three ways to bring the passengers off.)
 - **Line warden:** "Our slip says empty! Is it empty? Then why is there a hat in the window?"
 - **Lower-camp winch hand:** "We've got it! We do this with grain sacks every week! People are easier, they
   hold on!"
-- **Carter (from the car):** "I've got a goose basket up here that isn't mine!"
+- **Carter (from the car):** "We can't hear you! We can hear the goose!"
 
 > **If Nima is in the party —**
 > **Nima:** I could just bring the wind down flat for a minute. I could. But then I'm the only one who knows
@@ -937,7 +949,8 @@ letter to the company was not taking a side.
 **Shown:** played. **Where:** the lower camps, below the terraces.
 
 **Narrator:** The lower camps are tents and plank huts in the lee of the cliff. Families from four provinces
-and farther. Bell three hangs on a mast high above them, small against the cloud.
+and farther. Bell three hangs on a mast high above them, small against the cloud. The mast has a split down
+its length, bound with rope.
 
 **Narrator:** A carpenter is planing a tent pole. They look up when your shadow crosses the work, and sign
 something to a girl beside them, who says it aloud.
@@ -1268,7 +1281,7 @@ Marshal, though he'd rather have it for nothing, and he's about to try.
 **Narrator:** Downstairs, the street doors open. Boots, in step. A level voice, giving an order without
 raising itself.
 
-**Rusk:** Good evening. This building is being secured. Nobody is being asked to leave. We would only ask that
+**Rusk:** Forgive the boots. This building is being secured. Nobody is being asked to leave. We would only ask that
 nothing is carried out.
 
 > **If `mandate_official` or `mandate_independent` —**
@@ -1387,8 +1400,9 @@ them into a sack. Rusk initials the sack.
 **Narrator:** On the street, Yenna is waiting in her chair by the coal hatch. She has both hands flat on a
 blanket over her knees.
 
-**Yenna:** I've sat in this chair in that archive every Tuesday for four years. Nobody's ever once looked
-under the blanket.
+**Yenna:** Neri gave me the shelf number too. I had the file brought to my desk on Tuesday, the way I have
+something brought every Tuesday. Four years I've sat in that archive, and nobody's once looked under the
+blanket.
 
 **Narrator:** Under the blanket is memorandum fourteen, both pages, copied in a signalman's block capitals.
 
@@ -1603,12 +1617,12 @@ Scene 9.4, on the archive stairs: a three-way race between the party, Rusk's squ
 
 ## The echo for each mission
 
-| Mission | Where                         | What the water repeats                                         |
-| ------- | ----------------------------- | -------------------------------------------------------------- |
-| MQ-06   | The trough under the Halt tap | "...forty years", in Ansa's voice                              |
-| MQ-07   | The mirror pool               | Everything from Act II, on purpose; the Keeper explains itself |
-| MQ-08   | The station rain barrel       | "Hold the rail", the warning the goose drowned out             |
-| MQ-09   | None                          | The lamps instead (9.7). The gutter that takes Latch is silent |
+| Mission | Where                         | What the water repeats                                          |
+| ------- | ----------------------------- | --------------------------------------------------------------- |
+| MQ-06   | The trough under the Halt tap | "...forty years", in Ansa's voice                               |
+| MQ-07   | The mirror pool               | Everything heard so far, on purpose; the Keeper explains itself |
+| MQ-08   | The station rain barrel       | "Hold the rail", the warning the goose drowned out              |
+| MQ-09   | None                          | The lamps instead (9.7). The gutter that takes Latch is silent  |
 
 ## Pella's letter for this act
 

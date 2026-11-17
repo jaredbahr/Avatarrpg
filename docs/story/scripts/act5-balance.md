@@ -91,8 +91,8 @@ stop, because checking's making them worse.
 woman is walking the line with a chalk.
 
 > **If `ba_dan_crew_sent` —**
-> **Daiyu:** Eleven of mine on the wall and it's holding. Far end's the worst. It's on made ground. I've put
-> him there.
+> **Daiyu:** Mine are on the wall and it's holding. Far end's the worst. It's on made ground. I've put him
+> there.
 >
 > **Narrator:** At the far end, six people are working under one voice. It is giving short orders, the kind
 > that have been given before.
@@ -100,7 +100,9 @@ woman is walking the line with a chalk.
 > **Daiyu:** He's run men. So he runs those six. And he answers to me. He asked me which six. I said the six
 > I'd miss least. He said, "Then I'll bring all six back." We'll see.
 >
-> _(If Ruon is not free to work, the far-end gang is run by Little Bai, who talks the whole time.)_
+> _(If Ruon is not working, drop Daiyu's "I've put him there" and her second line; the far-end gang is run by
+> Little Bai, who talks the whole time. If only five came from Ba Dan, Ruon's six are from the city's public
+> gang, and "the six I'd miss least" still stands.)_
 
 > **Otherwise —**
 > **Wall ganger:** Public works gang. Nine of us. We've not got anyone who knows old drains, so we're bracing
@@ -126,6 +128,7 @@ woman is walking the line with a chalk.
 > **If Bo is in the party —**
 > **Narrator:** Bo is third from the left on the brace line, next to Little Bai. She has not stopped talking.
 > He has not once looked along the line to count it.
+> _(With no Ba Dan crew: "next to the yard foreman's nephew. He has not stopped talking.")_
 
 **The far end (plays once, mid-encounter, if Ruon is present):**
 
@@ -316,9 +319,19 @@ piece at a time, and it has to let us.
 > **Sura:** I'm not walling this. I'm putting ice on the banks, so the banks don't go, and leaving the middle
 > alone. The middle's not mine.
 
-> **If Lin Mei is in the party —**
+> **The school path** _(one version plays; the gate is moved in all of them)_ **—**
+>
+> **If Lin Mei is in the party and walked the path (`pq06_open`), but it is on no map (`pq06_technical`, or
+> the quest left open) —**
 > **Lin Mei:** The path to the school is under the second gate's wash. It isn't on any map. I walked it. Move
 > the second gate four paces left.
+>
+> **If Lin Mei is in the party, after `pq06_published` or `pq06_negotiated` —**
+> **Lin Mei:** The path to the school is under the second gate's wash. It's on one map. Mine. Fenn drew the
+> line. Move the second gate four paces left.
+>
+> **Otherwise** _(Lin Mei absent, or she never walked it)_ **—**
+> **Fenn:** Not there! The children's path runs under that wash! Second gate, four paces left!
 
 **After a win:**
 
@@ -676,7 +689,7 @@ heard are used)_**:**
 has not happened yet.
 
 > **If Sura is in the party —**
-> **Sura:** I've counted every one since the quarry. It kept them all. It never lost a single one.
+> **Sura:** I've counted every one since the first. It kept them all. It never lost a single one.
 >
 > **Narrator:** She wipes rain off her face with her wrist.
 >
@@ -708,8 +721,8 @@ word for word.** `Player` is `Party`.
 
 > **If `front_spillway` is lost —** first: _Narrator:_ The Keeper does not turn its head when you speak. It has
 > its wings out over a piece of water that went down the channel hours ago. Fenn's voice comes up the
-> speaking-tube from Reedglass: "It's open! Tell it it's open! It won't look!" You have to say it three
-> times.
+> speaking-tube from the spillway gatehouse: "It's open! Tell it it's open! It won't look!" You have to say it
+> three times.
 
 **Still Keeper:** You said the water would stop changing.
 
@@ -1187,8 +1200,10 @@ not a sudden change). An absent hero has none.
 
 **Tenzo** _(the Six-Ladle Kitchen)_
 
-- _Resolved:_ **Narrator:** The kitchen is run by its cooks now. Tenzo is at the long table with a bowl in
-  front of him. Somebody is doing the rice differently from how he would. He eats it. He does not get up.
+- _Resolved:_ **Narrator:** The kitchen is run by its cooks now. _(After `pq02_posted_terms`, where Ketu still
+  holds the contract, this sentence is instead: "The terms are still on the wall beside the late shelf, with
+  a season of initials down the margin.")_ Tenzo is at the long table with a bowl in front of him. Somebody is
+  doing the rice differently from how he would. He eats it. He does not get up.
 - _Open:_ **Dema:** There's a place. Sit. Before you say anything about the stock, I'm going to tell you how
   the wages went this month, and you're going to listen to all of it. **Tenzo:** ...I'm listening.
 
@@ -1213,8 +1228,8 @@ not a sudden change). An absent hero has none.
 - _Resolved:_ **Renn:** Bo, far jack. Wait for my count. **Narrator:** Bo takes the far jack. He waits for
   the count. His hands, between counts, stay at his sides.
 - _Open:_ **Narrator:** Bo has a small job: one cracked sleeper. He looks at the crew. **Bo:** Who wants to
-  run this one? **Narrator:** Nobody answers straight away. They are not used to the question. Then Little
-  Bai puts her hand up, already talking.
+  run this one? **Narrator:** Nobody answers straight away. They are not used to the question. Then Feng
+  puts his hand up, already talking.
 
 **Lin Mei** _(the dispatch office)_
 
@@ -1290,17 +1305,31 @@ time. His hands, for once, are not doing anything.
 **Narrator:** She shuts the book. Grumbler tightens the last bolt on the lamp arm, tests it, and goes to
 find Daiyu, to ask what he should do tomorrow.
 
+> **Loss branch.** His ledger opened at ninety days in MQ-11, so it is nowhere near its last page. Replace
+> from "That's the last one":
+>
+> **Pella:** The lamp is three days. That's sixty-nine.
+>
+> **Grumbler:** A lamp is four. There is glass in a lamp.
+>
+> **Pella:** You didn't make the glass. Sixty-nine.
+>
+> **Narrator:** He does not argue it further. He tightens the last bolt, tests it, and goes to find Daiyu, to
+> ask what he should do tomorrow. Pella rules a line under the column and writes tomorrow's date at the top
+> of a clean page.
+
 **Ruon** _(by the guard hut; found)_**:**
 
-- **If he took supervised repair** (`ruon_offered_repair`, or he led the far-end gang): _Narrator:_ Ruon is
-  sitting on the guard hut step with an awl, a pile of boots, and the six people from the far end of the
-  wall. He is fitting each of them in turn. **Ruon:** Stand. Walk to the gate and back. ...You're rolling
-  out on the left. Give it here. _Narrator:_ He has no sabre and no rank, and a room in the guard hut that
-  Hanru locks at night. Mira passes with a tray. She puts a bowl down on the step without stopping. She does
+- **Supervised repair** (every game but the one below; it is Mira's ruling in 11.6, whether or not the table
+  asked him what he could offer): _Narrator:_ Ruon is sitting on the guard hut step with an awl, a pile of boots,
+  and the six people from the far end of the wall. _(If no crew went to Causeway, or only five: "and a line of
+  quarry hands".)_ He is fitting each of them in turn. **Ruon:** Stand. Walk to the gate and back. ...You're
+  rolling out on the left. Give it here. _Narrator:_ He has no sabre and no rank, and a room in the guard hut
+  that Hanru locks at night. Mira passes with a tray. She puts a bowl down on the step without stopping. She does
   not look at him. She has put it where he can reach.
-- **If he contests part of the hearing** (`ruon_traded`, no repair offered): _Narrator:_ Ruon is mending the
-  east road wall, alone, under Hanru's eye. He has written his own account, eleven pages, and asked that it
-  be pinned beside the village's. It has been. He still fits boots, in the evenings, for anyone who asks.
+- **He contests part of the hearing** (`ruon_traded`, and `ruon_offered_repair` not set): _Narrator:_ Ruon is
+  mending the east road wall, alone, under Hanru's eye. He has written his own account, eleven pages, and asked
+  that it be pinned beside the village's. It has been. He still fits boots, in the evenings, for anyone who asks.
   Two people have asked.
 
 **Latch** _(on the tailgate; found)_**:**
@@ -1446,7 +1475,8 @@ it kept.
 
 ## Cart upgrade for this act
 
-The lamp (Scene 15.5). It is Grumbler's last line in Pella's ledger.
+The lamp (Scene 15.5). It is Grumbler's last line in Pella's ledger (after an Act I loss the ledger still has
+sixty-nine days to run, and she starts a clean page).
 
 ## Latch across Acts III to V
 
@@ -1473,7 +1503,8 @@ lamp (MQ-15).
 The owner accepted every item below on 2026-11-15, as recommended. Each item keeps its first wording, as the
 record of what was accepted ("Recommend" lines are now decisions). Later corrections are marked.
 
-1. **The final mission follows the story bible's proposed item 1** (_approved 2026-11-15_), which was marked "awaiting owner":
+1. **The final mission follows the story bible's proposed item 1** (_approved 2026-11-15_), which was marked
+   "awaiting owner":
    the title is "The Engine in Revolt"; a lost final battle offers "Try again" or "Carry on"; "Carry on" plays
    the three-way vote with the lost fronts counted against it. I wrote it that way and did **not** write the
    bible's older rule (defeat forces E-03). Recommend: approve item 1 so this stands.

@@ -24,6 +24,11 @@ the bible gives exact dialogue (DLG-04), it is used word for word and marked.
   (`act1_lost`) Dorin drives it, Bo-shan and the four messengers are still held at the quarry, and Gao has
   patched the cart. Lines marked **Driver** are written twice.
 - **Ruon.** `ruon_spared`: he is in Ba Dan under watch. `ruon_traded`: Jin has him.
+- **What is already in the game.** Scenes 2.1 to 2.9, the arrival half of 3.1 (the cook, Tavi, Luli and her
+  offer) and SF-2.1 are built word for word from this script (`src/content/regions/saltstepEmberwatch/`). The
+  2026-11-17 edit pass left those lines alone; what it would change there is listed as proposals in the
+  pass's report. Not yet wired, and so edited here: Sura's and Wen's lines in 2.4, Riko's in 2.6, Veyra's
+  fight barks.
 
 ## What Act II may reveal
 
@@ -308,11 +313,14 @@ go. They both look at it.
 > **Driver (Dorin):** I heard that. I am not going to write it down.
 
 > **If Sura is in the party —** (place before Veyra's "Odd.")
-> **Sura:** There. Under the boards. Did nobody else... It did that in the culvert. At the quarry.
+> **Sura:** There. Under the boards. Did nobody else hear that?
 >
-> **Veyra:** Did what?
+> **Veyra:** Hear what?
 >
-> **Sura:** Said it twice.
+> **Sura:** It said it twice.
+>
+> _(If the party saw the culvert in the Cutting, `cutting_culvert`, Sura's first line ends: "It did that in the
+> Cutting. Under the road." The culvert is optional in Act I, so the plain version asks nothing of it.)_
 
 > **If Wen is in the party —**
 > **Wen:** That's a lift-and-force pump with the handle on a long throw. And you've put the stop where a short
@@ -675,6 +683,8 @@ since they reopened and it started this year.
 
 > **If Sura is in the party —**
 > **Sura:** That's three. The culvert, the harbour, here. It only ever takes one thing.
+> _(If the culvert was not seen in Act I: "That's twice. The harbour, and here. It only ever takes one
+> thing.")_
 >
 > **Kesi:** Takes?
 >
@@ -951,7 +961,7 @@ while; Parcel has eaten the corner of his notebook.
 
 **Clerk:** For the party from Ba Dan. From the Director's office. I'm to say it is not a summons.
 
-**The card:** "You have been asking about a supply order. So have I. Commissioning Day is in four days at
+**The card:** "You have been asking about a supply order. So have I. Long-Light Evening is in four days at
 Causeway. Come and see what the order was for, and then tell me to my face what it did. V. Sen."
 
 **Narrator:** The handwriting is the same as the two corrections on the order. Neat, and in a hurry.
@@ -1251,7 +1261,15 @@ task-givers each have one new line, below)._
 - **Dema:** She went in after him herself. I'll give her that. I'll give her that, and I'll still want the
   late shelf paid.
 
-> **Optional line, any party, if the table opens with it at the next scene —**
+### Scene 4.6 — VOTE: the commission
+
+**Shown:** played. **Where:** the terrace above the canal, later that evening.
+
+**Narrator:** Veyra has found a dry coat. It is the same blue. She has a folder, and two cups, and the mended
+teapot. A carved wooden rule sticks out of her breast pocket. One end of it is worn pale.
+
+> **Optional, any party** _(a `Party:` line the table may tap before she speaks; she saw the packet in 2.6
+> on every route)_ **—**
 > **Party:** You saw the pay packet at Saltstep.
 >
 > **Veyra:** I did. I had it logged. I asked my office who packed the crate.
@@ -1260,13 +1278,6 @@ task-givers each have one new line, below)._
 >
 > **Veyra:** I was told it was being looked into. I accepted that. I'm telling you I accepted it, so you don't
 > have to find it out.
-
-### Scene 4.6 — VOTE: the commission
-
-**Shown:** played. **Where:** the terrace above the canal, later that evening.
-
-**Narrator:** Veyra has found a dry coat. It is the same blue. She has a folder, and two cups, and the mended
-teapot.
 
 **Veyra:** People saw a gate jam tonight. Next week they'll hear about a quarry. If I tell them it's in hand,
 that's the Director saying the Director is fine.
@@ -1356,7 +1367,7 @@ left at home.
 
 **Shown:** played. **Where:** Causeway dispatch office.
 
-**Narrator:** The dispatch office has a wall-sized map of the Common Current, painted for Commissioning Day.
+**Narrator:** The dispatch office has a wall-sized map of the Common Current, painted for Long-Light Evening.
 Blue for water, red for power, black for rail. It is very handsome. Every line reaches a dot, and every dot
 has a name.
 
@@ -1468,8 +1479,8 @@ wall.
 >
 > **Narrator:** He has Gao's receipt out, the one the stone carter left on the counter.
 >
-> **Driver (Dorin):** "Sent on: stop fourteen, route nine, bell three." I have carried this for three weeks and
-> read it as arithmetic.
+> **Driver (Dorin):** "Sent on: stop fourteen, route nine, bell three." I have carried this all the way from Ba Dan
+> and read it as arithmetic.
 >
 > **Yenna:** Pear Halt was stop fourteen. It's painted on my lamp.
 >
@@ -1794,7 +1805,8 @@ Scene 3.8 (the manifest). Scene 2.2 and 2.8 plant her office and her clerk at Sa
 | MQ-04   | The demonstration canal lock | A child's laugh from the terraces                     |
 | MQ-05   | The river below the camp     | "...come home", from Pella's question, read out loud  |
 
-Nobody explains any of them. Sura, when present, is the only one who keeps count.
+Nobody explains any of them. Sura, when present, is the only one who keeps count. Her count starts at the
+culvert in the Cutting only if the party saw it (`cutting_culvert`); otherwise it starts at the pontoon.
 
 ## Pella's letter for this act
 
