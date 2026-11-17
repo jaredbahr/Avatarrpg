@@ -308,16 +308,18 @@ function downedTargetCheck(
   return OK;
 }
 
-/** Is `target` a legal aim point for this ability? */
-export function isValidTarget(
+/**
+ * The part of aiming that is about the ground, not what stands on it: on the map, within range,
+ * not too close, and in sight. `isValidTarget` starts here, and `aimReachTiles` draws it.
+ */
+function checkAimReach(
   content: ContentIndex,
   battle: BattleState,
   caster: Unit,
   ability: Ability,
   target: Vec2,
-  squareFootprints: boolean = SQUARE_FOOTPRINTS,
+  squareFootprints: boolean,
 ): UseCheck {
-  if (ability.targeting.shape === 'self') return OK;
   if (!inBounds(battle.grid, target)) return { ok: false, reason: 'Off the map.' };
 
   const range = distanceToUnit(target, caster, squareFootprints);
@@ -335,6 +337,21 @@ export function isValidTarget(
   if (!validatingOrigin(content, battle.grid, caster, ability, target, true, squareFootprints)) {
     return { ok: false, reason: 'No line of sight.' };
   }
+  return OK;
+}
+
+/** Is `target` a legal aim point for this ability? */
+export function isValidTarget(
+  content: ContentIndex,
+  battle: BattleState,
+  caster: Unit,
+  ability: Ability,
+  target: Vec2,
+  squareFootprints: boolean = SQUARE_FOOTPRINTS,
+): UseCheck {
+  if (ability.targeting.shape === 'self') return OK;
+  const reach = checkAimReach(content, battle, caster, ability, target, squareFootprints);
+  if (!reach.ok) return reach;
 
   if (ability.targeting.shape === 'unit' && ability.targeting.allow === 'downed') {
     return downedTargetCheck(battle, caster, target, squareFootprints);
@@ -394,6 +411,39 @@ export function isValidTarget(
   }
 
   return OK;
+}
+
+/**
+ * Every tile this ability could be aimed at on the ground alone: in range, far enough, in sight,
+ * whoever stands there. This is the range the player sees while aiming; `targetableTiles` is the
+ * subset that also holds a legal target. Empty for a self ability, which has no range to show.
+ */
+export function aimReachTiles(
+  content: ContentIndex,
+  battle: BattleState,
+  caster: Unit,
+  ability: Ability,
+  squareFootprints: boolean = SQUARE_FOOTPRINTS,
+): Vec2[] {
+  if (ability.targeting.shape === 'self') return [];
+  const out: Vec2[] = [];
+  const reach = canReachFromHeight(ability)
+    ? ability.range + content.tuning.heightReachBonus
+    : ability.range;
+  const seen = new Set<string>();
+  for (const cell of occupiedCells(caster, squareFootprints)) {
+    for (let dy = -reach; dy <= reach; dy++) {
+      for (let dx = -reach; dx <= reach; dx++) {
+        const pos = { x: cell.x + dx, y: cell.y + dy };
+        if (seen.has(posKey(pos))) continue;
+        if (checkAimReach(content, battle, caster, ability, pos, squareFootprints).ok) {
+          seen.add(posKey(pos));
+          out.push(pos);
+        }
+      }
+    }
+  }
+  return out;
 }
 
 /** Every tile the player may legally tap for this ability. */

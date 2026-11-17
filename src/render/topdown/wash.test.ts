@@ -19,6 +19,7 @@ import {
   ENEMY_RGB,
   OBJECTIVE_RGB,
   PARTY_RGB,
+  RANGE_RGB,
   REACH_RGB,
   TARGET_RGB,
   cachedWashMasks,
@@ -182,6 +183,37 @@ describe('targets, area, path and the cover pip', () => {
     });
     expect(spec.rings).toEqual([{ x: 4 * CS + 20, y: 2 * CS + 31, color: TARGET_RGB, w: 9, h: 3 }]);
     expect(spec.washes).toEqual([{ cells: [{ x: 3, y: 3 }], color: TARGET_RGB }]);
+  });
+
+  it('washes the whole range under the rings and the area when an ability is armed (#846)', () => {
+    const range = [
+      { x: 1, y: 0 },
+      { x: 2, y: 0 },
+      { x: 3, y: 1 },
+      { x: 4, y: 2 },
+    ];
+    const spec = washSpec({
+      ...base,
+      overlays: [
+        { kind: 'reach', tiles: range },
+        { kind: 'target', tiles: [{ x: 4, y: 2 }] },
+        { kind: 'area', tiles: [{ x: 4, y: 2 }] },
+      ],
+    });
+    // Range first, the area over it; no second target wash, and the enemy in the area is ringed.
+    expect(spec.washes.map((w) => w.color)).toEqual([RANGE_RGB, AREA_RGB]);
+    expect(spec.washes[0]?.cells).toEqual(range);
+    expect(spec.rings.map((r) => r.color)).toEqual([ENEMY_RGB]);
+    // A target in range but not under the aim keeps its target ring.
+    const aimless = washSpec({
+      ...base,
+      overlays: [
+        { kind: 'reach', tiles: range },
+        { kind: 'target', tiles: [{ x: 4, y: 2 }] },
+      ],
+    });
+    expect(aimless.washes.map((w) => w.color)).toEqual([RANGE_RGB]);
+    expect(aimless.rings.map((r) => r.color)).toEqual([TARGET_RGB]);
   });
 
   it('washes the area and rings everyone in it by side', () => {

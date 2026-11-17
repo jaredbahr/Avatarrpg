@@ -32,6 +32,7 @@ import {
   previewAbility,
   resolveAim,
   sameSide,
+  aimReachTiles,
   targetableTiles,
   affectedTiles,
 } from '../../core/rules/abilities';
@@ -98,7 +99,7 @@ import { createMovementThreatQuery } from '../ui/movementThreats';
 import { partyWalkPhase } from '../animator';
 import type { Animator } from '../animator';
 import type { SoundCue } from '../anim/choreography';
-import { TOPDOWN_PRESENTATION_TIMING } from '../anim/choreography';
+import { ENEMY_PHASE_BEAT_MS, TOPDOWN_PRESENTATION_TIMING } from '../anim/choreography';
 import { PresentationClock, type CombatSpeed } from './presentationClock';
 import { flushTime } from './flockFlush';
 import { resolveCombatBodyPick } from './combatBodyPick';
@@ -132,6 +133,7 @@ import {
   unseenCombatTips,
   type CombatTipFeature,
 } from './combatGuidance';
+import { defendHintFlag, defendHintFor, type DefendHint } from './defendHint';
 
 /** An ability that stands a downed friend up (ADR 0118): aimed at the fallen, not the living. */
 function isDownedAbility(ability: Ability): boolean {
@@ -290,6 +292,12 @@ export class CombatScene implements Scene {
   private lobs = new Map<string, number | null>();
   private inspector: UnitInspector | PropInspector | null = null;
   private readonly movementThreatQuery: ReturnType<typeof createMovementThreatQuery>;
+  /** The last "stay safe" hint, so a redraw of the same board does not ask the rules again. */
+  private defendHintCache: {
+    battle: BattleState;
+    unitId: string;
+    hint: DefendHint | null;
+  } | null = null;
 
   /** The participant who last acknowledged the hand-off banner. */
   private handedOffTo: string | null = null;
@@ -350,6 +358,10 @@ export class CombatScene implements Scene {
   /** Surface cells are immutable with the battle grid, so do not rescan them every frame. */
   private obscurementMemo: { grid: BattleState['grid']; tiles: readonly Vec2[] } | null = null;
   private aiScheduled = false;
+  /** An enemy action was dispatched since the table last had the board (see `coverHeld`). */
+  private enemyActed = false;
+  /** When the last enemy action finished playing; the beat counts from here. */
+  private coverIdleSince: number | null = null;
   private aiDueUnitId: string | null = null;
   private resultShown = false;
   private victoryPending = false;
@@ -1459,6 +1471,34 @@ export class CombatScene implements Scene {
     }
   }
 
+  /**
+   * Whether the hand-off card or the defeat panel must wait: the enemy phase just acted, and its
+   * last action is still playing (impact, hit-stop, damage number, knockdown) or has not yet had
+   * its readable beat. The board shows alone meanwhile. A player's own turn never waits here.
+   */
+  private coverHeld(): boolean {
+    if (!this.enemyActed) return false;
+    const now = this.presentationNow();
+    if (this.animatorForBoard.busy(now)) {
+      this.coverIdleSince = null;
+      return true;
+    }
+    this.coverIdleSince ??= now;
+    if (now - this.coverIdleSince < ENEMY_PHASE_BEAT_MS) return true;
+    this.enemyActed = false;
+    this.coverIdleSince = null;
+    return false;
+  }
+
+  /** Per frame: lay the held card down once the last enemy action has been seen. */
+  private releaseCover(): void {
+    if (!this.enemyActed) return;
+    const battle = this.battle();
+    if (!battle || battle.phase === 'victory') return;
+    const waiting = battle.phase !== 'active' || this.needsHandoff();
+    if (waiting && !this.coverHeld()) this.renderHud();
+  }
+
   private needsHandoff(): boolean {
     const unit = this.active();
     if (!unit || !isTableControlled(unit)) return false;
@@ -1608,6 +1648,7 @@ export class CombatScene implements Scene {
           schedule(Math.max(COMBAT_AI_GLIDE_RETRY_MS, remaining));
           return;
         }
+        this.enemyActed = true;
         this.app.dispatch({ type: 'runAiTurn' });
       }, wait);
       this.aiTimer = timer;
@@ -1647,6 +1688,7 @@ export class CombatScene implements Scene {
     this.aiDueAt = null;
     this.aiDueUnitId = null;
     this.aiScheduled = false;
+    this.enemyActed = true;
     this.app.dispatch({ type: 'runAiTurn' });
   }
 
@@ -1985,6 +2027,7 @@ export class CombatScene implements Scene {
 
     if (battle.phase !== 'active') {
       if (battle.phase === 'victory' && this.victoryPending) return;
+      if (battle.phase !== 'victory' && this.coverHeld()) return;
       if (battle.phase === 'victory' && this.victoryBeat) {
         overlays.appendChild(
           el(
@@ -2007,9 +2050,14 @@ export class CombatScene implements Scene {
     if (this.battleOpening) return;
 
     if (this.needsHandoff()) {
+      // The last enemy blow plays out, and is read, before the card covers it.
+      if (this.coverHeld()) return;
       overlays.appendChild(this.handoffBanner());
       return;
     }
+    // The table has the board again: the next enemy phase starts its own beat.
+    this.enemyActed = false;
+    this.coverIdleSince = null;
 
     const unit = this.active();
     if (!unit) return;
@@ -2051,9 +2099,53 @@ export class CombatScene implements Scene {
     if (this.pending) {
       actions.appendChild(this.confirmBar(unit));
     } else {
-      const hint = this.aimHint(unit);
+      const hint = this.aimHint(unit) ?? this.defendHintBar(unit);
       if (hint) actions.appendChild(hint);
     }
+  }
+
+  /**
+   * The "stay safe" line (#846): one short hint when the hero is low or could be
+   * hit hard, naming a heal, Guard or a safe step they really have. It speaks
+   * only while the hero is idle (never over a pending decision or an aim),
+   * only with guidance on, and never in the guided first fight, which already
+   * has a coach. "Got it" hides that kind of hint for good, in a
+   * `guidance.tip.*` flag like the one-time tips.
+   */
+  private defendHintBar(unit: Unit): HTMLElement | null {
+    const battle = this.battle();
+    const state = this.app.state;
+    if (
+      !battle ||
+      !state ||
+      this.mode.kind !== 'idle' ||
+      this.battleOpening ||
+      !this.app.settings?.combatGuidance ||
+      isGuidedFight(battle, this.app.content.encounters)
+    )
+      return null;
+    const cached = this.defendHintCache;
+    let hint: DefendHint | null;
+    if (cached && cached.battle === battle && cached.unitId === unit.id) hint = cached.hint;
+    else {
+      hint = defendHintFor(this.app.content, battle, unit, this.movementThreatQuery);
+      this.defendHintCache = { battle, unitId: unit.id, hint };
+    }
+    if (!hint || state.flags[defendHintFlag(hint.kind)] === true) return null;
+    const kind = hint.kind;
+    return el(
+      'div',
+      { class: 'confirm-bar defend-hint', attrs: { role: 'status', 'aria-live': 'polite' } },
+      el('span', { class: 'defend-hint-text', text: hint.text }),
+      button(
+        'Got it',
+        () => {
+          this.saveGuidanceFlags({ [defendHintFlag(kind)]: true });
+          this.renderHud();
+        },
+        { class: 'btn-ghost' },
+      ),
+    );
   }
 
   /**
@@ -2337,6 +2429,7 @@ export class CombatScene implements Scene {
             ? 'Walk to a highlighted tile'
             : 'No move points left this turn',
     });
+    moveButton.setAttribute('aria-pressed', String(moveActive));
     moveButton.prepend(mark(UI_MARKS.move));
     moveButton.appendChild(el('span', { class: 'action-sub', text: `${unit.move} left` }));
     row.appendChild(moveButton);
@@ -2439,6 +2532,8 @@ export class CombatScene implements Scene {
           ? ability.description
           : check.reason,
     });
+
+    node.setAttribute('aria-pressed', String(selected));
 
     // The ability's own mark above its name, in its element's colour; the
     // cost as words under it.
@@ -3279,6 +3374,7 @@ export class CombatScene implements Scene {
     renderer.draw(view);
     this.deliverTopdownSounds(now, wallNow);
     this.advanceTopdownAi(now);
+    this.releaseCover();
   };
 
   /**
@@ -3634,14 +3730,26 @@ export class CombatScene implements Scene {
       const ability = this.app.content.abilities.get(this.mode.abilityId);
       if (ability) {
         const targets = targetableTiles(this.app.content, battle, unit, ability);
+        // The whole range first (issue #846), then the legal targets in it, then the area under
+        // the aim: the tapped tile, or with a mouse the hovered one, once it is a legal aim.
+        const inRange = aimReachTiles(this.app.content, battle, unit, ability);
+        // A big target's far cells are targets through its near one: the range covers them too.
+        const known = new Set(inRange.map(posKey));
+        const reach = [...inRange, ...targets.filter((tile) => !known.has(posKey(tile)))];
+        if (reach.length > 0) overlays.push({ kind: 'reach', tiles: reach });
         overlays.push({
           kind: 'target',
           tiles: targets,
         });
-        if (this.pending) {
+        const aim =
+          this.pending ??
+          (this.hover && targets.some((target) => samePos(target, this.hover as Vec2))
+            ? this.hover
+            : null);
+        if (aim) {
           overlays.push({
             kind: 'area',
-            tiles: affectedTiles(this.app.content, battle.grid, unit, ability, this.pending),
+            tiles: affectedTiles(this.app.content, battle.grid, unit, ability, aim),
           });
         }
         const originTile = tileAt(battle.grid, unit.pos);
