@@ -87,6 +87,11 @@ function transitions(node: StoryNode, content: ContentIndex): StoryEdge[] {
           `${node.flag}: falsy (${describe(content, { kind: 'flag', key: node.flag, op: 'unset' })})`,
         ),
       ];
+    case 'branchWhen':
+      return [
+        edge(node.ifTrue, `when: ${describe(content, node.when)}`),
+        edge(node.ifFalse, `otherwise (not: ${describe(content, node.when)})`),
+      ];
     case 'battle':
       return [edge(node.next, 'Victory'), edge(node.onDefeat, 'Defeat')];
     case 'flags': {
@@ -263,6 +268,8 @@ function title(node: StoryNode, content: ContentIndex): string {
       return short(`Explore ${node.mapId}: ${node.objective}`);
     case 'branch':
       return short(`Branch: ${node.flag}`);
+    case 'branchWhen':
+      return short(`Branch when: ${describe(content, node.when)}`);
     case 'flags':
       return 'Set flags';
     case 'end':
@@ -273,7 +280,7 @@ function title(node: StoryNode, content: ContentIndex): string {
 }
 
 function counts(nodes: readonly GraphNode[]): string {
-  return `${nodes.length} nodes; ${nodes.filter((item) => item.node.kind === 'battle').length} fights; ${nodes.filter((item) => item.node.kind === 'branch').length} branches; ${nodes.filter((item) => item.node.kind === 'choice').length} choices`;
+  return `${nodes.length} nodes; ${nodes.filter((item) => item.node.kind === 'battle').length} fights; ${nodes.filter((item) => ['branch', 'branchWhen'].includes(item.node.kind)).length} branches; ${nodes.filter((item) => item.node.kind === 'choice').length} choices`;
 }
 
 function renderGroup(graph: StoryGraph, group: StoryGroup): string {
@@ -323,7 +330,7 @@ function renderGroup(graph: StoryGraph, group: StoryGroup): string {
       const shape =
         item.node.kind === 'battle'
           ? `{{"${label}"}}`
-          : item.node.kind === 'branch'
+          : item.node.kind === 'branch' || item.node.kind === 'branchWhen'
             ? `{"${label}"}`
             : item.node.kind === 'end'
               ? `(["${label}"])`
@@ -393,7 +400,7 @@ export async function generateStoryDocs(
   for (const group of graph.groups) {
     const nodes = graph.nodes.filter((item) => item.group === group.slug);
     lines.push(
-      `| [${group.title}](./${group.slug}.md) | ${nodes.length} | ${nodes.filter((item) => item.node.kind === 'battle').length} | ${nodes.filter((item) => item.node.kind === 'branch').length} | ${nodes.filter((item) => item.node.kind === 'choice').length} | ${graph.parts.filter((part) => part.group === group.slug).length} |`,
+      `| [${group.title}](./${group.slug}.md) | ${nodes.length} | ${nodes.filter((item) => item.node.kind === 'battle').length} | ${nodes.filter((item) => ['branch', 'branchWhen'].includes(item.node.kind)).length} | ${nodes.filter((item) => item.node.kind === 'choice').length} | ${graph.parts.filter((part) => part.group === group.slug).length} |`,
     );
   }
   documents.set('README.md', `${lines.join('\n')}\n`);

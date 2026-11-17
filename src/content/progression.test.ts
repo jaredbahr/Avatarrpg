@@ -139,6 +139,12 @@ function walkOnce(decisions: ReadonlyMap<string, number>, party: readonly string
         nodeId = flags[node.flag] ? node.ifSet : node.ifUnset;
         break;
 
+      case 'branchWhen':
+        // The condition reads the same flags/party/visited a `choice` does, so a
+        // gated line is one deterministic road per path, never a new decision.
+        nodeId = evaluate(asState(flags, party, visited), node.when) ? node.ifTrue : node.ifFalse;
+        break;
+
       case 'choice': {
         // Only options this party could actually take are on the table.
         const open = node.options.filter((o) =>
@@ -498,11 +504,13 @@ function reachableFrom(start: string, target: string): boolean {
           ? [node.next, node.onDefeat]
           : node.kind === 'branch'
             ? [node.ifSet, node.ifUnset]
-            : node.kind === 'end'
-              ? node.next
-                ? [node.next]
-                : []
-              : [node.next];
+            : node.kind === 'branchWhen'
+              ? [node.ifTrue, node.ifFalse]
+              : node.kind === 'end'
+                ? node.next
+                  ? [node.next]
+                  : []
+                : [node.next];
     for (const id of next) {
       if (seen.has(id)) continue;
       seen.add(id);
