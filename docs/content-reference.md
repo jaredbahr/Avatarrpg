@@ -153,6 +153,7 @@ Names are shown in authored content order within each entry; sections and record
 | Healing Hands     | Discipline: Healing                                                                    |   2 | 1     | unit (ally)     | yes           | healing 14 + 1× focus; cleanse burning, chilled, blinded                                                                                                       |              1 | —                   |
 | Healing Stream    | Character: Nilak, Character: Sura                                                      |   2 | 4     | unit (ally)     | yes           | healing 8 + 0.8× focus; cleanse burning, blinded                                                                                                               |              1 | —                   |
 | Heat Shield       | Discipline: Flame Shaping                                                              |   2 | 0     | self            | yes           | guarded for 2 rounds (100%, to self); cleanse burning, chilled, frozen                                                                                         |              3 | guarded             |
+| Help up           | Universal                                                                              |   2 | 1     | unit (downed)   | yes           | stand a downed friend up with 25% health                                                                                                                       | 0 (every turn) | —                   |
 | Ice Path          | Character: Nilak, Character: Sura                                                      |   2 | 5     | line, length 4  | yes           | ice surface (area, 3 rounds)                                                                                                                                   |              2 | ice                 |
 | Ice Shield        | Discipline: Ice Shaping                                                                |   2 | 4     | unit (ally)     | yes           | guarded for 2 rounds (100%, to hit); healing 3 + 0.2× focus                                                                                                    |              3 | guarded             |
 | Ice Spikes        | Discipline: Ice Shaping                                                                |   2 | 6     | blast, radius 1 | yes           | cold damage 6 + 0.7× power; chilled for 2 rounds (70%, to hit); ice surface (area, 2 rounds)                                                                   |              2 | chilled, ice        |
@@ -204,7 +205,7 @@ Names are shown in authored content order within each entry; sections and record
 
 - Stats: defense 2, focus 10, maxAp 3, maxHp 34, maxMove 4, power 6, speed 6
 - Abilities: Fire Blast, Oil Flask, Torch Toss
-- XP: 200
+- XP: 300
 
 ### Freight Handler
 
@@ -252,13 +253,13 @@ Names are shown in authored content order within each entry; sections and record
 
 - Stats: defense 1, focus 5, maxAp 4, maxHp 28, maxMove 4, power 5, speed 5
 - Abilities: Club Swing, Rush
-- XP: 100
+- XP: 150
 
 ### Slinger
 
 - Stats: defense 0, focus 10, maxAp 4, maxHp 22, maxMove 4, power 4, speed 7
 - Abilities: Sling Stone
-- XP: 100
+- XP: 150
 
 ### The Driller
 
@@ -279,9 +280,9 @@ Names are shown in authored content order within each entry; sections and record
 - Map: The Forest Road
 - Expected level: 1
 - Baseline party size: 3
-- Authored roster: Quarry Worker; Quarry Worker; Slinger (300 XP)
+- Authored roster: Quarry Worker; Slinger (300 XP)
 - Conditional enemies: —
-- Variants: thugs: Quarry Worker; Quarry Worker; Slinger (300 XP, 0.0% vs authored roster); slingers: Slinger; Slinger; Slinger (300 XP, 0.0% vs authored roster); bruisers: Quarry Hauler; Quarry Hauler (300 XP, 0.0% vs authored roster)
+- Variants: thugs: Quarry Worker; Slinger (300 XP, 0.0% vs authored roster); slingers: Slinger; Slinger (300 XP, 0.0% vs authored roster); bruisers: Quarry Hauler; Quarry Hauler (300 XP, 0.0% vs authored roster)
 - Allies: —
 - Reinforcements: Quarry Worker; Slinger
 
@@ -312,7 +313,7 @@ Names are shown in authored content order within each entry; sections and record
 - Map: The Quarry Gate
 - Expected level: 2
 - Baseline party size: 3
-- Authored roster: Fire Nation Deserter; Quarry Worker; Quarry Hauler (450 XP)
+- Authored roster: Fire Nation Deserter; Quarry Worker (450 XP)
 - Conditional enemies: —
 - Variants: bluffed: Quarry Hauler; Quarry Bender; Quarry Hauler (450 XP, 0.0% vs authored roster)
 - Allies: —

@@ -87,6 +87,9 @@ export function describeEvent(
     case 'unitDied':
       return `${nameOf(units, event.unitId)} is down!`;
 
+    case 'unitRevived':
+      return `${nameOf(units, event.helperId)} helps ${nameOf(units, event.unitId)} up! (${event.hp} HP)`;
+
     /*
      * Props get their own cases rather than borrowing the unit ones, because
      * `nameOf` falls back to the raw id and would print "prop3 is shoved back"

@@ -724,17 +724,17 @@ describe('content', () => {
         {
           ...boss,
           // Same flag, opposite sides: only one of these can ever spawn, so the
-          // pair costs one thug (100 of 510, 20%), not two.
+          // pair costs one rigger (100 of 510, 20%), not two.
           conditionalEnemies: [
             {
               flag: 'ruon_traded',
               whenSet: true,
-              placements: [{ enemyId: 'bandit_thug', pos: { x: 14, y: 3 } }],
+              placements: [{ enemyId: 'line_rigger', pos: { x: 14, y: 3 } }],
             },
             {
               flag: 'ruon_traded',
               whenSet: false,
-              placements: [{ enemyId: 'bandit_thug', pos: { x: 14, y: 8 } }],
+              placements: [{ enemyId: 'line_rigger', pos: { x: 14, y: 8 } }],
             },
           ],
         },
