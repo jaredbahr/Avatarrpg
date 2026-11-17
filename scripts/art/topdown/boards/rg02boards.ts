@@ -43,6 +43,8 @@ export const RG02_BOARDS: readonly TopDownBoard[] = [
     folder: 'saltstep-pontoon',
     terrain: SALTSTEP_PONTOON_TERRAIN,
     layout: SALTSTEP_PONTOON_TOPDOWN_LAYOUT,
+    // the quay's cart track along the north side
+    wear: { paths: span(0, 10, 0, 0) },
   }),
   rg02Board({
     id: 'emberwatch_parade',

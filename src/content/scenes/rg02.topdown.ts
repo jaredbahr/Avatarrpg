@@ -210,7 +210,7 @@ export const SALTSTEP_MARKET_OBJECTS: readonly TopDownObject[] = [
 export const SALTSTEP_PONTOON_TERRAIN = new Rg02Terrain({
   mapId: 'saltstep_pontoon',
   rows: SALTSTEP_PONTOON.rows,
-  chars: { W: RG.water, w: RG.deck, c: RG.deck, B: RG.deck },
+  chars: { W: RG.water, w: RG.deck, c: RG.deck, B: RG.deck, k: RG.deck },
   beyond: RG.water,
   mouths: [],
 });
@@ -242,8 +242,75 @@ export const SALTSTEP_PONTOON_OBJECTS: readonly TopDownObject[] = [
   piece('pump_crate', 'pump_crate', 'prop', [[6, 3]], false),
   piece('cover_b', 'tool_crates', 'prop', [[5, 7]], false),
   piece('cover_c', 'tool_crates', 'prop', [[5, 8]], false),
-  // The barge waiting off the platform, where the sling is heading.
-  piece('barge', 'barge', 'flat', [[15, 9]], false, { base: 30 }),
+  // The landmark: the big cargo barge moored alongside the platform, where the sling is heading.
+  piece('big_barge', 'big_barge', 'flat', block(13, 16, 9, 9), false, { base: 22 }),
+  // The freight quay behind the deck (`k`, row 0): the dock crane, the gantry, cargo under tarps, drums and crates,
+  // and the yard running on past the edge.
+  piece('quay_crane', 'dock_crane', 'prop', [[1, 0]], true, { base: -14 }),
+  piece('quay_cargo_a', 'cargo_stack', 'prop', [[2, 0]], true),
+  piece('quay_drums', 'oil_drums', 'prop', [[3, 0]], true),
+  piece('quay_gantry', 'pulley_gantry', 'prop', block(4, 5, 0, 0), true),
+  piece('quay_crates', 'crate_stack', 'prop', [[6, 0]], true),
+  flip(piece('quay_cargo_b', 'cargo_stack', 'prop', [[7, 0]], true)),
+  piece('quay_barrels', 'barrels', 'prop', [[8, 0]], true),
+  piece('quay_crates_b', 'tool_crates', 'prop', [[9, 0]], true),
+  piece('quay_drums_b', 'oil_drums', 'prop', [[10, 0]], true),
+  piece('quay_pots', 'lobster_pots', 'prop', [[0, 0]], true, { x: -4, base: -14 }),
+  ext('yard_warehouse', 'warehouse', 'house', block(0, 3, -2, -2), { base: 8 }),
+  ext('yard_crane', 'dock_crane', 'prop', [[5, -1]], { base: -4 }),
+  ext('yard_cargo_a', 'cargo_stack', 'prop', [[6, -1]], { base: -6 }),
+  ext('yard_cargo_b', 'cargo_stack', 'prop', [[7, -2]], { base: 4 }),
+  ext('yard_crates', 'crate_stack', 'prop', [[8, -1]], { base: -10 }),
+  ext('yard_drums', 'oil_drums', 'prop', [[9, -2]], { base: 6 }),
+  ext('yard_gantry', 'pulley_gantry', 'prop', block(9, 10, -1, -1), { x: 10, base: -2 }),
+  ext('yard_barrels', 'barrels', 'prop', [[1, -1]], { base: -2 }),
+  ext('yard_pots', 'lobster_pots', 'prop', [[4, -1]], { base: -8 }),
+  ext('yard_crates_b', 'tool_crates', 'prop', [[4, -2]], { base: 2 }),
+  ext('yard_cargo_c', 'cargo_stack', 'prop', [[10, -2]], { x: 6, base: 8 }),
+  ext('yard_crates_c', 'crate_stack', 'prop', [[0, -1]], { x: -10, base: -6 }),
+  ext('yard_drums_b', 'oil_drums', 'prop', [[3, -1]], { base: -12 }),
+  ext('yard_cart', 'handcart', 'prop', [[7, -1]], { x: 8, base: -14 }),
+  ext('yard_crane_b', 'dock_crane', 'prop', [[2, -2]], { x: 4, base: 2 }),
+  ext('yard_rack', 'drying_rack', 'prop', [[8, -2]], { base: 6 }),
+  ext('east_cargo', 'cargo_stack', 'prop', [[19, 3]], { x: 8, base: -4 }),
+  ext('east_drums', 'oil_drums', 'prop', [[20, 3]], { x: 4, base: 6 }),
+  // Chains lying on the deck where the handlers work (flat, under the fight).
+  piece('chain_a', 'chain_pile', 'flat', [[3, 9]], false),
+  piece('chain_b', 'chain_pile', 'flat', [[9, 2]], false),
+  flip(piece('chain_c', 'chain_pile', 'flat', [[17, 6]], false)),
+  // The pontoon stands on piles: posts in the water round its edge, rope lines across the gaps, buoys and boats.
+  ...(
+    [
+      [0, 2],
+      [0, 5],
+      [0, 8],
+      [1, 10],
+      [4, 11],
+      [7, 11],
+      [10, 11],
+      [11, 2],
+      [11, 9],
+      [13, 2],
+      [12, 7],
+      [14, 8],
+      [18, 6],
+      [18, 2],
+      [12, 1],
+    ] as const
+  ).map(([x, y], i) => {
+    const pile = piece(`pile_${x}_${y}`, 'pilings', 'flat', [[x, y]], false);
+    return i % 2 ? flip(pile) : pile;
+  }),
+  piece('rope_gap', 'rope_line', 'flat', [[11, 6]], false, { x: 20 }),
+  piece('rope_south', 'rope_line', 'flat', [[12, 9]], false, { x: 20 }),
+  piece('buoy_a', 'buoy', 'flat', [[15, 1]], false),
+  piece('buoy_b', 'buoy', 'flat', [[2, 11]], false),
+  piece('buoy_c', 'buoy', 'flat', [[13, 10]], false),
+  piece('rowboat', 'rowboat', 'flat', [[16, 1]], false),
+  piece('gulls', 'gulls', 'flat', [[8, 11]], false),
+  ext('far_sailboat', 'sailboat', 'flat', [[3, 13]]),
+  ext('far_rowboat', 'rowboat', 'flat', [[14, 13]]),
+  ext('far_gulls', 'gulls', 'flat', [[20, 10]]),
 ];
 
 export const SALTSTEP_MARKET_TOPDOWN_LAYOUT: TopDownLayout = {

@@ -19,13 +19,16 @@ import { LEGEND } from '../../maps/legend';
 
 /**
  * The region's legend: the shared one plus three blocked grounds the dressing stands on, each seen over (a net pile, a
- * dummy, a bench): `n` on the quay's sand, `u` on the parade's grass, `d` on the power yard's dirt.
+ * dummy, a bench): `n` on the quay's sand, `u` on the parade's grass, `d` on the power yard's dirt, `k` the
+ * freight quay's timber.
  */
 const RG02_LEGEND: typeof LEGEND = {
   ...LEGEND,
   n: { terrain: 'sand', blocked: true, blocksSight: false },
   u: { terrain: 'grass', blocked: true, blocksSight: false },
   d: { terrain: 'dirt', blocked: true, blocksSight: false },
+  // the freight quay's timber edge behind the pontoon: blocked and seen over, as the water it replaces
+  k: { terrain: 'wood', blocked: true, blocksSight: false },
 };
 
 /** A road mouth: the walkable cells of an exit's cross-section at the map edge. */
@@ -210,10 +213,12 @@ export const SALTSTEP_PONTOON: MapDef = {
    * stands near the party's end. A two-wide gangway (11-12, rows 4-5) joins the deck to the winch
    * platform; the winch brake is on the gangway itself, (12, 4), where the handlers stand, so
    * stopping the winch means getting through them. The winch (`B`) is on the platform and the
-   * barge is the open water off the east edge, where the sling is heading.
+   * barge is the open water off the east edge, where the sling is heading. The freight quay's
+   * timber edge (`k`, row 0) runs behind the deck's north side: blocked and seen over, as the
+   * water was, so the fight is the same.
    */
   rows: [
-    'WWWWWWWWWWWWWWWWWWW',
+    'kkkkkkkkkkkWWWWWWWW',
     'WWwwwwwwwwwWWWWWWWW',
     'WwwwwwcwwwwWWWwwwWW',
     'WwwwwwcwwwwWWwwBBww',
