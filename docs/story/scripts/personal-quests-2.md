@@ -194,8 +194,8 @@ other for some time, with one finger.
 
 **Narrator:** She touches a place on the post. It is between two notches.
 
-**Lin Mei:** I took it from three seasons of gauge readings and a calculation. It is within a hand of what
-you cut with a knife. Yours goes back forty years further than mine.
+**Lin Mei:** I took it from three seasons of gauge readings and a calculation. It is within a hand of what you
+cut with a knife. Yours goes back fifty years further than mine.
 
 **Fenn:** We'd have shown you the post. Nobody came down this end.
 
@@ -234,8 +234,9 @@ bank. Then we drag it back down in autumn. That's what the runners are for.
 **Shown:** played. **Where:** the step of Dabi's house, with the notice. This is the bible's DLG-06, word for
 word; only the choice at the end is set out as a vote.
 
-**Narrator:** Fenn takes the notice out of her apron pocket and unfolds it on the step. She puts one finger on
-the small survey mark in the corner.
+**Narrator:** Lessons are over. Dabi hands the survey case back with both arms, and Lin Mei is still holding
+it when Fenn takes the notice out of her apron pocket and unfolds it on the step. Fenn puts one finger on the
+small survey mark in the corner.
 
 **Fenn:** That's your mark.
 
@@ -395,7 +396,7 @@ either.
 **Narrator:** Lin Mei holds it very carefully by the edges. For a moment her face does several things at
 once.
 
-**Lin Mei:** I collect these. Maps of places too small to need one. I have eleven. I have never been given
+**Lin Mei:** I collect these. Maps of places too small to need one. I have thirty-one. I have never been given
 one by the person who lives on it.
 
 **Lin Mei:** I would like to play you at the stumps again. Next time. Backwards. I will have practised.
@@ -433,11 +434,10 @@ cart (not after `pq06_technical`). Sets `pq06_done`._
 
 **Theme card:** PQ-07, The Promise on the Wind
 
-Themes: responsibility, belonging. Nima walked off a half-built roof to help strangers on a road, and the
-help was real. He never sent word. For a week nobody at the sanctuary knew whether he was under the roof.
-What Sena asks of him is one dull night in a hut, because an old man has done nine of them running. From the
-owner's list, this quest carries: you show up for people; you go and look, and you come back and tell them
-what you found.
+Themes: responsibility, belonging. Nima walked off a half-built roof to help strangers on a road, and the help
+was real. He never sent word. For a week nobody at the sanctuary knew whether he was under the roof. What Sena
+asks of him is one dull night in a hut, because an old man has done nine of them running. From the owner's
+list, this quest carries: you show up for people.
 
 - [x] No nation, element or culture stereotype (the sanctuary is one mixed household with a rota, not "Air
       culture")
@@ -488,8 +488,8 @@ it goes. Nima sits against the wall with his eyes shut, nudging the gusts with t
 
 **Narrator:** It works. It works very well for about twenty paces.
 
-**Narrator:** Then a real gust comes down off the ridge. The broom goes the rest of the terrace in one
-swing, and takes eleven cushions and a board game off the end of it into the tea garden below.
+**Narrator:** Then a real gust comes down off the ridge. The broom goes the rest of the terrace in one swing,
+and takes fourteen cushions and a board game off the end of it into the tea garden below.
 
 **Narrator:** Sena has been watching from the kitchen door, holding a cup under a weighted lid.
 
@@ -499,8 +499,8 @@ swing, and takes eleven cushions and a board game off the end of it into the tea
 
 **Sena:** There won't be a second time. Those are my cushions.
 
-**Narrator:** Nima goes down and fetches eleven cushions. He finds all the game pieces but one. He sweeps the
-last twenty paces with his hands on the broom.
+**Narrator:** Nima goes down and fetches thirteen cushions. The fourteenth has gone on over the wall into the
+cloud. He finds all the game pieces but one. He sweeps the last twenty paces with his hands on the broom.
 
 > **If Bo is in the party —**
 > **Narrator:** Bo has picked up the kite line and is running it through his fingers.
@@ -563,8 +563,8 @@ We dug through the fallen thatch on the east side with our hands, in case.
 **Sena:** There's a wall down on the west shelter. Everyone who can lift is on it tonight. That leaves the
 night watch. Hobb's done nine running.
 
-**Sena:** It's a hut, a lamp, a rope and a book. Nothing happens. I'm not giving it to you because it's
-dull. I'm giving it to you because Hobb needs to lie down, and you're the one who's here.
+**Sena:** It's a hut, a lamp, a rope and a book. Nothing happens. Hobb needs to lie down, and you're the one
+who's here.
 
 ### Scene M.2 — The watch hut
 
@@ -597,29 +597,19 @@ do.
 
 **Narrator:** He looks at the ladder. He looks at the high cleat. He looks at the card.
 
-**Three small jobs (any order):**
-
-**Job one — the lamp.**
-
 **Narrator:** There is a spare pulley in the hoist locker. Nima hangs it from the bracket and runs a cord
 through. Now the lamp is lit at the bottom and hauled up from the stool.
 
 **Nima:** No ladder. Hobb could do that sitting down. Anyone could do that sitting down.
 
-**Job two — the rope.**
-
 **Narrator:** The flag rope ties off on a cleat above Nima's head. He moves the cleat down the post to the
 height of a seated person's hand, and puts a wooden toggle on the rope's end so that it cannot run away
 through cold fingers.
-
-**Job three — the card.**
 
 **Narrator:** Nima turns Sena's card over and draws on the back. A flat ribbon, an arrow, a flag going up. A
 bell with two lines, an arrow, a basket going down. A lamp, an arrow, a hand writing in a book.
 
 **Narrator:** They are not good drawings. Nobody could mistake what they mean.
-
-**Then:**
 
 **Narrator:** He stands back. It is finished. There is an hour of daylight left.
 
@@ -655,8 +645,8 @@ cushion and the string.
 forgotten to light.
 
 **Student:** There's a sky bison on the landing meadow! A wild one! It came down out of the cloud and it's
-just lying there! Everybody's going down. Sena says we can, if we're quiet. It'll be gone by morning. They
-never stay.
+just lying there! Everybody who isn't on the wall is going down. Sena says we can, if we're quiet. It'll be
+gone by morning. They never stay.
 
 **Narrator:** She is gone again before she has finished.
 
@@ -732,19 +722,16 @@ about how big it was.
 
 **Nima:** Good.
 
-**Narrator:** He finds that he means it.
-
 **If `pq07_handed_over`:**
 
 **Narrator:** Nima takes Kip through the card. Ribbon, flag: Kip runs the flag up and down from the stool.
 Bell, basket: Kip sends the basket down empty and brings it back. Lamp, book.
 
-**Nima:** Do the flag again. I'm not doubting you. I'm going to be on that path, and I want to have seen it
-twice.
+**Nima:** Do the flag again. I'm going to be on that path. I want to have seen it twice.
 
 **Narrator:** Kip does the flag again. Nima opens the book and writes: "Watch handed to Kip, of the lower
-camps, at dusk. Shown the card. Did each thing twice. Nima gone down the switchbacks to meet the oil
-carrier. Back by first light." He reads it over. He adds his name.
+camps, at dusk. Shown the card. Did each thing, and the flag twice. Nima gone down the switchbacks to meet the
+oil carrier. Back by first light." He reads it over. He adds his name.
 
 **Narrator:** He goes down the cliff path with a lantern. From the third turn he can see the meadow, a long
 way off: a ring of small lights, and something pale and enormous in the middle of them. He stops walking for
@@ -826,7 +813,8 @@ west shelter is repaired a day late._
 
 **Nima:** Nothing happened. One gust and two cans.
 
-**Sena:** That's what a good night is. I've got forty years of these books. The good ones are all four lines.
+**Sena:** That's what a good night is. I've a shelf of these books, every one since the rebuilding. The good
+ones are all four lines.
 
 **After `pq07_handed_over`:**
 
@@ -839,7 +827,8 @@ I had. It's in the book.
 
 **Narrator:** She shuts the book.
 
-**Sena:** Kip can have Thursdays, if Kip wants them. Seven of us isn't enough. I've known that for a year.
+**Sena:** Kip can have the fourth night, if Kip wants it. Seven of us isn't enough. I've known that for a
+year.
 
 **Both:**
 
@@ -880,13 +869,12 @@ good.
 
 **Narrator:** She closes the book. She does not get out the board game.
 
-**Sena:** I'm not going to say you can't come back. You can. I'm going to say that the next time I need one
-dull thing done, I'll ask somebody else first, and you'll know why.
+**Sena:** You can come back. You know that. But the next time I need one dull thing done, I'll ask somebody
+else first, and you'll know why.
 
 **Nima:** I saw it, Sena. I'm not sorry I saw it. I'm sorry how.
 
-**Sena:** I know. Both of those can sit there. Go and tell the carrier. She's at the bottom of the hoist,
-and she's a can short.
+**Sena:** I know. Go and tell the carrier. She's at the bottom of the hoist, and she's a can short.
 
 **Narrator:** He goes down the cliff path in daylight to tell her. It is every turn of the switchbacks, and
 nobody goes with him.
@@ -907,7 +895,7 @@ Sets `pq07_done`._
 | `pq07_done`           | The quest is closed (any of the three)                  |
 
 - **Trust:** Act III's table reads "PQ-07 kept" for the Bellweather sanctuary: that is `pq07_kept` or
-  `pq07_handed_over`. The lower camps rise a little with `pq07_handed_over` (Kip has Thursdays).
+  `pq07_handed_over`. The lower camps rise a little with `pq07_handed_over` (Kip has the fourth night).
 - **The watch hut** keeps Nima's pulley, cleat and picture card on every route. They do not depend on the
   vote.
 - **MQ-12, Scene 12.2:** Sena gives Nima "the dullest one I've got". It plays for every Nima; after
@@ -964,8 +952,8 @@ opened them. Nobody sent them on, either. They just put a rock on them").
 **Shown:** played. **Where:** the Bellweather mail shelter: a plank hut with a half-door, pigeonholes, and a
 sorting table weighted with stones against the wind. _Sets `pq08_open`._
 
-**Narrator:** The bundle has burst its string coming up on the tram. There are thirty-odd pieces on the
-sorting table and a stone on each.
+**Narrator:** The bundle has burst its string on the way up. There are thirty-odd pieces on the sorting table
+and a stone on each.
 
 **Jinu:** Right. What's your name?
 
@@ -1001,7 +989,7 @@ Bellweather."
 
 **Ilo:** You said you knew what was in it.
 
-**Jinu:** That's Hana's seal. Ferry clerk at Saltstep. She writes to her mother once a month, and she's been
+**Jinu:** That's Chun's seal. Ferry clerk at Saltstep. She writes to her mother once a month, and she's been
 walking out with the customs man's nephew since autumn. Everybody on the pole walk knows it. And this one's
 two sheets, where she only ever sends one.
 
@@ -1066,18 +1054,20 @@ after.
 **Tram operator:** "Gusts from the east follow each pressure test within the hour. Suspend the car during
 tests and for one hour after. Dates of tests below." There's twelve dates. Four of them have been and gone.
 
-**Tram operator:** I ran the car on all four.
+**Tram operator:** I ran the car on all four. The fourth was the day it hung.
 
 **Jinu:** Who stamped it private?
 
 **Narrator:** A clerk in the station office has stopped writing.
 
-**Station clerk:** I did. Head office sent a note with it. A posted gust warning with our own tests named
-on it "invites misunderstanding". So it was for the station master's eyes, and he was to use his judgement.
+**Station clerk:** I did. Nine days ago, when it came in. The line office sent a note with it. A posted gust
+warning with the ridge station's tests named on it "invites misunderstanding". So it was for the station
+master's eyes, and he was to use his judgement. You were up the line. I put it in the up-bag.
 
-**Tram operator:** I'd have used my judgement if I'd had the post! It's sat in a bundle for nine days!
+**Tram operator:** I'd have used my judgement if I'd had the post! That bag's sat in a luggage cage for nine
+days!
 
-**Station clerk:** I didn't lose the bundle. I only stamped it.
+**Station clerk:** I didn't lose the bag. I only stamped it.
 
 **Jinu:** I'm not after you. I'm asking whose it is.
 
@@ -1090,9 +1080,9 @@ affected by all twelve. That's not a private letter. That's a notice with the wr
 
 **Tram operator:** It's addressed to me.
 
-**Jinu:** It is. So I'm not pinning your post on a wall. I'm asking you to. Write it out fair, put the
-station seal on it and your own name under it, and I'll carry copies to every board between here and the
-camps. Then it's yours and it's true, and nobody can say a courier leaked it.
+**Jinu:** It is. So it's not mine to pin on a wall. It's yours. Write it out fair, put the station seal on it
+and your own name under it, and I'll carry copies to every board between here and the camps. Then it's yours
+and it's true, and nobody can say a courier leaked it.
 
 **Narrator:** The operator looks at the clerk. The clerk looks at the note from head office.
 
@@ -1211,8 +1201,8 @@ the edge of the first sheet, and the old woman's hand, and nothing else.
 
 **Ilo:** Don't you want to know?
 
-**Jinu:** I want to know so badly my teeth hurt. Come on. There's eleven more for the terraces, and I'm
-going to weigh every one of them.
+**Jinu:** I want to know so badly my teeth hurt. Come on. There's a dozen more for the terraces, and I'm going
+to weigh every one of them.
 
 **If `pq08_asked`:**
 
@@ -1254,7 +1244,7 @@ one piece, with the little boat whole.
 
 **Narrator:** She reads both sheets. It takes her less time than it took to decide.
 
-**Narrator:** There is no wedding in it. Hana has been made permanent on the ferry desk. She has a room with
+**Narrator:** There is no wedding in it. Chun has been made permanent on the ferry desk. She has a room with
 a stove. She is not coming up for the summer work. She wants her mother to come down to her before the
 spring tide, and she has drawn the stairs.
 
@@ -1287,9 +1277,8 @@ else has. I'm the one.
 
 **Marda:** You came and said. Most wouldn't. Bring the next one shut.
 
-**Narrator:** The half-door swings to. Ilo has not said anything for some time.
-
-**Jinu:** That's what it costs. Look at it properly. I'd rather you learned it off me than did it yourself.
+**Narrator:** The half-door swings to. Jinu walks down as far as the cistern without a word. Ilo has never
+heard her not say anything.
 
 ### Scene J.5 — What Ilo carved
 
@@ -1312,9 +1301,9 @@ hand.
 
 **Narrator:** He does her bag strap. She looks at it with her head on one side.
 
-**Jinu:** It's crooked. I love it. Did you know the turnip was the first vegetable I ever delivered? A whole
-sack, to a man who'd ordered parsnips. He kept them. That's a long story. I'll tell you on the stairs. No,
-I won't. I'll ask him first.
+**Jinu:** It's crooked. I love it. Did you know a turnip was the first thing I ever delivered wrong? A whole
+sack, to a man who'd ordered parsnips. I'll tell you on the stairs. That one's mine to tell. I'm the one who
+got it wrong.
 
 **After `pq08_opened`:**
 
@@ -1358,25 +1347,24 @@ _Keepsake: **Ilo's turnip stamp print, "OUTSIDE ONLY"**, on Jinu's bag strap, wh
 
 **Theme card:** PQ-09, The Lesson You Keep
 
-Themes: responsibility, fairness. The woman who taught Riko how not to be hurt also taught company guards how
-to hold a striker by the wrist until the pay clerk had gone home. It is the same hold. Seli is funny and
-proud and sorry, and Riko loves her. From the owner's list, this quest carries: good people can cause harm;
-you can admire someone and still tell them to stop.
+Themes: responsibility, equality. The woman who taught Riko how not to be hurt also taught company guards how
+to hold a striker by the wrist until the pay clerk had gone home. It is the same hold. Seli is funny and proud
+and sorry, and Riko loves her. From the owner's list, this quest carries: good people can cause harm.
 
 - [x] No nation, element or culture stereotype (nothing here is about benders and non-benders; the holds were
       used by non-bender guards on non-bender workers)
 - [x] Every valid party, non-benders included, has a real route through
 - [x] No instant forgiveness or absolution (forgiveness stays Riko's to give, and no route makes her give it)
-- [x] The other side's reasons are shown (Bodi's account: the holds replaced sticks; the recruiter's hands
+- [x] The other side's reasons are shown (Zan's account: the holds replaced sticks; the recruiter's hands
       are laid-off rail workers)
 - [x] The theme is never stated outright
 - [x] Absent heroes are never voiced
 
 **Opens:** at Copper Orchard, in Scene 6.4 of MQ-06, with Riko in the party. **Other people:** Seli, she/her,
 52, Riko's former teacher, now a travelling theatre's movement coach; Haro, he/him, 36, the troupe's manager;
-Bodi, he/him, fifties, a porter at Pear Halt; Ruvi, she/her, forties, an orchard picker; a recruiting
-sergeant from Commonworks Security. **What the party may know:** everything through MQ-05, including the
-Marshal's name and his instruction.
+Zan, he/him, forties, a porter at Pear Halt; Tamsa, she/her, forties, an orchard picker; a recruiting sergeant
+from Commonworks Security. **What the party may know:** everything through MQ-05, including the Marshal's name
+and his instruction.
 
 **Planted earlier:** the practice board by the guards' shelter at the quarry (`reason.riko`: "She told me it
 was for keeping people from getting hurt").
@@ -1553,57 +1541,57 @@ that undone? Because I taught you with the same hands.
 
 **Shown:** found (two conversations at Pear Halt, either order; both are needed before R.4).
 
-**Bodi, the porter.**
+**Zan, the porter.**
 
-**Narrator:** Bodi is stacking pear crates on the Halt's platform, three high, each one squared to the one
+**Narrator:** Zan is stacking pear crates on the Halt's platform, three high, each one squared to the one
 below.
 
-**Bodi:** Seli? She's here? I'll be blowed. I'd shake her hand.
+**Zan:** Seli? She's here? I'll be blowed. I'd shake her hand.
 
-**Bodi:** I was nineteen and they gave me a stick and a gate. First week, I broke a man's collarbone, because
+**Zan:** I was nineteen and they gave me a stick and a gate. First week, I broke a man's collarbone, because
 he came at me and I didn't know anything else. I was sick behind the hut.
 
-**Bodi:** Then she came. Six weeks. After that I never hit anybody again, not once in eleven years. You take
-hold, you wait, they get tired, they go home. I've had drunks off the line that way, here, since. Two of
-them would be dead under a wagon.
+**Zan:** Then she came. Six weeks. After that I never hit anybody again, not once in fourteen years. You take
+hold, you wait, they get tired, they go home. I've had drunks off the line that way, here, since. Two of them
+would be dead under a wagon.
 
 **Party:** And the people you held?
 
-**Bodi:** They went home. That's what I'm telling you. Every one of them went home.
+**Zan:** They went home. That's what I'm telling you. Every one of them went home.
 
-**Ruvi, the picker.**
+**Tamsa, the picker.**
 
-**Narrator:** Ruvi is up a ladder in the third row of the orchard. She comes down when she hears the name,
+**Narrator:** Tamsa is up a ladder in the third row of the orchard. She comes down when she hears the name,
 slowly, and stands with the picking bag held in front of her.
 
-**Ruvi:** I was one of the forty. One of three women. Seli said I had the best wrists in the shed.
+**Tamsa:** I was one of the forty. One of three women. Seli said I had the best wrists in the shed.
 
-**Ruvi:** The year of the short pay, the hewers at the Tin Cut drew up a complaint. They were going to put
+**Tamsa:** The year of the short pay, the hewers at the Tin Cut drew up a complaint. They were going to put
 their marks on it in the yard, at noon, with the pay clerk there to see, so it would be on record.
 
-**Ruvi:** We were told: no sticks, no bruises. Twelve of us went into that yard and took eleven hewers by
+**Tamsa:** We were told: no sticks, no bruises. Twelve of us went into that yard and took eleven hewers by
 the wrist. Just held them. From noon until the clerk had packed his table and gone. Four hours.
 
-**Ruvi:** Nobody had a mark on them. That was what we were for. No bruise, so nothing to show a magistrate.
+**Tamsa:** Nobody had a mark on them. That was what we were for. No bruise, so nothing to show a magistrate.
 And the paper never got marked, because you can't make your mark when somebody's got your hand.
 
 **Narrator:** She shifts the picking bag.
 
-**Ruvi:** Mine was a woman. She didn't fight. She kept saying her boy was at the school gate, and who'd
+**Tamsa:** Mine was a woman. She didn't fight. She kept saying her boy was at the school gate, and who'd
 fetch him. She said it for four hours. I can do her voice.
 
-**Ruvi:** He was all right. A neighbour took him. I went and found out, after. I handed my coat in the next
+**Tamsa:** He was all right. A neighbour took him. I went and found out, after. I handed my coat in the next
 morning.
 
-**Party:** Bodi says everyone went home.
+**Party:** Zan says everyone went home.
 
-**Ruvi:** They did. Bodi's not lying. They all went home, and they never got their pay, and nobody could
+**Tamsa:** They did. Zan's not lying. They all went home, and they never got their pay, and nobody could
 say a hand had been laid on them.
 
 > **If Tenzo is in the party —**
 > **Tenzo:** Would you say that again, in front of people? If they asked?
 >
-> **Ruvi:** I've said it to the trees for twenty years. I'd say it to people. Nobody's asked.
+> **Tamsa:** I've said it to the trees for twenty years. I'd say it to people. Nobody's asked.
 
 ### Scene R.4 — The sign-up table
 
@@ -1705,9 +1693,9 @@ Her hands are not quite steady. She does not look up.
 
 **Seli:** You went and asked them.
 
-**Riko:** Bodi would shake your hand. Ruvi can still do a woman's voice from twenty years ago.
+**Riko:** Zan would shake your hand. Tamsa can still do a woman's voice from twenty years ago.
 
-**Seli:** Ruvi. Best wrists in the shed.
+**Seli:** Tamsa. Best wrists in the shed.
 
 **Riko:** She said you'd said so.
 
@@ -1746,23 +1734,23 @@ morning. Haro's fond of me. He's fonder of being booked. And that sergeant's cla
 **VOTE — What does Riko ask of Seli?**
 
 - **Testify, and teach only in the open.** Seli gives her account to the yard and the Halt, in front of
-  Ruvi and Bodi, signed. After that she teaches on this platform, in daylight, to anyone, with the getting
+  Tamsa and Zan, signed. After that she teaches on this platform, in daylight, to anyone, with the getting
   out taught first, and with the yard and the Halt deciding who learns what. _Sets `pq09_testify_program`._
-- **Report it herself, and stop being Seli's student.** Riko takes Ruvi's account, Bodi's, and the board at
-  Stoneback to the yard and the Halt without Seli. It will be heard. The two of them will not be what they
-  were. _Sets `pq09_reported`._
-- **Take the apology, here, between the two of them.** Seli says it to Riko. Ruvi carries the public case
+- **Report it herself, and stop being Seli's student.** Riko takes Tamsa's account and Zan's (and the board at
+  Stoneback, if `reason.riko` is set) to the yard and the Halt without Seli. It will be heard. The two of them
+  will not be what they were. _Sets `pq09_reported`._
+- **Take the apology, here, between the two of them.** Seli says it to Riko. Tamsa carries the public case
   herself, since she is willing; Riko is not part of it. _Sets `pq09_private`._
 
-Footer: "Ruvi's account is heard on all three. What changes is who stands beside her."
+Footer: "Tamsa's account is heard on all three. What changes is who stands beside her."
 
 **If `pq09_testify_program`:**
 
 **Narrator:** Seli says it the next morning, on the old passenger platform, with the painted drawing room
-still standing behind her. The yard is there. Half the Halt is there. Ruvi stands at the front with her
-picking bag. Bodi stands at the back.
+still standing behind her. The yard is there. Half the Halt is there. Tamsa stands at the front with her
+picking bag. Zan stands at the back.
 
-**Seli:** My name is Seli. For nine years I trained gate guards for four quarry companies. I taught them to
+**Seli:** My name is Seli. For eight years I trained gate guards for four quarry companies. I taught them to
 hold a person without marking them. I knew what that was worth to the people who paid me.
 
 **Seli:** I trained the twelve who held the Tin Cut hewers on the day of the complaint. One of them is
@@ -1770,11 +1758,11 @@ standing there. She handed in her coat the next day. I didn't hand in anything f
 
 **Narrator:** She does not ask anyone for anything. When she has finished, she stays where she is.
 
-**Ruvi:** That's all true. I was there for it.
+**Tamsa:** That's all true. I was there for it.
 
-**Narrator:** Bodi turns his cap round in his hands.
+**Narrator:** Zan turns his cap round in his hands.
 
-**Bodi:** I never broke another bone after you. I want that said as well. It doesn't cancel hers. I only
+**Zan:** I never broke another bone after you. I want that said as well. It doesn't cancel hers. I only
 want it said.
 
 **Hesh:** It's said. Both are down. Coach, if you teach on this yard, you teach where I can see it, and you
@@ -1782,7 +1770,7 @@ teach the letting go before the taking hold. Any hand who wants it. Guild card o
 
 **Seli:** Yes.
 
-**Narrator:** That afternoon there are eleven people on the platform. Seli walks down the line turning each
+**Narrator:** That afternoon there are thirteen people on the platform. Seli walks down the line turning each
 wrist a little. Riko walks down it behind her.
 
 **Seli:** She'll correct me. Let her. She's better than I am now.
@@ -1791,13 +1779,15 @@ wrist a little. Riko walks down it behind her.
 
 **Seli:** I know how you watch.
 
-**Narrator:** It is not the way they were. Riko has not said that anything is forgiven. She stays for the
-whole class.
+**Narrator:** Riko has not said that anything is forgiven. She stays for the whole class.
 
 **If `pq09_reported`:**
 
-**Narrator:** Riko goes to the foreman's hut alone. She puts it on the table in order: what Ruvi said, what
-Bodi said, what is chalked on a board at Stoneback. She gives the name.
+**Narrator:** Riko goes to the foreman's hut alone. She puts it on the table in order: what Tamsa said, what
+Zan said. She gives the name.
+
+> **If `reason.riko` is set —** **Narrator:** Last, she draws the board at Stoneback from memory: a thumb, an
+> elbow, a wrist.
 
 **Hesh:** That's your own teacher.
 
@@ -1834,16 +1824,16 @@ keeping people safe. And I'm sorry about the woman at the Tin Cut, though it isn
 
 **Riko:** I'll take the part that's mine. I can't take hers for her. Nobody gave me that to hand out.
 
-**Narrator:** Next morning Ruvi goes up to the foreman's hut by herself, with her picking bag, and says it
+**Narrator:** Next morning Tamsa goes up to the foreman's hut by herself, with her picking bag, and says it
 to Hesh and the yard foreman. It is written down. Riko is not in the room.
 
-**Narrator:** Afterwards Ruvi passes her on the platform steps.
+**Narrator:** Afterwards Tamsa passes her on the platform steps.
 
-**Ruvi:** I'd thought you might be in there.
+**Tamsa:** I'd thought you might be in there.
 
 **Riko:** I thought about it.
 
-**Ruvi:** Mm. Well. It's said now. You've got her wrists, you know. I saw it yesterday.
+**Tamsa:** Mm. Well. It's said now. You've got her wrists, you know. I saw it yesterday.
 
 **Narrator:** She goes back to her ladder. Riko stays on the steps for some time.
 
@@ -1852,7 +1842,7 @@ to Hesh and the yard foreman. It is written down. Riko is not in the room.
 **Shown:** found (the platform, that evening). Plays after `pq09_testify_program` or `pq09_private`; after
 `pq09_reported` the troupe has gone and only the easel is left, with the playbill.
 
-**Narrator:** "The Lamp at Midnight" plays to forty people on pear crates. The candlestick is on the left of
+**Narrator:** "The Lamp at Midnight" plays to thirty people on pear crates. The candlestick is on the left of
 the mantel. The Steward and the Inspector fight, and it is quite convincing, and the ladle is dented.
 
 **Narrator:** Riko is in the back row with her arms folded. During the thunderstorm, which is Haro shaking a
@@ -1881,7 +1871,7 @@ every route; after `pq09_reported` Riko takes it off the easel herself). Sets `p
 | `lost_halt_recruiters` | Six rail hands signed; three sleep in the waiting room               |
 | `pq09_testify_program` | Seli's public account, and open teaching under the yard and the Halt |
 | `pq09_reported`        | Riko reported it without her; the two part                           |
-| `pq09_private`         | A private apology; Ruvi carries the public case alone                |
+| `pq09_private`         | A private apology; Tamsa carries the public case alone               |
 | `pq09_done`            | The quest is closed (any of the three)                               |
 
 - **Trust:** Pear Halt and the rail crews rise with winning R.4 and with `pq09_testify_program` or
@@ -1900,12 +1890,11 @@ every route; after `pq09_reported` Riko takes it off the easel herself). Sets `p
 
 **Theme card:** PQ-10, The Right to Repair
 
-Themes: equality, responsibility. Wen drew a regulator with a lever on it, so that the person standing next
-to the machine could always let the pressure go. Somebody took the lever off and put a keyhole there, and
-they had a reason. Wen cannot fix the reason by being clever at a bench. She has to write three steps that a
+Themes: equality, responsibility. Wen drew a regulator with a lever on it, so that the person standing next to
+the machine could always let the pressure go. Somebody took the lever off and put a keyhole there, and they
+had a reason. Wen cannot fix the reason by being clever at a bench. She has to write three steps that a
 stranger can follow, and then stand with her hands in her pockets while the stranger does them. From the
-owner's list, this quest carries: saying sorry isn't the end of it; owning it is the start, and then there's
-the work.
+owner's list, this quest carries: good people can cause harm.
 
 - [x] No nation, element or culture stereotype
 - [x] Every valid party, non-benders included, has a real route through
@@ -1968,11 +1957,11 @@ Where the lever should be, a brass plate with a keyhole, and six words stamped r
 service only. Do not force."
 
 > **If `reason.wen` is set —**
-> **Wen:** There was one of these in the drilling machine at Stoneback. No lever. I stood next to it while it
-> was running, and there was nothing on it I could pull.
+> **Wen:** There was one of these in the drilling machine at Stoneback. No lever. I had my arm in its housing
+> once it had stopped. There was nothing in there anybody could have pulled while it ran.
 >
-> **Wen:** I'd drawn that machine a way to be stopped by whoever was closest. Whoever was closest was me. And
-> I couldn't.
+> **Wen:** I'd drawn that machine a way to be stopped by whoever was closest. Somebody took the way out and
+> left the closest person standing there.
 
 **Edda:** Go on, then. You've got that look. What do you want to build?
 
@@ -2022,13 +2011,13 @@ Give me an hour.
 beautiful. Edda pulls it with two fingers.
 
 > **If Riko is in the party —**
-> **Wen:** Riko. Try it with the power off. Cold. No warning.
+> **Wen:** Riko. Try it with your eyes shut. Cold. No warning.
 >
-> **Narrator:** Riko pulls it.
+> **Narrator:** Riko finds it by feel, and pulls it.
 >
-> **Riko:** Stiff at the end.
+> **Riko:** It works. I had to hunt for it. You've only painted the side you were standing on.
 >
-> **Wen:** Show me where.
+> **Wen:** ...Red all the way round. Pass me the tin.
 
 > **If Tenzo is in the party —**
 > **Tenzo:** Can you pull it with a wet hand? A hand that's had oil on it?
@@ -2043,7 +2032,7 @@ beautiful. Edda pulls it with two fingers.
 been patched with three different cloths. She puts it on the bench and it lands with a weight that says
 every tool in it is a good one.
 
-**Edda:** Ruda. Low-landing pumps, twenty-two years. Ruda, this is the one whose napkin it is.
+**Edda:** Ruda. Low-landing pumps, nineteen years. Ruda, this is the one whose napkin it is.
 
 **Ruda:** Is it.
 
@@ -2059,7 +2048,7 @@ quarter turn and a drop of oil.
 on it that says "Authorised service only", so I stand there. The fitter with the key comes on a nine-day
 round. If it sticks on the second day, forty houses carry water for a week.
 
-**Ruda:** I mended that pump for twenty-two years. Now I report it.
+**Ruda:** I mended that pump for nineteen years. Now I report it.
 
 **Narrator:** She puts one finger on the napkin, on the word with three underlines.
 
@@ -2085,7 +2074,7 @@ what happens when I pull it. Have you written that down anywhere? What to do, in
 **Narrator:** She has. It is under the napkin. It is thirty-eight pages long, in a hand that gets smaller as it
 gets more excited, and it begins with the history of the pressure valve.
 
-**Ruda:** I've got eleven minutes of lamp oil and a pump that's screaming. Which page do I want?
+**Ruda:** I've got seven minutes of lamp oil and a pump that's screaming. Which page do I want?
 
 **Narrator:** Wen turns the pages. She turns quite a lot of pages.
 
@@ -2097,10 +2086,10 @@ gets more excited, and it begins with the history of the pressure valve.
 slightly.
 
 > **After MQ-04 —**
-> **Wen:** The Director built a stop wheel a child of eight can turn. I watched a child turn it. And the same
-> office signed off on a keyhole.
+> **Wen:** There's a lift wheel on the low landing that a child of eight can turn. The Director built that.
+> And the same office signed off on a keyhole.
 >
-> **Ruda:** Both of those are her. I pump water under both of them.
+> **Ruda:** It's one office. I pump water under both ends of it.
 
 ### Scene W.3 — The key had a reason
 
@@ -2119,10 +2108,10 @@ for a reason, and I was there for the reason.
 
 **Narrator:** He does sit down. He puts the ring of keys on the bench in front of him.
 
-**Company fitter:** Two winters back. Upper landing, a pump with the lever still on. Somebody's lad saw the
+**Company fitter:** Winter before last. Upper landing, a pump with the lever still on. Somebody's lad saw the
 gauge up high and did the sensible thing. Pulled it. Dumped the lot.
 
-**Company fitter:** And a man was working on the outfall, forty paces down the pipe, with his arm in it. Got
+**Company fitter:** And a man was working on the outfall, thirty paces down the pipe, with his arm in it. Got
 the whole charge, hot, up to the shoulder. He kept the arm. He was off work till spring.
 
 **Company fitter:** The lad did nothing wrong. He did what the lever was for. Nobody'd told him to look down
@@ -2330,13 +2319,17 @@ idea, with somebody else holding it.
 stamp, and with no word changed. The sheet goes up by the door of Tanner's Stair pump house. The first
 entry on it is in Ruda's capitals.
 
-> **After MQ-04 —**
-> **Narrator:** Under the stamp, in a neat hand in a hurry, is one line: "Term 4 is the right term. I should
-> have asked for it myself. V. Sen."
+> **After MQ-04 and before MQ-09 —**
+> **Narrator:** Under the stamp, in a neat hand in a hurry, is one line: "Term 4 stays. A stop nobody can
+> reach is not a stop. V. Sen."
 >
 > **Wen:** She agreed to it.
 >
 > **Ruda:** She agreed to one pump house. Count the rest before you frame that.
+
+> **After MQ-09 —** **Narrator:** The page goes up the valley under Ruda's name and the district's. Wen's is
+> left off it, at her own asking: a name on a wanted poster is no help to a pump house. It comes back stamped
+> by a clerk, with no word changed and nothing added.
 
 ### Scene W.6 — The napkin
 
@@ -2355,7 +2348,8 @@ entry on it is in Ruda's capitals.
 
 **Wen:** There. Now it's right.
 
-**Narrator:** She opens Edda's drawer to put the pencil back. There is a snap.
+**Narrator:** She pokes the pencil into Edda's drawer to put it back. There is a snap. The pencil comes out
+again with something on the end of it.
 
 **Narrator:** It is a mousetrap with a paper flag on it. The flag says "told you".
 
@@ -2419,7 +2413,7 @@ At most one cutscene candidate per quest, and none is relied on: every one also 
 Everything below is written into the scripts as recommended, per the standing instruction.
 
 1. **Names I invented.** Dabi (Fenn's pupil); Hobb (the caretaker with bad knees) and Kip (the lower-camp
-   runner); Ilo (the "young courier" of Scene 8.2), Marda and her daughter Hana; Bodi and Ruvi (Seli's former
+   runner); Ilo (the "young courier" of Scene 8.2), Marda and her daughter Chun; Zan and Tamsa (Seli's former
    trainees), and "the Tin Cut" for the quarry where they served; Ruda (the pump mechanic) and Pol (the
    company fitter); the play's title, "The Lamp at Midnight". All were checked against the cast lists and the
    identity locks. Recommend: approve.
@@ -2455,16 +2449,18 @@ Everything below is written into the scripts as recommended, per the standing in
    sign. His three hands were rail hands six months ago. The hold mechanic (a held unit cannot move unless an
    ally breaks it, or it is Riko) is a build suggestion. Seli teaching the release aloud in round two is the
    scene's turn, and should survive however the fight is built. Recommend: keep.
-10. **Why the keyhole exists (PQ-10).** The bible gives Commonworks no reason for replacing Wen's lever with
-    a key. I gave it one: a boy pulled a lever correctly and scalded a man forty paces down the pipe, because
+10. **Why the keyhole exists (PQ-10).** The bible gives Commonworks no reason for replacing Wen's lever with a
+    key. I gave it one: a boy pulled a lever correctly and scalded a man thirty paces down the pipe, because
     nobody had told him to shout first. It makes the fitter right about something, and it gives Wen something
     of her own to own (the napkin had a lever and no warning). It reveals nothing about the network.
     Recommend: approve.
-11. **A line from Veyra in PQ-10.** On the `pq10_licensed` route, after MQ-04, the returned terms carry one
-    line in her hand: "Term 4 is the right term. I should have asked for it myself. V. Sen." It is in
-    character (the bible: she "treats Wen seriously") and Ruda undercuts it at once. It is the only place in
-    these three files where an antagonist is given new words. Recommend: keep, but it is your call; cutting
-    the box loses nothing else.
+11. **A line from Veyra in PQ-10.** On the `pq10_licensed` route, after MQ-04 and before MQ-09, the returned
+    terms carry one line in her hand: "Term 4 stays. A stop nobody can reach is not a stop. V. Sen." It is in
+    character (the bible: she "treats Wen seriously", and she builds controls a short person can reach) and
+    Ruda undercuts it at once. The edit pass reworded it: the first draft had her say "I should have asked for
+    it myself", which concedes more than she will until MQ-14, and it could play after MQ-09, when she has
+    refused the shutdown and the party is on the posters. It is the only place in these three files where an
+    antagonist is given new words. Recommend: keep, but it is your call; cutting the box loses nothing else.
 12. **Where PQ-10 plays.** The bible says it "concludes in Copper Orchard or Causeway". I tied scenes W.2 to
     W.6 to Edda's bench rather than to a place, since the act scripts have Edda at Emberwatch in MQ-03, in
     Causeway in MQ-05 and MQ-09, and the bible has her at the Orchard annex. A table can finish the quest
@@ -2477,8 +2473,8 @@ Everything below is written into the scripts as recommended, per the standing in
 14. **Where the documents disagree (PQ-06 to PQ-10):**
     - **MQ-13, Scene 13.4.** Lin Mei says the school path "isn't on any map. I walked it." After
       `pq06_published` or `pq06_negotiated` it is on one. Recommend a variant when 13.4 is built: "It's on one
-      map. Mine. Fenn drew the line." If the quest was never opened she has not walked it, and the line
-      should go to Fenn.
+      map. Mine. Fenn drew the line." If the quest was never opened she has not walked it, and the line should
+      go to Fenn. _Decided:_ 13.4 gets a variant; the act scripts' edit applies it.
     - **Sena's line.** The bible prints "I did help someone." / "I believe you. I also needed to know you
       weren't under a fallen roof." as PQ-07's line; Act III already spends it in the opening (8.2). I do not
       repeat it; M.1 builds on it (the bowl left on the scaffold, the thatch dug through by hand).
@@ -2496,3 +2492,12 @@ Everything below is written into the scripts as recommended, per the standing in
     - **PQ-10's opening and the reveal ladder.** Edda's shipped opening line mentions "the vanes" at MQ-03,
       before the party has seen one. It is a word, not a reveal, and I have kept the quest to pumps and
       regulators until after MQ-04.
+15. **Edit pass (2026-11-17): three names changed.** Bodi is now Zan (Bo and Bo-shan already need a naming
+    lock), Ruvi is Tamsa (she alternated with Riko, line by line) and Hana is Chun (beside Hanru, Haro and
+    Hua). Still close to an existing name, and left for you: Dabi beside Sabi (the rigger of SF-2.1), and
+    Marda beside Mira, Miri and Meren.
+16. **Edit pass: Wen's card** now names "good people can cause harm" (her lever scalded a man, and the keyhole
+    had a reason) in place of a second "saying sorry isn't the end of it".
+17. **Edit pass: the tram bulletin.** The station clerk stamped it nine days ago and sent it up the line in
+    the up-bag, which is how a bulletin he had handled could sit unread; and the fourth of the test dates is
+    the day the car hung (Scene 8.1).
