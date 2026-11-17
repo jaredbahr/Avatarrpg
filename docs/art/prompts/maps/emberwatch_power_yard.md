@@ -8,7 +8,7 @@
 
 **Layout** `emberwatch_power_yard-layout.png` beside this file: the tile grid as flat colour blocks at 32 px a tile, with the grid drawn. Hand it to the generator as the composition reference (image-to-image or a structure control) at a strength that keeps every edge where it is; upscale it to the delivery size first so the generator does not invent a border.
 
-**Palette** hue anchors from the game's own ground (`src/render/palettes.ts`): wall `#3a352f`, wood `#6b4f33`, water deep `#1f4a5e`, dirt `#b39064`, road `#b39064`, still water `#3e8fb0`. The painting replaces those tones outright, so lighter and more saturated is fine; stay in the same families so the effects and the parchment HUD still read over it.
+**Palette** hue anchors from the game's own ground (`src/render/palettes.ts`): wall `#3a352f`, grass `#6f9e4c`, dirt `#b39064`, wood `#6b4f33`, water deep `#1f4a5e`, road `#b39064`, still water `#3e8fb0`. The painting replaces those tones outright, so lighter and more saturated is fine; stay in the same families so the effects and the parchment HUD still read over it.
 
 ## Where
 
@@ -20,29 +20,30 @@ The power yard at Emberwatch, where the live line comes in.
 
 - Road (2 tiles): a 1×2 block at column 0, rows 5–6 (middle left).
 - Still water (34 tiles): 24 tiles (the centre), row 2: columns 5–10; row 3: columns 4–12; row 4: columns 5–11; row 5: columns 10–11; 8 tiles (the centre), row 7: columns 9–11; row 8: columns 8–12; a 2×1 block at columns 16–17, row 3 (top right).
-- Timber walls (19 tiles): a 14×1 block at columns 1–14, row 1 (top centre); a 1×5 block at column 17, rows 4–8 (middle right).
-- Stone walls (63 tiles): 63 tiles (the centre), rows 0 and 11: columns 0–18; rows 1–2: columns 0 and 15–18; rows 3–4, 7–8 and 10: columns 0 and 18; rows 5–6: column 18; row 9: columns 0 and 17–18.
-- Open ground everywhere else: bare earth (110 tiles).
+- Trees (13 tiles): a 4×3 block at columns 1–4, rows 0–2 (top left); one tile at column 11, row 11 (bottom centre).
+- Timber walls (15 tiles): a 10×1 block at columns 5–14, row 1 (top centre); a 1×5 block at column 17, rows 4–8 (middle right).
+- Stone walls (63 tiles): 38 tiles (the centre), row 0: columns 5–18; rows 1–2: columns 15–18; rows 3–8 and 10: column 18; row 9: columns 17–18; row 11: columns 12–18; 20 tiles (bottom left), rows 7–8: column 0; row 9: columns 0–1; row 10: columns 0 and 7–10; row 11: columns 0–10; a 1×5 block at column 0, rows 0–4 (top left).
+- Open ground everywhere else: bare earth (101 tiles).
 - The party enters from the left, standing at (1, 3), (3, 4), (1, 5), (3, 6), (1, 7), (3, 8); enemies come from the right. Paint nothing there that would read as an object to walk round.
 
 The rows as the rules read them:
 
 ```
-###################
-#FFFFFFFFFFFFFFWWW#
-#....~~~~~~....WWW#
+#UUUUdddddddddd####
+#UUUUFFFFFFFFFFWWW#
+#UUUU~~~~~~....WWW#
 #...~~~~~~~~~...~~#
-#....~~~~~~~.....F#
+d....~~~~~~~.....F#
 =.........~~.....F#
 =................F#
-#........~~~.....F#
-#.......~~~~~....F#
-#................##
-#.................#
-###################
+d........~~~.....F#
+d.......~~~~~....F#
+dd...............dd
+d......dddd.......#
+###########uddddd##
 ```
 
-Legend: `#` stone walls; `F` timber walls; `W` stone walls; `.` bare earth; `~` still water; `=` road.
+Legend: `#` stone walls; `U` trees; `d` stone walls; `F` timber walls; `W` stone walls; `~` still water; `.` bare earth; `=` road; `u` trees.
 
 ## Prompt
 

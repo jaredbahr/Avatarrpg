@@ -19,36 +19,37 @@ Saltstep, a market town built out over a grey bay.
 24 columns by 16 rows, counted from 0 at the top-left corner. The painting is the ground and what stands on it, nothing else: the game draws its own grid, movement contours, units, props and effects over it, so every edge in the painting that matters to the rules sits exactly on a tile edge.
 
 - Road (4 tiles): a 2×2 block at columns 0–1, rows 5–6 (middle left).
-- Trees (76 tiles): 76 tiles (the centre), rows 0 and 15: columns 0–23; row 1: columns 0–1 and 22–23; rows 2–4 and 7–14: columns 0 and 23; rows 5–6: column 23.
-- Timber walls (18 tiles): a 5×2 block at columns 14–18, rows 1–2 (top right); a 4×2 block at columns 5–8, rows 1–2 (top left).
-- Stone walls (117 tiles): 117 tiles (bottom centre), rows 8–9: columns 1–2, 7–9, 14–16 and 22; row 10: columns 1–3, 6–10, 13–17 and 21–22; rows 11–12: columns 1–10 and 13–22; rows 13–14: columns 1–22.
-- Sand (83 tiles): 83 tiles (the centre), row 4: columns 1–22; rows 5–6: columns 2–21; row 7: columns 1–21.
-- Plank floors (40 tiles): 14 tiles (the centre), rows 8–9: columns 10–13; rows 10–12: columns 11–12; 13 tiles (middle right), rows 8–9: columns 17–21; row 10: columns 18–20; 10 tiles (middle left), rows 8–9: columns 3–6; row 10: columns 4–5; a 1×3 block at column 22, rows 5–7 (middle right).
-- Open ground everywhere else: grass (46 tiles).
+- Trees (49 tiles): 47 tiles (top centre), row 0: columns 0–23; row 1: columns 0, 4, 9, 11–13, 19 and 21–23; row 2: columns 0, 9, 12, 21 and 23; row 3: columns 0 and 23; row 4: columns 0 and 22–23; rows 5–7: column 23; one tile at column 2, row 2 (top left); one tile at column 0, row 7 (middle left).
+- Timber walls (21 tiles): a 5×2 block at columns 14–18, rows 1–2 (top right); a 4×2 block at columns 5–8, rows 1–2 (top left); one tile at column 5, row 10 (middle left); one tile at column 18, row 10 (middle right); one tile at column 12, row 13 (bottom centre).
+- Barred timber gates (5 tiles): a 2×1 block at columns 19–20, row 8 (middle right); a 2×1 block at columns 5–6, row 9 (middle left); one tile at column 12, row 8 (the centre).
+- Stone walls (180 tiles): 156 tiles (bottom centre), row 6: column 6; row 7: columns 2, 6–9 and 12–14; row 8: columns 0–2, 7–9, 14 and 23; row 9: columns 0–2, 7–9, 14, 17 and 22–23; row 10: columns 0–3, 6–10, 13–15, 17 and 21–23; row 11: columns 0–10, 13–15 and 17–23; rows 12–13: columns 0–10 and 13–23; rows 14–15: columns 0–23; 7 tiles (top centre), row 4: columns 10–14; row 5: columns 10–11; 5 tiles (top right), row 4: columns 18–21; row 5: column 18; 4 tiles (top left), row 4: columns 6–8; row 5: column 8; a 3×1 block at columns 18–20, row 7 (middle right); a 2×1 block at columns 15–16, row 5 (the centre); a 1×2 block at column 16, rows 7–8 (middle right); one tile at column 4, row 7 (middle left).
+- Sand (50 tiles): 49 tiles (the centre), row 4: columns 1–5, 9 and 15–17; row 5: columns 2–7, 9, 12–14, 17 and 19–21; row 6: columns 2–5 and 7–21; row 7: columns 3, 5, 10–11, 15, 17 and 21; one tile at column 1, row 7 (middle left).
+- Plank floors (39 tiles): 14 tiles (bottom centre), row 8: columns 10–11 and 13; row 9: columns 10–13; rows 10–12: columns 11–12; row 13: column 11; 13 tiles (middle right), rows 5–7: column 22; row 8: columns 17–18 and 21–22; row 9: columns 18–21; row 10: columns 19–20; 7 tiles (middle left), row 8: columns 3–6; row 9: columns 3–4; row 10: column 4; 5 tiles (the centre), row 8: column 15; row 9: columns 15–16; rows 10–11: column 16.
+- Open ground everywhere else: grass (36 tiles).
 - The party enters from the left, standing at (1, 5), (1, 6), (2, 5), (2, 6), (1, 4), (2, 4); enemies come from the right. Paint nothing there that would read as an object to walk round.
 
 The rows as the rules read them:
 
 ```
-TTTTTTTTTTTTTTTTTTTTTTTT
-TT,,,BBBB,,,,,BBBBB,,,TT
-T,,,,BBBB,,,,,BBBBB,,,,T
-T,,,,,,,,,,,,,,,,,,,,,,T
-T::::::::::::::::::::::T
-==::::::::::::::::::::wT
-==::::::::::::::::::::wT
-T:::::::::::::::::::::wT
-TWWwwwwWWWwwwwWWWwwwwwWT
-TWWwwwwWWWwwwwWWWwwwwwWT
-TWWWwwWWWWWwwWWWWWwwwWWT
-TWWWWWWWWWWwwWWWWWWWWWWT
-TWWWWWWWWWWwwWWWWWWWWWWT
-TWWWWWWWWWWWWWWWWWWWWWWT
-TWWWWWWWWWWWWWWWWWWWWWWT
-TTTTTTTTTTTTTTTTTTTTTTTT
+UUUUUUUUUUUUUUUUUUUUUUUU
+U,,,uBBBBu,UUuBBBBBu,UUU
+U,u,,BBBBu,,u,BBBBB,,u,U
+U,,,,,,,,,,,,,,,,,,,,,,U
+U:::::nnn:nnnnn:::nnnnUU
+==::::::n:nn:::nn:n:::wU
+==::::n:::::::::::::::wU
+U:n:n:nWWn::nnn:n:nnn:wU
+WWWwwwwWWWwwGwWwWwwGGwwW
+WWWwwGGWWWwwwwWwwWwwwwWW
+WWWWwFWWWWWwwWWWwWFwwWWW
+WWWWWWWWWWWwwWWWwWWWWWWW
+WWWWWWWWWWWwwWWWWWWWWWWW
+WWWWWWWWWWWwFWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWWWWWWWW
 ```
 
-Legend: `T` trees; `,` grass; `B` timber walls; `:` sand; `=` road; `w` plank floors; `W` stone walls.
+Legend: `U` trees; `,` grass; `u` trees; `B` timber walls; `:` sand; `n` stone walls; `=` road; `w` plank floors; `W` stone walls; `G` barred timber gates; `F` timber walls.
 
 ## Prompt
 

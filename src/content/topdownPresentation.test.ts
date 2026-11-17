@@ -41,13 +41,17 @@ function map(id: string, content = CONTENT): MapDef {
 }
 
 describe('withTopDownMaps', () => {
-  it('registers Ba Dan (T3), the Forest Road (T4) and the quarry (T5), their scenes assets', async () => {
+  it('registers Ba Dan (T3), the Forest Road (T4), the quarry (T5) and RG-02, their scenes assets', async () => {
     expect([...TOPDOWN_SCENES.keys()]).toEqual([
       'ba_dan_village',
       'forest_road',
       'quarry_gate',
       'ambush_road',
       'quarry_floor',
+      'saltstep_market',
+      'saltstep_pontoon',
+      'emberwatch_parade',
+      'emberwatch_power_yard',
     ]);
     const presentations = await loadTopDownPresentations(fromDisk);
     const swapped = withTopDownMaps(CONTENT, presentations);
@@ -66,6 +70,10 @@ describe('withTopDownMaps', () => {
       ['quarry_gate', 'quarry-gate'],
       ['ambush_road', 'cutting'],
       ['quarry_floor', 'quarry-floor'],
+      ['saltstep_market', 'saltstep-market'],
+      ['saltstep_pontoon', 'saltstep-pontoon'],
+      ['emberwatch_parade', 'emberwatch-parade'],
+      ['emberwatch_power_yard', 'emberwatch-power-yard'],
     ] as const) {
       const quarry = map(id, swapped);
       expect(quarry.projection).toBe('topdown');

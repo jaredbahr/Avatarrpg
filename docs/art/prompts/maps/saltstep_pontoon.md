@@ -8,7 +8,7 @@
 
 **Layout** `saltstep_pontoon-layout.png` beside this file: the tile grid as flat colour blocks at 32 px a tile, with the grid drawn. Hand it to the generator as the composition reference (image-to-image or a structure control) at a strength that keeps every edge where it is; upscale it to the delivery size first so the generator does not invent a border.
 
-**Palette** hue anchors from the game's own ground (`src/render/palettes.ts`): water deep `#1f4a5e`, wood `#6b4f33`. The painting replaces those tones outright, so lighter and more saturated is fine; stay in the same families so the effects and the parchment HUD still read over it.
+**Palette** hue anchors from the game's own ground (`src/render/palettes.ts`): wood `#6b4f33`, water deep `#1f4a5e`. The painting replaces those tones outright, so lighter and more saturated is fine; stay in the same families so the effects and the parchment HUD still read over it.
 
 ## Where
 
@@ -18,8 +18,8 @@ The freight pontoon at Saltstep, where the handlers load the barges.
 
 19 columns by 12 rows, counted from 0 at the top-left corner. The painting is the ground and what stands on it, nothing else: the game draws its own grid, movement contours, units, props and effects over it, so every edge in the painting that matters to the rules sits exactly on a tile edge.
 
-- Timber walls (4 tiles): a 2×2 block at columns 15–16, rows 3–4 (middle right).
-- Stone walls (93 tiles): 93 tiles (the centre), rows 0 and 11: columns 0–18; rows 1 and 10: columns 0–1 and 11–18; rows 2 and 8: columns 0, 11–13 and 17–18; row 3: columns 0 and 11–12; row 4: column 0; row 5: columns 0 and 18; rows 6–7: columns 0, 11–12 and 18; row 9: columns 0 and 11–18.
+- Timber walls (15 tiles): a 11×1 block at columns 0–10, row 0 (top left); a 2×2 block at columns 15–16, rows 3–4 (middle right).
+- Stone walls (82 tiles): 59 tiles (the centre), row 1: columns 0–1; rows 2–4: column 0; row 5: columns 0 and 18; rows 6–7: columns 0, 11–12 and 18; row 8: columns 0, 11–13 and 17–18; row 9: columns 0 and 11–18; row 10: columns 0–1 and 11–18; row 11: columns 0–18; 23 tiles (top right), rows 0–1: columns 11–18; row 2: columns 11–13 and 17–18; row 3: columns 11–12.
 - Crates and cover (4 tiles): a 1×2 block at column 6, rows 2–3 (top centre); a 1×2 block at column 5, rows 7–8 (middle left).
 - Plank floors (127 tiles): 127 tiles (the centre), rows 1 and 10: columns 2–10; row 2: columns 1–5, 7–10 and 14–16; row 3: columns 1–5, 7–10, 13–14 and 17–18; row 4: columns 1–14 and 17–18; row 5: columns 1–17; row 6: columns 1–10 and 13–17; row 7: columns 1–4, 6–10 and 13–17; row 8: columns 1–4, 6–10 and 14–16; row 9: columns 1–10.
 - No open ground: every tile is a feature.
@@ -28,7 +28,7 @@ The freight pontoon at Saltstep, where the handlers load the barges.
 The rows as the rules read them:
 
 ```
-WWWWWWWWWWWWWWWWWWW
+kkkkkkkkkkkWWWWWWWW
 WWwwwwwwwwwWWWWWWWW
 WwwwwwcwwwwWWWwwwWW
 WwwwwwcwwwwWWwwBBww
@@ -42,7 +42,7 @@ WWwwwwwwwwwWWWWWWWW
 WWWWWWWWWWWWWWWWWWW
 ```
 
-Legend: `W` stone walls; `w` plank floors; `c` crates and cover; `B` timber walls.
+Legend: `k` timber walls; `W` stone walls; `w` plank floors; `c` crates and cover; `B` timber walls.
 
 ## Prompt
 

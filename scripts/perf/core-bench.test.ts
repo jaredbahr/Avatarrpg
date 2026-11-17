@@ -8,6 +8,7 @@ import {
   POLICY,
   assertCoreBenchBudgets,
   caseBudgetIssues,
+  chooseTopDownBenchMap,
   createCoreBenchSuite,
   createTopDownBenchSuite,
   measureCoreBenchCase,
@@ -86,6 +87,26 @@ describe('core benchmark coverage and frozen calibration', () => {
     );
   });
 
+  it('measures one of the boards tied for the largest area: the frozen one, else the first registered', () => {
+    const frozen = Object.keys(BASELINE.cases);
+    expect(
+      chooseTopDownBenchMap(
+        ['ba_dan_village', 'saltstep_market'],
+        ['ba_dan_village', 'saltstep_market'],
+        frozen,
+      ),
+    ).toBe('ba_dan_village');
+    expect(
+      chooseTopDownBenchMap(
+        ['saltstep_market', 'ba_dan_village'],
+        ['saltstep_market', 'ba_dan_village'],
+        frozen,
+      ),
+    ).toBe('ba_dan_village');
+    expect(chooseTopDownBenchMap(['b', 'a'], ['x', 'b', 'a'], frozen)).toBe('b');
+    expect(() => chooseTopDownBenchMap([], ['a'], frozen)).toThrow();
+  });
+
   it('adds only the largest registered logical top-down board after the original eleven cases', () => {
     const registered = [...TOPDOWN_SCENES.keys()].map((id) => {
       const map = CONTENT.maps.get(id);
@@ -97,11 +118,17 @@ describe('core benchmark coverage and frozen calibration', () => {
     expect(suite.coverage.topDown.registeredMaps).toEqual(registered);
     expect(suite.coverage.topDown.maximumArea).toBe(maximum);
     expect(suite.coverage.topDown.largestMaps).toEqual(
-      registered.filter((map) => map.width * map.height === maximum),
+      registered
+        .filter((map) => map.width * map.height === maximum)
+        .sort((a, b) => a.id.localeCompare(b.id)),
     );
+    // the Saltstep market and Emberwatch's parade ground tie with Ba Dan; only Ba Dan, which has frozen limits, is measured
     expect(suite.coverage.topDown.largestMaps).toEqual([
       { id: 'ba_dan_village', width: 24, height: 16 },
+      { id: 'emberwatch_parade', width: 24, height: 16 },
+      { id: 'saltstep_market', width: 24, height: 16 },
     ]);
+    expect(suite.coverage.topDown.benchmarkedMap).toBe('ba_dan_village');
     const supplemental = createTopDownBenchSuite();
     expect(supplemental.cases.map((entry) => entry.id)).toEqual([
       'reachable/topdown/ba_dan_village',
@@ -174,7 +201,16 @@ describe('core benchmark coverage and frozen calibration', () => {
       createHash('sha256')
         .update(readFileSync(new URL('./core-bench.ts', import.meta.url)))
         .digest('hex'),
-    ).toBe(frozenBaseline.supplementalCalibrations[0]?.calibrationHarnessSha256);
+    ).toBe(frozenBaseline.harnessRevisions.at(-1)?.calibrationHarnessSha256);
+    // The harness that measured Ba Dan's cases keeps its historic hash; a later revision changed what is measured
+    // (the tie rule), never a measurement, so the file is held to the newest revision instead.
+    expect(frozenBaseline.harnessRevisions).toEqual([
+      {
+        source: expect.stringMatching(/^[0-9a-f]{40}$/),
+        calibrationHarnessSha256: expect.stringMatching(/^[0-9a-f]{64}$/),
+        reason: 'tied largest boards benchmark one map; no new measurement',
+      },
+    ]);
     expect(BASELINE.cases['reachable/topdown/ba_dan_village']).toEqual({
       normalizedMedian: 9.956649267866029,
       ceiling: 39.826597071464114,
