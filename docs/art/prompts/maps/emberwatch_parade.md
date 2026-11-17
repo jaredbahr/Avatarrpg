@@ -8,7 +8,7 @@
 
 **Layout** `emberwatch_parade-layout.png` beside this file: the tile grid as flat colour blocks at 32 px a tile, with the grid drawn. Hand it to the generator as the composition reference (image-to-image or a structure control) at a strength that keeps every edge where it is; upscale it to the delivery size first so the generator does not invent a border.
 
-**Palette** hue anchors from the game's own ground (`src/render/palettes.ts`): grass `#6f9e4c`, wall `#3a352f`, sand `#c7a87d`, road `#b39064`, water deep `#1f4a5e`, wood `#6b4f33`. The painting replaces those tones outright, so lighter and more saturated is fine; stay in the same families so the effects and the parchment HUD still read over it.
+**Palette** hue anchors from the game's own ground (`src/render/palettes.ts`): grass `#6f9e4c`, wall `#3a352f`, stone `#d8cbb0`, sand `#c7a87d`, road `#b39064`, water deep `#1f4a5e`, wood `#6b4f33`. The painting replaces those tones outright, so lighter and more saturated is fine; stay in the same families so the effects and the parchment HUD still read over it.
 
 ## Where
 
@@ -19,11 +19,11 @@ Emberwatch, an old military outpost across the bay, reopened for civilians.
 24 columns by 16 rows, counted from 0 at the top-left corner. The painting is the ground and what stands on it, nothing else: the game draws its own grid, movement contours, units, props and effects over it, so every edge in the painting that matters to the rules sits exactly on a tile edge.
 
 - Road (6 tiles): a 3×2 block at columns 21–23, rows 7–8 (middle right).
-- Trees (79 tiles): 79 tiles (the centre), rows 0 and 15: columns 0–23; rows 1–3, 5, 9 and 11–14: columns 0 and 23; row 4: columns 0–1 and 22–23; row 6: columns 0–1 and 23; rows 7–8: column 0; row 10: columns 0 and 21–23.
-- Stone walls (29 tiles): a 22×1 block at columns 1–22, row 1 (top centre); 7 tiles (bottom left), row 12: column 1; row 13: columns 1–2; row 14: columns 1–4.
+- Trees (95 tiles): 45 tiles (the centre), row 0: columns 0–23; rows 1–3: columns 0 and 23; rows 4–6: columns 0 and 22–23; row 7: columns 0–1; rows 8–11: column 0; 31 tiles (bottom centre), row 9: columns 21 and 23; row 10: columns 21–23; rows 11–13: column 23; row 14: columns 8, 10–12, 16 and 23; row 15: columns 7–23; a 4×1 block at columns 14–17, row 12 (bottom centre); a 1×3 block at column 2, rows 9–11 (middle left); one tile at column 4, row 2 (top left); one tile at column 7, row 2 (top left); one tile at column 16, row 2 (top right); one tile at column 19, row 2 (top right); one tile at column 2, row 3 (top left); one tile at column 21, row 3 (top right); one tile at column 6, row 10 (middle left); one tile at column 9, row 10 (the centre); one tile at column 14, row 10 (the centre); one tile at column 17, row 10 (middle right); one tile at column 19, row 11 (bottom right); one tile at column 18, row 13 (bottom right).
+- Stone walls (52 tiles): a 22×1 block at columns 1–22, row 1 (top centre); 17 tiles (bottom left), row 12: columns 0–1; row 13: columns 0–2; row 14: columns 0–4; row 15: columns 0–6; 9 tiles (bottom right), row 12: columns 21–22; row 13: columns 20–22; row 14: columns 19–22; a 1×4 block at column 1, rows 3–6 (top left).
 - Sand (126 tiles): a 18×7 block at columns 3–20, rows 3–9 (the centre).
 - Plank floors (11 tiles): 11 tiles (bottom left), row 12: columns 2–5; row 13: columns 3–7; row 14: columns 5–6.
-- Open ground everywhere else: grass (133 tiles).
+- Open ground everywhere else: grass (94 tiles).
 - The party enters from the left, standing at (3, 12), (4, 12), (3, 13), (4, 13), (5, 12), (5, 13); enemies come from the right. Paint nothing there that would read as an object to walk round.
 
 The rows as the rules read them:
@@ -31,23 +31,23 @@ The rows as the rules read them:
 ```
 TTTTTTTTTTTTTTTTTTTTTTTT
 T######################T
-T,,,,,,,,,,,,,,,,,,,,,,T
-T,,::::::::::::::::::,,T
-Tu,::::::::::::::::::,uT
-T,,::::::::::::::::::,,T
-Tu,::::::::::::::::::,,T
+T,,,u,,u,,,,,,,,u,,u,,,T
+Tqu::::::::::::::::::u,T
+Tq,::::::::::::::::::,uT
+Tq,::::::::::::::::::,uT
+Tq,::::::::::::::::::,uT
+Tu,::::::::::::::::::===
 T,,::::::::::::::::::===
-T,,::::::::::::::::::===
-T,,::::::::::::::::::,,T
-T,,,,,,,,,,,,,,,,,,,,uuT
-T,,,,,,,,,,,,,,,,,,,,,,T
-TWwwww,,,,,,,,,,,,,,,,,T
-TWWwwwww,,,,,,,,,,,,,,,T
-TWWWWww,,,,,,,,,,,,,,,,T
-TTTTTTTTTTTTTTTTTTTTTTTT
+T,u::::::::::::::::::u,T
+T,u,,,u,,u,,,,u,,u,,,uuT
+T,u,,,,,,,,,,,,,,,,u,,,T
+WWwwww,,,,,,,,uuuu,,,qqT
+WWWwwwww,,,,,,,,,,u,qqqT
+WWWWWww,u,uuu,,,u,,qqqqT
+WWWWWWWTTTTTTTTTTTTTTTTT
 ```
 
-Legend: `T` trees; `#` stone walls; `,` grass; `:` sand; `u` trees; `=` road; `W` stone walls; `w` plank floors.
+Legend: `T` trees; `#` stone walls; `,` grass; `u` trees; `q` stone walls; `:` sand; `=` road; `W` stone walls; `w` plank floors.
 
 ## Prompt
 
