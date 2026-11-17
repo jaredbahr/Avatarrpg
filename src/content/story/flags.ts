@@ -931,7 +931,8 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     key: 'guidance.tip.*',
     type: 'boolean',
     values: [true],
-    meaning: 'A one-time combat tip (cover, prop, status, surface.<id>) has been shown.',
+    meaning:
+      'A one-time combat tip (cover, prop, status, surface.<id>) has been shown, or a "stay safe" hint (defend.heal, defend.guard, defend.retreat) was dismissed.',
     arc: 'App · Guidance',
     status: 'live',
     oldSaves: {
