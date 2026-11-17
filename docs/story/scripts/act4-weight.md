@@ -968,6 +968,29 @@ something to bargain with.
 
 _End of DLG-08._
 
+> **If `pq03_labels_known` —** _(after the choice; this is not part of DLG-08)_
+>
+> **Party:** A crate came up to the quarry marked "medical supplies". Was it the only one?
+>
+> **Ruon:** Two. I signed for both as bandage. I never lifted a lid. The second is in the powder store,
+> nailed shut.
+>
+> **Daiyu:** It was. We had it open the day we came up. Straps, the same as the first.
+>
+> **Narrator:** She puts a square of printed paper on the table: a healing-house emblem and a mark under it,
+> peeled off the crate whole.
+
+> **If `pq03_labels_known` and Nilak is in the party —**
+> **Nilak:** That's Aru's mark. I'll carry it back to the hand that signed it.
+>
+> **Nilak (after `labels_ledger_read`):** That was eight. Seven now.
+>
+> **Nilak (otherwise):** That was thirty-nine. Thirty-eight now.
+
+> **If `pq03_labels_known` and Nilak is not in the party —** **Narrator:** Mira puts the label in with the
+> papers going to Causeway, for the healer whose mark it is. That was eight still out, and now it is seven.
+> _(Without `labels_ledger_read`: "That was thirty-nine still out, and now it is thirty-eight.")_
+
 **Mira:** You'll work under Daiyu. You'll sleep in the guard hut. You'll have no rank here, and you'll get no
 thanks from me. If the work's good, the work's good.
 
@@ -1333,6 +1356,14 @@ written "Thursday" again.
 
 **Kaya:** You don't know me, so you'll do. When this is over I'm coming back here to take these down and pack
 them in straw. There. Somebody's heard it.
+
+> **After `pq01_whole_story` or `pq01_quiet_help` —** (in place of Kaya's two lines above)
+>
+> **Kaya:** Not now. It was. I was good up to where the fire went out. After that I used to go. There was
+> always a ferry.
+>
+> **Kaya:** You don't know me, so you'll do. When this is over I'm coming back here to take these down and
+> pack them in straw. There. That's two people I've said it to.
 
 **Hua:** I'll hold the ladder. I'm seventy-three. I shan't hold it well.
 
@@ -1840,3 +1871,11 @@ What changed in this file; the reasons and the proposals not applied are in the 
 8. **Hero moments added** in 10.1 and 10.5 (Tenzo, Lin Mei, Sura, Nima, Jinu).
 9. **Pace:** free roam opens between the hearing and Mira's list.
 10. **Cutscenes:** pointers to [cutscenes.md](cutscenes.md) at 10.6 and 11.10.
+11. **The forty labels (owner, 2026-11-17).** After `pq03_labels_known`, 11.6 has a guarded exchange after
+    DLG-08 ends: Ruon signed for two crates under the healing-house label and never lifted a lid, and Daiyu
+    puts the second label on the table. The count from PQ-03 comes down by one (to seven after 9.2's ledger,
+    `labels_ledger_read`; to thirty-eight without it). No line of DLG-08 is changed.
+12. **Kaya in 12.2 (owner, 2026-11-17).** After `pq01_whole_story` or `pq01_quiet_help` her leaving is in the
+    past tense ("After that I used to go. There was always a ferry."). Her commitment about the lanterns is
+    word for word the same, and ends "That's two people I've said it to." After `pq01_left`, or with the
+    quest unopened, the scene plays as it did.
