@@ -47,7 +47,7 @@ a teacher story:
 
 **Theme card:** TR-01, A Safe Place for Thunder
 
-Themes: responsibility, fairness. Lightning here is a trade: little careful pieces into a wire, all day, so
+Themes: responsibility, balance. Lightning here is a trade: little careful pieces into a wire, all day, so
 that somebody's grandmother can see her stairs. The first thing Luli teaches is when to stop. She has stopped
 counting her own days without one, and nobody has taught the lamp-hours board the same lesson.
 
@@ -813,9 +813,9 @@ _Sets `learned_soundbending`. Air heroes may now choose the Air Projection path 
 
 **Theme card:** TR-05, A Switch Anyone Can Reach
 
-Themes: equality, responsibility. A loading lift works beautifully and can be stopped only by somebody
-tall. The lesson is three jobs: put the stop where a hand is, make sure it still stops with the power off,
-and teach it to someone, with your own hands in your pockets.
+Themes: equality, responsibility. A loading lift works beautifully and can be stopped only by somebody tall.
+The lesson is three jobs: put the stop where a hand is, make sure it still stops with the power off, and teach
+it to someone without touching it yourself.
 
 - [x] No nation, element or culture stereotype (engineering is not "what non-benders do instead"; Edda
       says so)
@@ -833,7 +833,7 @@ Edda's bench is (Causeway; the Copper Orchard scrap workshop). **Needs:** Riko o
 > **Edda:** There's a loading platform out the back with a lovely powered lift and a stop button no one under
 > six foot can reach. Bring a spanner on Thursday. We're moving it.
 
-### Scene T5.1 — Thursday
+### Scene T5.1 — The bean cane
 
 **Shown:** played. **Where:** the loading platform. A powered goods lift runs between the jetty and the
 stores, on two rails, with an electric winch. High on the winch post, well above head height, is a red
@@ -1119,7 +1119,9 @@ Everything below is written into the scripts as recommended, per the standing in
       (Aru is there "mornings") and allow it at the table afterwards.
     - **TR-03's place.** The bible's table says Hesh "visits the Saltstep rail annex in Act II"; Act II's
       offer (Scene 5.5) is made in Causeway and speaks of "the public lift by the annex". I read "the annex"
-      as the Saltstep rail annex and set the lesson there, with the Orchard yard as the later place.
+      as the Saltstep rail annex and set the lesson there, with the Orchard yard as the later place. The offer
+      is made a day up the river road from that lift, so most tables will take the lesson at the Orchard; the
+      same lines play there.
     - **TR-05's place and day.** The bible says "public workshop annex after MQ-03"; Act II's offer puts the
       platform "out the back" at Emberwatch and says "Bring a spanner on Thursday". I set it at Emberwatch.
       The day is flavour: the lesson is there whenever the party arrives, and Edda says "Thursday" regardless.
@@ -1127,9 +1129,15 @@ Everything below is written into the scripts as recommended, per the standing in
       called "Sound Bending" with the hint "The temples do not teach it" (story bible row C-20).
       The approved name is Air Projection. The script uses the approved name and never calls it
       soundbending in dialogue; the rename is row C-20's work, not this file's.
-    - **Luli's days.** Act II has her say "my ninth day without a day off"; the lesson is a day or more
-      later. I wrote "Nine. Ten tomorrow." so that it holds whichever day the table arrives.
-    - **The level-five hints in `disciplines.ts`.** "Ask at the northern water tribes" (healing) and "Very
-      few are" (lightning) contradict the bible's rule that teachers are reachable in the Reach and that
-      these are not forgotten arts. Rows C-17 and C-19 already list them. When those rows are done, the
-      hints should name Aru at Saltstep and Luli at Emberwatch.
+    - **Luli's days.** Act II has her say "my ninth day without a day off"; the lesson is a day or more later,
+      and at the Causeway sheds it may be weeks later. She now says "I've stopped counting. The board
+      counts.", which holds whenever the table arrives.
+    - **The level-five hints in `disciplines.ts`.** "Ask at the northern water tribes" (healing) and "Very few
+      are" (lightning) contradict the bible's rule that teachers are reachable in the Reach and that these are
+      not forgotten arts. Rows C-17 and C-19 already list them. When those rows are done, the hints should
+      name Aru at Saltstep and Luli at Emberwatch.
+12. **Edit pass (2026-11-17).** The riggers stay at their rods while Luli sleeps, so a first-day student is
+    not alone on a live line. No teacher now names their own lesson: Aru's "That's the lesson" and Oru's "the
+    first time he's ever been told at the same moment as everyone else" are replaced, and Edda no longer
+    denies a thing nobody said. Hesh's Thursdays are market days, so that Thursday stays Kaya's. Nanu sits
+    close to Nala (Pella's aunt); left for you.

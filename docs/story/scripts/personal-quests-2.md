@@ -434,11 +434,10 @@ cart (not after `pq06_technical`). Sets `pq06_done`._
 
 **Theme card:** PQ-07, The Promise on the Wind
 
-Themes: responsibility, belonging. Nima walked off a half-built roof to help strangers on a road, and the
-help was real. He never sent word. For a week nobody at the sanctuary knew whether he was under the roof.
-What Sena asks of him is one dull night in a hut, because an old man has done nine of them running. From the
-owner's list, this quest carries: you show up for people; you go and look, and you come back and tell them
-what you found.
+Themes: responsibility, belonging. Nima walked off a half-built roof to help strangers on a road, and the help
+was real. He never sent word. For a week nobody at the sanctuary knew whether he was under the roof. What Sena
+asks of him is one dull night in a hut, because an old man has done nine of them running. From the owner's
+list, this quest carries: you show up for people.
 
 - [x] No nation, element or culture stereotype (the sanctuary is one mixed household with a rota, not "Air
       culture")
@@ -1348,10 +1347,9 @@ _Keepsake: **Ilo's turnip stamp print, "OUTSIDE ONLY"**, on Jinu's bag strap, wh
 
 **Theme card:** PQ-09, The Lesson You Keep
 
-Themes: responsibility, fairness. The woman who taught Riko how not to be hurt also taught company guards how
-to hold a striker by the wrist until the pay clerk had gone home. It is the same hold. Seli is funny and
-proud and sorry, and Riko loves her. From the owner's list, this quest carries: good people can cause harm;
-you can admire someone and still tell them to stop.
+Themes: responsibility, equality. The woman who taught Riko how not to be hurt also taught company guards how
+to hold a striker by the wrist until the pay clerk had gone home. It is the same hold. Seli is funny and proud
+and sorry, and Riko loves her. From the owner's list, this quest carries: good people can cause harm.
 
 - [x] No nation, element or culture stereotype (nothing here is about benders and non-benders; the holds were
       used by non-bender guards on non-bender workers)
@@ -1892,12 +1890,11 @@ every route; after `pq09_reported` Riko takes it off the easel herself). Sets `p
 
 **Theme card:** PQ-10, The Right to Repair
 
-Themes: equality, responsibility. Wen drew a regulator with a lever on it, so that the person standing next
-to the machine could always let the pressure go. Somebody took the lever off and put a keyhole there, and
-they had a reason. Wen cannot fix the reason by being clever at a bench. She has to write three steps that a
+Themes: equality, responsibility. Wen drew a regulator with a lever on it, so that the person standing next to
+the machine could always let the pressure go. Somebody took the lever off and put a keyhole there, and they
+had a reason. Wen cannot fix the reason by being clever at a bench. She has to write three steps that a
 stranger can follow, and then stand with her hands in her pockets while the stranger does them. From the
-owner's list, this quest carries: saying sorry isn't the end of it; owning it is the start, and then there's
-the work.
+owner's list, this quest carries: good people can cause harm.
 
 - [x] No nation, element or culture stereotype
 - [x] Every valid party, non-benders included, has a real route through
@@ -2452,16 +2449,18 @@ Everything below is written into the scripts as recommended, per the standing in
    sign. His three hands were rail hands six months ago. The hold mechanic (a held unit cannot move unless an
    ally breaks it, or it is Riko) is a build suggestion. Seli teaching the release aloud in round two is the
    scene's turn, and should survive however the fight is built. Recommend: keep.
-10. **Why the keyhole exists (PQ-10).** The bible gives Commonworks no reason for replacing Wen's lever with
-    a key. I gave it one: a boy pulled a lever correctly and scalded a man forty paces down the pipe, because
+10. **Why the keyhole exists (PQ-10).** The bible gives Commonworks no reason for replacing Wen's lever with a
+    key. I gave it one: a boy pulled a lever correctly and scalded a man thirty paces down the pipe, because
     nobody had told him to shout first. It makes the fitter right about something, and it gives Wen something
     of her own to own (the napkin had a lever and no warning). It reveals nothing about the network.
     Recommend: approve.
-11. **A line from Veyra in PQ-10.** On the `pq10_licensed` route, after MQ-04, the returned terms carry one
-    line in her hand: "Term 4 is the right term. I should have asked for it myself. V. Sen." It is in
-    character (the bible: she "treats Wen seriously") and Ruda undercuts it at once. It is the only place in
-    these three files where an antagonist is given new words. Recommend: keep, but it is your call; cutting
-    the box loses nothing else.
+11. **A line from Veyra in PQ-10.** On the `pq10_licensed` route, after MQ-04 and before MQ-09, the returned
+    terms carry one line in her hand: "Term 4 stays. A stop nobody can reach is not a stop. V. Sen." It is in
+    character (the bible: she "treats Wen seriously", and she builds controls a short person can reach) and
+    Ruda undercuts it at once. The edit pass reworded it: the first draft had her say "I should have asked for
+    it myself", which concedes more than she will until MQ-14, and it could play after MQ-09, when she has
+    refused the shutdown and the party is on the posters. It is the only place in these three files where an
+    antagonist is given new words. Recommend: keep, but it is your call; cutting the box loses nothing else.
 12. **Where PQ-10 plays.** The bible says it "concludes in Copper Orchard or Causeway". I tied scenes W.2 to
     W.6 to Edda's bench rather than to a place, since the act scripts have Edda at Emberwatch in MQ-03, in
     Causeway in MQ-05 and MQ-09, and the bible has her at the Orchard annex. A table can finish the quest
@@ -2474,8 +2473,8 @@ Everything below is written into the scripts as recommended, per the standing in
 14. **Where the documents disagree (PQ-06 to PQ-10):**
     - **MQ-13, Scene 13.4.** Lin Mei says the school path "isn't on any map. I walked it." After
       `pq06_published` or `pq06_negotiated` it is on one. Recommend a variant when 13.4 is built: "It's on one
-      map. Mine. Fenn drew the line." If the quest was never opened she has not walked it, and the line
-      should go to Fenn.
+      map. Mine. Fenn drew the line." If the quest was never opened she has not walked it, and the line should
+      go to Fenn. _Decided:_ 13.4 gets a variant; the act scripts' edit applies it.
     - **Sena's line.** The bible prints "I did help someone." / "I believe you. I also needed to know you
       weren't under a fallen roof." as PQ-07's line; Act III already spends it in the opening (8.2). I do not
       repeat it; M.1 builds on it (the bowl left on the scaffold, the thatch dug through by hand).
@@ -2493,3 +2492,12 @@ Everything below is written into the scripts as recommended, per the standing in
     - **PQ-10's opening and the reveal ladder.** Edda's shipped opening line mentions "the vanes" at MQ-03,
       before the party has seen one. It is a word, not a reveal, and I have kept the quest to pumps and
       regulators until after MQ-04.
+15. **Edit pass (2026-11-17): three names changed.** Bodi is now Zan (Bo and Bo-shan already need a naming
+    lock), Ruvi is Tamsa (she alternated with Riko, line by line) and Hana is Chun (beside Hanru, Haro and
+    Hua). Still close to an existing name, and left for you: Dabi beside Sabi (the rigger of SF-2.1), and
+    Marda beside Mira, Miri and Meren.
+16. **Edit pass: Wen's card** now names "good people can cause harm" (her lever scalded a man, and the keyhole
+    had a reason) in place of a second "saying sorry isn't the end of it".
+17. **Edit pass: the tram bulletin.** The station clerk stamped it nine days ago and sent it up the line in
+    the up-bag, which is how a bulletin he had handled could sit unread; and the fourth of the test dates is
+    the day the car hung (Scene 8.1).

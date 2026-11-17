@@ -56,8 +56,8 @@ MQ-12's "what is still in reach" list, and the hero's closing scene in MQ-15 pla
 
 Themes: responsibility, belonging. Kaya did a brave thing at fourteen and burned a corner off a roof doing it.
 She has carried a letter about it for nine years without opening it. The letter was four lines long and asked
-her to bring a ladder. What she is offered now is a job list and a day of the week. From the owner's list, this
-quest carries: saying sorry isn't the end of it.
+her to bring a ladder. What she is offered now is a job list and a day of the week. From the owner's list,
+this quest carries: you show up for people.
 
 - [x] No nation, element or culture stereotype (the street's unkindness belongs to one chandler, and Miri says
       so)
@@ -824,7 +824,7 @@ it, quickly and well.
 
 **Theme card:** PQ-02, A Table Is Not a Truce
 
-Themes: fairness, responsibility. Tenzo's answer to an argument is to feed it. The cooks he wants to help are
+Themes: equality, responsibility. Tenzo's answer to an argument is to feed it. The cooks he wants to help are
 the ones who would have to cook that dinner. The contractor who is not paying them is not cruel; he kept the
 shelf open because he thought that was the kind thing, which is Tenzo's mistake in a better coat. From the
 owner's list, this quest carries: good people can cause harm.
@@ -1233,7 +1233,7 @@ for the first.
 
 **Tenzo:** I was only going to...
 
-**Dema:** You're on the wall as washing-up, third shift. Until then you're a customer. Sit down.
+**Dema:** You're on the rota as washing-up, third shift. Until then you're a customer. Sit down.
 
 **Narrator:** Tenzo sits. Yuna puts a bowl in front of him. It is a river-fish stew with greens, and it is
 not how he would have done it.
@@ -1307,9 +1307,8 @@ _Keepsake: **a dented ladle with a "7" scratched on the handle**, hung by the ca
 
 Themes: equality, responsibility. A sign says "all" and a register says who "all" is. Nilak left the house
 over that and has told the story ever since in a way that makes the friend who stayed into a coward. Aru
-stayed and got one word changed in three years. Neither of them ever looked at what went out under the
-house's name. From the owner's list, this quest carries: you show up for people; you go and look, and you come
-back and tell them what you found.
+stayed and got one word changed in three years. Neither of them ever looked at what went out under the house's
+name. From the owner's list, this quest carries: you show up for people.
 
 - [x] No nation, element or culture stereotype (the house is one institution with a rule; Aru and its other
       healers are not cruel)
@@ -1771,8 +1770,7 @@ not get back. It is pinned inside the cart's canopy. It looks no more like a tur
 Themes: responsibility, balance. Sura was right once, on bad ice, and six people got home. So the second time
 nobody argued, and her friend walked out onto ice she had just said was singing. Vessa does not want an
 apology. She wants forty sacks moved, and she wants Sura to go and look at a channel twice in one day and come
-back and say what it did. From the owner's list, this quest carries: you show up for people; you go and look,
-and you come back and tell them what you found.
+back and say what it did. From the owner's list, this quest carries: saying sorry isn't the end of it.
 
 - [x] No nation, element or culture stereotype
 - [x] Every valid party, non-benders included, has a real route through (poles, boats and a sounding stick do
@@ -2607,8 +2605,8 @@ was twenty-four. In the morning they were all looking at me.
 **Feng:** I do, though.
 
 > **If Lin Mei is in the party —**
-> **Lin Mei:** Renn's order was correct. I checked it against the pier last night. I also checked yours. Yours
-> is correct as well, for a crew of one.
+> **Lin Mei:** Renn's order was correct. I checked it against the pier before dark. I also checked yours.
+> Yours is correct as well, for a crew of one.
 
 > **If Nima is in the party —**
 > **Nima:** I could take the far jack. I'm light. I'd fit.
@@ -2657,8 +2655,9 @@ Footer: "The beam goes in on all three. Nobody is hurt on any of them."
 > decides. Stop the lift: anyone. Go again: Renn. Foreman: far jack, watches the fill, lifts on the count."
 > He looks at the last line for some time, and then he underlines "on the count".
 
-**Narrator:** Renn puts Bo at the far jack, in the bay. Feng is beside him on the wedges, in the bad bay at
-last, grinning like a man at a festival. Wick is up on the tank, where he can see all four jacks.
+**Narrator:** In the morning Renn puts Bo at the far jack, in the bay. Feng is beside him on the wedges, in
+the bad bay at last, grinning like a man at a festival. Wick is up on the tank, where he can see all four
+jacks.
 
 **Renn:** Bo. You watch the fill. If it settles, say so. Say how much. You lift on my number and not before
 it. Nothing else is yours. Have you got that?
@@ -2932,20 +2931,20 @@ Everything below is written into the scripts as recommended, per the standing in
    has carried it sealed for nine years, and it is four lines long. The bible's line about Thursday then
    answers what the letter actually asked. This also explains Act IV's "She's written 'Thursday' again".
    Recommend: approve.
-4. **PQ-01's fight** is a collection crew working from a copy of the supply-control order with Miri's workshop
-   added in pencil and a six made into sixteen. A win still costs Miri the six crates the typed order allows,
-   because the order is real. The paper-lantern strings (a fire ability across one burns it, and it is
-   counted, not punished) are a build suggestion; if the engine cannot count them, drop the two lines that
-   read the count. Recommend: keep.
+4. **PQ-01's fight** is a collection crew working from a typed collection sheet under the supply-control
+   order, with Miri's six crates a season made into sixteen in pencil. A win still costs Miri the six, because
+   the order is real. The paper-lantern strings (a fire ability across one burns it, and it is counted, not
+   punished) are a build suggestion; if the engine cannot count them, drop the two lines that read the count.
+   Recommend: keep.
 5. **Keepsakes.** Each quest gives one small object for the cart's shelf, with no stats: Oko's glass turtle
    duck, the seventh ladle, Bun the turtle seal, Vessa's pole (on loan), Renn's sugar pear. The bible says a
    quest's rewards are trust and changed lines, and that new equipment is "a prop or narrative detail". The
    brief asked what each quest unlocks, so I used props. Recommend: approve as cart dressing, in the spirit of
    outline decision 12.
 6. **Ketu's signature is the "very neat signature" on Tenzo's quarry receipt.** The outline says the ration
-   crates pay off at the Six-Ladle but not how. I made the contractor who delivered them, in full and on time,
-   the same man who runs the late shelf on goodwill: he does what he is paid for and never goes back to look.
-   Recommend: approve.
+   crates pay off at the Six-Ladle but not how. I made the contractor who signed for them, from his desk and
+   off a carter's tally, the same man who runs the late shelf on goodwill: he signs what the paper says and
+   never goes to look. Recommend: approve.
 7. **Tenzo's grandmother.** The bible says he "omits the part where she publicly refused the foreman's
    conditions". I have him tell the story "up to the soup" and then remember the rest (T.2). Scene C.1 in Act
    III (DLG-02) lets the table ask about his grandmother; if C.1 plays after T.2 he should tell the whole
@@ -2958,7 +2957,8 @@ Everything below is written into the scripts as recommended, per the standing in
 9. **Scene 15.4's "resolved" line for Tenzo** says "The kitchen is run by its cooks now." That is true after
    `pq02_cooks_shelf` but not after `pq02_posted_terms`, where Ketu still holds the contract. Recommend: when
    15.4 is built, give the posted-terms route its own first sentence ("The terms are still on the wall beside
-   the shelf, with a year of initials down the margin.") and keep the rest.
+   the shelf, with a year of initials down the margin.") and keep the rest. _Decided:_ 15.4 gets this variant;
+   the act scripts' edit applies it.
 10. **Sura's gap in MQ-13.** The bible says that after PQ-04 Sura "can suggest a barrier with an intentional
     release". Acts IV and V give her the gap for every Sura (12.2 and 13.2), with the insight arriving at
     Tavi's sand tray. I left those as they are: 12.2 "resolves no personal quest", and a Sura who cut the hole
@@ -2988,9 +2988,25 @@ Everything below is written into the scripts as recommended, per the standing in
     - **Little Bai.** Act IV (11.x and 12.2) puts Little Bai in Daiyu's lower-gallery crew from Stoneback; Act
       V's 15.4 "open" scene for Bo puts her in Bo's crew at the Orchard. I kept her out of Renn's crew.
       Recommend: in 15.4, change "Little Bai" to "Feng" ("Then Feng puts his hand up, already talking").
-    - **Tenzo's find.** `reasons.ts` has Tenzo assume the neat signature belongs to whoever "let the cookhouse
-      go cold". The receipt as I have used it carries the supplier's signature. Both can be true (he assumed);
-      no shipped line needs to change.
-    - **Dema's name.** The demo's old road keeper was a placeholder "Dema", since renamed Lanfen; the
-      shipped portrait key is still `portrait.dema`. The canon Dema is the Six-Ladle cook. Nothing to fix
-      here; a build session should not reuse that portrait for him.
+      _Decided:_ Feng speaks in 15.4; the act scripts' edit applies it.
+    - **Tenzo's find.** `reasons.ts` has the crates "signed for a month ago" in a "very neat signature", by
+      whoever "let the cookhouse go cold". The script makes that signature Ketu's: he provisions the Stoneback
+      cookhouse and signed, in Causeway, that it had received its rations. No shipped line needs to change.
+    - **Dema's name.** The demo's old road keeper was a placeholder "Dema", since renamed Lanfen; the shipped
+      portrait key is still `portrait.dema`. The canon Dema is the Six-Ladle cook. Nothing to fix here; a
+      build session should not reuse that portrait for him.
+15. **Edit pass (2026-11-17): how Kaya left.** The script had Kaya, at fourteen, "gone before the tiles were
+    cold" with no way to have gone. K.3 now gives her one line: her uncle's barge was going upriver that night
+    and she asked to be on it. K.3 also says plainly that Miri's workshop is the shop that burned, on the
+    street where Kaya was born, and in K.5 the chandler shuts his shutter on her telling. Recommend: approve,
+    or name another way she left.
+16. **Edit pass: which takeaway each card names.** Kaya's card now names "you show up for people" (the letter
+    asked whether she was coming on Thursday) and Sura's names "saying sorry isn't the end of it" (Vessa has
+    had the apology, with soup). They were the other way about. Cards only.
+17. **Edit pass: Bo and his crew.** Bo is 30 and has run this crew six years (Scene 6.4), so in B.2 he was
+    twenty-four, not nineteen, when the old foreman walked off. Renn calls the count, as in Scenes 6.4, 13.3
+    and 15.4, and Wick watches the jacks from the tank. The vote in B.3 is taken in the night, so that "Bo
+    does it alone" can happen while the crew sleep.
+18. **Edit pass: a quest played with no cart.** The reading key now says what a quest loses between MQ-09 and
+    MQ-11. A quest played while the party is on the posters will also want a line from the people who
+    recognise them; none is written yet.
