@@ -13,13 +13,14 @@ import {
 
 // Re-pinned for #846: the Forest Road and the quarry gate lost a body each, so the scripted fights play
 // out differently (trade). Re-pinned again for ADR 0118: the scripted party AI now stands a fallen hero
-// up, so the legal transcripts differ.
+// up, so the legal transcripts differ. Re-pinned for Ruon's answer to the trade (#789): the trade
+// route plays `ruon_traded`, three more dialogue advances and one more visited node; escort is unchanged.
 const PINS = {
   trade: {
     gate: {
-      save: '62485b18b5c3c2bd2f90ba4f97775cd5849b039fa7bd440d354ce300851b01ee',
-      commands: 'eecef9f6363a9332ace47ac39f96796c1913295a59ac5082ceac889bdcc21d18',
-      count: 64,
+      save: '365284869b0087c380c3e2951b690baab86c89fc18c95e1a72152290a56ba20f',
+      commands: 'ae9a106d6f5c5f38b8c60e98ba8b6926eaa91d360b1e429f71fb58a1c696daac',
+      count: 67,
       node: 'gate_trade_explore',
       map: 'quarry_gate',
       level: 3,
@@ -27,9 +28,9 @@ const PINS = {
       cleared: ['enc_forest_road'],
     },
     afterDriller: {
-      save: '99cb075c0f98195c3b90b35df8b31fa778280be5ae3382c03cc18932b346bc42',
-      commands: 'd4f25c33a7f30af32b27680a03ea468e36fb697442bd658e4d152bd4098d6dd6',
-      count: 166,
+      save: 'e8bc43f0eefa595302dcb88856ec1b3ccd0bab33eec14f215d2a50c95c36696a',
+      commands: 'd2ab33df286f0fea67249b00ab7ed9a2d480e74015b2dbe68aa1698a850f2e23',
+      count: 169,
       node: 'quarry_after_explore',
       map: 'quarry_floor',
       level: 4,

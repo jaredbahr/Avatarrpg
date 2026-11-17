@@ -71,9 +71,10 @@ function tap(tile: Vec2, mode: Mode = { kind: 'aim', abilityId: checkpoint.abili
 describe('combat tap aim acceptance', () => {
   it('uses the earned Grumbler turn and exact reloadable save', () => {
     // Re-pinned for #846: the Forest Road and the quarry gate lost a body each, so the earned campaign replays 5 commands shorter.
-    expect(checkpoint.transcript).toHaveLength(86);
+    // Re-pinned for #789: Ruon answers the trade (`ruon_traded`), three more dialogue advances on the way.
+    expect(checkpoint.transcript).toHaveLength(89);
     expect(createHash('sha256').update(checkpoint.json).digest('hex')).toBe(
-      'b4567521934cb27b8227668dd272bfaafa9cdf53b7219181ae68e3ec94f738b4',
+      '3505c79624ceac431d918dd78728871b211063222da859958540d3958dc76f31',
     );
     expect(loadQuarryCheckpoint(checkpoint.json)).toEqual(checkpoint.state);
     expect(checkpoint.state.battle).toMatchObject({

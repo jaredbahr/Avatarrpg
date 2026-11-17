@@ -896,6 +896,25 @@ export const ACT1_NODES: readonly StoryNode[] = [
       'My client wants him alive, and his papers with him. Keep the receipt if anyone asks who took him.',
       'My crew is in the quarry securing the equipment. The key gets you through the gate. It does not give you a claim on the machinery.',
     ],
+    next: 'ruon_traded',
+  },
+  /*
+   * Ruon answers the trade (owner, 2026-11-14: the people the demo is about
+   * get to speak). He was sold without a word; now he says what he is worth,
+   * puts the people in the galleries first, and asks for one thing. He does not
+   * forgive the party and is not asked to (bible DLG-08 keeps his "cheaper than
+   * a key" for the hearing).
+   */
+  {
+    id: 'ruon_traded',
+    kind: 'dialogue',
+    speaker: 'Captain Ruon',
+    portrait: 'portrait.ruon',
+    lines: [
+      'A key. Well. I have signed for worse bargains.',
+      'The gallery bars lift from the outside. There are people behind every one of them. Count them as they come out.',
+      'If the families ask, tell them I did not run. That is all I am asking you to carry.',
+    ],
     next: 'gate_trade_explore',
   },
 

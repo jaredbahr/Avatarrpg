@@ -35,13 +35,13 @@ flowchart TD
   n83["lost_morning<br/>Set flags"]
   n87["mira_lost<br/>Elder Mira: Sit, if you can find a stool. Half of mine are at o…"]:::entry
   n250["pella_lost<br/>Pella: Mira tells everybody “soon.” She told me “not tonight.”"]:::entry
-  n319["sen_lost<br/>Kuan: You came back the hard way, I hear. Sit. The water’s hot."]:::entry
+  n320["sen_lost<br/>Kuan: You came back the hard way, I hear. Sit. The water’s hot."]:::entry
   n1["act1_epilogue_lost — exit to act1 / part 1"]:::external
   n14["cutting_after_explore — exit to world / part 1"]:::external
   n44["forest_explore — exit to world / part 1"]:::external
-  n369["village_explore — exit to act1 / part 1"]:::external
+  n370["village_explore — exit to act1 / part 1"]:::external
   n32 -->|"Next"| n44
-  n52 -->|"Next"| n369
+  n52 -->|"Next"| n370
   n72 -->|"Next"| n74
   n73 -->|"Next"| n76
   n74 -->|"Next"| n75
@@ -53,9 +53,9 @@ flowchart TD
   n81 -->|"Next"| n78
   n82 -->|"Next"| n80
   n83 -->|"set: (none); phase: morning"| n1
-  n87 -->|"Next"| n369
-  n250 -->|"Next"| n369
-  n319 -->|"Next"| n14
+  n87 -->|"Next"| n370
+  n250 -->|"Next"| n370
+  n320 -->|"Next"| n14
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

@@ -68,6 +68,7 @@ const TRADE = [
   ...FIGHT_TO_CHOICE,
   'trade_payment',
   'trade_chosen',
+  'ruon_traded',
   'gate_trade_explore',
   ...TO_THE_DRILLER,
   ...WALK_HOME,
@@ -164,6 +165,8 @@ describe('followers (#696)', () => {
       ['trade_payment', true],
       // He is still there while Jin says "Captain. Hands where I can see them."
       ['trade_chosen', true],
+      // And while he answers it, before she takes him away.
+      ['ruon_traded', true],
     ]);
   });
 
