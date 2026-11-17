@@ -2408,6 +2408,13 @@ At most one cutscene candidate per quest, and none is relied on: every one also 
 | PQ-09 | R.3, R.6 | R.1, R.2, R.4, R.5 | R.1: the hold, done by two people who have done it before   |
 | PQ-10 | W.6      | W.1 to W.5         | W.4: Ruda's capitals going into the middle of Wen's card    |
 
+## Decided (owner, 2026-11-17)
+
+The owner read the edit pass's proposals on 2026-11-17. What he decided for this file, and where it is written:
+
+1. **Which takeaway Wen's card names.** "Good people can cause harm" (her lever scalded a man, and the keyhole
+   had a reason), in place of a second "saying sorry isn't the end of it". Approved as exchanged. Cards only.
+
 ## Open, for the owner
 
 Everything below is written into the scripts as recommended, per the standing instruction.
@@ -2496,8 +2503,6 @@ Everything below is written into the scripts as recommended, per the standing in
     lock), Ruvi is Tamsa (she alternated with Riko, line by line) and Hana is Chun (beside Hanru, Haro and
     Hua). Still close to an existing name, and left for you: Dabi beside Sabi (the rigger of SF-2.1), and
     Marda beside Mira, Miri and Meren.
-16. **Edit pass: Wen's card** now names "good people can cause harm" (her lever scalded a man, and the keyhole
-    had a reason) in place of a second "saying sorry isn't the end of it".
-17. **Edit pass: the tram bulletin.** The station clerk stamped it nine days ago and sent it up the line in
+16. **Edit pass: the tram bulletin.** The station clerk stamped it nine days ago and sent it up the line in
     the up-bag, which is how a bulletin he had handled could sit unread; and the fourth of the test dates is
     the day the car hung (Scene 8.1).

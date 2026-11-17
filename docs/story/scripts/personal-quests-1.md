@@ -2916,6 +2916,17 @@ At most one cutscene candidate per quest, and none is relied on: every one also 
 | PQ-04 | S.1           | S.2, S.3, S.4, S.5 | S.4 (`pq04_joint_ice`): cutting the hole in her own ice |
 | PQ-05 | none          | B.1 to B.5         | B.4, Bo's hands on the jack handle while the beam binds |
 
+## Decided (owner, 2026-11-17)
+
+The owner read the edit pass's proposals on 2026-11-17. What he decided for this file, and where it is written:
+
+1. **How Kaya left.** She was fourteen, and she left that night on her uncle's barge, going upriver: she
+   asked to be on it and nobody said no (K.3). Miri's workshop is the shop that burned, on the street where
+   Kaya was born, and in K.5 the chandler shuts his shutter on her telling. Approved as written.
+2. **Which takeaway each card names.** Kaya's card names "you show up for people" (the letter asked whether
+   she was coming on Thursday). Sura's names "saying sorry isn't the end of it" (Vessa has had the apology,
+   with soup). Approved as exchanged. Cards only; they are never shown to players.
+
 ## Open, for the owner
 
 Everything below is written into the scripts as recommended, per the standing instruction.
@@ -2995,18 +3006,10 @@ Everything below is written into the scripts as recommended, per the standing in
     - **Dema's name.** The demo's old road keeper was a placeholder "Dema", since renamed Lanfen; the shipped
       portrait key is still `portrait.dema`. The canon Dema is the Six-Ladle cook. Nothing to fix here; a
       build session should not reuse that portrait for him.
-15. **Edit pass (2026-11-17): how Kaya left.** The script had Kaya, at fourteen, "gone before the tiles were
-    cold" with no way to have gone. K.3 now gives her one line: her uncle's barge was going upriver that night
-    and she asked to be on it. K.3 also says plainly that Miri's workshop is the shop that burned, on the
-    street where Kaya was born, and in K.5 the chandler shuts his shutter on her telling. Recommend: approve,
-    or name another way she left.
-16. **Edit pass: which takeaway each card names.** Kaya's card now names "you show up for people" (the letter
-    asked whether she was coming on Thursday) and Sura's names "saying sorry isn't the end of it" (Vessa has
-    had the apology, with soup). They were the other way about. Cards only.
-17. **Edit pass: Bo and his crew.** Bo is 30 and has run this crew six years (Scene 6.4), so in B.2 he was
+15. **Edit pass: Bo and his crew.** Bo is 30 and has run this crew six years (Scene 6.4), so in B.2 he was
     twenty-four, not nineteen, when the old foreman walked off. Renn calls the count, as in Scenes 6.4, 13.3
     and 15.4, and Wick watches the jacks from the tank. The vote in B.3 is taken in the night, so that "Bo
     does it alone" can happen while the crew sleep.
-18. **Edit pass: a quest played with no cart.** The reading key now says what a quest loses between MQ-09 and
+16. **Edit pass: a quest played with no cart.** The reading key now says what a quest loses between MQ-09 and
     MQ-11. A quest played while the party is on the posters will also want a line from the people who
     recognise them; none is written yet.
