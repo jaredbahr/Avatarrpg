@@ -8,6 +8,8 @@ export interface TurnCycleCoverage {
   starts: number;
   completedRounds: number;
   midRoundDeaths: number;
+  revivedBeforeSlot: number;
+  revivedAfterSlot: number;
   statusesExpired: number;
   longStatusesExpired: number;
   singleTurnSkips: number;
@@ -31,6 +33,7 @@ function assertEventOrder(
 ) {
   const living = new Set(units.filter((unit) => unit.hp > 0).map((unit) => unit.id));
   const bossIds = units.filter((unit) => unit.size === 2).map((unit) => unit.id);
+  const revived = new Set<string>();
   assert.equal(new Set(order).size, order.length, 'initiative has a unique slot per unit');
   assert.ok(order.length > 0, 'the battle has an opening actor');
   assert.equal(order.length, units.length, 'initiative includes the complete opening roster');
@@ -59,8 +62,10 @@ function assertEventOrder(
       markerIndex++;
       if (marker.type === 'round') {
         assert.ok(acting === undefined && skip === undefined, 'a round cannot interrupt a turn');
-        for (const id of startLiving) {
-          if (living.has(id)) assert.ok(taken.has(id), `${id} missed completed round ${round}`);
+        // Earlier openings already checked each slot they passed. A fighter
+        // restored after their slot can be alive at both round boundaries.
+        for (const id of order.slice(next)) {
+          assert.ok(!living.has(id), `${id} missed completed round ${round}`);
         }
         for (const id of bossIds) {
           if (startLiving.has(id) && living.has(id)) coverage.bossRounds++;
@@ -84,7 +89,10 @@ function assertEventOrder(
         order[next++],
         `opening ${marker.id} follows fixed living initiative`,
       );
-      assert.ok(startLiving.has(marker.id), 'a new unit cannot silently join this round');
+      assert.ok(
+        startLiving.has(marker.id) || revived.has(marker.id),
+        'a new unit cannot silently join this round',
+      );
       assert.ok(!taken.has(marker.id), `${marker.id} opened twice in round ${round}`);
       taken.add(marker.id);
       coverage.starts++;
@@ -140,9 +148,24 @@ function assertEventOrder(
         assert.ok(announced, 'movement cannot start during skipped/upkeep-only turns');
         break;
       case 'unitDied':
-        assert.ok(living.delete(event.unitId), `${event.unitId} died more than once`);
+        assert.ok(living.delete(event.unitId), `${event.unitId} was already down`);
         if (!taken.has(event.unitId)) coverage.midRoundDeaths++;
         break;
+      case 'unitRevived': {
+        assert.equal(event.helperId, acting, 'the current actor helps the fighter up');
+        assert.ok(announced && living.has(event.helperId), 'the helper has a live turn');
+        const slot = order.indexOf(event.unitId);
+        assert.ok(slot >= 0, 'a revival keeps an existing initiative slot');
+        assert.ok(!living.has(event.unitId), 'only a downed fighter can be revived');
+        assert.ok(!revived.has(event.unitId), 'each fighter can be revived once per battle');
+        assert.ok(event.hp > 0, 'a revived fighter returns with positive HP');
+        // Restoring liveness never rewinds the cursor or resets a taken turn.
+        revived.add(event.unitId);
+        living.add(event.unitId);
+        if (slot < next) coverage.revivedAfterSlot++;
+        else coverage.revivedBeforeSlot++;
+        break;
+      }
       case 'battleEnded':
         assert.equal(event.outcome, result.outcome);
         assert.ok(acting === undefined && skip === undefined, 'battle ends between activations');
@@ -156,7 +179,7 @@ function assertEventOrder(
   assert.ok(ended, 'the battle completed; only its final round may be partial');
 }
 
-type ClockEdit = 'status' | 'cooldown' | 'turn';
+type ClockEdit = 'status' | 'cooldown' | 'turn' | 'revive';
 
 /**
  * Forward temporary, worker-local observers through the same draft the
@@ -167,6 +190,8 @@ export function verifyTurnCycle(content: ContentIndex, options: SimOptions) {
     starts: 0,
     completedRounds: 0,
     midRoundDeaths: 0,
+    revivedBeforeSlot: 0,
+    revivedAfterSlot: 0,
     statusesExpired: 0,
     longStatusesExpired: 0,
     singleTurnSkips: 0,
@@ -177,7 +202,8 @@ export function verifyTurnCycle(content: ContentIndex, options: SimOptions) {
     bossRounds: 0,
   };
   const draftMethods = BattleDraft.prototype;
-  const { beginTurn, replace, tickTerrain, setCooldown, applyStatusTo, cleanseFrom } = draftMethods;
+  const { beginTurn, replace, tickTerrain, setCooldown, applyStatusTo, cleanseFrom, revive } =
+    draftMethods;
   let firstUnits: readonly Unit[] | undefined;
   let order: readonly string[] | undefined;
   let draft: BattleDraft | undefined;
@@ -240,8 +266,13 @@ export function verifyTurnCycle(content: ContentIndex, options: SimOptions) {
         checkTick(pendingTick, unit);
         pendingTick = undefined;
       } else {
-        if (edit !== 'status' || unit.id !== owner) {
-          if (unit.statuses !== before.statuses) {
+        if (edit === 'revive' && unit.id === owner) {
+          assert.ok(before.hp <= 0 && unit.hp > 0, 'revival restores a downed fighter');
+          assert.equal(unit.statuses.length, 0, 'revival clears the fighter’s statuses');
+          for (const status of before.statuses) longStatuses.delete(`${unit.id}/${status.id}`);
+        } else {
+          assert.ok(before.hp > 0 || unit.hp <= 0, 'only a revival can restore a downed fighter');
+          if ((edit !== 'status' || unit.id !== owner) && unit.statuses !== before.statuses) {
             assert.deepEqual(
               unit.statuses,
               before.statuses,
@@ -384,6 +415,31 @@ export function verifyTurnCycle(content: ContentIndex, options: SimOptions) {
     );
   };
 
+  draftMethods.revive = function (id, hp, helperId) {
+    if (!this.resolveChanceStatuses) return revive.call(this, id, hp, helperId);
+    observe(this);
+    const at = this.events.length;
+    const before = this.unit(id);
+    const previousEdit = edit;
+    const previousOwner = owner;
+    edit = 'revive';
+    owner = id;
+    try {
+      revive.call(this, id, hp, helperId);
+    } finally {
+      edit = previousEdit;
+      owner = previousOwner;
+    }
+    const after = this.unit(id);
+    if (before && before.hp <= 0 && after && after.hp > 0) {
+      assert.deepEqual(this.events.slice(at), [
+        { type: 'unitRevived', unitId: id, helperId, hp: after.hp },
+      ]);
+    } else {
+      assert.equal(this.events.length, at, 'a no-op revival emits no event');
+    }
+  };
+
   function editStatuses(current: BattleDraft, id: string, apply: () => void): void {
     if (!current.resolveChanceStatuses) return apply();
     observe(current);
@@ -450,6 +506,7 @@ export function verifyTurnCycle(content: ContentIndex, options: SimOptions) {
       setCooldown,
       applyStatusTo,
       cleanseFrom,
+      revive,
     });
   }
 }

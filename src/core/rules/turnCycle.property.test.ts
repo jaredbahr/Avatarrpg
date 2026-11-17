@@ -60,6 +60,8 @@ describe('the authored combat turn cycle', () => {
         starts: 0,
         completedRounds: 0,
         midRoundDeaths: 0,
+        revivedBeforeSlot: 0,
+        revivedAfterSlot: 0,
         statusesExpired: 0,
         longStatusesExpired: 0,
         singleTurnSkips: 0,
