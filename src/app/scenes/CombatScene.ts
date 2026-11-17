@@ -97,7 +97,7 @@ import { createMovementThreatQuery } from '../ui/movementThreats';
 import { partyWalkPhase } from '../animator';
 import type { Animator } from '../animator';
 import type { SoundCue } from '../anim/choreography';
-import { TOPDOWN_PRESENTATION_TIMING } from '../anim/choreography';
+import { ENEMY_PHASE_BEAT_MS, TOPDOWN_PRESENTATION_TIMING } from '../anim/choreography';
 import { PresentationClock, type CombatSpeed } from './presentationClock';
 import { flushTime } from './flockFlush';
 import { resolveCombatBodyPick } from './combatBodyPick';
@@ -344,6 +344,10 @@ export class CombatScene implements Scene {
   /** Surface cells are immutable with the battle grid, so do not rescan them every frame. */
   private obscurementMemo: { grid: BattleState['grid']; tiles: readonly Vec2[] } | null = null;
   private aiScheduled = false;
+  /** An enemy action was dispatched since the table last had the board (see `coverHeld`). */
+  private enemyActed = false;
+  /** When the last enemy action finished playing; the beat counts from here. */
+  private coverIdleSince: number | null = null;
   private aiDueUnitId: string | null = null;
   private resultShown = false;
   private victoryPending = false;
@@ -1453,6 +1457,34 @@ export class CombatScene implements Scene {
     }
   }
 
+  /**
+   * Whether the hand-off card or the defeat panel must wait: the enemy phase just acted, and its
+   * last action is still playing (impact, hit-stop, damage number, knockdown) or has not yet had
+   * its readable beat. The board shows alone meanwhile. A player's own turn never waits here.
+   */
+  private coverHeld(): boolean {
+    if (!this.enemyActed) return false;
+    const now = this.presentationNow();
+    if (this.animatorForBoard.busy(now)) {
+      this.coverIdleSince = null;
+      return true;
+    }
+    this.coverIdleSince ??= now;
+    if (now - this.coverIdleSince < ENEMY_PHASE_BEAT_MS) return true;
+    this.enemyActed = false;
+    this.coverIdleSince = null;
+    return false;
+  }
+
+  /** Per frame: lay the held card down once the last enemy action has been seen. */
+  private releaseCover(): void {
+    if (!this.enemyActed) return;
+    const battle = this.battle();
+    if (!battle || battle.phase === 'victory') return;
+    const waiting = battle.phase !== 'active' || this.needsHandoff();
+    if (waiting && !this.coverHeld()) this.renderHud();
+  }
+
   private needsHandoff(): boolean {
     const unit = this.active();
     if (!unit || !isTableControlled(unit)) return false;
@@ -1602,6 +1634,7 @@ export class CombatScene implements Scene {
           schedule(Math.max(COMBAT_AI_GLIDE_RETRY_MS, remaining));
           return;
         }
+        this.enemyActed = true;
         this.app.dispatch({ type: 'runAiTurn' });
       }, wait);
       this.aiTimer = timer;
@@ -1641,6 +1674,7 @@ export class CombatScene implements Scene {
     this.aiDueAt = null;
     this.aiDueUnitId = null;
     this.aiScheduled = false;
+    this.enemyActed = true;
     this.app.dispatch({ type: 'runAiTurn' });
   }
 
@@ -1979,6 +2013,7 @@ export class CombatScene implements Scene {
 
     if (battle.phase !== 'active') {
       if (battle.phase === 'victory' && this.victoryPending) return;
+      if (battle.phase !== 'victory' && this.coverHeld()) return;
       if (battle.phase === 'victory' && this.victoryBeat) {
         overlays.appendChild(
           el(
@@ -2001,9 +2036,14 @@ export class CombatScene implements Scene {
     if (this.battleOpening) return;
 
     if (this.needsHandoff()) {
+      // The last enemy blow plays out, and is read, before the card covers it.
+      if (this.coverHeld()) return;
       overlays.appendChild(this.handoffBanner());
       return;
     }
+    // The table has the board again: the next enemy phase starts its own beat.
+    this.enemyActed = false;
+    this.coverIdleSince = null;
 
     const unit = this.active();
     if (!unit) return;
@@ -3247,6 +3287,7 @@ export class CombatScene implements Scene {
     renderer.draw(view);
     this.deliverTopdownSounds(now, wallNow);
     this.advanceTopdownAi(now);
+    this.releaseCover();
   };
 
   /**
