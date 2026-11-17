@@ -83,6 +83,19 @@ IT = {
     'oil_drums': ('two dark iron oil drums standing together, one with a dent and a rusty band', 34, 34, 48, 48),
     'pulley_gantry': ('a wooden dock gantry: two tall posts with a cross beam, two iron block-and-tackle pulleys hanging from it with ropes and a cargo net of sacks', 70, 92, 72, 96),
     'buoy': ('a small red and white wooden harbour buoy bobbing on calm water with a short rope', 20, 24, 48, 48),
+    # Lore pass (owner, 2026-11-17: "follow the game's lore, so kingdom building styles"): Saltstep is an outer Earth
+    # Kingdom harbour town (story bible: the Tidemark Reach), Korra era, drawn as in the animated style. The first
+    # houses and lighthouse came out European; these replace them.
+    'ek_cottage': ('a small Earth Kingdom fisher cottage as in the Avatar animated style: tan plaster and grey stone walls on a stone footing, a green glazed tile roof with gently upturned eave corners, a round lattice window, a plain wooden door, no chimney; straight front view, horizontal base; it fills the canvas, no empty margin', 92, 76, 96, 80),
+    'ek_shophouse': ('a two-storey Earth Kingdom harbour shophouse as in the Avatar animated style: ochre plaster walls, dark wooden posts, two tiers of olive green glazed tile roofs with upturned eave corners, wooden lattice windows upstairs, an open shop front with a hanging green cloth sign below; no chimney, no half-timbering; straight front view, horizontal base; it fills the canvas, no empty margin', 104, 100, 112, 104),
+    'ek_house_round': ('a narrow two-storey Earth Kingdom town house as in the Avatar animated style: cream plaster walls on a stone base, a circular moon doorway, a small round window, a green tile roof with upturned eaves, a bamboo pole with laundry hung from the upper window; no chimney; straight front view, horizontal base; it fills the canvas, no empty margin', 64, 92, 72, 96),
+    'beacon_tower': ('an Earth Kingdom harbour beacon: a squat square tower of fitted grey stone blocks tapering upward, a small open pavilion on top with a green tile roof with upturned eaves sheltering a big round paper lantern, green and gold cloth banners hanging from the pavilion; straight front view; it fills the canvas height', 56, 120, 64, 128),
+    'harbour_tree': ('a gnarled wind-bent coastal pine tree with a twisted trunk and flat layered dark green foliage', 60, 76, 64, 80),
+    'stone_well': ('a round stone village well with a small green tiled roof on two wooden posts, a wooden bucket on a rope', 40, 50, 48, 56),
+    'wayside_shrine': ('a small Earth Kingdom wayside shrine: a little stone niche with a green tiled roof, a bowl of offerings and two small lanterns in front of it', 34, 42, 48, 48),
+    'laundry_line': ('a washing line of plain cloth laundry hung between two bamboo poles, tunics and sheets in green, cream and brown', 76, 46, 80, 48),
+    'ek_warehouse': ('a long Earth Kingdom harbour warehouse as in the Avatar animated style: grey stone lower walls, dark timber upper walls, a wide green glazed tile roof with upturned eave corners, a pair of big closed wooden cargo doors with iron bands in the middle, small lattice vents; straight front view, horizontal base, no side wall; it fills the canvas, no empty margin', 152, 88, 160, 96),
+    'banner_poles': ('two tall bamboo poles with long green and gold cloth banners hanging down, an Earth Kingdom market emblem on each banner', 60, 70, 64, 72),
     'tool_crates': ('two stacked plain wooden supply crates with rope handles and a small sack beside them', 36, 32, 48, 48),
     # Bo-shan's delivery cart (Act I's ending; the story bible: Parcel is an ostrich horse), seen from the side so
     # the bird and the cart both read.
