@@ -583,7 +583,7 @@ describe('routines (Working Ba Dan)', () => {
     const held = (tile: string) =>
       carrier.filter((f) => !f.walking && key(f.drawPos) === tile).length * 50;
     expect(held('13,11')).toBeGreaterThanOrEqual(1500); // the kerb, north of the bridge
-    expect(held('13,10')).toBeGreaterThanOrEqual(3500); // the foot of Mira's table
+    expect(held('12,10')).toBeGreaterThanOrEqual(3500); // the foot of Mira's table
     expect(held(key(YARD))).toBeGreaterThanOrEqual(9000); // home in the yard
     expect(carrier.every((f) => f.pos && samePos(f.pos, YARD))).toBe(true);
   });

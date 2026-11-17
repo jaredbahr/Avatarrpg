@@ -31,8 +31,7 @@ export const BA_DAN_VILLAGE: MapDef = {
   // The courtyard's open air, with a pond tone that swells near the canal's water.
   soundscape: 'courtyard',
   // Bending practice (#284) from the wash steps on the canal's north bank: the party stands at (10,11)
-  // and every bend goes south at the mark on the bank's edge (10,12), out over the canal. The table
-  // is blocked, so Wait works within one cell of it.
+  // and every bend goes south at the mark on the bank's edge (10,12), out over the canal.
   practice: {
     label: 'Wash steps',
     anchor: { x: 10, y: 11 },
@@ -56,8 +55,8 @@ export const BA_DAN_VILLAGE: MapDef = {
    * GREY BLOCKOUT (stage 3 of `docs/level-design.md`; the brief is `docs/places/ba_dan_village.md`). The table
    * stands at the crossing of the routes: the east road comes in through the gate gap in the east wall (x 29,
    * rows 9-10) past Gao's shop (x 19-22, rows 4-6, storeroom 23-24) to the square, where Mira's table is the
-   * two `l` cells (13..14, 9). The canal runs along rows 12-13 west of x 16 and rows 13-14 east of it, with
-   * the bridge at (13..14, 12..13), and leaves the board east under the wall. Past it lie the quarry houses
+   * two `l` cells (13..14, 9), seated from the rest spot below it at (13,10). The canal runs along rows 12-13
+   * west of x 16 and rows 13-14 east of it, with the bridge at (13..14, 12..13), and leaves the board east under the wall. Past it lie the quarry houses
    * and the river path (mouth at (18..19, 19)). The terrace `^` under the north cliff is reached by the steps
    * `S` at (9,4); the mason's yard (blocks at (5,6), (6,6), (5,8)) lies west of the square; the garden fence
    * `F` has its side gate gap at (25,3). The west road ends at the ford, `W` at (0,9), flooded this season;
@@ -87,10 +86,10 @@ export const BA_DAN_VILLAGE: MapDef = {
   ],
   partySpawns: [{ x: 11, y: 10 }],
   exit: { pos: { x: 31, y: 9 }, label: 'The east road, toward the quarry' },
-  // The first view of a new game frames Mira's table (13,9) from the spawn, a little below the party.
+  // The first view of a new game centres on row 9, so Mira's table (13,9) sits in the middle of the frame.
   arrivalShot: { at: { x: 11, y: 10 }, unlessVisited: 'mira_intro', rows: 6, centreY: 9 },
   edgeContract: 'enforce',
-  restSpots: [{ pos: { x: 13, y: 9 }, label: "Mira's table" }],
+  restSpots: [{ pos: { x: 13, y: 10 }, label: "Mira's table" }],
   npcs: [
     {
       id: 'riverside_sign',

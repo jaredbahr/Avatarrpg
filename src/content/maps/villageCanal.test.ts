@@ -62,19 +62,12 @@ it('keeps all public resident anchors, exits and rest spots reachable across the
     ),
     ...(map.exits ?? []).flatMap(exitCells),
     ...(map.exit ? [map.exit.pos] : []),
+    ...(map.restSpots ?? []).map((spot) => spot.pos),
   ];
   for (const target of targets) {
     const route = findPath(ctx, spawn, target, Infinity);
     expect(route, posKey(target)).not.toBeNull();
     dry(route?.path ?? []);
-  }
-  // Mira's table is a blocked seat: Wait works within one cell of it (`seatHere`), so a dry cell there must be reachable.
-  for (const spot of map.restSpots ?? []) {
-    const near = [-1, 0, 1]
-      .flatMap((dx) => [-1, 0, 1].map((dy) => ({ x: spot.pos.x + dx, y: spot.pos.y + dy })))
-      .filter((cell) => tileAt(grid, cell)?.blocked === false)
-      .filter((cell) => findPath(ctx, spawn, cell, Infinity) !== null);
-    expect(near.length, spot.label).toBeGreaterThan(0);
   }
   for (const phase of DAY_PHASES) {
     for (const complete of [false, true]) {

@@ -69,7 +69,7 @@ export const BA_DAN_ROUTINES: readonly ResidentRoutine[] = [
 export const PARKED_ROUTINES: readonly ResidentRoutine[] = [
   {
     // Pella's household carries a basket from the yard at (13,16) up over the canal bridge to
-    // the foot of Mira's table at (13,10), and back the same way.
+    // the foot of Mira's table at (12,10), and back the same way.
     id: 'bg.pella_household',
     mapId: VILLAGE,
     anchor: 'bd04.yard',
@@ -86,7 +86,7 @@ export const PARKED_ROUTINES: readonly ResidentRoutine[] = [
         hold: 1500,
       },
       {
-        path: [{ x: 13, y: 10 }],
+        path: [{ x: 12, y: 10 }],
         hold: 3500,
         work: true,
       },

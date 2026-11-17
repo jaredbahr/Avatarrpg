@@ -103,7 +103,7 @@ const door = (id: string, place: string, x: number, y: number): WorldAnchor => (
 
 export const BA_DAN_ANCHORS: readonly WorldAnchor[] = [
   // Mira's Table: the square's open cell west of the table's two blocked cells (13..14, 9), beside the
-  // rest spot at (13,9). No table or awning art yet.
+  // rest spot below it at (13,10). No table or awning art yet.
   tile('bd01.table', 'BD01', VILLAGE, 12, 9),
   // Pella's seat at Mira's table for the first talk (DLG-01): the cell south-east of the table, clear of
   // the rest spot and the party's spawn.
