@@ -55,6 +55,22 @@ IT = {
     'training_dummy': ('a wooden training dummy: a straw-stuffed sacking body tied to an upright post with a cross-bar for arms, standing on a small wooden base', 24, 44, 48, 56),
     'water_trough': ('a long low wooden water trough on short legs, full of water, an iron band round each end', 60, 24, 64, 48),
     'weapon_rack': ('an upright wooden rack of wooden practice staffs and blunt wooden training spears leaning in a row', 40, 44, 48, 56),
+    # The density pass (owner, 2026-11-17: "think about the density in Ba Dan"): the market, a noisy fish quay.
+    'lighthouse': ('a small old harbour lighthouse: a round tapering white-washed stone tower with a red band, a black iron lantern room with glass on top, a small wooden door at its foot, on a rough stone base; straight front view; it fills the canvas height', 52, 124, 64, 128),
+    'house_fisher': ('a small fisherman\'s cottage: weathered pale blue plank walls on a stone footing, a dark red tiled roof, one shuttered window, a low wooden door, a net hung on the wall; straight front view, horizontal base; it fills the canvas, no empty margin', 100, 84, 104, 88),
+    'house_harbour': ('a two-storey harbour house: ochre plaster walls with dark timber beams, a dark grey tiled roof with a small chimney, two upper windows with green shutters, a shop door below with a little sign; straight front view, horizontal base; it fills the canvas, no empty margin', 116, 100, 120, 104),
+    'house_narrow': ('a tall narrow townhouse: white-washed walls, a steep teal tiled roof, a small balcony with a washing line of laundry, a blue door; straight front view, horizontal base; it fills the canvas, no empty margin', 72, 96, 80, 104),
+    'drying_rack': ('a wooden fish drying rack: two upright posts and three cross poles hung with rows of split silver fish drying in the sun', 44, 44, 48, 48),
+    'crate_stack': ('a tall stack of four wooden fish crates, the lower ones stamped with a fish mark, a coil of rope on top', 36, 54, 48, 56),
+    'barrels': ('three wooden barrels with iron hoops standing together, one with its lid off showing salt', 40, 34, 48, 48),
+    'rowboat': ('a small wooden rowing boat floating on water seen from above at a low angle, two oars resting inside, painted blue with a white stripe', 60, 28, 64, 48),
+    'sailboat': ('a small wooden fishing sailboat floating on water, a single mast with a furled cream sail, nets piled in the stern, red hull; side view', 84, 68, 88, 72),
+    'shore_rocks': ('a low cluster of wet dark grey shoreline rocks with a little green weed, poking out of water', 46, 26, 48, 48),
+    'fish_table': ('a sturdy wooden fish gutting table with a wooden board, a knife, a bucket under it and a few fish on top', 46, 38, 48, 48),
+    'lobster_pots': ('a stack of three round wicker lobster pots with rope handles', 34, 30, 48, 48),
+    'bunting_poles': ('two tall thin wooden poles with a string of colourful triangular cloth bunting flags hung between them, red yellow blue and green', 84, 56, 88, 64),
+    'awning_shed': ('an open market fish shed: a striped red and white cloth awning on four wooden poles over a long counter of fish laid on ice and baskets; straight front view', 84, 60, 88, 64),
+    'gulls': ('two white and grey seagulls floating on calm water, seen from above at a low angle', 30, 18, 48, 48),
     'tool_crates': ('two stacked plain wooden supply crates with rope handles and a small sack beside them', 36, 32, 48, 48),
     # Bo-shan's delivery cart (Act I's ending; the story bible: Parcel is an ostrich horse), seen from the side so
     # the bird and the cart both read.
