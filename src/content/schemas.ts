@@ -1016,6 +1016,7 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     next: id,
   }),
   z.object({ id, kind: z.literal('branch'), flag: z.string().min(1), ifSet: id, ifUnset: id }),
+  z.object({ id, kind: z.literal('branchWhen'), when: conditionSchema, ifTrue: id, ifFalse: id }),
   z.object({
     id,
     kind: z.literal('end'),
@@ -2785,6 +2786,9 @@ export function validateContent(
           );
         }
         break;
+      case 'branchWhen':
+        links.push([node.id, node.ifTrue], [node.id, node.ifFalse]);
+        break;
       case 'end':
         if (node.next) {
           links.push([node.id, node.next]);
@@ -2998,6 +3002,8 @@ export function validateContent(
         queue.push(current.next);
       } else if (current.kind === 'branch') {
         queue.push(current.ifSet, current.ifUnset);
+      } else if (current.kind === 'branchWhen') {
+        queue.push(current.ifTrue, current.ifFalse);
       }
       // explore/battle/end: a resting point, do not walk past it.
     }

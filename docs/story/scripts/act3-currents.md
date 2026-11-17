@@ -32,6 +32,9 @@ control. Rusk's past in the Blackreed Flood is not known until MQ-10.
 1. **The audience at the mirror pool** (MQ-07): the heron in the water, and the laugh it kept.
 2. **The door in the rain** (end of the act): a wet street, a poster, a door opening.
 
+Shot lists for both are in [cutscenes.md](cutscenes.md) (CS-3A, CS-3B), a proposal pending the trial
+cutscene (#810).
+
 ---
 
 ## MQ-06 — The Train That Forgot a Town
@@ -149,13 +152,19 @@ hurrying. Everyone else on the platform follows her.
 - **Yard hand:** "Mind the crates! That's a week's picking!"
 
 > **If Bo is in the party —**
-> **Bo:** Crates first, then the points. Which end do you two want?
+> **Bo:** Crates first, then the points. You two, pick an end of that handcart.
 >
-> **Narrator:** They take the far end. Bo takes the one that is left.
+> **Narrator:** The yard hands pick the light end. Bo had already started for the other one.
 
 > **If Riko is in the party —**
 > **Riko:** I'll take the brake wheel. Somebody watch the grade above it. If a second one's coming I want to
 > hear about it before I see it.
+
+> **If Kaya is in the party —**
+> **Narrator:** Kaya is already on the wagon. She got on while the conductor was still explaining where the
+> brake was.
+>
+> **Kaya:** Found the stove! ...That's not the brake. Where's the brake?
 
 **After a win:**
 
@@ -213,6 +222,10 @@ stops, nothing ever breaks and nobody ever gets on. Then they wrote that number 
 
 **Hesh:** "None required." I've mended that viaduct with my own hands eleven times.
 
+> **If `findings_guild` —** _Narrator:_ Hesh has the party's page of findings folded in his breast pocket, soft
+> already. He lays three maintenance books on the table, each with a bootlace marking a year. The crews read
+> it first, and they have been busy.
+
 **Yard foreman:** Don't start, Hesh. You know what they'll say back to you.
 
 **Hesh:** I know.
@@ -220,8 +233,10 @@ stops, nothing ever breaks and nobody ever gets on. Then they wrote that number 
 **Narrator:** His eyebrows come down. He says it to the table, not to anyone.
 
 **Hesh:** The guild ran this line for sixty years. To get a card you needed two members to speak for you. They
-spoke for their sons. I spoke for mine. There were people in this yard who could bend a rail true by eye and
-never got a card, because nobody's father knew their father.
+spoke for their sons. I spoke for mine.
+
+**Hesh:** There were people in this yard who could bend a rail true by eye and never got a card, because nobody's
+father knew their father.
 
 **Hesh:** Commonworks threw that rule out in a week. I hated them for it. It was the right thing to throw out.
 
@@ -283,7 +298,10 @@ hours of stone a day and it'll shout.
 
 **Yard foreman:** Two. The council writes the stop back into the contract and pays for it. Commonworks runs
 it, to the timetable, with a crew inspector the company doesn't choose. It'll be there every Thursday, rain or
-not. But the Halt won't have a say in it past signing, and if the council's short next year, we're back here.
+not.
+
+**Yard foreman:** But the Halt won't have a say in it past signing, and if the council's short next year, we're
+back here.
 
 **Grandmother Ansa:** I don't care who drives it. I care if it comes. But I'd like to be asked next time,
 before I'm a category.
@@ -332,7 +350,8 @@ is asleep with his head in the basket again.
 **Driver (Bo-shan):** Stop fourteen. I've got a line for it in the book now. "Pear Halt. One pot, to be
 returned. One old woman, not to be argued with."
 
-> **Loss branch.** **Driver (Dorin):** I have written it in the watch book, for Bo-shan. "Stop fourteen is a place. Ninety
+> **Loss branch.** **Driver (Dorin):** I have written it in the watch book, for Bo-shan. "Stop fourteen is a
+> place. Ninety
 > people. I have met one. She is enough."
 
 > **If Yenna rode up —**
@@ -385,7 +404,10 @@ Mind the gap in the walkway. It's meant to be there.
 
 ### Scene 7.2 — Three ways of knowing it
 
-**Shown:** found (three short conversations, any order; all three are needed before 7.3).
+**Shown:** found (three short conversations, any order). Only the pump station is needed before 7.3: it holds
+the proof and the keeper's four marks. The song and the walkway are there for a table that looks; the
+crossing's barks ("Lift on the clap!") work whether or not they were heard. _(Edit pass, 2026-11-17: three
+required talks, then Latch, Auntie Silt and the audience, was six scenes in a row before anything is played.)_
 
 **The route song.**
 
@@ -490,9 +512,9 @@ Hobnailed in a pattern, the hill-farm way. It is the left one.
 
 > **Loss branch.**
 > **Driver (Dorin):** A left boot. Hobnailed. One owner, unknown. I am going to enter it as found property and
-> keep it under the seat. Somebody is walking about in the other one.
+> keep it under the seat. Somebody is walking about without it.
 >
-> **Latch:** The right one is still on its person. Under a hill, where the water is white. This one could not
+> **Latch:** The right one is under a hill, where the water is white. So is its person. This one could not
 > wait.
 
 **Narrator:** Latch hops off the tailgate with the tag and goes into the reeds. It keeps looking back, the way
@@ -522,16 +544,22 @@ width in my lifetime. A whole hand. You should have seen it before. Gritty. No b
 brick. The new brick hums.
 
 **Auntie Silt:** It was a good neighbour. Before. It let things go by. Now it holds on to every ripple like a
-child with a pocket full of frogs. I've told it. Mud knows. You can keep a thing or you can keep it alive.
-You'll want to write that down.
+child with a pocket full of frogs. I've told it what you get when you keep a frog in a pocket. You don't get
+a frog.
 
 **Latch:** She says that about everything.
 
 **Auntie Silt:** And one time I'll be right about people. Go on. Mind the pale part.
 
+_The way she gives runs past the old eel traps, where SF-3.2 waits: a table that wants something to do with
+its hands before the audience can practise the echo rule there. It stays optional._
+
 ### Scene 7.5 — The audience
 
-**Shown:** cutscene candidate 1 (also works played). **Where:** the mirror pool.
+**Shown:** cutscene candidate 1 (also works played). **Where:** the mirror pool. Shot list:
+[cutscenes.md](cutscenes.md), CS-3A (a proposal, pending the trial).
+
+**Narrator:** Fenn has come along behind you with her shoes in her hand. For once she has nothing to say.
 
 **Narrator:** The pool is round and perfectly calm, and it shows nothing. Not the reeds, not the sky, not you.
 Under the surface the same ring of ripples spreads out, and spreads out, and spreads out.
@@ -553,6 +581,14 @@ chest a current turns slowly, like a hand stirring a bowl.
 **Still Keeper:** You went by at the stone room under the drying seeds. Someone was afraid for you. I kept it.
 
 **Narrator:** "Careful." Kesi's whisper.
+
+> **If MQ-06 or MQ-08 was played before this —** one line for each that was heard, before the Keeper goes on:
+>
+> **Still Keeper:** You went by where the road is iron. An old one counted her years. I kept it.
+> _Narrator:_ "...forty years."
+>
+> **Still Keeper:** You went by where the wind starts. Someone called up, and was not heard. I heard. I kept
+> it. _Narrator:_ "Hold the rail."
 
 **Still Keeper:** You went by where the new gate stuck. A small one laughed. You went by on the river road. A
 small one, far away, asked a thing on paper. I kept them. They are all here. None of them has gone.
@@ -794,7 +830,8 @@ is holding a basket with a goose in it.
 
 **Tram operator:** ...and don't lean on the downhill side! Did they get that?
 
-**Student:** I don't think they got the first part.
+**Student:** I don't think they got the first part. And it isn't my goose. It was in the basket when I picked
+the basket up.
 
 **Narrator:** In the rain barrel beside the station door, the water says, a breath late and perfectly clear:
 "Hold the rail."
@@ -838,11 +875,11 @@ flag. Three ways to bring the passengers off.)
 - **Line warden:** "Our slip says empty! Is it empty? Then why is there a hat in the window?"
 - **Lower-camp winch hand:** "We've got it! We do this with grain sacks every week! People are easier, they
   hold on!"
-- **Carter (from the car):** "I've got a goose basket up here that isn't mine!"
+- **Carter (from the car):** "We can't hear you! We can hear the goose!"
 
 > **If Nima is in the party —**
-> **Nima:** I could just bring the wind down flat for a minute. I could. But then I'm the only one who knows
-> how it was done. Give me a rope. I'll be on the rope like everyone else, and I'll call the gusts.
+> **Nima:** I can flatten one gust. Not the one after it, and I'd never know which one I'd missed. Give me a
+> rope. I'll be on it like everyone else, and I'll call them as they come. That I can do all day.
 
 > **If Jinu is in the party —**
 > **Jinu:** The warden on the left has his slip in his top pocket. I can see the corner. "Empty." I'm going
@@ -855,6 +892,12 @@ shoes. The line wardens have put down their spanners and are looking at their sl
 
 **Line warden:** It said empty. I'd have dropped seven people in a valley on a piece of paper. Who writes
 these?
+
+> **If Nilak is in the party —** (after a win, or in the wind shelter after CARRY ON)
+> **Nilak:** Everyone who came off that car, sit where I can see you. I'm going to ask each of you the same
+> three questions. They're dull. Answer them anyway.
+>
+> **Narrator:** The smallest one answers all three before he has finished asking the first.
 
 **CARRY ON (the encounter is lost):**
 
@@ -886,6 +929,10 @@ wincing. A woman with a broom is setting out cushions and a board game at the sa
 
 **Narrator:** He has two sheets pinned side by side. One is his gust log, in a performer's big handwriting. The
 other is a printed Commonworks notice: "Pressure tests, ridge station. Dates and hours."
+
+> **If `findings_engineers` —** _Narrator:_ A third sheet is pinned under the notice, in an engineer's small
+> print: the ridge station's own test log, copied out and sent up "for the inspectors, unofficially". Somebody
+> who read the findings wanted them to have it.
 
 **Oru:** Read down them together.
 
@@ -937,7 +984,8 @@ letter to the company was not taking a side.
 **Shown:** played. **Where:** the lower camps, below the terraces.
 
 **Narrator:** The lower camps are tents and plank huts in the lee of the cliff. Families from four provinces
-and farther. Bell three hangs on a mast high above them, small against the cloud.
+and farther. Bell three hangs on a mast high above them, small against the cloud. The mast has a split down
+its length, bound with rope.
 
 **Narrator:** A carpenter is planing a tent pole. They look up when your shadow crosses the work, and sign
 something to a girl beside them, who says it aloud.
@@ -1098,7 +1146,7 @@ Grumbler's sums.
 > > 1. No more notes have come down. One note is not very many.
 > > 2. Aunt Nala's knee is bad. She carries the water now. I do Wednesdays. Bo-shan used to do all of it. I'm
 > >    telling you so somebody knows.
-> > 3. Hanru says you have been to see a train, or a marsh, or a mountain. I asked if he was on it, or in it,
+> > 3. Hanru says you have been to see a train, or a marsh, or a mountain. I asked if Bo-shan was on it, or in it,
 > >    or up it. Hanru said no.
 > > 4. You are all very busy over there.
 > > 5. I have stopped asking Mira when. She gets a look.
@@ -1200,9 +1248,11 @@ another, and squares the corners.
 **Narrator:** The three marks make a line. It runs from a spring under the heights, down past the culvert at
 Pear Halt, through the Slow Channel, to the sea.
 
-**Edda:** That's an old water road. It moves with the season. Where it runs under the rail, they closed the
-culvert, and a stop that needed the culvert stopped being a stop. Where it runs through the marsh, they shut
-it with vanes. Where it starts, they hold the pressure, and the wind comes off it wrong.
+**Edda:** That's an old water road. It moves with the season.
+
+**Edda:** Where it runs under the rail, they closed the culvert, and a stop that needed the culvert stopped being
+a stop. Where it runs through the marsh, they shut it with vanes. Where it starts, they hold the pressure, and
+the wind comes off it wrong.
 
 **Edda:** It isn't three problems. Somebody drew one line through a map with a ruler, and everything that
 wasn't straight came off.
@@ -1268,8 +1318,8 @@ Marshal, though he'd rather have it for nothing, and he's about to try.
 **Narrator:** Downstairs, the street doors open. Boots, in step. A level voice, giving an order without
 raising itself.
 
-**Rusk:** Good evening. This building is being secured. Nobody is being asked to leave. We would only ask that
-nothing is carried out.
+**Rusk:** Forgive the boots. This building is being secured. Nobody is being asked to leave. We would only ask
+that nothing is carried out.
 
 > **If `mandate_official` or `mandate_independent` —**
 > **Rusk:** Inspectors. I'm glad to find you here. Nobody has withdrawn your commission. It is under review.
@@ -1283,7 +1333,9 @@ nothing is carried out.
 
 ### Scene 9.3 — Memorandum fourteen (twist two)
 
-**Shown:** played (the party reaches shelf forty while the squad is still below).
+**Shown:** played (the party reaches shelf forty while the squad is still below). _Staging: the fight's clock
+can start at Rusk's entrance in 9.2, with this scene and 9.4 played as the party reaches the shelf and the
+stair, so the table is moving pieces while it reads. No line changes._
 
 **Narrator:** Memorandum fourteen is two pages, clipped. The top one is in Neri's small, careful hand.
 
@@ -1294,9 +1346,9 @@ month."
 
 **Narrator:** The second page is typed. Two words have been corrected in ink, neatly, in a hurry.
 
-**The reply:** "Postponement declined. Six weeks becomes six months, and six months becomes the old way. If
-the readings are steady we do not need to know this month why they are steady. We commission on the spring
-tide. V. Sen. Dated the ninth day of the first month."
+**The reply:** "Postponement declined. Six weeks becomes six months, and six months becomes the old way. The
+readings are steady. We will find out why they are steady after the spring tide, with the low landing dry. We
+commission on the tide. V. Sen. Dated the ninth day of the first month."
 
 **Narrator:** Five days. She had it for five days, and then she wrote that.
 
@@ -1313,8 +1365,8 @@ Staff holding copies are to be reassigned. O. Rusk."
 > made-out document. I have never been so sorry to see one.
 
 > **If Wen is in the party —**
-> **Wen:** "We do not need to know why." You always need to know why. That's the first thing. That's on the
-> wall of every shop I ever worked in.
+> **Wen:** "After." You find out why first. That's on the wall of every shop I ever worked in. In most of them
+> it's the only thing on the wall.
 >
 > **Narrator:** She puts the page down very gently, as if it were hot.
 
@@ -1387,8 +1439,9 @@ them into a sack. Rusk initials the sack.
 **Narrator:** On the street, Yenna is waiting in her chair by the coal hatch. She has both hands flat on a
 blanket over her knees.
 
-**Yenna:** I've sat in this chair in that archive every Tuesday for four years. Nobody's ever once looked
-under the blanket.
+**Yenna:** Neri gave me the shelf number too. I had the file brought to my desk on Tuesday, the way I have
+something brought every Tuesday. Four years I've sat in that archive, and nobody's once looked under the
+blanket.
 
 **Narrator:** Under the blanket is memorandum fourteen, both pages, copied in a signalman's block capitals.
 
@@ -1408,7 +1461,9 @@ someone else. Rusk's collection order is only in hand if `jin_archive_passed`._
 districts go dark for a day or two. People will be frightened and they'll be right.
 
 **Edda:** If it isn't read out tomorrow, he has time. He'll move staff, lock rooms, and say the page is
-forged. But we could use those days. Get every crew a paper saying they can't be sacked for stopping work
+forged.
+
+**Edda:** But we could use those days. Get every crew a paper saying they can't be sacked for stopping work
 that's unsafe. Get the low landing an evacuation plan with a boat in it.
 
 **Yenna:** I was told for a month that my mother's stop was being "looked at". I don't like "first we
@@ -1516,7 +1571,8 @@ shoes. A shutter closes. Another.
 
 **Narrator:** At the bottom of a stair street, in the rain, there is one door.
 
-**The door (cutscene candidate 2; the first matching variant plays):**
+**The door (cutscene candidate 2; the first matching variant plays).** Shot list: [cutscenes.md](cutscenes.md),
+CS-3B (a proposal, pending the trial).
 
 - **If PQ-02 was resolved (either constructive way):** the back door of the Six-Ladle Kitchen.
   **Dema:** Don't stand there reading the poster. I've read it. I've also read my wage sheet, and I know
@@ -1603,12 +1659,12 @@ Scene 9.4, on the archive stairs: a three-way race between the party, Rusk's squ
 
 ## The echo for each mission
 
-| Mission | Where                         | What the water repeats                                         |
-| ------- | ----------------------------- | -------------------------------------------------------------- |
-| MQ-06   | The trough under the Halt tap | "...forty years", in Ansa's voice                              |
-| MQ-07   | The mirror pool               | Everything from Act II, on purpose; the Keeper explains itself |
-| MQ-08   | The station rain barrel       | "Hold the rail", the warning the goose drowned out             |
-| MQ-09   | None                          | The lamps instead (9.7). The gutter that takes Latch is silent |
+| Mission | Where                         | What the water repeats                                          |
+| ------- | ----------------------------- | --------------------------------------------------------------- |
+| MQ-06   | The trough under the Halt tap | "...forty years", in Ansa's voice                               |
+| MQ-07   | The mirror pool               | Everything heard so far, on purpose; the Keeper explains itself |
+| MQ-08   | The station rain barrel       | "Hold the rail", the warning the goose drowned out              |
+| MQ-09   | None                          | The lamps instead (9.7). The gutter that takes Latch is silent  |
 
 ## Pella's letter for this act
 
@@ -1618,16 +1674,16 @@ C.1, after the first spoke, with a loss-branch version. It arrives with Grumbler
 
 | Hero    | Where                                                                                |
 | ------- | ------------------------------------------------------------------------------------ |
-| Kaya    | None scripted in the main line here; her PQ-01 runs at Saltstep (see Open, item 12)  |
+| Kaya    | 6.3 on the wagon before the brake is found; her PQ-01 runs at Saltstep               |
 | Tenzo   | C.1, DLG-02 and his grandmother                                                      |
-| Nilak   | 7.2 the fever tally                                                                  |
+| Nilak   | 7.2 the fever tally; 8.1 three dull questions                                        |
 | Sura    | 7.2 Vessa (PQ-04 opens); 7.5 at the pool's edge                                      |
 | Bo      | 6.3 the end that is left; 6.4 Renn (PQ-05 opens)                                     |
 | Lin Mei | 6.4 the chess table; 7.2 Fenn's notice (PQ-06 opens); 9.1 her survey under all three |
 | Nima    | 8.1 on the rope like everyone else; 8.2 Sena (PQ-07 opens, with the bible's line)    |
 | Jinu    | 8.1 the warden's slip; 8.2 the mail shelter (PQ-08 opens); 9.5 folding in three      |
 | Riko    | 6.3 the brake wheel; 6.4 Seli (PQ-09 opens); 9.3 "Both of those are her"             |
-| Wen     | 7.5 the gauge; 9.1 her regulator; 9.3 "you always need to know why"; C.1 the stove   |
+| Wen     | 7.5 the gauge; 9.1 her regulator; 9.3 "you find out why first"; C.1 the stove        |
 
 ## Decided (owner, 2026-11-15)
 
@@ -1694,3 +1750,22 @@ record of what was accepted ("Recommend" lines are now decisions). Later correct
    flags.
 2. **The trust table** mapping is mine.
 3. **Not yet written:** the personal quests that open in this act (PQ-04 to PQ-09), DLG-06 included.
+
+## Edit pass, 2026-11-17 (awaiting the owner)
+
+What changed in this file; the reasons and the proposals not applied are in the pass's report.
+
+1. **Continuity:** the goose belongs to nobody from its first line, and the carter no longer has a second
+   basket. The mast is split before 8.4 calls it broken. Rusk's greeting fits a morning or a night entry.
+   Yenna's copy of memorandum fourteen has a source on both approaches (Neri gave her the shelf; it was her
+   Tuesday). Fenn is seen to walk to the pool. The Keeper has kept the Halt's and the heights' echoes too,
+   when those spokes came first. Hesra lost the pair of boots on both Act I branches (the loss branch had her
+   keep one), which the shipped welcome-home line does not yet say: see the report.
+2. **Lines:** Veyra's reply to memorandum fourteen now defers the question instead of dismissing it ("We
+   will find out why they are steady after the spring tide"), and Wen answers that. Auntie Silt's frog.
+   Nima's reason for taking the rope is a real limit. Bo at the handcart. Four long turns split.
+3. **Hero moments added:** Kaya on the wagon (6.3), Nilak's three dull questions (8.1).
+4. **Pace:** only the pump station is needed before 7.3; SF-3.2 is pointed to on the way to the pool; 9.3
+   and 9.4 may play inside the archive fight's clock.
+5. **Votes:** `findings_guild` is read in 6.4 and `findings_engineers` in 8.2.
+6. **Cutscenes:** pointers to [cutscenes.md](cutscenes.md) at 7.5 and 9.8.

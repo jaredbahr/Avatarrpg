@@ -26,6 +26,7 @@ import { defaultPlayerName, HANDOFF_NAME_MAX, sanitiseHandoffName } from '../ses
 import { DIFFICULTY_CHOICES, difficultyHint } from '../ui/difficultyText';
 import { loadLastTitleArt } from '../storage/localSaves';
 import { titleArtById, type TitleArtDef } from '../titleArt';
+import { mulberry32 } from '../../render/fx/rng';
 
 type Step = 'count' | 'tableNames' | 'handoff' | 'name' | 'element' | 'character' | 'summary';
 
@@ -33,10 +34,49 @@ interface PersonDraft {
   name: string;
 }
 
-interface HeroDraft {
+export interface HeroDraft {
   ownerIndex: number;
   element: ElementId | null;
   characterId: string | null;
+}
+
+/**
+ * Swap the character two heroes hold, leaving names and owners alone. The hero
+ * asking (`to`) takes `from`'s character; `from` gets what `to` held, or, when
+ * `to` had not picked yet, the first free character of the same element so
+ * nobody is left empty-handed. Pure, so a test can hold it.
+ */
+export function swapHeroPicks(
+  heroes: readonly HeroDraft[],
+  to: number,
+  from: number,
+  characters: readonly CharacterDef[],
+): HeroDraft[] {
+  const next = heroes.map((hero) => ({ ...hero }));
+  const asking = next[to];
+  const giving = next[from];
+  if (!asking || !giving || to === from || giving.characterId === null) return next;
+  const taken = giving.characterId;
+  let replacement = asking.characterId;
+  if (replacement === null) {
+    const inUse = new Set(next.map((hero) => hero.characterId));
+    replacement =
+      characters.find((c) => c.element === giving.element && !inUse.has(c.id))?.id ?? null;
+  }
+  giving.characterId = replacement;
+  asking.characterId = taken;
+  asking.element = giving.element;
+  return next;
+}
+
+/** Every character no other hero holds, in content order. */
+export function freeCharacters(
+  heroes: readonly HeroDraft[],
+  current: number,
+  characters: readonly CharacterDef[],
+): CharacterDef[] {
+  const held = new Set(heroes.map((hero, index) => (index === current ? null : hero.characterId)));
+  return characters.filter((c) => !held.has(c.id));
 }
 
 export class PartySetupScene implements Scene {
@@ -53,6 +93,12 @@ export class PartySetupScene implements Scene {
   private difficulty: Difficulty = DEFAULT_DIFFICULTY;
   /** What was typed on the suggested party's optional names screen, by seat. */
   private tableNames: string[] = [];
+  /** A taken hero the current player tapped, awaiting "Swap" or "Cancel". */
+  private swapWith: number | null = null;
+  /** Set when a pick is being changed from the summary, so Confirm returns there. */
+  private returnToSummary = false;
+  /** App-level, seeded: presentation randomness here is always mulberry32. */
+  private rng: (() => number) | null = null;
 
   constructor(
     private app: App,
@@ -273,6 +319,8 @@ export class PartySetupScene implements Scene {
     }));
     this.phase = 'names';
     this.resumeHeroIndex = null;
+    this.swapWith = null;
+    this.returnToSummary = false;
     this.current = 0;
     this.step = this.playerCount > 1 ? 'handoff' : 'name';
     this.render();
@@ -515,6 +563,7 @@ export class PartySetupScene implements Scene {
           onClick: () => {
             draft.element = element.id;
             draft.characterId = null;
+            this.swapWith = null;
             this.render();
           },
         },
@@ -542,9 +591,10 @@ export class PartySetupScene implements Scene {
     panel.appendChild(
       el(
         'div',
-        { class: 'row setup-footer' },
+        { class: 'row row-wrap setup-footer' },
         button('Back', () => this.goBack(), { class: 'btn-ghost' }),
         el('div', { class: 'spacer' }),
+        this.pickForMeButton(true),
         button(
           'Next',
           () => {
@@ -562,6 +612,7 @@ export class PartySetupScene implements Scene {
     if (!draft?.element) return;
 
     const taken = this.takenCharacterIds();
+    const swapOwner = this.swapWith;
     const options = [...this.app.content.characters.values()].filter(
       (c) => c.element === draft.element,
     );
@@ -579,11 +630,12 @@ export class PartySetupScene implements Scene {
     }
     panel.appendChild(grid);
 
-    if (options.every((c) => taken.has(c.id))) {
+    if (swapOwner !== null) panel.appendChild(this.swapPrompt(swapOwner));
+    else if (options.some((c) => taken.has(c.id))) {
       panel.appendChild(
         el('p', {
-          class: 'warn-note',
-          text: 'Both characters of this element are taken. Go back and pick another path.',
+          class: 'muted tiny',
+          text: 'Want a hero someone already chose? Tap it to swap picks. Names stay as they are.',
         }),
       );
     }
@@ -591,9 +643,10 @@ export class PartySetupScene implements Scene {
     panel.appendChild(
       el(
         'div',
-        { class: 'row setup-footer' },
+        { class: 'row row-wrap setup-footer' },
         button('Back', () => this.goBack(), { class: 'btn-ghost' }),
         el('div', { class: 'spacer' }),
+        this.pickForMeButton(false),
         button('Confirm', () => this.confirmPlayer(), {
           class: 'btn-primary btn-large',
           disabled: draft.characterId === null,
@@ -612,10 +665,17 @@ export class PartySetupScene implements Scene {
       'button',
       {
         class: `pick-card character-card element-${character.element}${selected ? ' selected' : ''}${taken ? ' taken' : ''}`,
-        disabled: taken,
         attrs: { 'aria-pressed': String(selected) },
         onClick: () => {
-          draft.characterId = character.id;
+          if (taken) {
+            const owner = this.heroes.findIndex(
+              (hero, index) => index !== this.current && hero.characterId === character.id,
+            );
+            this.swapWith = owner >= 0 ? owner : null;
+          } else {
+            this.swapWith = null;
+            draft.characterId = character.id;
+          }
           this.render();
         },
       },
@@ -626,7 +686,12 @@ export class PartySetupScene implements Scene {
         el('h3', { text: character.name }),
         el('p', { class: 'tagline', text: character.blurb }),
         el('p', { class: 'tiny muted', text: character.bio }),
-        taken ? el('span', { class: 'chip chip-warn', text: 'Already taken' }) : null,
+        taken
+          ? el('span', {
+              class: 'chip chip-warn',
+              text: `${this.ownerNameOf(character.id)} has this hero. Tap to swap`,
+            })
+          : null,
       ),
       selected
         ? el('span', { class: 'selection-check', text: '✓', attrs: { 'aria-hidden': 'true' } })
@@ -635,8 +700,97 @@ export class PartySetupScene implements Scene {
     return card;
   }
 
+  private ownerNameOf(characterId: string): string {
+    const hero = this.heroes.find((h) => h.characterId === characterId);
+    return hero
+      ? (this.people[hero.ownerIndex]?.name ?? defaultPlayerName(hero.ownerIndex))
+      : 'Someone';
+  }
+
+  /** "Swap with Frehley?" with what each of them would end up holding. */
+  private swapPrompt(owner: number): HTMLElement {
+    const characters = [...this.app.content.characters.values()];
+    const wanted = characters.find((c) => c.id === this.heroes[owner]?.characterId);
+    const after = swapHeroPicks(this.heroes, this.current, owner, characters)[owner]?.characterId;
+    const gets = characters.find((c) => c.id === after);
+    const ownerName = this.people[this.heroes[owner]?.ownerIndex ?? 0]?.name ?? 'They';
+    const detail = gets
+      ? `${ownerName} would play ${gets.name} instead.`
+      : `${ownerName} will be asked to pick again.`;
+    return el(
+      'div',
+      { class: 'swap-prompt', attrs: { role: 'group', 'aria-label': 'Swap heroes' } },
+      el('p', {
+        class: 'warn-note',
+        text: `Swap with ${ownerName}? You would play ${wanted?.name ?? 'this hero'}. ${detail}`,
+      }),
+      el(
+        'div',
+        { class: 'row row-wrap' },
+        button(
+          `Swap with ${ownerName}`,
+          () => {
+            this.heroes = swapHeroPicks(this.heroes, this.current, owner, characters);
+            this.swapWith = null;
+            this.render();
+          },
+          { class: 'btn-primary btn-large', id: 'confirm-swap' },
+        ),
+        button(
+          'Cancel',
+          () => {
+            this.swapWith = null;
+            this.render();
+          },
+          { class: 'btn-ghost btn-large' },
+        ),
+      ),
+    );
+  }
+
+  /** One tap to a random hero nobody else holds; the player still confirms it. */
+  private pickForMeButton(onElementStep: boolean): HTMLElement {
+    return button('Pick for me', () => this.pickForMe(onElementStep), {
+      class: 'btn-ghost btn-large',
+      id: 'pick-for-me',
+    });
+  }
+
+  private pickForMe(onElementStep: boolean): void {
+    const draft = this.heroes[this.current];
+    if (!draft) return;
+    const free = freeCharacters(this.heroes, this.current, [
+      ...this.app.content.characters.values(),
+    ]);
+    // Prefer a hero other than the one already showing, so a second tap moves on.
+    const fresh = free.filter((c) => c.id !== draft.characterId);
+    const pool = fresh.length > 0 ? fresh : free;
+    this.rng ??= mulberry32((Date.now() ^ 0x5eed5eed) >>> 0);
+    const choice = pool[Math.floor(this.rng() * pool.length)];
+    if (!choice) return;
+    draft.element = choice.element;
+    draft.characterId = choice.id;
+    this.swapWith = null;
+    if (onElementStep) this.step = 'character';
+    this.render();
+  }
+
+  /** From the summary: change one hero's pick, names untouched, then come back. */
+  private editHero(index: number): void {
+    this.phase = 'heroes';
+    this.current = index;
+    this.swapWith = null;
+    this.returnToSummary = true;
+    this.step = 'element';
+    this.render();
+  }
+
   private confirmPlayer(): void {
-    if (this.current + 1 < this.heroes.length) {
+    this.swapWith = null;
+    if (this.returnToSummary) {
+      this.returnToSummary = false;
+      this.step = 'summary';
+    } else if (this.current + 1 < this.heroes.length) {
       this.current += 1;
       this.step = this.playerCount > 1 ? 'handoff' : 'element';
     } else {
@@ -646,6 +800,13 @@ export class PartySetupScene implements Scene {
   }
 
   private goBack(): void {
+    this.swapWith = null;
+    if (this.returnToSummary && (this.step === 'element' || this.step === 'character')) {
+      this.returnToSummary = false;
+      this.step = 'summary';
+      this.render();
+      return;
+    }
     switch (this.step) {
       case 'character':
         this.step = 'element';
@@ -709,25 +870,28 @@ export class PartySetupScene implements Scene {
     );
 
     const list = el('div', { class: 'card-grid' });
-    for (const draft of this.heroes) {
+    for (const [index, draft] of this.heroes.entries()) {
       const character = draft.characterId
         ? this.app.content.characters.get(draft.characterId)
         : undefined;
-      if (!character) continue;
+      const ownerName = this.people[draft.ownerIndex]?.name ?? defaultPlayerName(draft.ownerIndex);
       list.appendChild(
         el(
           'div',
-          { class: `pick-card party-summary-card element-${character.element}` },
-          assetCanvas(character.portrait, 4),
+          {
+            class: `pick-card party-summary-card${character ? ` element-${character.element}` : ''}`,
+          },
+          character ? assetCanvas(character.portrait, 4) : null,
           el(
             'div',
             { class: 'character-copy' },
-            el('h3', { text: character.name }),
-            el('p', {
-              class: 'tagline',
-              text: this.people[draft.ownerIndex]?.name ?? defaultPlayerName(draft.ownerIndex),
+            el('h3', { text: character?.name ?? 'Needs a hero' }),
+            el('p', { class: 'tagline', text: ownerName }),
+            character ? el('span', { class: 'chip element-chip', text: character.element }) : null,
+            button(character ? 'Change' : 'Pick a hero', () => this.editHero(index), {
+              class: 'btn-ghost summary-change',
+              title: `${character ? 'Change' : 'Pick a hero for'} ${ownerName}`,
             }),
-            el('span', { class: 'chip element-chip', text: character.element }),
           ),
         ),
       );

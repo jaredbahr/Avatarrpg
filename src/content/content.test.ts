@@ -467,6 +467,31 @@ describe('content', () => {
     expect(problems.some((p) => p.includes('standing_trap') && p.includes('0 is'))).toBe(true);
   });
 
+  it('accepts a branchWhen on standing, and checks its targets and conditions (ADR 0117)', () => {
+    const gate = (over: Record<string, unknown>) =>
+      validateContent({
+        ...CONTENT_BUNDLE,
+        story: [
+          ...CONTENT_BUNDLE.story,
+          {
+            id: 'gate_test',
+            kind: 'branchWhen',
+            when: { kind: 'standing', nation: 'fire', op: 'gte', value: 0 },
+            ifTrue: STORY_ENTRY,
+            ifFalse: STORY_ENTRY,
+            ...over,
+          } as never,
+        ],
+      }).filter((p) => p.includes('gate_test') && !p.includes('unreachable'));
+    expect(gate({})).toEqual([]);
+    expect(gate({ ifFalse: 'nowhere_node' }).join()).toContain(
+      '"nowhere_node", which does not exist',
+    );
+    expect(
+      gate({ when: { kind: 'not', of: { kind: 'partyHas', characterId: 'nobody' } } }).join(),
+    ).toContain('unknown character "nobody"');
+  });
+
   it('refuses scene memory other than completed or declined (ADR 0047 §6)', () => {
     const problems = validateContent({
       ...CONTENT_BUNDLE,

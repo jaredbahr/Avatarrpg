@@ -173,6 +173,12 @@ export function enterStoryNode(
         continue;
       }
 
+      case 'branchWhen': {
+        current = { ...current, story: { ...current.story, visited } };
+        target = evaluate(current, node.when) ? node.ifTrue : node.ifFalse;
+        continue;
+      }
+
       case 'dialogue':
       case 'choice': {
         events.push({ type: 'screenChanged', screen: 'dialogue' });

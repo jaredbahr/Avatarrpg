@@ -1342,6 +1342,18 @@ export type StoryNode =
       readonly ifUnset: string;
     }
   | {
+      /**
+       * A pass-through node that takes `ifTrue` when `when` holds and `ifFalse`
+       * otherwise (ADR 0117). Unlike `branch` it reads any `Condition`: who is
+       * in the party, standing, scene memory, visited nodes, nested all/any/not.
+       */
+      readonly id: string;
+      readonly kind: 'branchWhen';
+      readonly when: Condition;
+      readonly ifTrue: string;
+      readonly ifFalse: string;
+    }
+  | {
       readonly id: string;
       readonly kind: 'end';
       readonly title: string;
