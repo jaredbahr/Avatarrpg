@@ -1750,3 +1750,21 @@ record of what was accepted ("Recommend" lines are now decisions). Later correct
    flags.
 2. **The trust table** mapping is mine.
 3. **Not yet written:** the personal quests that open in this act (PQ-04 to PQ-09), DLG-06 included.
+
+## Edit pass, 2026-11-17 (awaiting the owner)
+
+What changed in this file; the reasons and the proposals not applied are in the pass's report.
+
+1. **Continuity:** the goose belongs to nobody from its first line, and the carter no longer has a second
+   basket. The mast is split before 8.4 calls it broken. Rusk's greeting fits a morning or a night entry.
+   Yenna's copy of memorandum fourteen has a source on both approaches (Neri gave her the shelf; it was her
+   Tuesday). Fenn is seen to walk to the pool. The Keeper has kept the Halt's and the heights' echoes too,
+   when those spokes came first.
+2. **Lines:** Veyra's reply to memorandum fourteen now defers the question instead of dismissing it ("We
+   will find out why they are steady after the spring tide"), and Wen answers that. Auntie Silt's frog.
+   Nima's reason for taking the rope is a real limit. Bo at the handcart. Four long turns split.
+3. **Hero moments added:** Kaya on the wagon (6.3), Nilak's three dull questions (8.1).
+4. **Pace:** only the pump station is needed before 7.3; SF-3.2 is pointed to on the way to the pool; 9.3
+   and 9.4 may play inside the archive fight's clock.
+5. **Votes:** `findings_guild` is read in 6.4 and `findings_engineers` in 8.2.
+6. **Cutscenes:** pointers to [cutscenes.md](cutscenes.md) at 7.5 and 9.8.

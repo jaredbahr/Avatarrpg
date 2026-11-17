@@ -1623,3 +1623,22 @@ record of what was accepted ("Recommend" lines are now decisions). Later correct
 2. **The side fights** (SF-5.1 and SF-5.2) open only in the aftermath, because travel closes at the final
    commitment. If you want an XP fight before the finale, it belongs in Act IV's list.
 3. **The trust table** here only feeds the three community lines per ending.
+
+## Edit pass, 2026-11-17 (awaiting the owner)
+
+What changed in this file; the reasons and the proposals not applied are in the pass's report.
+
+1. **Cross-script:** Feng, not Little Bai, puts his hand up in Bo's open ending (15.4). Tenzo's resolved
+   ending has a sentence for the posted-terms route. The school path in 13.4 has three versions (on no map;
+   on Lin Mei's map; Fenn's shout when Lin Mei is absent or never walked it).
+2. **Ruon:** supervised repair is every game but one (it is Mira's ruling, not a prize for one dialogue
+   choice); the far-end gang and the boots have a version for a small crew or none.
+3. **The ledger:** after an Act I loss Grumbler's ninety days cannot be paid by MQ-15, so Pella rules a line
+   and starts a clean page at sixty-nine.
+4. **Votes:** staged or reduced now changes what a lost landing or relay costs and how the courtyard looks
+   in 15.1; `demand_removal` changes Fenn's question to Veyra.
+5. **Hero moments added:** Lin Mei's map (13.1), Nilak's count of one hundred (13.2), Riko and the sergeant
+   (13.6), Kaya waiting for the count (14.2), Tenzo's onion (14.7).
+6. **Small:** Sura counts "since the first"; Fenn's voice comes from the spillway gatehouse; "forty"
+   thinned.
+7. **Cutscenes:** pointers to [cutscenes.md](cutscenes.md) at 14.5, 14.6 and 15.7.

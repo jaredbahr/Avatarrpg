@@ -1811,3 +1811,28 @@ record of what was accepted ("Recommend" lines are now decisions). Later correct
    whether eleven or five volunteer.
 3. **Senn carries the delivery book out of the Driller's cab** on the loss branch (added 2026-11-15 so the
    book is back on the cart for Act V).
+
+## Edit pass, 2026-11-17 (awaiting the owner)
+
+What changed in this file; the reasons and the proposals not applied are in the pass's report.
+
+1. **The clock.** The tide is four days from the assembly (decided), so the quarry is "a day west", not two,
+   and 11.1 states the four days once. Parcel sat for "a day and a night", not three.
+2. **How long it has been.** The cart has been away six weeks (Pella, 11.2). Lines that said "three months"
+   now agree: the storm drain, the release order ("six weeks old"), Bo-shan's "ten weeks", Amri's "two
+   months ago", Daiyu's "six weeks in a gallery". Pella's loss-branch ledger stays at ninety days: that is
+   the crew's six weeks before Act I and the six since.
+3. **Ruon's hearing:** the pressed harm is Bo-shan's sixteen days, which is true on both Act I branches
+   (Hesra's twenty-one was not). The satchel comes back with him on every traded road.
+4. **Counts:** eleven volunteers add up; the notice board has "names", not eleven, before the vote; Daiyu's
+   lines work when five came; Bo's and the second bowl's lines work with no Ba Dan crew.
+5. **Cross-script:** Lin Mei's dated promise has its line in 10.4 (`pq06_negotiated`), with Fenn reading it
+   if she is absent. Wen recognises the knife work, not a rule she never saw. Sura's gap plays for every
+   Sura, with a variant after PQ-04 where she cuts it unprompted (the bible's gate, kept as a difference in
+   who thinks of it).
+6. **Set-ups paid later:** residents write their own names under the gate's names (10.7), which 13.6's
+   sergeant reads. Veyra's note is shown in 12.5 if it was not found, because the promise names its door.
+7. **Lines:** Kaya and Hua at the lanterns; four long turns split; "forty" thinned.
+8. **Hero moments added** in 10.1 and 10.5 (Tenzo, Lin Mei, Sura, Nima, Jinu).
+9. **Pace:** free roam opens between the hearing and Mira's list.
+10. **Cutscenes:** pointers to [cutscenes.md](cutscenes.md) at 10.6 and 11.10.

@@ -1991,3 +1991,17 @@ record of what was accepted ("Recommend" lines are now decisions). Later correct
    This is a build question, not a story one.
 6. **Not yet written:** the five teacher stories (TR-01 to TR-05) and the personal quests that open in this
    act (PQ-01, PQ-02, PQ-03, PQ-10).
+
+## Edit pass, 2026-11-17 (awaiting the owner)
+
+A script editor's pass over all four acts. What changed in this file; the reasons, the before-and-after lines
+and the proposals not applied are in the pass's report.
+
+1. **Left alone:** every line already built (2.1 to 2.9, the arrival half of 3.1, SF-2.1).
+2. **Continuity:** the card in 3.9 and the map in 5.1 say "Long-Light Evening", not "Commissioning Day"
+   (commissioning is the spring tide, in Act V). Dorin has carried Gao's receipt "all the way from Ba Dan",
+   not "three weeks". Sura's echo count no longer assumes the optional culvert was seen. Veyra's carved rule
+   is seen in 4.6, so Act IV can name it. The optional pay-packet exchange sits at the top of 4.6.
+3. **Lines:** Kaya at the chain (4.3); Tavi's and Dorin's long turns split.
+4. **Hero moments added:** Nilak in the supply room (3.1), Nima and the towel basket (4.1).
+5. **Cutscenes:** pointers to [cutscenes.md](cutscenes.md) at 2.9 and 4.5.
