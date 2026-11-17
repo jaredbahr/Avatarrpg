@@ -1699,6 +1699,11 @@ not get back. It is pinned inside the cart's canopy. It looks no more like a tur
 
 - **Trust:** Causeway's low landing rises with `pq03_published` (most) and `pq03_monitored`.
 - **TR-02:** not gated by any of this.
+- **The thirty-nine labels** (after `pq03_labels_known`) come down twice in the main story. In Act III's
+  archive (Scene 9.2) a stores receipt book has thirty-one ticks "received uncounted, under healing-house
+  label", all to Security: eight still out. At Ruon's hearing (Scene 11.6) Daiyu puts a second quarry label
+  on the table: seven. The last seven are never found. When this is built, the number in Aru's lid (and on
+  the clinic door after `pq03_published`) should read whatever the party last sent back.
 - **MQ-12, Scene 12.2:** Dr. Iset schedules Nilak to rest. N.5 is the first time he does it.
 - **MQ-15, Scene 15.4:** "resolved" after `pq03_published` or `pq03_monitored`; "open" after `pq03_tent` or if
   never opened.
@@ -2875,6 +2880,12 @@ The owner read the edit pass's proposals on 2026-11-17. What he decided for this
    them: Dr. Iset's "clinked at the ferry", Bo's turn on the bench, and a few lines of narration. The quest
    is about a seventh shorter by word count, with five scenes in place of six. The new flag
    `pq03_labels_known` replaces "if N.4 played".
+4. **The forty labels stay, and the thirty-nine come down.** Both places the edit pass suggested are used,
+   because they do different work. Scene 9.2 (the archive) gives the paper: thirty-one ticks counted aloud
+   in fives, so thirty-nine becomes eight, and every one went to Security. Scene 11.6 (Ruon's hearing) gives
+   a person: Ruon signed for two crates as bandage and never lifted a lid, and Daiyu hands over the second
+   label, so eight becomes seven. Both are guarded on `pq03_labels_known`, both work without Nilak, and seven
+   are left unfound on purpose.
 
 ## Open, for the owner
 
@@ -2913,7 +2924,8 @@ Everything below is written into the scripts as recommended, per the standing in
    gave the outreach room a customs exemption and had Aru sign forty blank supply labels for the contractor's
    boat in exchange for freight space. It makes Aru answerable for something real without making them a
    villain, and it is inside the reveal ladder (MQ-02 already has uncounted "safety materials"). Recommend:
-   approve; it is the largest invention in this file.
+   approve; it is the largest invention in this file. _Decided (owner, 2026-11-17):_ kept, with the thirty-nine paid
+   off in Scenes 9.2 and 11.6.
 9. **Scene 15.4's "resolved" line for Tenzo** says "The kitchen is run by its cooks now." That is true after
    `pq02_cooks_shelf` but not after `pq02_posted_terms`, where Ketu still holds the contract. Recommend: when
    15.4 is built, give the posted-terms route its own first sentence ("The terms are still on the wall beside
