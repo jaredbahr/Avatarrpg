@@ -71,6 +71,18 @@ IT = {
     'bunting_poles': ('two tall thin wooden poles with a string of colourful triangular cloth bunting flags hung between them, red yellow blue and green', 84, 56, 88, 64),
     'awning_shed': ('an open market fish shed: a striped red and white cloth awning on four wooden poles over a long counter of fish laid on ice and baskets; straight front view', 84, 60, 88, 64),
     'gulls': ('two white and grey seagulls floating on calm water, seen from above at a low angle', 30, 18, 48, 48),
+    # The pontoon, a working freight dock.
+    'dock_crane': ('a tall wooden dockside crane: a heavy square timber tower braced with iron, a long jib arm with a big iron pulley wheel and a hook on a chain hanging down; straight front view; it fills the canvas height', 60, 116, 64, 120),
+    'cargo_stack': ('a big stack of wooden cargo crates under a brown canvas tarpaulin tied down with ropes', 54, 50, 56, 56),
+    'chain_pile': ('a heavy iron anchor chain lying in a loose heap on wooden planks, seen from a low top-down angle', 40, 22, 48, 48),
+    'pilings': ('three old weathered wooden mooring piles sticking up out of calm water, tied together with rope at the top', 30, 38, 48, 48),
+    # the first take (seed 3) came back end-on and small: say it lies broadside, three times as long as it is tall
+    'big_barge': ('a long low wooden cargo barge lying broadside on calm water, seen from the side: the hull runs the whole width of the picture from left to right, three times as long as it is tall, dark tarred planks, a deck stacked with crates and sacks under a tarp, a small wheelhouse at the right end', 168, 60, 176, 80),
+    'gangway': ('a narrow wooden gangway plank with rope hand-lines on both sides, lying flat across from left to right, seen from above at a low angle', 64, 20, 64, 48),
+    'rope_line': ('a long thick hemp rope strung between two short wooden posts over calm water, sagging in the middle', 92, 24, 96, 48),
+    'oil_drums': ('two dark iron oil drums standing together, one with a dent and a rusty band', 34, 34, 48, 48),
+    'pulley_gantry': ('a wooden dock gantry: two tall posts with a cross beam, two iron block-and-tackle pulleys hanging from it with ropes and a cargo net of sacks', 70, 92, 72, 96),
+    'buoy': ('a small red and white wooden harbour buoy bobbing on calm water with a short rope', 20, 24, 48, 48),
     'tool_crates': ('two stacked plain wooden supply crates with rope handles and a small sack beside them', 36, 32, 48, 48),
     # Bo-shan's delivery cart (Act I's ending; the story bible: Parcel is an ostrich horse), seen from the side so
     # the bird and the cart both read.
