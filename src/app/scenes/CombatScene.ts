@@ -31,6 +31,7 @@ import {
   knownAbilities,
   previewAbility,
   resolveAim,
+  aimReachTiles,
   targetableTiles,
   affectedTiles,
 } from '../../core/rules/abilities';
@@ -2331,8 +2332,8 @@ export class CombatScene implements Scene {
             ? 'Walk to a highlighted tile'
             : 'No move points left this turn',
     });
-    moveButton.prepend(mark(UI_MARKS.move));
     moveButton.setAttribute('aria-pressed', String(moveActive));
+    moveButton.prepend(mark(UI_MARKS.move));
     moveButton.appendChild(el('span', { class: 'action-sub', text: `${unit.move} left` }));
     row.appendChild(moveButton);
 
@@ -2409,9 +2410,9 @@ export class CombatScene implements Scene {
           : check.reason,
     });
 
-    // The ability's own mark above its name, in its element's colour; the
     node.setAttribute('aria-pressed', String(selected));
 
+    // The ability's own mark above its name, in its element's colour; the
     // cost as words under it.
     node.prepend(mark(iconMarkup(markKindFor(ability))));
     node.appendChild(el('span', { class: 'action-sub', text: `${ability.apCost} AP` }));
@@ -3605,14 +3606,26 @@ export class CombatScene implements Scene {
       const ability = this.app.content.abilities.get(this.mode.abilityId);
       if (ability) {
         const targets = targetableTiles(this.app.content, battle, unit, ability);
+        // The whole range first (issue #846), then the legal targets in it, then the area under
+        // the aim: the tapped tile, or with a mouse the hovered one, once it is a legal aim.
+        const inRange = aimReachTiles(this.app.content, battle, unit, ability);
+        // A big target's far cells are targets through its near one: the range covers them too.
+        const known = new Set(inRange.map(posKey));
+        const reach = [...inRange, ...targets.filter((tile) => !known.has(posKey(tile)))];
+        if (reach.length > 0) overlays.push({ kind: 'reach', tiles: reach });
         overlays.push({
           kind: 'target',
           tiles: targets,
         });
-        if (this.pending) {
+        const aim =
+          this.pending ??
+          (this.hover && targets.some((target) => samePos(target, this.hover as Vec2))
+            ? this.hover
+            : null);
+        if (aim) {
           overlays.push({
             kind: 'area',
-            tiles: affectedTiles(this.app.content, battle.grid, unit, ability, this.pending),
+            tiles: affectedTiles(this.app.content, battle.grid, unit, ability, aim),
           });
         }
         const originTile = tileAt(battle.grid, unit.pos);

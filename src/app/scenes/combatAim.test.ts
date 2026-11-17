@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { grumblerAimCheckpoint } from '../../../scripts/e2e/grumbler-aim-checkpoint';
 import { loadQuarryCheckpoint } from '../../../scripts/e2e/quarry-checkpoints';
 import { CONTENT } from '../../content';
-import { isValidTarget, targetableTiles } from '../../core/rules/abilities';
+import { aimReachTiles, isValidTarget, targetableTiles } from '../../core/rules/abilities';
 import { occupiedCells } from '../../core/rules/grid';
 import type { GameState, Vec2 } from '../../core/types';
 import { Session } from '../session';
@@ -95,6 +95,22 @@ describe('combat tap aim acceptance', () => {
       reason: 'Out of range.',
     });
     expect(isValidTarget(CONTENT, battle, caster, ability, checkpoint.near).ok).toBe(true);
+  });
+
+  it('shows the range as every tile in reach, not just the ones with a target (#846)', () => {
+    const battle = checkpoint.state.battle;
+    if (!battle) throw new Error('Missing earned battle');
+    const caster = battle.units.find((unit) => unit.id === checkpoint.casterId);
+    const ability = CONTENT.abilities.get(checkpoint.abilityId);
+    if (!caster || !ability) throw new Error('Missing earned aim participants');
+    const reach = aimReachTiles(CONTENT, battle, caster, ability);
+    const key = (p: { x: number; y: number }) => `${p.x},${p.y}`;
+    const reachKeys = new Set(reach.map(key));
+    // The rule is the tap's: the range, the minimum range and sight (a big target's far cells
+    // are targetable through its near one, so they are not all in this set).
+    expect(reach.length).toBeGreaterThan(targetableTiles(CONTENT, battle, caster, ability).length);
+    expect(reachKeys.has(key(checkpoint.near))).toBe(true);
+    expect(reachKeys.has(key(caster.pos))).toBe(ability.minRange === 0);
   });
 
   it('accepts a highlighted far boss cell as the reachable aim cell before confirmation', () => {

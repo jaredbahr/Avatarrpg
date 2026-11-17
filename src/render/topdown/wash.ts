@@ -5,11 +5,14 @@
  *
  * - **Reach**: the move overlay's cells (the reducer's 8-way reachable set) as a warm tinted wash with
  *   a solid 1 px rim on its edge (#699); shown only while no ability is armed.
+ * - **Range**: while an ability is armed, every tile it could be aimed at (in range, far enough, in
+ *   sight, whoever stands there; the core's `aimReachTiles`) as a wash with the same solid rim, so
+ *   the reach reads even when only one enemy is in it.
  * - **Targets**: units on a valid target tile get a small ring; a ground target with nobody on it
  *   gets the target wash, so a wall or a blast aimed at open ground still shows where it may land.
  *   Height reach (`rangeBonus`) washes its cells in the party's cream.
- * - **Area**: the armed ability's area as an ember wash; every figure in it gets a hit ring, cream
- *   for the party and red for the rest.
+ * - **Area**: the armed ability's area under the aim as an ember wash; every figure in it gets a hit
+ *   ring, cream for the party and red for the rest.
  * - **Path**: paired footprints along `view.path` and a ring at its end.
  * - **Objective**: the encounter's objective cells (ADR 0116's 2026-11-15 amendment) as a mint wash
  *   under every other overlay, all fight long, with a ring at each cell's foot (it still reads with a
@@ -34,6 +37,8 @@ export type Rgb = readonly [number, number, number];
 export const REACH_RGB: Rgb = [242, 196, 120];
 export const AREA_RGB: Rgb = [214, 92, 70];
 export const TARGET_RGB: Rgb = [242, 140, 110];
+/** The armed ability's range: the walk's warm tone, which the area's ember and the rings sit over. */
+export const RANGE_RGB: Rgb = [236, 170, 96];
 export const PARTY_RGB: Rgb = [242, 212, 122];
 export const ENEMY_RGB: Rgb = [242, 120, 96];
 /** The objective's mint: no other overlay, surface or faction uses it. */
@@ -311,6 +316,7 @@ function footOf(cells: readonly Vec2[]): Vec2 {
 export function washSpec(view: MapView, square = SQUARE_FOOTPRINTS): WashSpec {
   const layer = (kind: string) => view.overlays.find((o) => o.kind === kind)?.tiles ?? [];
   const move = layer('move'),
+    reachArea = layer('reach'),
     targets = layer('target'),
     area = layer('area'),
     bonus = layer('rangeBonus'),
@@ -328,29 +334,34 @@ export function washSpec(view: MapView, square = SQUARE_FOOTPRINTS): WashSpec {
       pennants.push({ x: cell.x * CS + CS - 9, y: cell.y * CS + 2 });
     }
   }
-  if (area.length) {
-    washes.push({ cells: area, color: AREA_RGB });
-    const hit = new Set(area.map(posKey));
-    for (const u of living)
-      if (cells(u).some((c) => hit.has(posKey(c)))) {
-        rings.push({
-          ...footOf(cells(u)),
-          color: u.faction === 'enemy' ? ENEMY_RGB : PARTY_RGB,
-          w: 10,
-          h: 4,
-        });
-      }
-  } else if (targets.length) {
+  if (reachArea.length || targets.length || area.length) {
+    // The range first, so the area and the rings lie over it.
+    if (reachArea.length) washes.push({ cells: reachArea, color: RANGE_RGB });
     const valid = new Set(targets.map(posKey));
     const standing = new Set<string>();
     for (const u of living)
       if (cells(u).some((c) => valid.has(posKey(c)))) {
         for (const c of cells(u)) standing.add(posKey(c));
-        rings.push({ ...footOf(cells(u)), color: TARGET_RGB, w: 9, h: 3 });
       }
+    // Ground a blast may land on with nobody there; with a range wash, that is already tinted.
     const open = targets.filter((c) => !standing.has(posKey(c)));
-    if (open.length) washes.push({ cells: open, color: TARGET_RGB });
+    if (open.length && !reachArea.length) washes.push({ cells: open, color: TARGET_RGB });
     if (bonus.length) washes.push({ cells: bonus, color: PARTY_RGB });
+    if (area.length) washes.push({ cells: area, color: AREA_RGB });
+    const hit = new Set(area.map(posKey));
+    for (const u of living) {
+      const mine = cells(u);
+      if (mine.some((c) => hit.has(posKey(c)))) {
+        rings.push({
+          ...footOf(mine),
+          color: u.faction === 'enemy' ? ENEMY_RGB : PARTY_RGB,
+          w: 10,
+          h: 4,
+        });
+      } else if (mine.some((c) => valid.has(posKey(c)))) {
+        rings.push({ ...footOf(mine), color: TARGET_RGB, w: 9, h: 3 });
+      }
+    }
   } else if (move.length) {
     washes.push({ cells: move, color: REACH_RGB });
   }
