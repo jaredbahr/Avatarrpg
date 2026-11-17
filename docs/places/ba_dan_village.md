@@ -1,7 +1,9 @@
 # Place brief: `ba_dan_village`
 
-**Status (2026-11-17):** stages 0 to 2 of `docs/level-design.md`, waiting for the owner's yes. No rows, layout or
-art are changed by this brief. Story facts are the writing pass's; every gap is a marked placeholder or a question.
+**Status (2026-11-17):** stages 0 to 2 of `docs/level-design.md`, **approved by the owner on 2026-11-17**: plan 2
+(the table at the crossing), about 32 by 20 cells, the awning as the one strong colour, and the quarry hillside along
+the north rim. No rows, layout or art are changed by this brief; the blockout is next. Story facts are the writing
+pass's; every gap is a marked placeholder or a question.
 
 **One line:** a quarry village built from its own hill's pale stone, where everyone eats at one table in the square
 and every road ends at the east gate.
@@ -227,12 +229,12 @@ art and may be reused if they pass the scale chart.
 - **Blocked cells come from this plan only:** houses, walls, the canal, the table, the trough, the gate post, the
   stone blocks. No scatter cells; the `l` lawn cells go.
 
-## Open questions for the owner
+## Owner's answers (2026-11-17)
 
-1. Is "the table at the crossing" (plan 2) right?
-2. Is a bigger Ba Dan (about 32 by 20, eleven views) fine?
-3. May the awning's patched cloths be the village's one strong colour?
-4. Should the hillside to the quarry show above the village (the north rim), so the quarry is always "up there"?
+1. Plan 2, the table at the crossing: yes.
+2. A bigger Ba Dan, about 32 by 20 and eleven views: yes.
+3. The awning's patched cloths as the village's one strong colour: yes.
+4. The hillside to the quarry along the north rim: yes.
 
 ## Questions for the writing pass
 
