@@ -350,6 +350,7 @@ export const EMBERWATCH_PARADE_TERRAIN = new Rg02Terrain({
     '#': RG.earth,
     ',': RG.earth,
     u: RG.earth,
+    q: RG.earth,
     ':': RG.stone,
     '=': RG.stone,
     w: RG.deck,
@@ -364,7 +365,7 @@ export const EMBERWATCH_PARADE_TERRAIN = new Rg02Terrain({
   ],
 });
 
-/** A run of the parade wall: two cells a section, the sections overlapping so the wall reads as one. */
+/** A run of the outpost wall: two cells a section, the sections overlapping so the wall reads as one. */
 const wallRun = (from: number, to: number): TopDownObject[] => {
   const out: TopDownObject[] = [];
   for (let x = from, i = 0; x <= to; x += 2, i++) {
@@ -375,34 +376,70 @@ const wallRun = (from: number, to: number): TopDownObject[] => {
             [x + 1, 1],
           ]
         : [[x, 1]];
-    const wall = piece(`wall_${x}`, 'parade_wall', 'prop', cells, true);
-    out.push(i % 2 ? { ...wall, flip: true } : wall);
+    const wall = piece(`wall_${x}`, 'fn_wall', 'prop', cells, true);
+    out.push(i % 2 ? flip(wall) : wall);
   }
   return out;
 };
 
 export const EMBERWATCH_PARADE_OBJECTS: readonly TopDownObject[] = [
-  // The north side (`#`): the old wall either side of the barracks, the spear-rack trellis and an outpost lamp.
+  // The north side (`#`): the outpost wall either side of the barracks, the spear-rack trellis the volunteers grow
+  // beans on, and the landmark, the old signal tower jutting out at the east corner.
   ...wallRun(1, 8),
   piece('trellis', 'spear_trellis', 'prop', [[9, 1]], true),
-  piece('barracks', 'barracks', 'house', block(10, 13, 1, 1), true),
-  ...wallRun(14, 21),
-  piece('lamp', 'outpost_lamp', 'prop', [[22, 1]], true),
-  // The training ground round the square: two dummies and the weapon rack on the grass, the trough by the south side.
-  piece('dummy_a', 'training_dummy', 'prop', [[1, 4]], true),
-  { ...piece('dummy_b', 'training_dummy', 'prop', [[1, 6]], true), flip: true },
+  piece('barracks', 'fn_barracks', 'house', block(10, 13, 1, 1), true),
+  ...wallRun(14, 20),
+  piece('signal_tower', 'fn_signal_tower', 'prop', block(21, 22, 1, 1), true),
+  // Faded banners on the lane under the wall, and braziers at the square's four corners (`u`).
+  piece('banner_w', 'fn_banner', 'prop', [[4, 2]], true),
+  flip(piece('banner_e', 'fn_banner', 'prop', [[19, 2]], true)),
+  piece('brazier_nw', 'fn_brazier', 'prop', [[2, 3]], true),
+  piece('brazier_ne', 'fn_brazier', 'prop', [[21, 3]], true),
+  piece('brazier_sw', 'fn_brazier', 'prop', [[2, 9]], true),
+  piece('brazier_se', 'fn_brazier', 'prop', [[21, 9]], true),
   piece('weapon_rack', 'weapon_rack', 'prop', [[22, 4]], true),
+  piece('lamp_w', 'outpost_lamp', 'prop', [[7, 2]], true),
+  piece('lamp_e', 'outpost_lamp', 'prop', [[16, 2]], true),
+  piece('east_crates', 'crate_stack', 'prop', [[22, 5]], true),
+  piece('east_barrels', 'barrels', 'prop', [[22, 6]], true),
+  piece('west_crates', 'tool_crates', 'prop', [[1, 7]], true),
+  piece('banner_sw', 'fn_banner', 'prop', [[6, 10]], true),
+  piece('brazier_s_a', 'fn_brazier', 'prop', [[9, 10]], true),
+  piece('brazier_s_b', 'fn_brazier', 'prop', [[14, 10]], true),
+  flip(piece('banner_se', 'fn_banner', 'prop', [[17, 10]], true)),
+  piece('tent_b', 'fn_tent', 'prop', block(11, 12, 14, 14), true, { base: -12 }),
+  piece('south_barrels', 'barrels', 'prop', [[10, 14]], true, { base: -12 }),
+  // The west rock spur (`q`).
   piece(
-    'trough',
-    'water_trough',
+    'spur_west',
+    'rock_spur',
     'prop',
     [
-      [21, 10],
-      [22, 10],
+      [1, 3],
+      [1, 4],
     ],
     true,
+    { x: -8 },
   ),
-  // The cook's beans drying on an old tent canvas, beside where he stands.
+  piece('boulders_w_a', 'boulders', 'prop', [[1, 5]], true, { x: -6 }),
+  flip(piece('boulders_w_b', 'boulders', 'prop', [[1, 6]], true, { x: -4 })),
+  // The south half: dummies, the trough and the flag mast; tents and supplies; targets; the sparring ring; the
+  // lantern shrine by the jetty; the south-east rocks.
+  piece('dummy_a', 'training_dummy', 'prop', [[2, 10]], true),
+  flip(piece('dummy_b', 'training_dummy', 'prop', [[2, 11]], true)),
+  piece('trough', 'water_trough', 'prop', block(21, 22, 10, 10), true),
+  piece('flag_mast', 'fn_flag_mast', 'prop', [[19, 11]], true),
+  piece('tent', 'fn_tent', 'prop', block(14, 15, 12, 12), true),
+  piece('supply_crates', 'tool_crates', 'prop', [[16, 12]], true),
+  piece('supply_barrels', 'barrels', 'prop', [[17, 12]], true),
+  piece('target_a', 'straw_target', 'prop', [[18, 13]], true),
+  flip(piece('target_b', 'straw_target', 'prop', [[16, 14]], true, { base: -12 })),
+  piece('shrine', 'fn_lantern_shrine', 'prop', [[8, 14]], true, { base: -12 }),
+  piece('spur_se_a', 'rock_spur', 'prop', block(21, 22, 12, 12), true),
+  flip(piece('spur_se_b', 'rock_spur', 'prop', block(20, 22, 13, 13), true)),
+  piece('boulders_se', 'boulders', 'prop', block(19, 20, 14, 14), true, { base: -12 }),
+  flip(piece('spur_se_c', 'rock_spur', 'prop', block(21, 22, 14, 14), true, { base: -12 })),
+  // Flat on the ground: the cook's beans drying on an old tent canvas, the sparring ring.
   piece(
     'beans',
     'bean_canvas',
@@ -413,6 +450,12 @@ export const EMBERWATCH_PARADE_OBJECTS: readonly TopDownObject[] = [
     ],
     false,
   ),
+  piece('sparring_ring', 'sparring_ring', 'flat', block(9, 11, 11, 12), false),
+  // The bay off the jetty: Tavi's ferry, a rowing boat, rocks, gulls.
+  piece('ferry', 'ferry', 'flat', [[3, 15]], false),
+  piece('rowboat', 'rowboat', 'flat', [[0, 13]], false, { x: 8 }),
+  piece('rocks_bay', 'shore_rocks', 'flat', [[6, 15]], false),
+  piece('gulls', 'gulls', 'flat', [[1, 15]], false),
 ];
 
 export const EMBERWATCH_PARADE_TOPDOWN_LAYOUT: TopDownLayout = {

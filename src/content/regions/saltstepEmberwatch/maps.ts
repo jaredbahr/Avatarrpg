@@ -29,6 +29,8 @@ const RG02_LEGEND: typeof LEGEND = {
   d: { terrain: 'dirt', blocked: true, blocksSight: false },
   // the freight quay's timber edge behind the pontoon: blocked and seen over, as the water it replaces
   k: { terrain: 'wood', blocked: true, blocksSight: false },
+  // the headland's rock, which hides what is behind it
+  q: { terrain: 'stone', blocked: true, blocksSight: true },
 };
 
 /** A road mouth: the walkable cells of an exit's cross-section at the map edge. */
@@ -268,29 +270,31 @@ export const EMBERWATCH_PARADE: MapDef = {
   ambience: 'village',
   legend: RG02_LEGEND,
   /*
-   * The ferry lands at the jetty in the south-west. North is the barracks wall (`#`) with its
-   * painted-over slogans; the parade ground (`:`) fills the middle, under the beans on canvas
-   * and the spear-rack trellis. The power yard is through the east gap (rows 7-8).
-   * The training dummies, the weapon rack and the water trough (`u`) stand on the grass round
-   * the square, which stays clear for a fight.
+   * The old Fire Nation outpost, decommissioned and reused (the Common Current bible). North is
+   * the barracks wall (`#`), the ground falling away past it, with the old signal tower standing
+   * tall at its east corner. The parade ground (`:`) fills the middle under the beans on canvas
+   * and the spear-rack trellis, braziers at its corners, and stays clear for a fight. A rock spur
+   * (`q`) runs down the west side and another breaks up the south-east corner; the south half has
+   * the sparring ring, tents, targets and the lantern shrine by the jetty, where the ferry lands
+   * from the bay. The power yard is through the east gap (rows 7-8). Props stand on `u`.
    */
   rows: [
     'TTTTTTTTTTTTTTTTTTTTTTTT',
     'T######################T',
-    'T,,,,,,,,,,,,,,,,,,,,,,T',
-    'T,,::::::::::::::::::,,T',
-    'Tu,::::::::::::::::::,uT',
-    'T,,::::::::::::::::::,,T',
-    'Tu,::::::::::::::::::,,T',
+    'T,,,u,,u,,,,,,,,u,,u,,,T',
+    'Tqu::::::::::::::::::u,T',
+    'Tq,::::::::::::::::::,uT',
+    'Tq,::::::::::::::::::,uT',
+    'Tq,::::::::::::::::::,uT',
+    'Tu,::::::::::::::::::===',
     'T,,::::::::::::::::::===',
-    'T,,::::::::::::::::::===',
-    'T,,::::::::::::::::::,,T',
-    'T,,,,,,,,,,,,,,,,,,,,uuT',
-    'T,,,,,,,,,,,,,,,,,,,,,,T',
-    'TWwwww,,,,,,,,,,,,,,,,,T',
-    'TWWwwwww,,,,,,,,,,,,,,,T',
-    'TWWWWww,,,,,,,,,,,,,,,,T',
-    'TTTTTTTTTTTTTTTTTTTTTTTT',
+    'T,u::::::::::::::::::u,T',
+    'T,u,,,u,,u,,,,u,,u,,,uuT',
+    'T,u,,,,,,,,,,,,,,,,u,,,T',
+    'WWwwww,,,,,,,,uuuu,,,qqT',
+    'WWWwwwww,,,,,,,,,,u,qqqT',
+    'WWWWWww,u,uuu,,,u,,qqqqT',
+    'WWWWWWWTTTTTTTTTTTTTTTTT',
   ],
   partySpawns: [
     { x: 3, y: 12 },
