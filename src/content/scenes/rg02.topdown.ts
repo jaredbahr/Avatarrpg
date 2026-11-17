@@ -58,7 +58,10 @@ export const SALTSTEP_MARKET_TERRAIN = new Rg02Terrain({
     B: RG.earth,
     ':': RG.sand,
     '=': RG.sand,
+    n: RG.sand,
     w: RG.deck,
+    G: RG.deck,
+    F: RG.deck,
     W: RG.water,
   },
   beyond: RG.void,
@@ -80,6 +83,40 @@ export const SALTSTEP_MARKET_OBJECTS: readonly TopDownObject[] = [
   piece('freight_d', 'tool_crates', 'prop', [[18, 2]], true),
   // Tavi's ferry, moored off the landing.
   piece('ferry', 'ferry', 'flat', [[20, 11]], false, { base: 10 }),
+  // The stalls on their platforms: the broth stall's, the customs stall on its mooring behind the clerk, the fish
+  // stall by the landing; the tide pole at the end of the customs pier; a bollard on each outer platform.
+  piece(
+    'broth_stall',
+    'stall_broth',
+    'prop',
+    [
+      [5, 9],
+      [6, 9],
+    ],
+    true,
+  ),
+  piece('customs_stall', 'customs_stall', 'prop', [[12, 8]], true),
+  piece(
+    'fish_stall',
+    'stall_fish',
+    'prop',
+    [
+      [17, 9],
+      [18, 9],
+    ],
+    true,
+  ),
+  piece('tide_pole', 'level_pole', 'prop', [[11, 12]], true, { x: 4, base: -14 }),
+  piece('bollard_west', 'bollard', 'prop', [[5, 10]], true, { x: -4, base: -14 }),
+  piece('bollard_east', 'bollard', 'prop', [[18, 10]], true, { base: -8 }),
+  // The quay: two lamps at the water's edge, and the day's nets, baskets, rope and a handcart along its edges.
+  piece('lamp_west', 'dock_lamp', 'prop', [[7, 7]], true, { base: -14 }),
+  piece('lamp_east', 'dock_lamp', 'prop', [[16, 7]], true, { base: -14 }),
+  piece('handcart', 'handcart', 'prop', [[8, 4]], true),
+  piece('baskets_north', 'fish_baskets', 'prop', [[11, 4]], true),
+  { ...piece('baskets_east', 'fish_baskets', 'prop', [[19, 4]], true), flip: true },
+  piece('rope', 'rope_coil', 'prop', [[9, 7]], true, { base: -14 }),
+  piece('nets', 'net_pile', 'prop', [[14, 7]], true, { base: -14 }),
 ];
 
 /* ------------------------------------------------------------------ */
@@ -161,6 +198,7 @@ export const EMBERWATCH_PARADE_TERRAIN = new Rg02Terrain({
     T: RG.void,
     '#': RG.earth,
     ',': RG.earth,
+    u: RG.earth,
     ':': RG.stone,
     '=': RG.stone,
     w: RG.deck,
@@ -199,6 +237,20 @@ export const EMBERWATCH_PARADE_OBJECTS: readonly TopDownObject[] = [
   piece('barracks', 'barracks', 'house', block(10, 13, 1, 1), true),
   ...wallRun(14, 21),
   piece('lamp', 'outpost_lamp', 'prop', [[22, 1]], true),
+  // The training ground round the square: two dummies and the weapon rack on the grass, the trough by the south side.
+  piece('dummy_a', 'training_dummy', 'prop', [[1, 4]], true),
+  { ...piece('dummy_b', 'training_dummy', 'prop', [[1, 6]], true), flip: true },
+  piece('weapon_rack', 'weapon_rack', 'prop', [[22, 4]], true),
+  piece(
+    'trough',
+    'water_trough',
+    'prop',
+    [
+      [21, 10],
+      [22, 10],
+    ],
+    true,
+  ),
   // The cook's beans drying on an old tent canvas, beside where he stands.
   piece(
     'beans',
@@ -232,7 +284,15 @@ export const EMBERWATCH_POWER_YARD_TERRAIN = new Rg02Terrain({
   mapId: 'emberwatch_power_yard',
   rows: EMBERWATCH_POWER_YARD.rows,
   // the yard's wall (`#`) is the rim, its gate (`=`) flagstones; the cistern (`W`) stands on the mud; the overflow (`~`) lies in puddles
-  chars: { '#': RG.void, '.': RG.earth, '=': RG.stone, '~': RG.puddle, F: RG.earth, W: RG.earth },
+  chars: {
+    '#': RG.void,
+    '.': RG.earth,
+    d: RG.earth,
+    '=': RG.stone,
+    '~': RG.puddle,
+    F: RG.earth,
+    W: RG.earth,
+  },
   beyond: RG.void,
   mouths: [
     mouth('parade', 'west', [
@@ -258,6 +318,8 @@ export const EMBERWATCH_POWER_YARD_OBJECTS: readonly TopDownObject[] = [
   ),
   // The overflowing rain cistern (`W`), and the dead copper spur on its own poles at the back (east).
   piece('cistern', 'cistern', 'prop', block(15, 17, 1, 2), true),
+  // The public workshop bench in the south-west corner.
+  piece('bench', 'workshop_bench', 'prop', [[1, 10]], true),
   piece('spur_north', 'copper_spur', 'prop', block(17, 17, 4, 6), true),
   // the south spur stands back from the yard's corner, so its shadow falls on the yard and not into the rim
   piece('spur_south', 'copper_spur', 'prop', block(17, 17, 7, 8), true, { x: -8, base: -16 }),

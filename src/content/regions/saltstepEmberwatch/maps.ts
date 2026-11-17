@@ -17,6 +17,17 @@
 import type { MapDef, Vec2 } from '../../../core/types';
 import { LEGEND } from '../../maps/legend';
 
+/**
+ * The region's legend: the shared one plus three blocked grounds the dressing stands on, each seen over (a net pile, a
+ * dummy, a bench): `n` on the quay's sand, `u` on the parade's grass, `d` on the power yard's dirt.
+ */
+const RG02_LEGEND: typeof LEGEND = {
+  ...LEGEND,
+  n: { terrain: 'sand', blocked: true, blocksSight: false },
+  u: { terrain: 'grass', blocked: true, blocksSight: false },
+  d: { terrain: 'dirt', blocked: true, blocksSight: false },
+};
+
 /** A road mouth: the walkable cells of an exit's cross-section at the map edge. */
 const mouth = (x: number, ys: readonly number[]): readonly Vec2[] => ys.map((y) => ({ x, y }));
 
@@ -65,27 +76,29 @@ export const SALTSTEP_MARKET: MapDef = {
   width: 24,
   height: 16,
   ambience: 'village',
-  legend: LEGEND,
+  legend: RG02_LEGEND,
   /*
    * The quay runs west to east on rows 4-7; the coast road comes in on its west end (rows 5-6).
    * The platforms (`w`) stand in the water south of it: the bowl stall's, the customs stall's on
    * its mooring, and the ferry landing's to the east. Jin's freight office and the warehouses
    * are the blocks on the north side. Every walkable rim cell is the coast road's mouth.
+   * The stalls (`G`), the bollards and the tide pole (`F`) and the quay's nets, baskets, rope and
+   * lamps (`n`) are blocked cells their pieces stand on; rows 5-6 and column 3 stay open.
    */
   rows: [
     'TTTTTTTTTTTTTTTTTTTTTTTT',
     'TT,,,BBBB,,,,,BBBBB,,,TT',
     'T,,,,BBBB,,,,,BBBBB,,,,T',
     'T,,,,,,,,,,,,,,,,,,,,,,T',
-    'T::::::::::::::::::::::T',
+    'T:::::::n::n:::::::n:::T',
     '==::::::::::::::::::::wT',
     '==::::::::::::::::::::wT',
-    'T:::::::::::::::::::::wT',
-    'TWWwwwwWWWwwwwWWWwwwwwWT',
-    'TWWwwwwWWWwwwwWWWwwwwwWT',
-    'TWWWwwWWWWWwwWWWWWwwwWWT',
+    'T::::::n:n::::n:n:::::wT',
+    'TWWwwwwWWWwwGwWWWwwwwwWT',
+    'TWWwwGGWWWwwwwWWWGGwwwWT',
+    'TWWWwFWWWWWwwWWWWWFwwWWT',
     'TWWWWWWWWWWwwWWWWWWWWWWT',
-    'TWWWWWWWWWWwwWWWWWWWWWWT',
+    'TWWWWWWWWWWFwWWWWWWWWWWT',
     'TWWWWWWWWWWWWWWWWWWWWWWT',
     'TWWWWWWWWWWWWWWWWWWWWWWT',
     'TTTTTTTTTTTTTTTTTTTTTTTT',
@@ -189,7 +202,7 @@ export const SALTSTEP_PONTOON: MapDef = {
   width: 19,
   height: 12,
   ambience: 'village',
-  legend: LEGEND,
+  legend: RG02_LEGEND,
   /*
    * The pontoon deck (`w`) with the harbour all round it. The cast-iron pump crate (`c`, cover)
    * stands near the party's end. A two-wide gangway (11-12, rows 4-5) joins the deck to the winch
@@ -234,28 +247,30 @@ export const EMBERWATCH_PARADE: MapDef = {
   width: 24,
   height: 16,
   ambience: 'village',
-  legend: LEGEND,
+  legend: RG02_LEGEND,
   /*
    * The ferry lands at the jetty in the south-west. North is the barracks wall (`#`) with its
    * painted-over slogans; the parade ground (`:`) fills the middle, under the beans on canvas
    * and the spear-rack trellis. The power yard is through the east gap (rows 7-8).
+   * The training dummies, the weapon rack and the water trough (`u`) stand on the grass round
+   * the square, which stays clear for a fight.
    */
   rows: [
     'TTTTTTTTTTTTTTTTTTTTTTTT',
     'T######################T',
     'T,,,,,,,,,,,,,,,,,,,,,,T',
     'T,,::::::::::::::::::,,T',
+    'Tu,::::::::::::::::::,uT',
     'T,,::::::::::::::::::,,T',
-    'T,,::::::::::::::::::,,T',
-    'T,,::::::::::::::::::,,T',
+    'Tu,::::::::::::::::::,,T',
     'T,,::::::::::::::::::===',
     'T,,::::::::::::::::::===',
     'T,,::::::::::::::::::,,T',
+    'T,,,,,,,,,,,,,,,,,,,,uuT',
     'T,,,,,,,,,,,,,,,,,,,,,,T',
-    'T,,,,,,,,,,,,,,,,,,,,,,T',
-    'Twwwwww,,,,,,,,,,,,,,,,T',
-    'Twwwwww,,,,,,,,,,,,,,,,T',
-    'TWWWWWW,,,,,,,,,,,,,,,,T',
+    'TWwwww,,,,,,,,,,,,,,,,,T',
+    'TWWwwwww,,,,,,,,,,,,,,,T',
+    'TWWWWww,,,,,,,,,,,,,,,,T',
     'TTTTTTTTTTTTTTTTTTTTTTTT',
   ],
   partySpawns: [
@@ -305,12 +320,13 @@ export const EMBERWATCH_POWER_YARD: MapDef = {
   width: 19,
   height: 12,
   ambience: 'quarry',
-  legend: LEGEND,
+  legend: RG02_LEGEND,
   /*
    * The live line runs along the north side on its poles (`F`: you can see and shoot over it, not
    * walk through it). The rain cistern (`W`) has overflowed across the yard: the standing water
    * (`~`) beside the line is SF-2.1's wet ground. The dead copper spur hangs at the back (east),
    * on its own poles. The gate west (rows 5-6) goes back to the parade ground.
+   * The workshop bench (`d`) stands in the south-west corner.
    *
    * PLACEHOLDER RULE: a live line that shocks the wet ground beside it needs engine work (the
    * script's build list: "wet ground beside a live line as a surface"). Until then the puddles
@@ -327,7 +343,7 @@ export const EMBERWATCH_POWER_YARD: MapDef = {
     '#........~~~.....F#',
     '#.......~~~~~....F#',
     '#................##',
-    '#.................#',
+    '#d................#',
     '###################',
   ],
   partySpawns: COMBAT_PARTY_SPAWNS,
