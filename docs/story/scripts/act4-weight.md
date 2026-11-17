@@ -717,13 +717,15 @@ talking.
 **Narrator:** Then he takes the key off his belt and holds it out, at arm's length, to nobody in particular,
 until Daiyu comes and takes it.
 
-_Sets `quarry_freed_later`. The five come out: Leto, Amri, Hesra (in one boot), Senn, and Bo-shan._
+_Sets `quarry_freed_later`. The five come out: Leto, Amri, Hesra (with her feet in sacking), Senn, and
+Bo-shan._
 
 **Narrator:** Senn comes out last. He went back for something. It is Bo-shan's delivery book, from behind the
 Driller's seat. The back pages are in another hand: sealed crates, counted out at night.
 
 > **If the left boot is under the cart seat (always, on this branch) —**
-> **Narrator:** Hesra comes down the west road in one boot and one foot wrapped in sacking. Dorin gets down,
+> **Narrator:** Hesra comes down the west road with both feet wrapped in sacking. She lost the pair in the
+> galleries. Dorin gets down,
 > reaches under the seat, and holds out a left boot, hobnailed the hill-farm way.
 >
 > **Hesra:** Where did you...
@@ -731,7 +733,8 @@ Driller's seat. The back pages are in another hand: sealed crates, counted out a
 > **Driver (Dorin):** It was handed in. I logged it as found. I did not know whose. I am glad to close the
 > entry.
 >
-> **Narrator:** She puts it on. Something rattles. She tips it out: a river shell, still wet.
+> **Narrator:** She puts it on. Something rattles. She tips it out: a river shell, still wet. That night the
+> right one is on the step of the mason's yard, where she lodges. Nobody saw who left it.
 
 **CARRY ON (either version's fight is lost):**
 
@@ -1040,8 +1043,8 @@ pulls the slate toward her.
 
 **Amri:** We'll start this list again. And this time whoever's on it says so themselves.
 
-> **Loss branch.** The scene is the same; the four are a day out of the galleries, and Hesra has one boot
-> newer than the other. Add, after Amri sits: _Narrator:_ At the other end of the table, a covered bowl has
+> **Loss branch.** The scene is the same; the four are a day out of the galleries, and Hesra keeps looking down
+> at her own two boots. Add, after Amri sits: _Narrator:_ At the other end of the table, a covered bowl has
 > finally had its cloth taken off.
 
 **Later (found) — the notice board:**
@@ -1825,7 +1828,8 @@ What changed in this file; the reasons and the proposals not applied are in the 
 3. **Ruon's hearing:** the pressed harm is Bo-shan's sixteen days, which is true on both Act I branches
    (Hesra's twenty-one was not). The satchel comes back with him on every traded road.
 4. **Counts:** eleven volunteers add up; the notice board has "names", not eleven, before the vote; Daiyu's
-   lines work when five came; Bo's and the second bowl's lines work with no Ba Dan crew.
+   lines work when five came; Bo's and the second bowl's lines work with no Ba Dan crew. On the loss branch Hesra
+   walks out with both feet in sacking; the right boot is on her step that night.
 5. **Cross-script:** Lin Mei's dated promise has its line in 10.4 (`pq06_negotiated`), with Fenn reading it
    if she is absent. Wen recognises the knife work, not a rule she never saw. Sura's gap plays for every
    Sura, with a variant after PQ-04 where she cuts it unprompted (the bible's gate, kept as a difference in

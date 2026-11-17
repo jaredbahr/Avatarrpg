@@ -512,9 +512,9 @@ Hobnailed in a pattern, the hill-farm way. It is the left one.
 
 > **Loss branch.**
 > **Driver (Dorin):** A left boot. Hobnailed. One owner, unknown. I am going to enter it as found property and
-> keep it under the seat. Somebody is walking about in the other one.
+> keep it under the seat. Somebody is walking about without it.
 >
-> **Latch:** The right one is still on its person. Under a hill, where the water is white. This one could not
+> **Latch:** The right one is under a hill, where the water is white. So is its person. This one could not
 > wait.
 
 **Narrator:** Latch hops off the tailgate with the tag and goes into the reeds. It keeps looking back, the way
@@ -1318,8 +1318,8 @@ Marshal, though he'd rather have it for nothing, and he's about to try.
 **Narrator:** Downstairs, the street doors open. Boots, in step. A level voice, giving an order without
 raising itself.
 
-**Rusk:** Forgive the boots. This building is being secured. Nobody is being asked to leave. We would only ask that
-nothing is carried out.
+**Rusk:** Forgive the boots. This building is being secured. Nobody is being asked to leave. We would only ask
+that nothing is carried out.
 
 > **If `mandate_official` or `mandate_independent` —**
 > **Rusk:** Inspectors. I'm glad to find you here. Nobody has withdrawn your commission. It is under review.
@@ -1759,7 +1759,8 @@ What changed in this file; the reasons and the proposals not applied are in the 
    basket. The mast is split before 8.4 calls it broken. Rusk's greeting fits a morning or a night entry.
    Yenna's copy of memorandum fourteen has a source on both approaches (Neri gave her the shelf; it was her
    Tuesday). Fenn is seen to walk to the pool. The Keeper has kept the Halt's and the heights' echoes too,
-   when those spokes came first.
+   when those spokes came first. Hesra lost the pair of boots on both Act I branches (the loss branch had her
+   keep one), which the shipped welcome-home line does not yet say: see the report.
 2. **Lines:** Veyra's reply to memorandum fourteen now defers the question instead of dismissing it ("We
    will find out why they are steady after the spring tide"), and Wen answers that. Auntie Silt's frog.
    Nima's reason for taking the rope is a real limit. Bo at the handcart. Four long turns split.
