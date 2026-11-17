@@ -52,21 +52,22 @@ answer for later states on a baked board.
 | Character                    | 48 px canvas, 8 directions                                                         |
 | Terrain                      | 32 px Wang tiles, per-pixel edges                                                  |
 | Explore zoom                 | 120 CSS px a cell (80 on a viewport under 540 px wide), snapped to integer zoom    |
-| **One explore view (iPad)**  | about 8.5 to 11.5 cells wide by 6.5 to 8.5 high, before the header and dock        |
+| **One explore view (iPad)**  | about 10 cells wide by 5 high once the header, objective box and dock are counted  |
 | Combat zoom                  | 80 CSS px a cell: about 13 to 17 by 10 to 13 cells, so a 20x12 board scrolls a bit |
 | Map size allowed             | 4 to 64 cells a side                                                               |
 | Today's maps                 | explore 24x16 (the riverside 36x24); combat 20x12 or 19x12                         |
 | Light                        | upper left; shadow `#322125`; cast to the lower right, 12 to 24 px                 |
 | Per-region limits (ADR 0111) | boards 1.5 MiB, JS chunk 40 KB gz; size budgets may be raised with an ADR note     |
 
-**Use 10 by 7 cells as "one view"** for every rule in the core that says "per view". A 24x16 map is therefore
-about five views, and each needs its own idea and landmark.
+**Use 10 by 5 cells as "one view"** for every rule in the core that says "per view". A 24x16 map is therefore
+about seven to eight views, and a 32x18 map about eleven; each needs its own idea and landmark.
 
-The view size is computed from `exploreTilePx` (`src/render/projection.ts`) and typical iPad viewports; it is not
-yet written down or tested anywhere. Measure it on the device before relying on it.
+Measured on the Saltstep blockout (2026-11-17) at an iPad landscape viewport of 1180 by 820: the map shows about
+10 by 4.7 cells. The HUD takes about a third of the screen height, so vertical composition is tight: lay out
+routes mostly east-west, or revisit the explore zoom (an owner question). No test holds this number yet.
 
 **Going bigger.** The owner is fine with bigger places. Do it by adding views that each have an idea (core L16,
-L17), not by stretching a plan. A town of six to nine views (about 30x21 to 40x28) is a reasonable step. Past
+L17), not by stretching a plan. A town of ten to sixteen views (about 30x18 to 40x20) is a reasonable step. Past
 that, split into districts joined by a pinch point (a gate, a bridge, a stair) or into two maps. Before growing a
 board: run the perf bench (`scripts/perf/core-bench.test.ts`, pinned to the largest board), check the region's
 board budget, and remember the local map (`LocalMapDialog`) is opened by a button, so orientation must come from
@@ -256,8 +257,8 @@ from what the owner likes, then turn them into failing tests. Changes to the map
 | 4   | `anchored`         | Share of standing objects within one cell of a blocked cell, a rim, or a member of their set piece (default 80%) | Validator 3                                        |
 | 5   | `looseSingles`     | No standing object without a neighbour within two cells unless marked as a marker                                | A `marker` flag                                    |
 | 6   | `desireLinesClear` | No object footprint or solid cell on a named track; every door, anchor, slot and exit touches the track network  | Named tracks in every terrain classifier           |
-| 7   | `restingGround`    | In every 10x7 window, the share of walkable cells with nothing on them is in range (default 60 to 80%)           | Nothing new                                        |
-| 8   | `landmarkPerView`  | Every 10x7 window holds a piece marked as a landmark; each landmark sprite is used once per map                  | A `landmark` flag                                  |
+| 7   | `restingGround`    | In every 10x5 window, the share of walkable cells with nothing on them is in range (default 60 to 80%)           | Nothing new                                        |
+| 8   | `landmarkPerView`  | Every 10x5 window holds a piece marked as a landmark; each landmark sprite is used once per map                  | A `landmark` flag                                  |
 | 9   | `footprintRhythm`  | No two buildings share both size and row; no three at equal spacing; no straight rim run over two cells          | Nothing new                                        |
 | 10  | `aprons`           | Every anchor has changed ground under it                                                                         | Aprons as data in the layout, baked by one routine |
 | 11  | `scaleChart`       | Each object's opaque height is inside the chart's range for its class                                            | A class per object; the measured chart             |

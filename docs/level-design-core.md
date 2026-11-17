@@ -124,6 +124,9 @@ at real speed with the real camera. Ask:
 
 Expect the first blockout to fail. Changing it is nearly free now and expensive later.
 
+**Measure the view before you plan with it.** Take a screenshot in the game and count what is visible once the
+interface is drawn. A view size worked out from the zoom alone will be too large.
+
 **The rule that keeps the order honest:** blocked cells are decided here, from the plan. A dressing pass may not
 add or move a blocked cell to make room for a prop. If dressing needs the collision changed, go back to this stage.
 
@@ -251,7 +254,8 @@ The ground is the largest thing on the screen. Treat it as the first layer of dr
 - G1. **One shared map.** The ground painter and the object placer read the same data: where paths, aprons and
   kerbs are. Objects then stand on what the ground says, and the ground reacts to what stands on it.
 - G2. **Calm.** Ground has few colours and low contrast, so people and objects carry the contrast. Never put two
-  busy textures side by side. A flat area next to a textured one is correct.
+  busy textures side by side. A flat area next to a textured one is correct. Calm the ground before adding
+  shadows or more detail: on busy ground neither reads.
 - G3. **Wear follows use.** Bare earth on desire lines, worn most where lines cross and at doors. Wide worn ground
   frays at its edge; a narrow trail stays crisp.
 - G4. **Aprons.** Every building and large object sits on ground changed by it: packed earth at a door, a wet ring
@@ -260,7 +264,7 @@ The ground is the largest thing on the screen. Treat it as the first layer of dr
   object shows a clean, fully traceable base on clean ground.
 - G6. **Growth follows neglect.** Weeds at posts, in corners, along the foot of walls and where nobody walks.
   Nothing grows on a desire line.
-- G7. **Wet follows water and shade.** Damp below a spout, a trough, a drain, the north side of a wall.
+- G7. **Wet follows water and shade.** Damp below a spout, a trough, a drain, the shaded side of a wall the player can see.
 - G8. **Natural edges are ragged; made edges are clean.** A bank wanders; a paved court has a kerb. Where the two
   meet, the made edge is worn and the natural one creeps over it.
 - G9. **Hide the tile.** No visible repeat. No straight natural edge longer than two tiles.
@@ -395,7 +399,8 @@ is.
 ### What to measure
 
 The numbers are **proposed defaults**, not sourced facts. Each addendum sets its own after measuring that game's
-best existing scenes; a rule that the best scene fails is the wrong rule.
+best existing scenes; a rule that the best scene fails is the wrong rule. Until an addendum has measured, these
+defaults apply.
 
 | Measure                         | Rule                                                                         | Default             |
 | ------------------------------- | ---------------------------------------------------------------------------- | ------------------- |
