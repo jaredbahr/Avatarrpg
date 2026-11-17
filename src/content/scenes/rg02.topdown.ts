@@ -162,7 +162,7 @@ export const SALTSTEP_MARKET_OBJECTS: readonly TopDownObject[] = [
   // The quay (`n`): the fish shed, green and gold banners, racks and baskets along the back; lamps, rope, nets and tables along the
   // water. Rows 5-6 stay open.
   piece('handcart', 'handcart', 'prop', [[8, 4]], true),
-  piece('fish_shed', 'awning_shed', 'prop', [[10, 4]], true),
+  piece('fish_shed', 'ek_stall_parasol', 'prop', [[10, 4]], true),
   piece('baskets_north', 'fish_baskets', 'prop', [[11, 4]], true),
   piece('banners', 'banner_poles', 'prop', [[13, 4]], true),
   piece('quay_rack', 'drying_rack', 'prop', [[18, 4]], true),
@@ -180,12 +180,12 @@ export const SALTSTEP_MARKET_OBJECTS: readonly TopDownObject[] = [
   // and a cart between. Earth Kingdom pieces throughout.
   flip(piece('mid_parasol_w', 'ek_stall_parasol', 'prop', block(6, 7, 4, 4), true)),
   piece('mid_jars', 'clay_jars', 'prop', [[12, 4]], true),
-  flip(piece('mid_crates_n', 'fish_crates', 'prop', [[15, 4]], true)),
+  flip(piece('mid_crates_n', 'fish_crates', 'prop', [[14, 4]], true)),
   piece('mid_baskets_ne', 'basket_tower', 'prop', [[20, 4]], true),
   piece('mid_cart', 'ek_cart', 'prop', [[6, 6]], true),
   piece('mid_tower_w', 'basket_tower', 'prop', [[8, 5]], true),
   piece('mid_stall_green', 'ek_stall_green', 'prop', block(10, 11, 5, 5), true),
-  piece('mid_lantern', 'lantern_post', 'prop', [[13, 6]], true),
+  piece('mid_lantern', 'lantern_post', 'prop', [[13, 7]], true, { base: -14 }),
   flip(piece('mid_stall_green_e', 'ek_stall_green', 'prop', block(15, 16, 5, 5), true)),
   piece('mid_hang', 'fish_hang', 'prop', [[18, 5]], true),
   piece('mid_jars_sw', 'clay_jars', 'prop', [[2, 7]], true, { base: -14 }),
