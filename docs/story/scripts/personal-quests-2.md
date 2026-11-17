@@ -194,8 +194,8 @@ other for some time, with one finger.
 
 **Narrator:** She touches a place on the post. It is between two notches.
 
-**Lin Mei:** I took it from three seasons of gauge readings and a calculation. It is within a hand of what
-you cut with a knife. Yours goes back forty years further than mine.
+**Lin Mei:** I took it from three seasons of gauge readings and a calculation. It is within a hand of what you
+cut with a knife. Yours goes back fifty years further than mine.
 
 **Fenn:** We'd have shown you the post. Nobody came down this end.
 
@@ -396,7 +396,7 @@ either.
 **Narrator:** Lin Mei holds it very carefully by the edges. For a moment her face does several things at
 once.
 
-**Lin Mei:** I collect these. Maps of places too small to need one. I have eleven. I have never been given
+**Lin Mei:** I collect these. Maps of places too small to need one. I have thirty-one. I have never been given
 one by the person who lives on it.
 
 **Lin Mei:** I would like to play you at the stumps again. Next time. Backwards. I will have practised.
@@ -564,8 +564,8 @@ We dug through the fallen thatch on the east side with our hands, in case.
 **Sena:** There's a wall down on the west shelter. Everyone who can lift is on it tonight. That leaves the
 night watch. Hobb's done nine running.
 
-**Sena:** It's a hut, a lamp, a rope and a book. Nothing happens. I'm not giving it to you because it's
-dull. I'm giving it to you because Hobb needs to lie down, and you're the one who's here.
+**Sena:** It's a hut, a lamp, a rope and a book. Nothing happens. Hobb needs to lie down, and you're the one
+who's here.
 
 ### Scene M.2 — The watch hut
 
@@ -598,29 +598,19 @@ do.
 
 **Narrator:** He looks at the ladder. He looks at the high cleat. He looks at the card.
 
-**Three small jobs (any order):**
-
-**Job one — the lamp.**
-
 **Narrator:** There is a spare pulley in the hoist locker. Nima hangs it from the bracket and runs a cord
 through. Now the lamp is lit at the bottom and hauled up from the stool.
 
 **Nima:** No ladder. Hobb could do that sitting down. Anyone could do that sitting down.
 
-**Job two — the rope.**
-
 **Narrator:** The flag rope ties off on a cleat above Nima's head. He moves the cleat down the post to the
 height of a seated person's hand, and puts a wooden toggle on the rope's end so that it cannot run away
 through cold fingers.
-
-**Job three — the card.**
 
 **Narrator:** Nima turns Sena's card over and draws on the back. A flat ribbon, an arrow, a flag going up. A
 bell with two lines, an arrow, a basket going down. A lamp, an arrow, a hand writing in a book.
 
 **Narrator:** They are not good drawings. Nobody could mistake what they mean.
-
-**Then:**
 
 **Narrator:** He stands back. It is finished. There is an hour of daylight left.
 
@@ -733,15 +723,12 @@ about how big it was.
 
 **Nima:** Good.
 
-**Narrator:** He finds that he means it.
-
 **If `pq07_handed_over`:**
 
 **Narrator:** Nima takes Kip through the card. Ribbon, flag: Kip runs the flag up and down from the stool.
 Bell, basket: Kip sends the basket down empty and brings it back. Lamp, book.
 
-**Nima:** Do the flag again. I'm not doubting you. I'm going to be on that path, and I want to have seen it
-twice.
+**Nima:** Do the flag again. I'm going to be on that path. I want to have seen it twice.
 
 **Narrator:** Kip does the flag again. Nima opens the book and writes: "Watch handed to Kip, of the lower
 camps, at dusk. Shown the card. Did each thing, and the flag twice. Nima gone down the switchbacks to meet the
@@ -841,7 +828,8 @@ I had. It's in the book.
 
 **Narrator:** She shuts the book.
 
-**Sena:** Kip can have Thursdays, if Kip wants them. Seven of us isn't enough. I've known that for a year.
+**Sena:** Kip can have the fourth night, if Kip wants it. Seven of us isn't enough. I've known that for a
+year.
 
 **Both:**
 
@@ -882,13 +870,12 @@ good.
 
 **Narrator:** She closes the book. She does not get out the board game.
 
-**Sena:** I'm not going to say you can't come back. You can. I'm going to say that the next time I need one
-dull thing done, I'll ask somebody else first, and you'll know why.
+**Sena:** You can come back. You know that. But the next time I need one dull thing done, I'll ask somebody
+else first, and you'll know why.
 
 **Nima:** I saw it, Sena. I'm not sorry I saw it. I'm sorry how.
 
-**Sena:** I know. Both of those can sit there. Go and tell the carrier. She's at the bottom of the hoist,
-and she's a can short.
+**Sena:** I know. Go and tell the carrier. She's at the bottom of the hoist, and she's a can short.
 
 **Narrator:** He goes down the cliff path in daylight to tell her. It is every turn of the switchbacks, and
 nobody goes with him.
@@ -909,7 +896,7 @@ Sets `pq07_done`._
 | `pq07_done`           | The quest is closed (any of the three)                  |
 
 - **Trust:** Act III's table reads "PQ-07 kept" for the Bellweather sanctuary: that is `pq07_kept` or
-  `pq07_handed_over`. The lower camps rise a little with `pq07_handed_over` (Kip has Thursdays).
+  `pq07_handed_over`. The lower camps rise a little with `pq07_handed_over` (Kip has the fourth night).
 - **The watch hut** keeps Nima's pulley, cleat and picture card on every route. They do not depend on the
   vote.
 - **MQ-12, Scene 12.2:** Sena gives Nima "the dullest one I've got". It plays for every Nima; after
@@ -1094,9 +1081,9 @@ affected by all twelve. That's not a private letter. That's a notice with the wr
 
 **Tram operator:** It's addressed to me.
 
-**Jinu:** It is. So I'm not pinning your post on a wall. I'm asking you to. Write it out fair, put the
-station seal on it and your own name under it, and I'll carry copies to every board between here and the
-camps. Then it's yours and it's true, and nobody can say a courier leaked it.
+**Jinu:** It is. So it's not mine to pin on a wall. It's yours. Write it out fair, put the station seal on it
+and your own name under it, and I'll carry copies to every board between here and the camps. Then it's yours
+and it's true, and nobody can say a courier leaked it.
 
 **Narrator:** The operator looks at the clerk. The clerk looks at the note from head office.
 
@@ -1215,8 +1202,8 @@ the edge of the first sheet, and the old woman's hand, and nothing else.
 
 **Ilo:** Don't you want to know?
 
-**Jinu:** I want to know so badly my teeth hurt. Come on. There's eleven more for the terraces, and I'm
-going to weigh every one of them.
+**Jinu:** I want to know so badly my teeth hurt. Come on. There's a dozen more for the terraces, and I'm going
+to weigh every one of them.
 
 **If `pq08_asked`:**
 
@@ -1291,9 +1278,8 @@ else has. I'm the one.
 
 **Marda:** You came and said. Most wouldn't. Bring the next one shut.
 
-**Narrator:** The half-door swings to. Ilo has not said anything for some time.
-
-**Jinu:** That's what it costs. Look at it properly. I'd rather you learned it off me than did it yourself.
+**Narrator:** The half-door swings to. Jinu walks down as far as the cistern without a word. Ilo has never
+heard her not say anything.
 
 ### Scene J.5 — What Ilo carved
 
@@ -1316,9 +1302,9 @@ hand.
 
 **Narrator:** He does her bag strap. She looks at it with her head on one side.
 
-**Jinu:** It's crooked. I love it. Did you know the turnip was the first vegetable I ever delivered? A whole
-sack, to a man who'd ordered parsnips. He kept them. That's a long story. I'll tell you on the stairs. No,
-I won't. I'll ask him first.
+**Jinu:** It's crooked. I love it. Did you know a turnip was the first thing I ever delivered wrong? A whole
+sack, to a man who'd ordered parsnips. I'll tell you on the stairs. That one's mine to tell. I'm the one who
+got it wrong.
 
 **After `pq08_opened`:**
 
@@ -1378,9 +1364,9 @@ you can admire someone and still tell them to stop.
 
 **Opens:** at Copper Orchard, in Scene 6.4 of MQ-06, with Riko in the party. **Other people:** Seli, she/her,
 52, Riko's former teacher, now a travelling theatre's movement coach; Haro, he/him, 36, the troupe's manager;
-Zan, he/him, fifties, a porter at Pear Halt; Tamsa, she/her, forties, an orchard picker; a recruiting
-sergeant from Commonworks Security. **What the party may know:** everything through MQ-05, including the
-Marshal's name and his instruction.
+Zan, he/him, forties, a porter at Pear Halt; Tamsa, she/her, forties, an orchard picker; a recruiting sergeant
+from Commonworks Security. **What the party may know:** everything through MQ-05, including the Marshal's name
+and his instruction.
 
 **Planted earlier:** the practice board by the guards' shelter at the quarry (`reason.riko`: "She told me it
 was for keeping people from getting hurt").
@@ -1567,9 +1553,9 @@ below.
 **Zan:** I was nineteen and they gave me a stick and a gate. First week, I broke a man's collarbone, because
 he came at me and I didn't know anything else. I was sick behind the hut.
 
-**Zan:** Then she came. Six weeks. After that I never hit anybody again, not once in eleven years. You take
-hold, you wait, they get tired, they go home. I've had drunks off the line that way, here, since. Two of
-them would be dead under a wagon.
+**Zan:** Then she came. Six weeks. After that I never hit anybody again, not once in fourteen years. You take
+hold, you wait, they get tired, they go home. I've had drunks off the line that way, here, since. Two of them
+would be dead under a wagon.
 
 **Party:** And the people you held?
 
@@ -1786,7 +1772,7 @@ teach the letting go before the taking hold. Any hand who wants it. Guild card o
 
 **Seli:** Yes.
 
-**Narrator:** That afternoon there are eleven people on the platform. Seli walks down the line turning each
+**Narrator:** That afternoon there are thirteen people on the platform. Seli walks down the line turning each
 wrist a little. Riko walks down it behind her.
 
 **Seli:** She'll correct me. Let her. She's better than I am now.
@@ -1795,8 +1781,7 @@ wrist a little. Riko walks down it behind her.
 
 **Seli:** I know how you watch.
 
-**Narrator:** It is not the way they were. Riko has not said that anything is forgiven. She stays for the
-whole class.
+**Narrator:** Riko has not said that anything is forgiven. She stays for the whole class.
 
 **If `pq09_reported`:**
 
@@ -1859,7 +1844,7 @@ to Hesh and the yard foreman. It is written down. Riko is not in the room.
 **Shown:** found (the platform, that evening). Plays after `pq09_testify_program` or `pq09_private`; after
 `pq09_reported` the troupe has gone and only the easel is left, with the playbill.
 
-**Narrator:** "The Lamp at Midnight" plays to forty people on pear crates. The candlestick is on the left of
+**Narrator:** "The Lamp at Midnight" plays to thirty people on pear crates. The candlestick is on the left of
 the mantel. The Steward and the Inspector fight, and it is quite convincing, and the ladle is dented.
 
 **Narrator:** Riko is in the back row with her arms folded. During the thunderstorm, which is Haro shaking a
@@ -2029,13 +2014,13 @@ Give me an hour.
 beautiful. Edda pulls it with two fingers.
 
 > **If Riko is in the party —**
-> **Wen:** Riko. Try it with the power off. Cold. No warning.
+> **Wen:** Riko. Try it with your eyes shut. Cold. No warning.
 >
-> **Narrator:** Riko pulls it.
+> **Narrator:** Riko finds it by feel, and pulls it.
 >
-> **Riko:** Stiff at the end.
+> **Riko:** It works. I had to hunt for it. You've only painted the side you were standing on.
 >
-> **Wen:** Show me where.
+> **Wen:** ...Red all the way round. Pass me the tin.
 
 > **If Tenzo is in the party —**
 > **Tenzo:** Can you pull it with a wet hand? A hand that's had oil on it?
@@ -2050,7 +2035,7 @@ beautiful. Edda pulls it with two fingers.
 been patched with three different cloths. She puts it on the bench and it lands with a weight that says
 every tool in it is a good one.
 
-**Edda:** Ruda. Low-landing pumps, twenty-two years. Ruda, this is the one whose napkin it is.
+**Edda:** Ruda. Low-landing pumps, nineteen years. Ruda, this is the one whose napkin it is.
 
 **Ruda:** Is it.
 
@@ -2066,7 +2051,7 @@ quarter turn and a drop of oil.
 on it that says "Authorised service only", so I stand there. The fitter with the key comes on a nine-day
 round. If it sticks on the second day, forty houses carry water for a week.
 
-**Ruda:** I mended that pump for twenty-two years. Now I report it.
+**Ruda:** I mended that pump for nineteen years. Now I report it.
 
 **Narrator:** She puts one finger on the napkin, on the word with three underlines.
 
@@ -2092,7 +2077,7 @@ what happens when I pull it. Have you written that down anywhere? What to do, in
 **Narrator:** She has. It is under the napkin. It is thirty-eight pages long, in a hand that gets smaller as it
 gets more excited, and it begins with the history of the pressure valve.
 
-**Ruda:** I've got eleven minutes of lamp oil and a pump that's screaming. Which page do I want?
+**Ruda:** I've got seven minutes of lamp oil and a pump that's screaming. Which page do I want?
 
 **Narrator:** Wen turns the pages. She turns quite a lot of pages.
 
@@ -2126,10 +2111,10 @@ for a reason, and I was there for the reason.
 
 **Narrator:** He does sit down. He puts the ring of keys on the bench in front of him.
 
-**Company fitter:** Two winters back. Upper landing, a pump with the lever still on. Somebody's lad saw the
+**Company fitter:** Winter before last. Upper landing, a pump with the lever still on. Somebody's lad saw the
 gauge up high and did the sensible thing. Pulled it. Dumped the lot.
 
-**Company fitter:** And a man was working on the outfall, forty paces down the pipe, with his arm in it. Got
+**Company fitter:** And a man was working on the outfall, thirty paces down the pipe, with his arm in it. Got
 the whole charge, hot, up to the shoulder. He kept the arm. He was off work till spring.
 
 **Company fitter:** The lad did nothing wrong. He did what the lever was for. Nobody'd told him to look down

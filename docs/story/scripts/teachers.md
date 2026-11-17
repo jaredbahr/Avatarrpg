@@ -71,9 +71,9 @@ inspections (Scene 5.5). **Needs:** Kaya or Tenzo.
 **Shown:** played. **Where:** the power yard. A short practice spur runs off the live line to a string of
 twelve lamps hung across the parade ground for the lantern season.
 
-**Narrator:** The practice spur is forty paces of wire on low posts, with a copper rod driven into the
-ground at each end. Two riggers stand by the rods in rope-soled shoes. There is a gauge on a board, with a
-needle, and a red mark two-thirds of the way round.
+**Narrator:** The practice spur is thirty paces of wire on low posts, with a copper rod driven into the ground
+at each end. Two riggers stand by the rods in rope-soled shoes. There is a gauge on a board, with a needle,
+and a red mark two-thirds of the way round.
 
 **Narrator:** On the wall behind it is another board, in chalk: "LAMP-HOURS OWED." The number under it has
 been rubbed out and written larger several times.
@@ -119,8 +119,8 @@ width of a thumbnail.
 
 **Luli:** Again. Same size.
 
-**Narrator:** The second lamp. The third. A crowd has gathered among the beans: loaders, the retired cook,
-eleven children. Each lamp gets a cheer.
+**Narrator:** The second lamp. The third. A crowd has gathered among the beans: loaders, the retired cook, a
+dozen children. Each lamp gets a cheer.
 
 **Narrator:** Four. Five. Six. The needle climbs. At seven the wire begins to hum, low, like a bee in a
 jar.
@@ -292,7 +292,7 @@ load tomorrow.
 
 **Party:** Bem. What do you want to be able to do tomorrow?
 
-**Bem:** Lift. Forty crates. And get my boots on by myself, which this morning I couldn't.
+**Bem:** Lift. Sixty crates. And get my boots on by myself, which this morning I couldn't.
 
 > **If Nilak is the student —**
 > **Nilak:** I've done this for years, Aru. I can tell you which muscle it is from the door.
@@ -324,8 +324,7 @@ today.
 **Narrator:** He says it at once, and pulls his coat a little closer.
 
 **Bem:** Not in my back. I had that done once, at a company surgery. Couldn't feel my feet till the next
-evening. I'm not saying it was done wrong. I'm saying I've a gangplank to walk at six tomorrow with a crate
-on my shoulder.
+evening. Maybe it was done right. I've still a gangplank to walk at six tomorrow with a crate on my shoulder.
 
 **Narrator:** Aru says nothing. Aru is watching the student's hands.
 
@@ -388,7 +387,11 @@ says "light".
 
 **Narrator:** He gets it on by himself. It takes a while. Nobody helps.
 
-**Aru:** That's the lesson. The water was the least of it.
+**Aru:** You bent about a cupful.
+
+**Party:** Was that enough?
+
+**Aru:** Ask his boot.
 
 > **If Nilak is the student —**
 > **Nilak:** I could have had him lifting today. With the deep work.
@@ -536,11 +539,11 @@ earth in good brass. You can't feel it, and you can't move it. Nobody can.
 **Hesh:** Wait. You'll do it. I've no doubt. The iron comes straight, the brass stays where it is, and the
 pin goes in two at the collar. Then the gate's on the floor.
 
-**Hesh:** And forty porters carry fish up the long stair until the foundry's got a free day. That's nine
-days, this month. I asked.
+**Hesh:** And thirty porters carry fish up the long stair until the foundry's got a free day. That's a
+fortnight, this month. I asked.
 
-**Hesh:** It's not wrong to be strong. It's wrong to be strong before you've looked. Hand back on the pin.
-Start below the blank place. Tell me where the grain ends.
+**Hesh:** Nobody's asking you to be weaker. Hand back on the pin. Start below the blank place. Tell me where
+the grain ends.
 
 _(The prompt is offered again.)_
 
@@ -601,7 +604,7 @@ frowning with concentration.
 
 **Narrator:** He does not say anything else. He moves the girl's thumb a little to the left.
 
-**Hesh:** You two. Thursdays, when I'm on the coast. Then the yard at the Orchard. Both of you.
+**Hesh:** You two. Market days, when I'm on the coast. Then the yard at the Orchard. Both of you.
 
 **Narrator:** It is not clear which two he means. He does not make it clear.
 
@@ -727,7 +730,7 @@ clear note, not loud, that goes out over the beach like a thrown line.
 >
 > **Oru:** I'm sure you have. Do it again, the same.
 >
-> **Narrator:** Nima does it again. It is not the same. It takes him eleven tries to get the same twice, and
+> **Narrator:** Nima does it again. It is not the same. It takes him fourteen tries to get the same twice, and
 > by then he has made a game of it with the boy's fish bucket, to see who can ring it softer.
 >
 > **Oru:** That's the trade. Not big. The same. Any gust is big.
@@ -787,7 +790,7 @@ the gap.
 **Narrator:** The boy's father touches his shoulder and points. The boy looks up at the mast. He watches
 the board. He holds up three fingers, then two, and grins all over his face.
 
-**Oru:** And that's the first time he's ever been told at the same moment as everyone else.
+**Oru:** Three and two. He had it before the net-menders did.
 
 **Narrator:** He does not make a speech about it. For Oru, this is restraint on the scale of a mountain.
 
@@ -950,7 +953,7 @@ at the sides against a crate.
 **Narrator:** She walks to the winch post and pulls out the main fuse. The lift, half-way up with a crate
 of soap on it, stops and hangs.
 
-**Edda:** Power's gone. Storm, say. There's forty pounds of soap over the jetty and somebody's brother
+**Edda:** Power's gone. Storm, say. There's a hundredweight of soap over the jetty and somebody's brother
 under it. Your new bar's a switch. What does a switch do with no power?
 
 **Party:** Nothing.
@@ -960,7 +963,7 @@ under it. Your new bar's a switch. What does a switch do with no power?
 **Narrator:** There is a hand crank on the winch, folded flat against the drum and painted the same grey as
 everything else. There is a brake pawl beside it. It takes the student some time to find either.
 
-**Edda:** That took you a count of forty, and you were looking for it. Paint it.
+**Edda:** That took you a count of thirty, and you were looking for it. Paint it.
 
 **Narrator:** The crank is painted red. The pawl is painted red. The student unfolds the crank and winds
 the soap down by hand. It goes easily until the last turn.
@@ -1028,9 +1031,8 @@ Not when the bolts are tight.
 > **Edda:** And they'd have said "ooh". Nobody says "ooh" about a red bar at hip height. They just don't
 > lose a hand.
 
-**Edda:** I'm not telling you this is what people do because they can't bend. Luli can throw lightning and
-she still wants a breaker she can reach. This is what you do because machines get built by tall men in a
-hurry.
+**Edda:** Luli can throw lightning, and she still wants a breaker she can reach. Machines get built by tall
+men in a hurry. Somebody has to come along after.
 
 **Edda:** Come by the bench when you want the next one. There's always a next one. Bring your own spanner.
 The drawer bites.

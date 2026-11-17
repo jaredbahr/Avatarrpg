@@ -191,10 +191,6 @@ There's a second ladder. Are you staying an hour, or are you only passing?
 
 **Kaya:** I can stay an hour.
 
-**Three short jobs (any order; then the scene goes on):**
-
-**Job one — carrying.**
-
 **Narrator:** The lanterns travel in straw. You carry them from the crates to the rail four at a time. They
 make no sound at all.
 
@@ -212,7 +208,9 @@ a crack in it by the time it arrives.
 > **Narrator:** He finds a brush. The heron gets its leg back. Miri moves the lantern to the front without
 > saying anything.
 
-**Job two — lighting.**
+**Two short jobs (either order; then the scene goes on):**
+
+**Job one — lighting.**
 
 **Miri:** Wicks need a first light, or they sulk on the night. I use a taper. It takes me the morning.
 
@@ -231,7 +229,7 @@ teeth. Forty wicks. Not one panel so much as browns.
 
 **Miri:** I'm not telling you. You'd be unbearable.
 
-**Job three — the race.**
+**Job two — the race.**
 
 **Oko:** First to hang ten. Me on that ladder, her on this one. Miri calls it.
 
@@ -254,7 +252,7 @@ at nobody, very pleased.
 
 **Miri:** There's never a rule. You're always halfway up before anybody's said what we're doing.
 
-**Narrator:** She says it lightly. Nobody on the steps takes it lightly. Kaya picks up the hammer.
+**Narrator:** She says it lightly. Oko finds something to look at in the harbour. Kaya picks up the hammer.
 
 **Kaya:** This hook's loose. Second from the pole. Have you got longer nails?
 
@@ -288,13 +286,15 @@ found a use for it.
 > **Sura:** Lanterns. At home we light the ice from underneath. One lamp, under the ice, and the whole bay
 > glows green. You can see the fish go past like people in a street.
 >
-> **Oko:** How do you get the lamp under the ice?
+> **Oko:** Is that true?
 >
-> **Sura:** You cut a hole.
+> **Sura:** Every word.
 >
-> **Oko:** Then it's not under the ice. It's in a hole.
+> **Oko:** Miri! Can we light the harbour from underneath?
 >
-> **Sura:** ...It's a small hole. I like him. He can stay.
+> **Miri** (from inside the workshop): No.
+>
+> **Sura:** I like him. He can stay.
 
 ### Scene K.3 — The tile
 
@@ -312,7 +312,8 @@ tile. It is black down one side.
 
 **Miri:** There's meant to be straw. It's a lantern shop. Put it down.
 
-**Narrator:** Kaya puts the broom down. She does not seem to know what to do with her hands after that.
+**Narrator:** Kaya puts the broom down. She tucks her hands under her arms, where they can't pick anything
+else up.
 
 **Miri:** That's from the corner over the awning. That corner, there. Father wanted it thrown out with the
 rest. I kept one.
@@ -562,7 +563,8 @@ jars, washed.
 
 **Bowl-seller:** They're glass. They've got a hole in the top. I don't see the difficulty.
 
-**Narrator:** By dusk there are jars on the bottom step from nine households, and a bottle shaped like a fish.
+**Narrator:** By dusk there are jars on the bottom step from a dozen households, and a bottle shaped like a
+fish.
 
 _Sets `lost_miri_crates`. The fight pays its XP either way. The workshop is short of glass for the season, and
 the lanterns on the ferry steps are part glass and part pickle jar from here on. The vote still plays._
@@ -579,11 +581,10 @@ running?
 
 **Oko:** That's her! Tell them, Kaya. Tell them about the wall. I do it every year but I do the voices wrong.
 
-**Narrator:** People are smiling. Somebody starts to clap. It is the easy half of the story, and they would
-like to hear it from her.
+**Narrator:** People are smiling. Somebody starts to clap.
 
 **Narrator:** Miri is on the top step with the letter in her apron pocket. She is not smiling and she is not
-frowning. She is waiting to see.
+frowning.
 
 > **If one or more strings burned —** **Narrator:** The burned string is still hanging over the old
 > ferryman's head. Nobody has looked up yet.
@@ -633,7 +634,8 @@ half.
 > **Kaya:** And that string up there is mine as well. Today's. I'm not doing nine years over that one. I'm
 > making it again tonight.
 
-**Narrator:** Nobody says anything. Then the old ferryman scratches his chin.
+**Narrator:** Nobody says anything. Two doors along, the chandler's shutter closes, not loudly. Kaya watches
+it close. Then the old ferryman scratches his chin.
 
 **Old ferryman:** Well. Are you any good on a ladder?
 
@@ -722,7 +724,7 @@ boys.
 
 **Narrator:** Kaya holds out the letter. Miri does not take it.
 
-**Miri:** Keep it. It's yours. It always only said the one thing.
+**Miri:** Keep it. It's yours. It only ever said the one thing.
 
 **Narrator:** Kaya goes down the steps to the ferry. She walks fast. She does not run.
 
@@ -742,13 +744,13 @@ week's takings.
 
 **Narrator:** It is a lump of green lamp-glass slag on a braided cord. It has two dents that might be eyes.
 
-**Kaya:** What is it?
+**Kaya:** Which way up does it go?
 
-**Oko:** A turtle duck.
+**Oko:** Either. It's a turtle duck.
 
-**Kaya:** It's a lump.
+**Kaya:** Where's its head?
 
-**Oko:** It's a turtle duck that's asleep.
+**Oko:** Tucked in. It's asleep.
 
 **Narrator:** Kaya holds it up to the light. It is the ugliest thing she has seen all year. She ties it to
 her sash with a knot that will not come undone.
@@ -1067,7 +1069,7 @@ the slate's ledge and writes under Tenzo's line: "Tram crew, yard four. Six of u
 **Narrator:** By the end of the night there are four crews' names on the slate, and the chalk is a stub.
 
 > **If Bo is in the party —**
-> **Bo:** My crew went eleven weeks on a word like "goodwill". Ours was "shortly".
+> **Bo:** My crew went seven weeks on a word like "goodwill". Ours was "shortly".
 >
 > **Dema:** Did "shortly" ever come?
 >
@@ -1125,12 +1127,12 @@ company paid up.
 
 **Ketu:** I kept it open. I thought that was the kind thing. I still think so.
 
-**Narrator:** Nobody answers him at once. It is not a stupid thing to have said.
+**Narrator:** Nobody answers him at once. Bash looks at Dema. Dema looks at the ledger.
 
 **Dema:** You kept it open on our backs, Ketu. You never once asked us. You told us it was a favour, and then
 you put it on a sheet.
 
-**Ketu:** There are forty cooks on the low landing who'd have those aprons on by noon. I've not sent for one
+**Ketu:** There are thirty cooks on the low landing who'd have those aprons on by noon. I've not sent for one
 of them. I'd like that remembered.
 
 **Narrator:** Tenzo puts both hands flat on the table. When he speaks, the words are short.
@@ -1208,7 +1210,7 @@ want it. I'd rather you didn't learn that the way I did.
 **Narrator:** Tenzo and Ketu talk in the store room with the door shut, for most of an hour. When they come
 out, Ketu has agreed to pay the back nights to anyone who brings him their hours.
 
-**Narrator:** He does. Eleven cooks bring their hours, and are paid, quietly, in the store room, one at a
+**Narrator:** He does. Fourteen cooks bring their hours, and are paid, quietly, in the store room, one at a
 time.
 
 **Narrator:** Bash does not bring his. On the third day his apron is on the rail and he is not under it.
@@ -1218,8 +1220,8 @@ like a loan.
 
 **Tenzo:** I got them paid.
 
-**Dema:** You got it for the ones who'd ask. You did it kindly, and you did it without us. I'm not ungrateful.
-I'm telling you what it was.
+**Dema:** You got it for the ones who'd ask. You did it kindly, and you did it without us. I'll say thank you
+for the first.
 
 ### Scene T.4 — Somebody else's cooking
 
@@ -1264,10 +1266,12 @@ moment on the way past.
 > **Narrator:** Nilak has been given a bowl too. He watches Tenzo sit all the way through a meal without
 > getting up, and says nothing, and looks as though he is taking notes.
 
-**Narrator (after `pq02_posted_terms` or `pq02_cooks_shelf`):** When the party leaves, Bash runs out after the
-cart with something wrapped in a cloth.
+**Narrator (after `pq02_posted_terms` or `pq02_cooks_shelf`):** When the party leaves, there is a ladle
+hanging from the hook by the cart's cooking pot. It is dented, and somebody has scratched a 7 on the handle.
+Bash is in the back doorway of the kitchen, drying his hands.
 
-**Bash:** For your pot. We've a rail of six again. I carved another last night. This one was spare.
+**Bash:** We've a rail of six again. I carved a new one last night. That one's over. Don't make anything of
+it.
 
 _Keepsake: **a dented ladle with a "7" scratched on the handle**, hung by the cart's cooking pot (not after
 `pq02_quiet_word`). Sets `pq02_done`._
@@ -1510,7 +1514,7 @@ someone.
 **Narrator:** She puts four paper slips on the table, in a row. Each has the emblem at the top. Each is in a
 different hand.
 
-**Odi:** Shoulder, down into the hand. From hauling wet net over a beam, nine years. The first treatment
+**Odi:** Shoulder, down into the hand. From hauling wet net over a beam, twelve years. The first treatment
 works. For about six days I can close my fingers. Then it goes back.
 
 **Nilak:** It needs a course. Six sessions, close together, and then rest.
@@ -1595,7 +1599,7 @@ busy telling people why I'd gone.
 **Narrator:** Dr. Iset has come over with a bottle in each hand. She has heard all of it.
 
 **Dr. Iset:** Well. That's two of you who didn't look, and one of me who's been wondering since spring why a
-crate of "medical supplies" clinked at the ferry. I didn't ask either. I had forty patients.
+crate of "medical supplies" clinked at the ferry. I didn't ask either. I had a full bench.
 
 **Dr. Iset:** Sit there feeling dreadful for the length of one cup of tea. Then get up, because the woman
 with the shoulder is still waiting.
@@ -1641,8 +1645,8 @@ she said to put it there. Dr. Iset nails it to the clinic door with a dressing p
 **Narrator:** Aru reads the sheet on the door, all the way down. Then they take the chalk and write, under
 Nilak's name, a second one.
 
-**Aru:** I'm not agreeing with you. I think you've burned a year of my work to do in a morning what I'd have
-done by next spring. I'm signing because it's true. Those are different.
+**Aru:** Don't read that as agreeing. I think you've burned a year of my work to do in a morning what I'd have
+done by next spring. It's true, so my name goes on it.
 
 > **If N.4 played —** **Narrator:** A third sheet goes up beside it: "Forty supply labels, issued blank,
 > spring. One found at Stoneback Quarry on a crate of restraints. Thirty-nine not accounted for. Signed by the
@@ -1654,8 +1658,7 @@ done by next spring. I'm signing because it's true. Those are different.
 Nilak reads it. He changes nothing. He signs under Aru, smaller.
 
 **Dr. Iset:** I'll keep the count. One mark for everyone your table sends away, on my door, where your
-steward's visitors can't miss it. I'm not doing it to shame you. I'm doing it because nobody's ever had the
-number.
+steward's visitors can't miss it. Nobody's ever had the number. Now somebody will.
 
 **Aru:** It'll take a year.
 
@@ -1672,7 +1675,8 @@ treats from the cart's tailgate until dark, and again at dawn, and people do fin
 
 **Nilak:** Then it stops.
 
-**Aru:** Yes. I'm not saying don't. I'm saying you'll be the fifth polite slip, and a nicer one than mine.
+**Aru:** Yes. Do it. She can have her six days. Only know what you are while you're doing it: the fifth polite
+slip, and a nicer one than mine.
 
 **Narrator:** Nilak has no answer to that. He does not pretend he has.
 
@@ -1705,7 +1709,7 @@ drawn it.
 **Narrator (after `pq03_tent`):** In this version the paper goes to Odi herself, with the cold-cloth count
 underlined twice, because there is nobody at the table who is allowed to do the rest.
 
-**Narrator:** Nilak stands there with nothing in his hands. Odi is being looked after. It is not by him.
+**Narrator:** Odi is being looked after. It is not by him.
 
 **Nilak:** I should stay for the...
 
@@ -1851,8 +1855,8 @@ the boat.
 
 **Vessa:** Because you were in the front.
 
-**Narrator:** The pole-boy laughs so hard he has to put his bowl down. For a moment it is easy on the landing.
-Sura comes back along it, grinning, and stops beside the hull.
+**Narrator:** The pole-boy laughs so hard he has to put his bowl down. Sura comes back along the landing,
+grinning, and stops beside the hull.
 
 **Sura:** You could have let me have the fish.
 
@@ -1904,7 +1908,7 @@ walked on it, because it was her.
 **Vessa:** No. I've had that one. You said it very well at the time, with soup. I've got forty sacks of lime
 on the wrong bank. Are you going to ask me?
 
-**Narrator:** It costs Sura something. It shows.
+**Narrator:** Sura looks at the channel, and at the forty sacks, and for some time at her own boots.
 
 **Sura:** Fine. What does the water do here after warm rain?
 
@@ -2140,7 +2144,7 @@ still aboard.
 - **Driver (Bo-shan):** "Give him a minute. They all want to read the ramp. Tavi told me that. It's the one
   thing I know."
 - **Loss branch, Driver (Dorin):** "The ferry pilot's advice was to wait. I wrote it down. It says 'wait'."
-- **Sura** (when a bird walks across by itself): "...Oh. It just wanted to be asked."
+- **Sura** (when a bird walks across by itself): "...Oh. It's read it. It's coming."
 - **Vessa** (when a ramp breaks at its hole): "There. That's what the hole's for. Lay another."
 
 > **If the Driver has brought the cart to the bank —** _Narrator:_ Parcel stands on the dark part of the bank
@@ -2360,8 +2364,8 @@ I'm asking because you're strong and you listen now. The friend part I'll think 
 
 **Narrator:** Sura hands it over. Vessa slides it under the hull, where it lives.
 
-**Vessa:** Three days of hammers. I'll be here. I'm not sending you off. I'm telling you I'm not lending you
-my pole until I've watched you use your eyes for three days.
+**Vessa:** Three days of hammers. I'll be here. You don't get the pole. Ask me again when I've watched you use
+your eyes for three days.
 
 **Sura:** That's fair.
 
@@ -2609,11 +2613,11 @@ was twenty-four. In the morning they were all looking at me.
 > **If Nima is in the party —**
 > **Nima:** I could take the far jack. I'm light. I'd fit.
 >
-> **Bo:** Do you know what you'd be watching for?
+> **Feng:** There's a queue for that jack. I've been in it six years.
 >
-> **Nima:** No.
+> **Nima:** How long's the queue?
 >
-> **Bo:** Then you'd be in the way. So would I be, in most of those places. I've only just seen it.
+> **Feng:** Me. Then you.
 
 ### Scene B.3 — VOTE: whose lift
 
@@ -2839,7 +2843,7 @@ man waiting for a tooth to be pulled.
 >
 > **Bo:** I left my jack.
 >
-> **Feng:** I'm not cross. I'm saying it so it's said. You'd have said it to me.
+> **Feng:** Somebody has to say it. You'd have said it to me.
 >
 > **Bo:** I would. I'd have said it worse.
 
