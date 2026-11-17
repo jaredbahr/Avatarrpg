@@ -201,8 +201,9 @@ export class Session {
    * Whose turn it is to make a story choice.
    *
    * The index lives on `GameState.story.deciderIndex` and is bumped by the
-   * rules every time a choice resolves, so the rotation survives a save and
-   * does not depend on anything the UI remembers.
+   * rules when the party walks out through an exit (one player leads a whole
+   * area, #846), so the rotation survives a save and does not depend on
+   * anything the UI remembers.
    */
   decider(state: GameState): Participant | undefined {
     if (this.people.length === 0) return undefined;
@@ -211,7 +212,7 @@ export class Session {
     return this.people[index];
   }
 
-  /** Who decides after this one — shown so the table knows the rotation is real. */
+  /** Who leads the next area — shown so the table knows the rotation is real. */
   nextDecider(state: GameState): Participant | undefined {
     if (this.people.length === 0) return undefined;
     const index =

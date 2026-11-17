@@ -73,7 +73,7 @@ describe('combat tap aim acceptance', () => {
     // Re-pinned for #846: the Forest Road and the quarry gate lost a body each, so the earned campaign replays 5 commands shorter.
     expect(checkpoint.transcript).toHaveLength(86);
     expect(createHash('sha256').update(checkpoint.json).digest('hex')).toBe(
-      '4f55c82df7cffc49c781f21e7cb348f867b7415262ab354c151337756cfb41e0',
+      'b4567521934cb27b8227668dd272bfaafa9cdf53b7219181ae68e3ec94f738b4',
     );
     expect(loadQuarryCheckpoint(checkpoint.json)).toEqual(checkpoint.state);
     expect(checkpoint.state.battle).toMatchObject({
