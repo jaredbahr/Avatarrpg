@@ -313,6 +313,26 @@ function aiReference(state: GameState, actor: Unit): () => number {
 }
 
 /**
+ * The one board the top-down supplement measures when several tie for the largest area. A board of the same area and
+ * reach budget adds no new bound, so the tie keeps the map that already has frozen limits, else the first registered.
+ */
+export function chooseTopDownBenchMap(
+  tied: readonly string[],
+  registrationOrder: readonly string[],
+  frozenCaseIds: readonly string[],
+): string {
+  const frozen = tied.find(
+    (id) =>
+      frozenCaseIds.includes(`reachable/topdown/${id}`) &&
+      frozenCaseIds.includes(`findPath/topdown/${id}`),
+  );
+  const first = registrationOrder.find((id) => tied.includes(id));
+  const chosen = frozen ?? first;
+  ensure(chosen, 'No tied top-down board to benchmark');
+  return chosen;
+}
+
+/**
  * Registered top-down maps use the same logical rows/legend as CONTENT: the
  * presentation swap changes no movement inputs. Query the actual explore grid,
  * without loading art, and disclose that moving people are excluded. The
@@ -331,8 +351,13 @@ export function createTopDownBenchSuite() {
   const largest = registered
     .filter((map) => map.width * map.height === maximumArea)
     .sort((a, b) => a.id.localeCompare(b.id));
+  const chosen = chooseTopDownBenchMap(
+    largest.map((map) => map.id),
+    registered.map((map) => map.id),
+    Object.keys(BASELINE.cases),
+  );
   const cases: BenchCase[] = [];
-  for (const map of largest) {
+  for (const map of largest.filter((entry) => entry.id === chosen)) {
     // A future top-down combat board needs a real prop-baked battle witness.
     // Do not silently benchmark its unassembled map with this explore fixture.
     ensure(
@@ -435,6 +460,7 @@ export function createTopDownBenchSuite() {
         height: map.height,
       })),
       largestMaps: largest.map((map) => ({ id: map.id, width: map.width, height: map.height })),
+      benchmarkedMap: chosen,
       maximumArea,
     },
   };

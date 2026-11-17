@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { grumblerAimCheckpoint } from '../../../scripts/e2e/grumbler-aim-checkpoint';
 import { loadQuarryCheckpoint } from '../../../scripts/e2e/quarry-checkpoints';
 import { CONTENT } from '../../content';
-import { isValidTarget, targetableTiles } from '../../core/rules/abilities';
+import { aimReachTiles, isValidTarget, targetableTiles } from '../../core/rules/abilities';
 import { occupiedCells } from '../../core/rules/grid';
 import type { GameState, Vec2 } from '../../core/types';
 import { Session } from '../session';
@@ -70,9 +70,10 @@ function tap(tile: Vec2, mode: Mode = { kind: 'aim', abilityId: checkpoint.abili
 
 describe('combat tap aim acceptance', () => {
   it('uses the earned Grumbler turn and exact reloadable save', () => {
-    expect(checkpoint.transcript).toHaveLength(91);
+    // Re-pinned for #846: the Forest Road and the quarry gate lost a body each, so the earned campaign replays 5 commands shorter.
+    expect(checkpoint.transcript).toHaveLength(86);
     expect(createHash('sha256').update(checkpoint.json).digest('hex')).toBe(
-      'd3fceb3afe44f47ab5a0bb500f260f55c20a5f07f8f95dec9a61599d061baea9',
+      'b4567521934cb27b8227668dd272bfaafa9cdf53b7219181ae68e3ec94f738b4',
     );
     expect(loadQuarryCheckpoint(checkpoint.json)).toEqual(checkpoint.state);
     expect(checkpoint.state.battle).toMatchObject({
@@ -95,6 +96,22 @@ describe('combat tap aim acceptance', () => {
       reason: 'Out of range.',
     });
     expect(isValidTarget(CONTENT, battle, caster, ability, checkpoint.near).ok).toBe(true);
+  });
+
+  it('shows the range as every tile in reach, not just the ones with a target (#846)', () => {
+    const battle = checkpoint.state.battle;
+    if (!battle) throw new Error('Missing earned battle');
+    const caster = battle.units.find((unit) => unit.id === checkpoint.casterId);
+    const ability = CONTENT.abilities.get(checkpoint.abilityId);
+    if (!caster || !ability) throw new Error('Missing earned aim participants');
+    const reach = aimReachTiles(CONTENT, battle, caster, ability);
+    const key = (p: { x: number; y: number }) => `${p.x},${p.y}`;
+    const reachKeys = new Set(reach.map(key));
+    // The rule is the tap's: the range, the minimum range and sight (a big target's far cells
+    // are targetable through its near one, so they are not all in this set).
+    expect(reach.length).toBeGreaterThan(targetableTiles(CONTENT, battle, caster, ability).length);
+    expect(reachKeys.has(key(checkpoint.near))).toBe(true);
+    expect(reachKeys.has(key(caster.pos))).toBe(ability.minRange === 0);
   });
 
   it('accepts a highlighted far boss cell as the reachable aim cell before confirmation', () => {

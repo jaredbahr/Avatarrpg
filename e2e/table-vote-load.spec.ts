@@ -111,7 +111,7 @@ async function finishFreshVote(page: Page, voters: number): Promise<void> {
   const expected = apply(CONTENT, before.state, { type: 'chooseOption', optionIndex: 1 }).state;
   const after = await snapshot(page);
   expect(after.state.story).toEqual(expected.story);
-  expect(after.state.story.deciderIndex).toBe(1);
+  expect(after.state.story.deciderIndex).toBe(0);
   expect(after.session).toEqual(before.session);
 }
 

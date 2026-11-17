@@ -268,7 +268,11 @@ export interface Unit {
 
 export type Targeting =
   | { readonly shape: 'self' }
-  | { readonly shape: 'unit'; readonly allow: 'enemy' | 'ally' | 'any' }
+  /**
+   * `downed` aims at a fallen friend (hp 0), whom no other `unit` ability can see: a
+   * downed unit stays on the board, but only a revive effect looks for one.
+   */
+  | { readonly shape: 'unit'; readonly allow: 'enemy' | 'ally' | 'any' | 'downed' }
   | { readonly shape: 'tile' }
   | { readonly shape: 'blast'; readonly radius: number }
   | { readonly shape: 'line'; readonly length: number }
@@ -286,6 +290,12 @@ export type AbilityEffect =
       readonly includesCaster?: boolean;
     }
   | { readonly kind: 'heal'; readonly base: number; readonly scale: number }
+  /**
+   * Stands a downed friend back up with `fraction` of their maximum health (at
+   * least 1), AP spent, statuses cleared. Once per unit per fight
+   * (`BattleState.helpedUp`; ADR 0118). Only a `downed` target can receive it.
+   */
+  | { readonly kind: 'revive'; readonly fraction: number }
   | {
       readonly kind: 'status';
       readonly status: StatusId;
@@ -1292,6 +1302,11 @@ export type StoryNode =
       readonly presentation?: NodePresentation;
       readonly options: readonly StoryOption[];
       readonly variants?: readonly DialogueVariant[];
+      /**
+       * A now-or-later prompt ("Sit down" / "Another time", rest or carry on): the
+       * player in charge answers it alone, with no table vote (owner, 2026-11-17, #846).
+       */
+      readonly routine?: boolean;
       /** Line under the options. Act-specific colour, so it lives in the data. */
       readonly footer?: string;
     }
@@ -1344,7 +1359,7 @@ export type StoryNode =
   | {
       /**
        * A pass-through node that takes `ifTrue` when `when` holds and `ifFalse`
-       * otherwise (ADR 0117). Unlike `branch` it reads any `Condition`: who is
+       * otherwise (ADR 0118). Unlike `branch` it reads any `Condition`: who is
        * in the party, standing, scene memory, visited nodes, nested all/any/not.
        */
       readonly id: string;
@@ -1376,7 +1391,7 @@ export interface EndRecap {
 
 interface StoryState {
   readonly nodeId: string | null;
-  /** Index into the app's player list; rotated after every choice. */
+  /** Index into the app's player list; rotated after every choice and at each map change. */
   readonly deciderIndex: number;
   readonly visited: readonly string[];
   /** Cursor into a dialogue node's lines. */
@@ -1422,6 +1437,12 @@ export interface BattleState {
    * exactly for "Try again". Null on a save written before it existed.
    */
   readonly openingRng: RngState | null;
+  /**
+   * Units already helped up this fight, so each gets one stand-up (ADR 0118).
+   * Absent until somebody is: an older save, and a fight where no one fell,
+   * carry no key at all.
+   */
+  readonly helpedUp?: readonly string[];
 }
 
 /**
@@ -1630,6 +1651,13 @@ export type GameEvent =
     }
   | { readonly type: 'unitPushed'; readonly unitId: string; readonly to: Vec2 }
   | { readonly type: 'unitDied'; readonly unitId: string }
+  /** A downed unit stood back up with `hp` health, helped by `helperId` (ADR 0118). */
+  | {
+      readonly type: 'unitRevived';
+      readonly unitId: string;
+      readonly helperId: string;
+      readonly hp: number;
+    }
   | {
       readonly type: 'propDamaged';
       readonly propId: string;
@@ -1695,6 +1723,11 @@ export type GameEvent =
       readonly unlocked: readonly string[];
     }
   | { readonly type: 'battleEnded'; readonly outcome: 'victory' | 'defeat' }
+  /**
+   * The party crossed from one explore map to another, and the player in charge
+   * moved on to the next person at the table (#846). `deciderIndex` is the new one.
+   */
+  | { readonly type: 'leaderPassed'; readonly deciderIndex: number }
   /** A combo rule fired for the first time in this save (#622). */
   | { readonly type: 'comboDiscovered'; readonly comboId: string }
   | { readonly type: 'screenChanged'; readonly screen: Screen }

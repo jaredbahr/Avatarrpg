@@ -19,7 +19,8 @@ import {
   terrainEdge,
 } from './ground-checks';
 import { BOARDS } from './boards/index';
-import { BA_DAN_BOARD, bridgeCast, pavedCells } from './boards/baDan';
+import { BA_DAN_BOARD, BA_DAN_LOOK, bridgeCast, pavedCells } from './boards/baDan';
+import { nearestIn } from './lib/look';
 import { ASSETS, CLASS, packBoard, sceneFile, type Baked, type TopDownBoard } from './lib/board';
 import { bakedDisc, bakedMound, dehalo } from './lib/sprites';
 import type { MapScene } from '../../../src/core/types';
@@ -130,8 +131,16 @@ describe("Ba Dan's top-down ground", () => {
 
     const source = (sourceY * bridge.w + sourceX) * 4;
     const edge = ((bridge.y + sourceY) * PLATE_W + PLATE_W - 1) * 4;
+    // the cap's own pixel, as the region palette lock (ADR 0119) draws every pixel of the plate
+    const [r = 0, g = 0, b = 0, a = 0] = bridge.img.data.slice(source, source + 4);
+    const locked = BA_DAN_LOOK.palette
+      ? nearestIn(BA_DAN_LOOK.palette)(r, g, b)
+      : (r << 16) | (g << 8) | b;
     expect([...baked.ground.data.slice(edge, edge + 4)]).toEqual([
-      ...bridge.img.data.slice(source, source + 4),
+      locked >> 16,
+      (locked >> 8) & 255,
+      locked & 255,
+      a,
     ]);
   });
 
@@ -190,7 +199,8 @@ describe("Ba Dan's top-down ground", () => {
     const rows = seatingTable(baked);
     const kinds = new Set(rows.map((r) => r.kind));
     for (const k of ['house', 'tree', 'prop', 'bridge']) expect(kinds.has(k), k).toBe(true);
-    expect(rows.length).toBeGreaterThan(70);
+    // the cohesion pilot (ADR 0119) took eight props off the square, so there are fewer to measure
+    expect(rows.length).toBeGreaterThan(60);
     // most feet show; one hidden whole behind a piece in front (a rim bush behind a tree, the crate
     // under the south-east roof) is not seen, so not measured
     expect(rows.filter((r) => r.foot > 0).length).toBeGreaterThan(rows.length * 0.85);

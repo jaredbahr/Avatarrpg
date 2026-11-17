@@ -275,9 +275,31 @@ export function advanceDialogue(content: ContentIndex, state: GameState): StepRe
 }
 
 /**
- * Takes a choice, sets its flags, and rotates the decider so the next branch
- * belongs to somebody else. Rotation happens even if the same option is picked
- * twice — the point is that the role moves, not that the outcome differs.
+ * The player in charge passes to the next person when the party walks out of one
+ * explore map into another (#846). Only a walk through an exit counts: a story
+ * beat that lands the party somewhere, or a fight's map, does not move it, and
+ * neither does a story choice (owner, 2026-11-17). The counter is the one saves
+ * already carry, so nothing new goes in the blob.
+ */
+export function passLeadership(
+  content: ContentIndex,
+  state: GameState,
+  toMapId: string,
+): { readonly state: GameState; readonly events: readonly GameEvent[] } {
+  const from = content.maps.get(state.location.mapId);
+  if (!from || from.kind !== 'explore' || state.location.mapId === toMapId)
+    return { state, events: [] };
+  const deciderIndex = state.story.deciderIndex + 1;
+  return {
+    state: { ...state, story: { ...state.story, deciderIndex } },
+    events: [{ type: 'leaderPassed', deciderIndex }],
+  };
+}
+
+/**
+ * Takes a choice and sets its flags. The player in charge stays the same: the
+ * lead passes only when the party walks out through an exit (`passLeadership`),
+ * so one person leads a whole area (owner, 2026-11-17, #846).
  */
 export function chooseOption(
   content: ContentIndex,
@@ -334,13 +356,7 @@ export function chooseOption(
     }
   }
 
-  const rotated: GameState = {
-    ...state,
-    flags,
-    story: { ...state.story, deciderIndex: state.story.deciderIndex + 1 },
-  };
-
-  const result = enterStoryNode(content, rotated, option.next);
+  const result = enterStoryNode(content, { ...state, flags }, option.next);
   return { state: result.state, events: [...events, ...result.events] };
 }
 

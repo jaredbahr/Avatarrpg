@@ -2030,6 +2030,8 @@ export function overlayColors(kind: OverlayKind): [string, string | null] {
   switch (kind) {
     case 'move':
       return [OVERLAY.move, OVERLAY.moveEdge];
+    case 'reach':
+      return [OVERLAY.reach, OVERLAY.reachEdge];
     case 'target':
       return [OVERLAY.target, OVERLAY.targetEdge];
     case 'area':

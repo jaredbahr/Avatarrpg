@@ -12,6 +12,7 @@ import type { ElementId, GameState, StoryNode, StoryOption } from '../../core/ty
 import { ELEMENT_IDS } from '../../core/types';
 import { describe as describeCondition } from '../../core/story/conditions';
 import { optionAvailable, resolveDialogue } from '../../core/story/storyEngine';
+import { choiceMatters } from '../../core/story/choiceMatters';
 import { resolveAsset } from '../../content/assets/manifest';
 import { assetCanvas, fitAssetToBox } from './assetCanvas';
 import { button, el } from './dom';
@@ -206,13 +207,15 @@ interface ChoiceVote {
   readonly ready: boolean;
 }
 
-/** The vote at this choice, or null when the choice goes to the decider alone. */
+/** The vote at this choice, or null when the choice goes to the player in charge alone. */
 function choiceVote(
   app: App,
   state: GameState,
   node: Extract<StoryNode, { kind: 'choice' }>,
 ): ChoiceVote | null {
   const people = app.session.participants;
+  // A reply that sets nothing and leads nowhere new is the player in charge's alone (#846).
+  if (!choiceMatters(app.content, node)) return null;
   const open = node.options.filter((option) => optionAvailable(state, option)).length;
   if (!holdsVote(app.settings.storyChoices, people.length, open)) return null;
   const key = [node.id, state.story.deciderIndex, ...people.map((person) => person.id)].join('|');
@@ -373,10 +376,15 @@ function choicePanel(
       : el(
           'div',
           { class: 'decider-banner' },
-          el('span', { class: 'tiny muted', text: 'This one is decided by' }),
+          el('span', {
+            class: 'tiny muted',
+            text: choiceMatters(app.content, node)
+              ? 'This one is decided by'
+              : 'Just a reply, so the player in charge answers:',
+          }),
           el('strong', { text: decider?.name ?? 'the party' }),
           nextDecider && nextDecider.id !== decider?.id
-            ? el('span', { class: 'tiny muted', text: 'Next choice: ' + nextDecider.name })
+            ? el('span', { class: 'tiny muted', text: 'Next area: ' + nextDecider.name })
             : null,
         );
 

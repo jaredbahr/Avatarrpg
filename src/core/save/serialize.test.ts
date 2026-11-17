@@ -47,6 +47,8 @@ function midBattleState(): GameState {
     party: [
       { characterId: 'kaya', level: 2, autoChoose: true },
       { characterId: 'bo', level: 2, autoChoose: true },
+      // Three players, the gate's baseline: two would leave one of its two enemies out (#846).
+      { characterId: 'sura', level: 2, autoChoose: true },
     ],
     startNode: 'battle_quarry_gate',
     flags: { ruon_spared: true, act1_scouted: 3, quarry_password: 'lotus' },
@@ -584,7 +586,7 @@ describe('saved story decider (#683)', () => {
   });
 
   it.each([0, 1, 7])(
-    'preserves integer counter %s and advances it through an ordinary choice',
+    'preserves integer counter %s and keeps it through an ordinary choice',
     (counter) => {
       const state = choice(counter);
       const original = structuredClone(state);
@@ -600,7 +602,7 @@ describe('saved story decider (#683)', () => {
       const resumed = apply(CONTENT, loaded, command);
       expect(resumed).toEqual(uninterrupted);
       expect(resumed.state.story.nodeId).toBe('plant_chair_seat');
-      expect(resumed.state.story.deciderIndex).toBe(counter + 1);
+      expect(resumed.state.story.deciderIndex).toBe(counter);
       expect(state).toEqual(original);
       expect(loaded).toEqual(original);
     },

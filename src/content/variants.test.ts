@@ -194,8 +194,11 @@ describe('what the variants are for', () => {
     expect(new Set(rosters).size, 'two variants spawn the same squad').toBe(rosters.length);
 
     // And the shapes differ, not just the names: an all-ranged squad and a
-    // two-heavies squad are different problems to solve.
-    const sizes = encounter.variants.map((v) => (v.enemies ?? encounter.enemies).length);
-    expect(new Set(sizes).size).toBeGreaterThan(1);
+    // two-heavies squad are different problems to solve. (Every squad is two
+    // bodies since #846, so the shape is the ranged count, not the head count.)
+    const ranged = encounter.variants.map(
+      (v) => (v.enemies ?? encounter.enemies).filter((p) => p.enemyId === 'bandit_slinger').length,
+    );
+    expect(new Set(ranged).size).toBeGreaterThan(1);
   });
 });
