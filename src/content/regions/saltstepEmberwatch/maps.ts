@@ -351,8 +351,8 @@ export const EMBERWATCH_POWER_YARD: MapDef = {
    * can see and shoot over it, not walk through it). The rain cistern (`W`) has overflowed across
    * the yard: the standing water (`~`) beside the line is SF-2.1's wet ground. The dead copper spur
    * hangs at the back (east), on its own poles. The gate west (rows 5-6) goes back to the parade
-   * ground. The yard's clutter (`d`: coils, transformer drums, cable reels, warning signs) lines
-   * its edges, and the workshop bench stands by the south-west corner.
+   * ground. The yard's clutter (`d` and `u`: coils, transformer drums, cable reels, warning signs)
+   * lines its edges, and the workshop bench stands by the south-west corner.
    *
    * PLACEHOLDER RULE: a live line that shocks the wet ground beside it needs engine work (the
    * script's build list: "wet ground beside a live line as a surface"). Until then the puddles
@@ -370,7 +370,7 @@ export const EMBERWATCH_POWER_YARD: MapDef = {
     'd.......~~~~~....F#',
     'dd...............dd',
     'd......dddd.......#',
-    '###########dddddd##',
+    '###########uddddd##',
   ],
   partySpawns: COMBAT_PARTY_SPAWNS,
   objective: 'Talk to Luli in the power yard, or go west to the parade ground.',

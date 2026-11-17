@@ -489,7 +489,7 @@ export const EMBERWATCH_POWER_YARD_TERRAIN = new Rg02Terrain({
     U: RG.earth,
   },
   // the shed and the clutter stand on the yard's own edge: past them the ground falls away
-  ends: 'Ud',
+  ends: 'Udu',
   beyond: RG.void,
   mouths: [
     mouth('parade', 'west', [

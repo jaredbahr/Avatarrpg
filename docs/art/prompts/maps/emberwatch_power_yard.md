@@ -20,9 +20,9 @@ The power yard at Emberwatch, where the live line comes in.
 
 - Road (2 tiles): a 1×2 block at column 0, rows 5–6 (middle left).
 - Still water (34 tiles): 24 tiles (the centre), row 2: columns 5–10; row 3: columns 4–12; row 4: columns 5–11; row 5: columns 10–11; 8 tiles (the centre), row 7: columns 9–11; row 8: columns 8–12; a 2×1 block at columns 16–17, row 3 (top right).
-- Trees (12 tiles): a 4×3 block at columns 1–4, rows 0–2 (top left).
+- Trees (13 tiles): a 4×3 block at columns 1–4, rows 0–2 (top left); one tile at column 11, row 11 (bottom centre).
 - Timber walls (15 tiles): a 10×1 block at columns 5–14, row 1 (top centre); a 1×5 block at column 17, rows 4–8 (middle right).
-- Stone walls (64 tiles): 59 tiles (the centre), row 0: columns 5–18; rows 1–2: columns 15–18; rows 3–6: column 18; rows 7–8: columns 0 and 18; row 9: columns 0–1 and 17–18; row 10: columns 0, 7–10 and 18; row 11: columns 0–18; a 1×5 block at column 0, rows 0–4 (top left).
+- Stone walls (63 tiles): 38 tiles (the centre), row 0: columns 5–18; rows 1–2: columns 15–18; rows 3–8 and 10: column 18; row 9: columns 17–18; row 11: columns 12–18; 20 tiles (bottom left), rows 7–8: column 0; row 9: columns 0–1; row 10: columns 0 and 7–10; row 11: columns 0–10; a 1×5 block at column 0, rows 0–4 (top left).
 - Open ground everywhere else: bare earth (101 tiles).
 - The party enters from the left, standing at (1, 3), (3, 4), (1, 5), (3, 6), (1, 7), (3, 8); enemies come from the right. Paint nothing there that would read as an object to walk round.
 
@@ -40,10 +40,10 @@ d........~~~.....F#
 d.......~~~~~....F#
 dd...............dd
 d......dddd.......#
-###########dddddd##
+###########uddddd##
 ```
 
-Legend: `#` stone walls; `U` trees; `d` stone walls; `F` timber walls; `W` stone walls; `~` still water; `.` bare earth; `=` road.
+Legend: `#` stone walls; `U` trees; `d` stone walls; `F` timber walls; `W` stone walls; `~` still water; `.` bare earth; `=` road; `u` trees.
 
 ## Prompt
 
