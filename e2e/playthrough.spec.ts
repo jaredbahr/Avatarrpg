@@ -128,8 +128,13 @@ test.describe('a session', () => {
     const taken = page.locator('.pick-card.taken');
     await expect(taken).toHaveCount(1);
     await expect(taken.locator('h3')).toHaveText(firstName ?? '');
-    await expect(taken).toBeDisabled();
-    await expect(page.locator('.character-card:not([disabled])')).toHaveCount(1);
+    // A taken hero is not a dead end: tapping it offers a swap, keeping the names.
+    await expect(taken).toBeEnabled();
+    await expect(taken).toContainText('Frehley has this hero');
+    await taken.click();
+    await expect(page.getByText(/Swap with Frehley\?/)).toBeVisible();
+    await page.getByRole('button', { name: 'Cancel' }).click();
+    await expect(page.locator('.character-card.taken')).toHaveCount(1);
   });
 
   test('fights, saves, reloads, and loads back into the same position', async ({ page }) => {

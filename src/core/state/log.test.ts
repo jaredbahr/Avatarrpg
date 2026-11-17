@@ -195,6 +195,7 @@ function fixtures() {
       expected: ['won'],
     },
     screenChanged: { event: { type: 'screenChanged', screen: 'explore' }, expected: null },
+    leaderPassed: { event: { type: 'leaderPassed', deciderIndex: 1 }, expected: null },
     comboDiscovered: {
       event: { type: 'comboDiscovered', comboId: 'fire-into-oil' },
       expected: null,

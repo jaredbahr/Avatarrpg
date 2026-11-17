@@ -56,6 +56,7 @@ import {
   enterStoryNode,
   exploreNodeFor,
   npcNode,
+  passLeadership,
 } from '../story/storyEngine';
 
 /** Convenience: state unchanged, one explanatory message. */
@@ -508,17 +509,18 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
     if (!destination || tileAt(buildGrid(destination), exit.toPos)?.blocked !== false)
       return refuse(state, 'This route is unavailable.');
     // Arrive beside the return exit, never on it. Reciprocal routes are explicit.
+    const passed = passLeadership(content, moved, destination.id);
     return {
       state: {
         ...moved,
         location: { mapId: destination.id, pos: exit.toPos },
-        story: { ...moved.story, nodeId: null, lineIndex: 0 },
+        story: { ...passed.state.story, nodeId: null, lineIndex: 0 },
         world: {
           ...moved.world,
           returnPos: { ...moved.world.returnPos, [map.id]: pos, [destination.id]: exit.toPos },
         },
       },
-      events: [...walk, { type: 'screenChanged', screen: 'explore' }],
+      events: [...walk, ...passed.events, { type: 'screenChanged', screen: 'explore' }],
     };
   }
 
