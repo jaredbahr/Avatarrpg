@@ -384,6 +384,30 @@ uses its authored static view; the legacy east cast and its static shadow mirror
 This adds no action loader or eight-heading action playback. Source pixels and action anchors
 stay unchanged: drill contact, dust and occlusion cannot establish a new tread baseline.
 
+## Amendment: the hard shadow follows Imagination ecfcea1 (owner, 2026-11-17)
+
+The owner: "Need to update the shadows. Imagination is using a better shadow approach now. We need to do
+the same thing." `src/render/shadow/hardShadowMask.ts` now matches Imagination's `src/game/grounding.js`
+at commit ecfcea1 (#892, issue #881), the only change that file has had since the port. The test oracle is
+`prototypes/topdown/src/v14/shadow.js`, v13 with that one function updated; v13 is left as the prototype's.
+
+- **Swept shadows cast from the bottom of their own run.** With `dir` and `sweep`, each pixel shades the floor
+  between its own cast point and the cast point of the bottom of its contiguous opaque run in its column (a gap
+  of up to 2 px does not end a run). A trunk or root pixel, whose run reaches the foot, shades from the foot, so
+  the pool joins the trunk; a crown pixel is solid only down to the crown's underside, so the pool keeps the
+  crown's outline instead of filling the box under it.
+- **A swept shadow is one piece.** Only pixels 8-connected to the seam under the feet are kept, so a ragged
+  crown leaves no dark island in the grass.
+- **Where it lands here.** Trees take `dir` and `sweep: 1` on every board, and props take `sweep: 1` with
+  `under` (`shadowOptions`), so both change; houses, flat props and figures do not. Every board's baked
+  `ground.webp` is re-baked (`pack-ground.ts`), and the runtime prop layer (`objectShadow.ts`) uses the same
+  function. The figure shadow is untouched (ADR 0093's figure amendment: a calm pool, never a silhouette).
+- **Not ported, because we have no equivalent.** Imagination's one-hard-shadow-per-prop rule (f6e073c) removed
+  soft ellipses and baked duplicates from its island pieces; every top-down prop here already casts the one
+  `hardShadowMask` shadow and nothing else. Its silhouette floor shadows for canopies and cafe tables
+  (c4fad0b, dedd664) are an Imagination world-entity draw-order change (shadows before bodies); our awnings,
+  stalls and tables are props whose `under` cast is already the silhouette, baked into the ground.
+
 ## Consequences
 
 - The oblique rules in CLAUDE.md stay authoritative until T6 and are rewritten there. Ba Dan "one continuous

@@ -40,6 +40,14 @@ import { FLAT_KINDS, groundObject, shadowOptions, standingUprights } from '../li
 import { at, blank, draw, load } from '../lib/raster';
 import { cleanSprite } from '../lib/sprites';
 
+/**
+ * Per-sprite shadow options for the harbour's props (`shadowOptions`' `propFoot`). The lobster pots sat
+ * exactly on the 25 % contrast floor; the sweep of Imagination ecfcea1 (ADR 0104 amendment, 2026-11-17)
+ * moved a few of their cast pixels and dropped them just under it, so they take the long contact band a
+ * tall prop already takes at runtime (`objectShadowMask`): more of the shadow is the dark seam and band.
+ */
+const RG02_PROP_FOOT = { lobster_pots: { band: 6 } } as const;
+
 const T = 32;
 type Rgb = readonly [number, number, number];
 
@@ -309,7 +317,7 @@ export function bake(cfg: Rg02BoardConfig): Baked {
   const shadows: Baked['shadows'][number][] = [];
   for (const p of placed) {
     if (FLAT_KINDS.has(p.o.kind)) continue;
-    const { record } = groundObject(g, p, classes, false, shadowOptions(p));
+    const { record } = groundObject(g, p, classes, false, shadowOptions(p, RG02_PROP_FOOT));
     shadows.push(record);
   }
   const { cover, uprights } = standingUprights(placed, new Map(), g, tr.origin);
