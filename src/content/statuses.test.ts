@@ -229,7 +229,8 @@ describe('shipped status lifetimes through reducer turns', () => {
 describe('shipped status reapplication', () => {
   it('upgrades a real two-round Chilled hit to one-round Frozen and skips one worker turn', () => {
     const initial = createGame(CONTENT, {
-      seed: 3845378261,
+      // Re-pinned for #846: the road lost an enemy, so the old seed's roll sequence moved.
+      seed: 3845378273,
       startNode: '',
       party: [
         { characterId: 'nilak', level: 5, discipline: 'ice_shaping' },

@@ -47,6 +47,8 @@ function midBattleState(): GameState {
     party: [
       { characterId: 'kaya', level: 2, autoChoose: true },
       { characterId: 'bo', level: 2, autoChoose: true },
+      // Three players, the gate's baseline: two would leave one of its two enemies out (#846).
+      { characterId: 'sura', level: 2, autoChoose: true },
     ],
     startNode: 'battle_quarry_gate',
     flags: { ruon_spared: true, act1_scouted: 3, quarry_password: 'lotus' },

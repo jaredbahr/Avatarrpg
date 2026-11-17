@@ -11,12 +11,14 @@ import {
   quarryRouteBoundary,
 } from './quarry-checkpoints';
 
+// The trade pins were re-pinned for #846: the Forest Road and the quarry gate lost a body each, so the
+// scripted fights play out differently. The escort pins are unchanged.
 const PINS = {
   trade: {
     gate: {
-      save: '4a1570543c65117b696df553c46727a62a7d3e97b8569185e0e8f44ce61229bb',
-      commands: '88c77ab66ff1c75954adc4c6941e9bdfa3ac8e8ad470ff108fad717aa16719ac',
-      count: 69,
+      save: '8bc16f4b95685b12ce2c3c8f98fd7984073cb46153aa56e4c09bca3a58535b04',
+      commands: 'eecef9f6363a9332ace47ac39f96796c1913295a59ac5082ceac889bdcc21d18',
+      count: 64,
       node: 'gate_trade_explore',
       map: 'quarry_gate',
       level: 3,
@@ -24,9 +26,9 @@ const PINS = {
       cleared: ['enc_forest_road'],
     },
     afterDriller: {
-      save: 'f4397d1abd2ab1ac6e84920a6957e59fe6777b2800c3bd2986881aa3c126fc80',
-      commands: '79b1ee1310071b115b6b0c805fe7660f6db51aebd81939e3f34db8029b621a14',
-      count: 155,
+      save: '4a5c1f7319f5cc7978e6ebe8ba44b4a3de9b4c45c33fffb7cbcc2ba3cffa43ac',
+      commands: 'fa9a48628fb57ef427c047a7bc63b77fe00b0d885227262873213e82cf7fd0e3',
+      count: 162,
       node: 'quarry_after_explore',
       map: 'quarry_floor',
       level: 4,

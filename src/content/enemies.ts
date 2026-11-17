@@ -30,7 +30,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     stats: { maxHp: 28, maxAp: 4, maxMove: 4, power: 5, defense: 1, speed: 5, focus: 5 },
     abilities: ['club_swing', 'bandit_rush'],
     ai: 'aggressive',
-    xp: 100,
+    xp: 150,
     sprite: 'unit.enemy.thug',
     description:
       'Quarry labour that stopped getting paid and started taking. Walks straight in with a club; Rush closes four tiles, though not every turn.',
@@ -43,7 +43,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     stats: { maxHp: 22, maxAp: 4, maxMove: 4, power: 4, defense: 0, speed: 7, focus: 10 },
     abilities: ['sling_stone'],
     ai: 'cautious',
-    xp: 100,
+    xp: 150,
     sprite: 'unit.enemy.slinger',
     description:
       'Throws stones from up to six tiles and backs away from a fight. Frail once caught, and cover makes its stones miss more often.',
@@ -100,7 +100,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     stats: { maxHp: 34, maxAp: 3, maxMove: 4, power: 6, defense: 2, speed: 6, focus: 10 },
     abilities: ['fire_blast', 'oil_flask', 'torch_toss'],
     ai: 'cautious',
-    xp: 200,
+    xp: 300,
     sprite: 'unit.enemy.deserter',
     description:
       'Spills oil, then lights it with a thrown torch. Keep clear of the spill; water douses flames but leaves unburned oil in place.',
