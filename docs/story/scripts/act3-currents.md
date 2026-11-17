@@ -219,6 +219,10 @@ stops, nothing ever breaks and nobody ever gets on. Then they wrote that number 
 
 **Hesh:** "None required." I've mended that viaduct with my own hands eleven times.
 
+> **If `findings_guild` —** _Narrator:_ Hesh has the party's page of findings folded in his breast pocket, soft
+> already. He lays three maintenance books on the table, each with a bootlace marking a year. The crews read
+> it first, and they have been busy.
+
 **Yard foreman:** Don't start, Hesh. You know what they'll say back to you.
 
 **Hesh:** I know.
@@ -397,7 +401,10 @@ Mind the gap in the walkway. It's meant to be there.
 
 ### Scene 7.2 — Three ways of knowing it
 
-**Shown:** found (three short conversations, any order; all three are needed before 7.3).
+**Shown:** found (three short conversations, any order). Only the pump station is needed before 7.3: it holds
+the proof and the keeper's four marks. The song and the walkway are there for a table that looks; the
+crossing's barks ("Lift on the clap!") work whether or not they were heard. _(Edit pass, 2026-11-17: three
+required talks, then Latch, Auntie Silt and the audience, was six scenes in a row before anything is played.)_
 
 **The route song.**
 
@@ -540,6 +547,9 @@ a frog.
 **Latch:** She says that about everything.
 
 **Auntie Silt:** And one time I'll be right about people. Go on. Mind the pale part.
+
+_The way she gives runs past the old eel traps, where SF-3.2 waits: a table that wants something to do with
+its hands before the audience can practise the echo rule there. It stays optional._
 
 ### Scene 7.5 — The audience
 
@@ -915,6 +925,10 @@ wincing. A woman with a broom is setting out cushions and a board game at the sa
 
 **Narrator:** He has two sheets pinned side by side. One is his gust log, in a performer's big handwriting. The
 other is a printed Commonworks notice: "Pressure tests, ridge station. Dates and hours."
+
+> **If `findings_engineers` —** _Narrator:_ A third sheet is pinned under the notice, in an engineer's small
+> print: the ridge station's own test log, copied out and sent up "for the inspectors, unofficially". Somebody
+> who read the findings wanted them to have it.
 
 **Oru:** Read down them together.
 
@@ -1315,7 +1329,9 @@ nothing is carried out.
 
 ### Scene 9.3 — Memorandum fourteen (twist two)
 
-**Shown:** played (the party reaches shelf forty while the squad is still below).
+**Shown:** played (the party reaches shelf forty while the squad is still below). _Staging: the fight's clock
+can start at Rusk's entrance in 9.2, with this scene and 9.4 played as the party reaches the shelf and the
+stair, so the table is moving pieces while it reads. No line changes._
 
 **Narrator:** Memorandum fourteen is two pages, clipped. The top one is in Neri's small, careful hand.
 

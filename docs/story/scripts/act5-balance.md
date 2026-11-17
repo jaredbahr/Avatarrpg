@@ -174,6 +174,10 @@ her knee. The ribbon is still in it.
 
 **Hua:** It was only a house. I'd read everything in it.
 
+> **If `strategy_reduced` —** replace the first paragraph: _Narrator:_ The third walkway goes under with nobody
+> on it. The bottom streets were walked out hours ago, in the dark, on purpose. What the water takes is the
+> far end of the landing wall, and two streets of houses with their doors left open.
+
 _Sets `front_landing` lost. Two more streets are flooded in every ending; the low landing's repair is the first
 item on the public list in MQ-15._
 
@@ -267,8 +271,12 @@ handles Veyra had fitted for exactly that. The water gains a street on them.
 
 **Luli:** Hand cranks. She put hand cranks on every one. I used to think that was showing off.
 
-_Sets `front_relay` lost. The pumps are hand-worked for an hour; one more street floods; the relay house is a
-shell in MQ-15 in every ending._
+> **If `strategy_reduced` —** replace the second paragraph: _Narrator:_ The pumps were already at half and the
+> streets below them already empty. People work the long handles Veyra had fitted, and for an hour the hand
+> cranks keep the water where it is.
+
+_Sets `front_relay` lost. The pumps are hand-worked for an hour; one more street floods (none after
+`strategy_reduced`); the relay house is a shell in MQ-15 in every ending._
 
 #### Short
 
@@ -986,6 +994,12 @@ the list. A ledger reaches nothing. A cart stops where no map says to. Someone m
 **Narrator:** The courtyard has dried out. The ramp is still there. Somebody has replaced the benches and
 the office door with planed boards and put a rail on it. Nobody has put up a plaque.
 
+> **If `strategy_staged` —** _Narrator:_ Every lamp that was lit that night is lit now. The crews who kept them
+> lit look as if they have not sat down since.
+
+> **If `strategy_reduced` —** _Narrator:_ Half the lamp posts round the courtyard are still dark. A chalk board
+> by the gate gives the day each street comes back. The last one is three weeks off.
+
 **Narrator:** People are speaking from the platform in turn. A clerk is writing all of it down, and a second
 clerk is writing it down again, for the wall.
 
@@ -997,6 +1011,9 @@ clerk is writing it down again, for the wall.
 mended again.
 
 **Fenn:** Did you know the readings were unsafe?
+
+> **After `demand_removal` —** Fenn's question is instead: "In this courtyard we asked you to leave command.
+> You stayed. Did you know the readings were unsafe?"
 
 **Veyra:** I was told on the fourth day of the first month. I decided on the ninth. For five days I knew and
 had not decided. After the ninth I knew and had.

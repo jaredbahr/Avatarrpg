@@ -976,7 +976,10 @@ looking at him, and Ruon eats it on his feet.
 
 ### Scene 11.7 — Mira's list
 
-**Shown:** played. **Where:** Mira's table, after the hearing. This is where Mira's flaw lands.
+**Shown:** played. **Where:** Mira's table, that evening. This is where Mira's flaw lands. _Pacing: the hearing
+and this scene are the two heaviest talks in the act. Free roam in Ba Dan opens between them (the workshop
+and the cart in 11.9, SF-4.2 and SF-4.3 up the road), and this scene starts when the party comes back to the
+table._
 
 **Narrator:** Bera's message has been read out at the table: stone, drains, and perhaps people. Nobody has
 agreed to anything yet. Mira does what she has always done. She takes a slate and starts a list.
