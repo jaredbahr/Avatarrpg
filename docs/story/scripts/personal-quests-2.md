@@ -13,13 +13,13 @@ Sources: the bible's Part 05 (PQ-06 to PQ-10) and DLG-06, each quoted line used 
 hero entries CH-06 to CH-10; the saga outline's "Why each hero keeps going"; the shipped Act I finds in
 `src/content/story/reasons.ts`; and the act scripts that open and pay off each quest.
 
-| Quest | Hero    | Opens                                       | Where it plays                         | Fight                      |
-| ----- | ------- | ------------------------------------------- | -------------------------------------- | -------------------------- |
-| PQ-06 | Lin Mei | Reedglass, MQ-07 (opened in Scene 7.2)      | The school path, Fenn's raft           | No                         |
-| PQ-07 | Nima    | Bellweather, MQ-08 (opened in Scene 8.2)    | The listening terrace, the night watch | No (a night watch, played) |
-| PQ-08 | Jinu    | Bellweather, MQ-08 (opened in Scene 8.2)    | The mail shelter, the lower camps      | No                         |
-| PQ-09 | Riko    | Copper Orchard, MQ-06 (opened in Scene 6.4) | The old passenger platform             | Yes: the sign-up table     |
-| PQ-10 | Wen     | Emberwatch, MQ-03 (opened in Scene 3.1)     | Edda's bench, wherever Edda is         | No (a repair, played)      |
+| Quest | Hero    | Opens                                       | Where it plays                            | Fight                      |
+| ----- | ------- | ------------------------------------------- | ----------------------------------------- | -------------------------- |
+| PQ-06 | Lin Mei | Reedglass, MQ-07 (opened in Scene 7.2)      | The school path, Fenn's raft              | No                         |
+| PQ-07 | Nima    | Bellweather, MQ-08 (opened in Scene 8.2)    | The listening terrace, the night watch    | No (a night watch, played) |
+| PQ-08 | Jinu    | Bellweather, MQ-08 (opened in Scene 8.2)    | The mail shelter, the lower camps         | No                         |
+| PQ-09 | Riko    | Copper Orchard, MQ-06 (opened in Scene 6.4) | The old passenger platform                | Yes: the sign-up table     |
+| PQ-10 | Wen     | Emberwatch, MQ-03 (opened in Scene 3.1)     | Edda's bench; in Causeway, Tanner's Stair | No (a repair, played)      |
 
 ---
 
@@ -1951,7 +1951,8 @@ stranger can follow, and then stand with her hands in her pockets while the stra
 owner's list, this quest carries: good people can cause harm.
 
 - [x] No nation, element or culture stereotype
-- [x] Every valid party, non-benders included, has a real route through
+- [x] Every valid party, non-benders included, has a real route through (a bucket line, a shout and a pump
+      handle; nothing here is bent)
 - [x] No instant forgiveness or absolution (Ruda does not thank her; she corrects the card)
 - [x] The other side's reasons are shown (the keyhole was fitted after a man was scalded by a lever pulled
       without warning)
@@ -1959,8 +1960,9 @@ owner's list, this quest carries: good people can cause harm.
 - [x] Absent heroes are never voiced
 
 **Opens:** at Emberwatch, in Scene 3.1 of MQ-03, with Wen in the party. Scene W.1 plays there. Scenes W.2 to
-W.5 play at Edda's bench wherever Edda is: Emberwatch through Act II, then the Copper Orchard scrap workshop
-or Causeway's public workshop (the bible: "concludes in Copper Orchard or Causeway"). **Other people:** Edda
+W.5 play wherever Edda is: Emberwatch through Act II, then the Copper Orchard scrap workshop or Causeway's
+public workshop (the bible: "concludes in Copper Orchard or Causeway"). At Emberwatch and the Orchard they
+play at her bench. In Causeway, W.2 and W.4 play on Tanner's Stair, at Ruda's own pump (owner, 2026-11-17). **Other people:** Edda
 Coil, she/her, 47, the public-workshop trainer; Ruda, she/her, fifties, a district pump mechanic; a company
 fitter. **What the party may know:** at W.1, only MQ-02. The later scenes have a line or two written twice,
 for before and after MQ-04. Nothing here says the network is unsafe; this quest is about one regulator and
@@ -2080,7 +2082,8 @@ beautiful. Edda pulls it with two fingers.
 
 ### Scene W.2 — Ruda's pump
 
-**Shown:** played. **Where:** Edda's bench (Emberwatch, the Orchard scrap workshop, or Causeway).
+**Shown:** played. **Where:** Edda's bench, at Emberwatch or the Orchard scrap workshop. **In Causeway** this
+scene is not played at the bench: play "Scene W.2, in Causeway" below instead. The two never both play.
 
 **Narrator:** A woman of fifty or so has come in with a canvas roll of tools under her arm. The roll has
 been patched with three different cloths. She puts it on the bench and it lands with a weight that says
@@ -2145,10 +2148,118 @@ slightly.
 >
 > **Ruda:** It's one office. I pump water under both ends of it.
 
+### Scene W.2, in Causeway — The bucket line
+
+**Shown:** played, with a job for the table's hands (the bucket line). **Where:** Tanner's Stair, on the low
+landing: forty houses on one steep stair, with the district pump house half-way up. It replaces the bench
+version of W.2 whenever the quest is picked up in Causeway.
+
+**The bucket line (a build suggestion).** Each hero in the party takes a place on the stair. Full buckets come
+up from the canal steps on the wall side and empties go down on the rail side, one tap to take and one to
+pass. The lines below are said between buckets. Nothing can be failed: a dropped bucket is a wet step and
+somebody laughing. The job ends when the cistern at the top door is full.
+
+**Edda:** Ruda won't come to a bench today. Her pump's stuck. She's on Tanner's Stair with a bucket, and so
+is everyone she knows. Take your lever. Take the napkin too.
+
+**Narrator:** Tanner's Stair is forty houses on one steep stair. Half-way up is a pump house the size of a
+cupboard, with its door open. The pump inside is not running. It is making a noise like a kettle that cannot
+boil.
+
+**Narrator:** A line of people runs from the canal steps to the top door, passing buckets hand to hand. There
+is a gap in the line beside the pump house. A woman of fifty or so is standing next to the gap with her arms
+folded. At her feet is a canvas roll of tools, patched with three different cloths.
+
+**Ruda:** If you've come to look, look from in the line. Full ones up the wall side. Empties down the rail.
+Mind the fourth step.
+
+**Narrator:** A full bucket arrives in Wen's hands. She passes it up. Another one arrives.
+
+**Wen:** That's one of mine. In there. The regulator.
+
+**Ruda:** Is it.
+
+**Narrator:** She looks at Wen for the length of two buckets.
+
+**Ruda:** It sticks. Every cold morning since they fitted it. I can hear what's wrong from the top of the
+stair. It's the spring seat. It wants a quarter turn and a drop of oil.
+
+**Wen:** That's all it would want. That's exactly what it would want.
+
+**Ruda:** I know. And I've a spanner in that roll older than the company that fitted it. But there's a plate
+on it that says "Authorised service only", so I stand here. The fitter with the key comes on a nine-day
+round. He was here eight days ago. It stuck the morning after.
+
+**Ruda:** I mended that pump for nineteen years. Now I report it.
+
+**Narrator:** Wen hands her bucket up the stair. She unbuckles the cuff of her gauntlet, takes out the
+napkin, and holds it flat against the pump-house door with her thumb. It is just under the brass plate.
+
+**Narrator:** Ruda puts one finger on the napkin, on the word with three underlines.
+
+**Ruda:** You sold them a regulator.
+
+**Wen:** I did.
+
+**Ruda:** Now give us the part where we get to say no.
+
+_(The three lines above are the bible's, word for word.)_
+
+**Resident (from two steps down):** Bucket!
+
+**Narrator:** Wen takes the bucket. She passes it up. The napkin stays on the door, held by Ruda's finger.
+
+**Wen:** I licensed it to a city workshop. They sold it on. I didn't put the plate there.
+
+**Ruda:** I didn't say you put the plate there. I said give us the part.
+
+**Narrator:** Wen takes the red lever out of her satchel and holds it out. Ruda does not take it. She takes
+the next bucket instead.
+
+**Ruda:** That's a lever. I can make a lever. What I haven't got is leave to fit it, or anybody's word for
+what happens when I pull it. Have you written that down anywhere? What to do, in what order?
+
+**Wen:** I've started a manual.
+
+**Narrator:** She has. It is in the satchel under the lever. It is thirty-eight pages long, in a hand that
+gets smaller as it gets more excited, and it begins with the history of the pressure valve.
+
+**Ruda:** I've got forty houses on a stair and a pump that's screaming. Which page do I want?
+
+**Narrator:** Wen turns the pages with one hand. A bucket arrives in the other. She turns quite a lot of
+pages.
+
+**Wen:** ...Thirty-three. And a bit of nineteen. And you'd need the diagram on six.
+
+**Ruda:** Then it's not a manual. It's a book about you.
+
+**Narrator:** Somebody lower down the stair laughs. The laugh comes up the line with the next bucket.
+
+> **After MQ-04 —**
+> **Wen:** There's a lift wheel on the low landing that a child of eight can turn. The Director built that.
+> And the same office signed off on a keyhole.
+>
+> **Ruda:** It's one office. I pump water under both ends of it.
+
+> **If Bo is in the party —**
+> **Narrator:** Bo has taken the place below the loose step, so that every full bucket goes over it in his
+> hands and not in anybody else's.
+
+> **If Sura is in the party —**
+> **Sura:** I could have that cistern full in one go.
+>
+> **Ruda:** You could. And tomorrow, when you've gone? Take the bucket.
+
+**Narrator:** The last bucket goes in at the top door as the lamps come on. Ruda picks up her tool roll. She
+has not unrolled it all day.
+
+**Ruda:** Edda's bench. After supper. Bring the book about you. I want the back of it.
+
 ### Scene W.3 — The key had a reason
 
-**Shown:** played. **Where:** the same bench. A man in a company fitter's coat has come in with a tool bag
-and a ring of keys on a chain.
+**Shown:** played. **Where:** Edda's bench, in every place (in Causeway, the public workshop, that evening,
+with Ruda come up from the stair). A man in a company fitter's coat has come in with a tool bag and a ring of
+keys on a chain.
 
 **Narrator:** He sees the red lever, bolted over the brass plate, and stops with his bag half off his
 shoulder.
@@ -2202,8 +2313,9 @@ you go and look.
 ### Scene W.4 — Hands in pockets
 
 **Shown:** played (a repair in four steps, with one prompt; not a fight). **Where:** the bench, with a
-regulator under pressure. Edda, Ruda and the fitter are watching. This is the bible's "demonstrate a safe
-repair under observation".
+regulator under pressure, at Emberwatch or the Orchard. Edda, Ruda and the fitter are watching. This is the
+bible's "demonstrate a safe repair under observation". **In Causeway** play "Scene W.4, in Causeway" below
+instead.
 
 **Narrator:** There is a card on the bench now, the size of a hand. It has four lines on it in Wen's
 largest printing.
@@ -2283,9 +2395,169 @@ done.
 
 **Narrator:** Wen holds out the pencil to him.
 
+### Scene W.4, in Causeway — Forty houses watching
+
+**Shown:** played (a repair on the real pump, in steps the table carries out, with one prompt; not a fight).
+**Where:** the pump house on Tanner's Stair, the next morning. It replaces the bench version of W.4. This is
+the bible's "demonstrate a safe repair under observation", and the observers are the stair.
+
+**What the table does (a build suggestion).** Three things, with their hands: send the shout down the stair
+and listen for the answer; walk down and look when no answer comes; and work the pump handle at the end. The
+steps cannot be done out of order, and nothing can be failed.
+
+**Narrator:** It is a cold morning, and the pump is stuck again. People have come out onto their steps with
+empty buckets. Nobody has started a line yet. They are waiting to see.
+
+**Narrator:** Wen's red lever is bolted over the brass plate. The fitter is standing beside it with his keys
+on their chain and his arms folded.
+
+**Company fitter:** It's my day for this stair anyway. I'd have had it going by noon.
+
+**Ruda:** After eight days of buckets.
+
+**Company fitter:** ...Once. With me stood here. And it comes off again after, till somebody above me says
+different. I'm writing down that I said so.
+
+**Edda:** Write it large, Pol.
+
+**Narrator:** Wen holds up a card the size of a hand. It has four lines on it in her largest printing. She
+reads it out to the stair.
+
+**The card:**
+
+> TO STOP IT
+>
+> 1. Shout "PRESSURE!" Wait for "CLEAR!" No answer? Go and look.
+> 2. Pull the red lever down.
+> 3. Wait for the hiss to finish.
+> 4. That's all. Now it's safe to open.
+
+**Wen:** I'll do it once, slowly, and say each one. I'm only stopping it. I'm not opening it. It isn't my
+pump.
+
+**Wen:** The outfall's at the canal steps, thirty paces down. So the shout has to get there.
+
+**Party:** PRESSURE!
+
+**Narrator:** The shout goes down the stair, door to door. "Pressure!" "Pressure!" A very small child on the
+ninth step shouts it twice.
+
+**Narrator:** From the upper steps: "Clear!" From the middle: "Clear!" From the canal steps, nothing.
+
+**Wen:** No answer.
+
+**Narrator:** She looks at the lever. She looks at the card in her own hand.
+
+**Wen:** "Go and look." I wrote that. Come on.
+
+_(The party walks down the stair to the outfall.)_
+
+**Narrator:** At the bottom, a boy of about ten is sitting on the outfall pipe with his feet in the canal,
+scrubbing a bucket. The water is loud down here. He has not heard a thing.
+
+**Party:** We're about to let the pump go. Where you're sitting.
+
+**Boy:** This pipe? It never does anything.
+
+**Narrator:** He gets off it all the same, and takes the bucket with him. Then he puts his hands round his
+mouth.
+
+**Boy:** CLEAR!
+
+**Narrator:** It is the loudest one of the morning. It goes all the way back up.
+
+> **If Nilak is in the party —**
+> **Narrator:** Nilak has looked at the boy's arms and his feet, from habit. There is nothing wrong with any
+> of them. He nods to himself and follows the others back up the stair.
+
+**Narrator:** Wen pulls the red lever down. The pump sighs. Down at the canal steps, a fat jet of steam and
+hot water comes out of the pipe where the boy was sitting, and stops.
+
+**Narrator:** Nobody on the stair says anything for a moment. Then the hiss finishes.
+
+**Wen:** That's all. Now it's safe to open. Ruda. I'm putting my hands in my pockets.
+
+**Narrator:** She puts her hands in her pockets. The gauntlet does not fit in a pocket. She holds it behind
+her back instead.
+
+**Narrator:** Wen lets the pressure back up, so that Ruda starts where she did. Ruda reads the card through
+once, without hurrying.
+
+**Ruda:** Pressure!
+
+**Narrator:** This time it comes back from every step, top to bottom, and last of all from the canal:
+"CLEAR!" The fitter has shouted it too, before he could stop himself.
+
+**Narrator:** Ruda pulls the lever. Then, while it is still hissing, she takes a spanner from the patched
+roll and sets it on the housing nut, ready.
+
+**Narrator:** That is not the order on the card. Wen's elbows move.
+
+**PROMPT (the decider; two choices):**
+
+- **"That's step four. You're on three."**
+- **Say nothing. Watch what she does.**
+
+**If "That's step four. You're on three.":**
+
+**Wen:** Wait. That's four. You're still on three. It hasn't finished...
+
+**Ruda:** I've not turned it. I've set it. So that when the hiss stops, I'm not hunting in a roll for a
+spanner with a housing full of nothing but spring. Do you want it done your way, or the way it's done on
+this stair in the dark?
+
+**Narrator:** Wen shuts her mouth. It takes both hands, behind her back.
+
+**Wen:** The stair. Sorry. Go on.
+
+**If "Say nothing. Watch what she does.":**
+
+**Narrator:** Wen bites the inside of her cheek. The hiss finishes. The spanner is already on the nut. Ruda
+has the housing open before Wen has finished breathing in.
+
+**Wen:** You set the spanner during the hiss.
+
+**Ruda:** You've time. It's only standing there otherwise. And then you're not fishing about with it open.
+
+**Both:**
+
+**Narrator:** Quarter turn. A drop of oil. Closed. Ruda lets the pressure back up and listens with her head
+on one side. The pump ticks over as quietly as a clock.
+
+**Ruda:** There. That's Tanner's Stair, that sound. I've not heard it since they fitted the plate.
+
+**Narrator:** She nods at the pump handle, and at the party.
+
+**Ruda:** Go on. Somebody's got to find out if it's wet.
+
+_(The party works the handle. Water comes at the spout on the third stroke.)_
+
+**Narrator:** Water comes at the spout. The first bucket under it is the boy's. After that there is a queue,
+and it moves.
+
+**Narrator:** Ruda picks up Wen's card and a stub of pencil. Between step two and step three she writes, in
+square capitals: "SET YOUR SPANNER NOW." She hands it back.
+
+**Narrator:** Wen reads it. Her own printing, and then somebody else's in the middle of it. It is better.
+
+**Wen:** That's five steps.
+
+**Ruda:** It was always five. You'd missed one.
+
+**Company fitter:** I'd add a sixth. "Chalk the date on the housing." So the next hand knows it's been
+done.
+
+**Narrator:** Wen holds out the pencil to him. He writes it. Then he chalks the date on the housing himself,
+and unbolts the red lever, and gives it to Ruda and not to Wen.
+
+**Company fitter:** Till somebody says different.
+
+**Ruda:** Somebody's about to.
+
 ### Scene W.5 — VOTE: who gets the card
 
-**Shown:** played. **Where:** the bench.
+**Shown:** played. **Where:** the bench (in Causeway, the pump-house step, with the stair still filling
+buckets).
 
 **Edda:** So there's a lever anybody can fit and a card anybody can read. I asked you something a while
 back.
@@ -2317,7 +2589,8 @@ properly, on terms.
   every service is chalked on the housing and entered on a public sheet. Fastest, and widest. It rests on
   the company keeping its word, with the terms where everyone can read them. _Sets `pq10_licensed`._
 
-Footer: "Tanner's Stair gets its quarter turn on all three."
+Footer: "Tanner's Stair gets its quarter turn on all three." _(After W.4 in Causeway, where it has had the
+quarter turn already: "Tanner's Stair gets its lever back on all three.")_
 
 **If `pq10_open_manual`:**
 
@@ -2477,6 +2750,14 @@ The owner read the edit pass's proposals on 2026-11-17. What he decided for this
    sets out the board game on both. Hobb's "Was it big?" is asked on all three routes, with three answers
    ("About so", a thumbnail; "I don't know. I was round the other side of the cliff"; and the old one).
 
+3. **PQ-10's middle is off the bench in Causeway.** There, W.2 is played in a bucket line on Tanner's Stair,
+   with the pump stuck and Ruda standing at it, and W.4 is played on the real regulator with forty houses
+   watching. The table sends the shout down the stair, walks down to the outfall when no answer comes (a boy
+   is sitting on the pipe), and works the pump handle at the end. Wen only stops the pump; Ruda opens it.
+   The fitter allows the lever once and takes it off again, so the vote in W.5 still decides how it comes
+   back. The bench versions stay for Emberwatch and the Orchard. W.3 and W.5 are unchanged but for where
+   they stand. This closes open item 12.
+
 ## Open, for the owner
 
 Everything below is written into the scripts as recommended, per the standing instruction.
@@ -2533,7 +2814,8 @@ Everything below is written into the scripts as recommended, per the standing in
 12. **Where PQ-10 plays.** The bible says it "concludes in Copper Orchard or Causeway". I tied scenes W.2 to
     W.6 to Edda's bench rather than to a place, since the act scripts have Edda at Emberwatch in MQ-03, in
     Causeway in MQ-05 and MQ-09, and the bible has her at the Orchard annex. A table can finish the quest
-    wherever it next finds her. Recommend: approve.
+    wherever it next finds her. Recommend: approve. _Decided (owner, 2026-11-17):_ approved, and in
+    Causeway W.2 and W.4 move to Tanner's Stair.
 13. **One line owed elsewhere.** After `pq06_negotiated`, Lin Mei's dated promise falls due at the assembly
     (MQ-10). Act IV has no line for it. Recommend adding to Scene 10.4, when it is built: **Lin Mei:** "Before
     the corridor's business is heard: sheet fourteen was mine. I marked nine homes temporary and left a path
