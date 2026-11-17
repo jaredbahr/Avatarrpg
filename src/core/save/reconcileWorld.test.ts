@@ -459,9 +459,11 @@ suite('reconcileWorld: a save standing where a house plinth now is', () => {
       { x: 13, y: 10 },
       { x: 12, y: 9 },
     ],
+    // (12,10) opened when the cohesion pilot took the planter between the south houses away (ADR
+    // 0119); it is as near as (12,11) and the snap meets it first
     [
       { x: 13, y: 11 },
-      { x: 12, y: 11 },
+      { x: 12, y: 10 },
     ],
   ];
   for (const [saved, loaded] of buried)

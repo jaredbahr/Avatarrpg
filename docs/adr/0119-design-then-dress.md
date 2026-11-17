@@ -83,9 +83,12 @@ now (their doors are drawn 1.7 to 2 persons tall); new buildings aim for a door 
 - Ba Dan's square loses nine pieces (eight props and a flower bed), four move, and the ground plate is repacked (`ground.webp` and `uprights.webp`
   under `public/art/topdown/ba-dan/`; the packed size is about the same). Two pinned numbers moved with the art: the
   seating table's row count (there are fewer props) and the bridge cap's expected pixel (now the locked colour).
-- The rules map changes with the dressing (`baDanLayout.ts`): cells freed where props went, the bench and the hay
-  block their new cells. Every door, NPC anchor, routine, rest spot, slot and exit stays reachable (the content
-  validation and the resident routines test hold it).
+- The rules map changes with the dressing (`baDanLayout.ts`): cells freed where props went, the handcart, the hay
+  and the shrine block their new cells. The crews' bench is a seat, like Mira's table, and closes no cell: blocking
+  the two cells behind the table crowded the party's gathering round it, which the party-trail tests caught. Every
+  door, NPC anchor, routine, rest spot, slot and exit stays reachable (the content validation and the resident
+  routines test hold it). One save-repair expectation moved with the map: a save buried at (13,11) now snaps to
+  the freed (12,10), the row-major first of two equally near cells. The map-painting brief is regenerated.
 - A new region's art pass costs one design note, one plan file and a palette; the validator and the chart catch the
   scattered placement and the oversized prop before the owner sees them.
 - No PixelLab credits were spent: the existing kit covered every set piece.
