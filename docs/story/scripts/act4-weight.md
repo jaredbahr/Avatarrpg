@@ -28,6 +28,9 @@ MQ-11: Mira's part in who was sent to the quarry.
 1. **The refusal slip** (MQ-10): an old hand holding a small paper, and Veyra's face while she reads it.
 2. **The wheel pin** (MQ-11): Pella at the east gate, checking the cart instead of waving.
 
+Shot lists for both are in [cutscenes.md](cutscenes.md) (CS-4A, CS-4B), a proposal pending the trial
+cutscene (#810).
+
 ---
 
 ## MQ-10 — Everyone in the Room
@@ -60,6 +63,9 @@ says, nobody looks for a saboteur behind a hundred turnips.
 
 **Dema:** The Marshal's people ate here at dawn. I served them. I'd serve anyone. I gave them the bowls with
 the chips in.
+
+> **If Tenzo is in the party —** _Narrator:_ Tenzo has peeled twice as many as anyone. Dema holds one of his
+> peelings up to the window, looks through it, and says nothing, which is how Tenzo knows it is too thick.
 
 **If the bunk wagon:**
 
@@ -129,9 +135,10 @@ the Marshal's name is printed.
 **Meren:** Meren Sen. Don't look like that. Somebody had to be her mother. Take the bag. It's mostly knives.
 
 > **If Wen is in the party —**
-> **Wen:** You made her measuring rule. The carved one. She had it on the pontoon.
+> **Wen:** That's the same knife work as her measuring rule. The carved one in her top pocket.
 >
-> **Meren:** I did. Pear wood. She was eleven and she'd measured the whole house in hand-spans and got it
+> **Meren:** It would be. I made it. Pear wood. She was eleven and she'd measured the whole house in hand-spans
+> and got it
 > wrong. Does she still chew the end?
 >
 > **Wen:** I... didn't see her chew it.
@@ -187,6 +194,17 @@ perfectly content to question them here, in front of everyone. I have always pre
 
 **Narrator:** Veyra is on the platform with her sleeves rolled. Fenn has climbed the nine steps to stand
 across from her. The pages of memorandum fourteen have been read out, with their dates. Nobody has clapped.
+
+> **After `pq06_negotiated` —** Lin Mei's dated promise falls due here, before DLG-09 begins.
+>
+> **If Lin Mei is in the party —**
+> **Lin Mei:** Before the corridor's business is heard. Sheet fourteen was mine. I marked nine homes temporary
+> and left a path off. I said I would say so here. Fenn has it in my hand.
+>
+> **Otherwise —** **Fenn:** One page first. It isn't mine, and its writer can't be here. "Sheet fourteen was
+> mine. I marked nine homes temporary and left a path off." She signed it. I said I'd read it on the day.
+>
+> _Narrator:_ Nobody claps for that either. Veyra looks at the page a moment longer than she needs to.
 
 **Veyra:** If you stop the works tonight, the low district loses its pumps.
 
@@ -267,7 +285,7 @@ a cart by its shafts with nothing harnessed to it. The chalk number is still on 
 - **Squad officer:** "East gate! East gate only! Leave the chairs!"
 - **Fenn:** "Not the gate! Up! Children and chairs first, then whoever's wettest!"
 - **Bera:** "I can shut the landing valve by hand if somebody keeps them off me for one minute!"
-- **Hesh (if present):** "That door's oak. It'll take twenty. Send them up in twos."
+- **Hesh:** "That door's oak. It'll take twenty. Send them up in twos."
 - **A Commonworks clerk, stuck behind the desk:** "I can't swim! I'm in Accounts!"
 - **Squad officer (slipping at the drain):** "My foot! Something's got my..." _(Any hero or local can haul him
   out. Somebody does.)_
@@ -283,6 +301,18 @@ a cart by its shafts with nothing harnessed to it. The chalk number is still on 
 > **Nilak:** Anyone who's swallowed water, to the cart. Sit on the tailgate. I'll come to each of you. I can't
 > promise what I haven't checked, so I'm going to check.
 
+> **If Lin Mei is in the party —**
+> **Lin Mei:** One hand of rise in twelve, or her chair won't take it. It wants to be longer. Fetch that
+> door.
+
+> **If Sura is in the party —**
+> **Sura:** I can hold that drain shut with ice for a count of sixty. Then it goes. Somebody tell me when
+> sixty people are up.
+
+> **If Nima is in the party —**
+> **Narrator:** Nima is on the wall above the east gate with both hands cupped, calling one word across four
+> hundred heads until the back rows turn round. The word is "Up".
+
 **Narrator (when the ramp is finished):** Yenna looks at the ramp. She turns her chair, sets her hands on the
 wheels, and goes up it.
 
@@ -293,8 +323,9 @@ the first time in four years. There is a ring on it where somebody has been putt
 
 **After a win:**
 
-**Narrator:** Bera has both arms round a valve wheel. The water stops rising. On the platform there are now
-two hundred people, dripping, shoulder to shoulder with six officers who have nowhere to move them to.
+**Narrator:** Bera has both arms round a valve wheel. The water stops rising. The platform, its steps and the
+ramp are packed with people, dripping, shoulder to shoulder with six officers who have nowhere to move them
+to.
 
 **Narrator:** Fenn is standing next to the Marshal. So is Grandmother Ansa. So is the clerk from Accounts,
 wrapped in a blanket.
@@ -312,6 +343,8 @@ by a ferryman and a pump keeper, swearing at both of them.
 **Narrator:** Bo-shan gets the cart out through the yard with nine people on it and the canopy torn. In the
 street, hands pass copies of memorandum fourteen from coat to coat.
 
+> **If Jinu is in the party —** **Jinu:** In three! Fold it in three! Four cracks along the seal!
+
 **Fenn:** Six-Ladle! Back room! Bring what you copied! Bring a chair!
 
 _Sets `lost_assembly`. The public case survives and the assembly reconvenes at the Six-Ladle Kitchen for Scene
@@ -322,7 +355,8 @@ nobody on Rusk's staff is willing to move the Director's mother._
 
 ### Scene 10.6 — The refusal slip
 
-**Shown:** cutscene candidate 1 (also works played). **Where:** the platform.
+**Shown:** cutscene candidate 1 (also works played). **Where:** the platform. Shot list:
+[cutscenes.md](cutscenes.md), CS-4A (a proposal, pending the trial).
 
 **Narrator:** Veyra is wet to the knee. She went down into it with everyone else. She is counting heads on
 the platform under her breath when someone taps her on the arm with a whittled stick.
@@ -336,7 +370,7 @@ inside her coat. It is small, and soft at the folds, and has been kept flat insi
 
 **Meren:** Read it.
 
-**Veyra:** Ma, there are two hundred people on this...
+**Veyra:** Ma, half the low landing is on this...
 
 **Meren:** They'll keep. Read it.
 
@@ -411,8 +445,10 @@ are public from tonight. I'll sign both now. I will not sign four hundred people
 > them. That's the part people who say that never have ready.
 
 **Bera:** I'll say the first one, then. A small Works team. People who know the valves. Me, Neri's shift, two
-of Luli's line crew. We run it. But there's a stop wheel in the low district, and the Works doesn't hold the
-key to it. Fenn does. If she turns it, we stop, and we argue after.
+of Luli's line crew. We run it.
+
+**Bera:** But there's a stop wheel in the low district, and the Works doesn't hold the key to it. Fenn does. If
+she turns it, we stop, and we argue after.
 
 **Fenn:** Or the other one. A response group. One from the low landing, one from the rail, one from the
 heights, one from the marsh, one from the Works. Nothing big moves unless three say so. Slower. Louder. But
@@ -440,6 +476,10 @@ largest.
 **Veyra (either):** I'll work under it. I'm telling you I don't believe in it. You'll want that written down
 as well.
 
+**Narrator:** By dark the chalk has run out and somebody has fetched more. Under the names, people from the
+low landing are writing their own, street by street, to say they were in the room. Some of the hands are
+very unsteady. Nobody asked them to.
+
 ### Scene 10.8 — Third stop of the day
 
 **Shown:** played (quiet close).
@@ -448,8 +488,8 @@ as well.
 the stable lane, in the one dry patch under an overhanging roof, with a full nosebag on the ground in front of
 him.
 
-**Stable hand:** Three days he's sat there. Wouldn't be led. We had to carry everything out to him. He eats
-at the same hour every day, facing west, and then he looks at me as if I'm late.
+**Stable hand:** A day and a night he's sat there. Wouldn't be led. We had to carry everything out to him. He
+wants feeding on the hour, facing west, and when I came with it he looked at me as if I was late.
 
 **Narrator:** Parcel sees the cart. He stands up, shakes rain off, and walks into the shafts by himself.
 
@@ -501,13 +541,17 @@ his reasons. An elder hears her own list read back to her.
 **Bera:** The spillway braces want cut stone, and a lot of it, in three days. And there's a relief line we
 could open under the low landing if anybody alive knew where the old culverts run.
 
-**Neri:** _(or Edda, after `lost_archive`)_ There's a quarry two days west that's been cutting that stone for
+**Neri:** _(or Edda, after `lost_archive`)_ There's a quarry a day west that's been cutting that stone for
 sixty years. Its crews have mapped drains for three generations. It's on the supply-control list. Fourth
 line.
 
 **Driver (Bo-shan):** That's home.
 
 **Bera:** Then you'd better be the ones to ask. They've been told what to do by this city once already.
+
+_The clock, so every later line agrees: the tide is four days from the assembly. Day one, the road to Ba Dan
+(a long day by the coast). Day two, Ba Dan. Day three, the road back, and the night in the shed (MQ-12). The
+tide comes on the fourth._
 
 ### Scene 11.2 — The east gate
 
@@ -549,8 +593,7 @@ I didn't think about the water.
 
 **Pella:** I'm not shouting.
 
-**Narrator:** She is not. That is the worst of it. Bo-shan gets down off the cart and stands in the road,
-level with her.
+**Narrator:** She is not. Bo-shan gets down off the cart and stands in the road, level with her.
 
 **Bo-shan:** I got both letters. I've got them here. Number five in the first one. I read that most.
 
@@ -606,10 +649,10 @@ as the last house, and stops there, because that is as far as she is allowed.
 **Narrator:** At Mira's table the quarry crews are passing a printed sheet from hand to hand. It is very
 level printing.
 
-**The notice:** "Emergency requisition. Stoneback Quarry will supply dressed stone and forty labourers to the
+**The notice:** "Emergency requisition. Stoneback Quarry will supply dressed stone and thirty labourers to the
 Stillwater Works for the duration. Wages to be settled afterwards. O. Rusk."
 
-**Daiyu:** "Afterwards." I was eleven weeks in a gallery on "afterwards".
+**Daiyu:** "Afterwards." I was six weeks in a gallery on "afterwards".
 
 **Narrator:** Daiyu is a hewer from the lower galleries, forty or so, with a voice that has given orders
 underground. She does not sit at the head of the table. People lean toward her end anyway.
@@ -620,7 +663,7 @@ not for him.
 **Narrator:** On the east road, a requisition detail is coming up from the coast: a sergeant, eight men, two
 empty stone wagons.
 
-**Requisition sergeant:** I've an order for stone and forty hands. I don't want trouble. I've got a daughter
+**Requisition sergeant:** I've an order for stone and thirty hands. I don't want trouble. I've got a daughter
 on the low landing myself. If that spillway isn't braced by the tide, she's in it. So you'll forgive me if I
 don't much care whose name is on the paper.
 
@@ -642,14 +685,14 @@ don't much care whose name is on the paper.
 **Narrator:** The quarry gate is shut. Nine guards hold it, where there were thirty. From inside comes the
 sound of the driller, still running, more slowly than it used to.
 
-**Narrator:** A storm drain opens in the bank below the road. It is the one that got you out, three months
-ago. Somebody has left a lunch tin in its mouth. Inside the tin is a gallery plan, drawn in soot.
+**Narrator:** A storm drain opens in the bank below the road. It is the one that got you out, at the start
+of all this. Somebody has left a lunch tin in its mouth. Inside the tin is a gallery plan, drawn in soot.
 
 **CHOICE (the decider; not a vote):**
 
 - **Negotiate at the gate.** Show the garrison the supply-control order, the Marshal's instruction, and (if
   `veyra_release_promised`) the Director's release order that never reached them.
-  **Garrison corporal:** "Release all held workers." Dated... that's two months old. We never got this. We
+  **Garrison corporal:** "Release all held workers." Dated... that's six weeks old. We never got this. We
   got "hold until relieved". Nobody's relieved us. Nobody's paid us since the Marshal took the rest.
   **Garrison corporal:** Nine of us. I'm not dying for a gate nobody remembers we're on.
   _The fight is skipped; XP as for the fight._
@@ -674,13 +717,15 @@ talking.
 **Narrator:** Then he takes the key off his belt and holds it out, at arm's length, to nobody in particular,
 until Daiyu comes and takes it.
 
-_Sets `quarry_freed_later`. The five come out: Leto, Amri, Hesra (in one boot), Senn, and Bo-shan._
+_Sets `quarry_freed_later`. The five come out: Leto, Amri, Hesra (with her feet in sacking), Senn, and
+Bo-shan._
 
 **Narrator:** Senn comes out last. He went back for something. It is Bo-shan's delivery book, from behind the
 Driller's seat. The back pages are in another hand: sealed crates, counted out at night.
 
 > **If the left boot is under the cart seat (always, on this branch) —**
-> **Narrator:** Hesra comes down the west road in one boot and one foot wrapped in sacking. Dorin gets down,
+> **Narrator:** Hesra comes down the west road with both feet wrapped in sacking. She lost the pair in the
+> galleries. Dorin gets down,
 > reaches under the seat, and holds out a left boot, hobnailed the hill-farm way.
 >
 > **Hesra:** Where did you...
@@ -688,7 +733,8 @@ Driller's seat. The back pages are in another hand: sealed crates, counted out a
 > **Driver (Dorin):** It was handed in. I logged it as found. I did not know whose. I am glad to close the
 > entry.
 >
-> **Narrator:** She puts it on. Something rattles. She tips it out: a river shell, still wet.
+> **Narrator:** She puts it on. Something rattles. She tips it out: a river shell, still wet. That night the
+> right one is on the step of the mason's yard, where she lodges. Nobody saw who left it.
 
 **CARRY ON (either version's fight is lost):**
 
@@ -753,7 +799,7 @@ back myself.
 **Narrator:** Bo-shan looks at the reins. He looks back up the street, at a shutter that is wide open, with a
 face in it.
 
-**Bo-shan:** I've been in a hole for three months. Everyone I was in there with is going to that city to keep
+**Bo-shan:** I've been in a hole for ten weeks. Everyone I was in there with is going to that city to keep
 somebody else's street dry. I'm not sitting here with soup.
 
 **Narrator:** He takes the reins. The face leaves the shutter. A door bangs.
@@ -762,7 +808,7 @@ somebody else's street dry. I'm not sitting here with soup.
 
 **Bo-shan:** I know.
 
-**Pella:** I kept a bowl for you for three months and you've had TWO of them.
+**Pella:** Mira kept a bowl for you all that time and you've had TWO of them.
 
 **Bo-shan:** I know. Pell. Come here. I'm not going at night and I'm not going without telling you. I'm
 telling you. That's different from last time. It's not enough different. I know that too.
@@ -789,9 +835,11 @@ My client is also, as of this week, a man whose name is on a refusal slip, and I
 > **If `jin_archive_blocked` —** **Jin:** You cost me fourteen pages. The price below is what it would have
 > been, and one line more.
 
-**Jin:** Terms. One. I deliver him to your village gate, in front of your guard's watch book, as "witness
-delivered by carrier". Not "prisoner released". Delivered. Two. The book says I was not asked to deliver him
-and did. That's true. Three. My people and I leave by the coast road and nobody follows.
+**Jin:** Terms. One. I deliver him to your village gate, with the satchel he came with, in front of your
+guard's watch book, as "witness delivered by carrier". Not "prisoner released". Delivered.
+
+**Jin:** Two. The book says I was not asked to deliver him and did. That's true. Three. My people and I leave by
+the coast road and nobody follows.
 
 _(If `jin_archive_blocked`, add: "Four. He says in his account that he was fed, and by whom. Only if it's
 true. Ask him if it's true.")_
@@ -807,6 +855,9 @@ you chose not to. I forget which. I have it written down.
   a wage. _Sets `ruon_rescued`._
 
 Footer: "Either way he reaches Ba Dan. Either way the watch book still says you traded him first."
+
+_The satchel travels with him on every version of this road: handed over on a transfer (a lost fork fight
+included), found under the wagon seat after a rescue._
 
 **After `ruon_transferred`:** **Jin:** Read it back to me. ..."Delivered." Good. _(Narrator: She unlocks the
 wagon herself. Ruon steps down, blinking. He looks at the party for some time, and says nothing at all.)_
@@ -836,8 +887,10 @@ Ruon gives the signatories from memory. Sets `satchel_returned` or not. No fight
 **Jin:** I've nothing to sell you today. That's unusual. I'd like it noted.
 
 **Jin:** The Marshal asked me, in writing, to see that a witness was "not available". I declined, in writing.
-I have both letters. I'm not giving them to you. I'm telling you they exist, in front of a watch book, so
-that if I am ever "not available" myself, somebody knows where to look.
+I have both letters.
+
+**Jin:** I'm not giving them to you. I'm telling you they exist, in front of a watch book, so that if I am ever
+"not available" myself, somebody knows where to look.
 
 _(Dorin or Hanru writes it down. Sets `jin_letters_known`. No choice.)_
 
@@ -887,16 +940,16 @@ something to bargain with.
 - **Ask him to identify the order and who signed it.**
   **Ruon:** A supply-control order. "V. Sen, Director." And a second sheet a month after, in a small level
   hand, that said nobody was to leave. "O. Rusk." I signed under both. My name is the third one down.
-  _(With `satchel_returned` or `ruon_transferred`/`ruon_rescued` and the satchel: he lays both sheets on the
-  table.)_
+  _(With `satchel_returned`, or on the traded road, where the satchel came back with him: he lays both sheets
+  on the table. Otherwise he gives the signatures from memory.)_
 - **Ask what repair he can offer under supervision.**
   **Ruon:** I can shore a gallery. I can fit a boot. I can stand at the bad end of a brace line, where you'd
   rather not put someone you'd miss. Under whoever you say. Not over anyone.
   _Sets `ruon_offered_repair`._
 - **Press him on a specific harm.**
-  **Party:** Hesra was nineteen days in the dark before anyone told her why.
-  **Ruon:** Twenty-one. I counted them afterwards. I didn't count them at the time. That's the part I'd ask
-  you to write down.
+  **Party:** Bo-shan was shut in for two weeks before anyone told him why.
+  **Ruon:** Sixteen days. And nobody told him. He worked it out from the crates. I counted the days afterwards.
+  I didn't count them at the time. That's the part I'd ask you to write down.
 
 > **If `ruon_respects_you` (the gate was talked open) —**
 > **Ruon:** These people knew the galleries were filling before I'd admit it. They told me at the gate. I
@@ -930,7 +983,10 @@ looking at him, and Ruon eats it on his feet.
 
 ### Scene 11.7 — Mira's list
 
-**Shown:** played. **Where:** Mira's table, after the hearing. This is where Mira's flaw lands.
+**Shown:** played. **Where:** Mira's table, that evening. This is where Mira's flaw lands. _Pacing: the hearing
+and this scene are the two heaviest talks in the act. Free roam in Ba Dan opens between them (the workshop
+and the cart in 11.9, SF-4.2 and SF-4.3 up the road), and this scene starts when the party comes back to the
+table._
 
 **Narrator:** Bera's message has been read out at the table: stone, drains, and perhaps people. Nobody has
 agreed to anything yet. Mira does what she has always done. She takes a slate and starts a list.
@@ -947,15 +1003,17 @@ voice. She has put down her cup.
 
 **Mira:** Leto. Hesra. Senn. Amri.
 
-**Amri:** Now say who went up the hill three months ago.
+**Amri:** Now say who went up the hill two months ago.
 
 **Narrator:** Mira looks at the slate. The table has gone very quiet. Somebody's spoon stops.
 
 **Mira:** ...Leto. Amri. Hesra. Senn.
 
 **Amri:** Leto came from the coast and you hired him. I came from Saltstep five years ago. Hesra's a hill
-girl in the mason's spare room. Senn belonged to the company, and when the company left, he stayed. Four
-times you needed somebody to walk into that quarry. Four times it wasn't a Pan, or a Shu, or a Wei.
+girl in the mason's spare room. Senn belonged to the company, and when the company left, he stayed.
+
+**Amri:** Four times you needed somebody to walk into that quarry. Four times it wasn't a Pan, or a Shu, or a
+Wei.
 
 **Senn:** I kept the company's tallies for thirty years. I know what a column looks like when the same sort
 of name is always in it. I didn't say. I thought it was only me that counted like that.
@@ -985,14 +1043,14 @@ pulls the slate toward her.
 
 **Amri:** We'll start this list again. And this time whoever's on it says so themselves.
 
-> **Loss branch.** The scene is the same; the four are a day out of the galleries, and Hesra has one boot
-> newer than the other. Add, after Amri sits: _Narrator:_ At the other end of the table, a covered bowl has
+> **Loss branch.** The scene is the same; the four are a day out of the galleries, and Hesra keeps looking down
+> at her own two boots. Add, after Amri sits: _Narrator:_ At the other end of the table, a covered bowl has
 > finally had its cloth taken off.
 
 **Later (found) — the notice board:**
 
 **Narrator:** By evening the notice board outside the guard hut has a new sheet on it. "Going to Causeway:
-put your own name." There are eleven names. No two are in the same hand. One is in mason's capitals. One is
+put your own name." There are names on it already. No two are in the same hand. One is in mason's capitals. One is
 in a tallyman's tiny figures. One, low down where a nine-year-old can reach, has been firmly crossed out by
 an adult, and written in again, and crossed out again.
 
@@ -1020,7 +1078,7 @@ anyone in a grey coat. Anyone can turn round and come home, at any mile, and nob
 **Narrator:** They vote with stones in a bowl, the way the quarry has always voted on a new face. It takes
 an hour.
 
-- **Most parties:** _Narrator:_ Eleven go. Hesra, Leto, Senn. Daiyu and five of her crew. And, last, after
+- **Most parties:** _Narrator:_ Eleven go. Hesra, Leto, Senn. Daiyu and six of her crew. And, last, after
   standing with a stone in his hand for a long time, old Wei's grandson, whose family has held quarry shares
   for sixty years.
 - **After `ruon_traded` with no repair, or `lost_requisition` / `lost_quarry_return`:** _Narrator:_ Five go.
@@ -1046,7 +1104,7 @@ crew that walked it. Leto loads two wagons of dressed stone and drives the first
 Hanru sits in the doorway with the spear across their knees. Pella sits on an upturned bucket with the ledger
 open.
 
-**Grumbler:** Barrel. Forty gallons. For the shelters, I'm told. The staves were green. I said they were
+**Grumbler:** Barrel. Thirty gallons. For the shelters, I'm told. The staves were green. I said they were
 green. The hoops are from a different barrel. If it weeps at the third stave, that is the third stave's doing
 and not mine.
 
@@ -1122,7 +1180,8 @@ _Sets `latch_returned`._
 
 ### Scene 11.10 — The wheel pin
 
-**Shown:** cutscene candidate 2 (also works played). **Where:** the east gate, early.
+**Shown:** cutscene candidate 2 (also works played). **Where:** the east gate, early. Shot list:
+[cutscenes.md](cutscenes.md), CS-4B (a proposal, pending the trial).
 
 **Narrator:** Morning. The cart is loaded low and even, with a canopy, a ramp, and a barrel. Eleven people
 (or five, or none but the party) are waiting by the stone wagons. Half the village has come to the east gate.
@@ -1225,7 +1284,7 @@ the size of a door. The tide tables are chalked across the top of it. Under them
 > got the stop key round her neck. She sleeps in it.
 
 > **If `command_shared` —** **Fenn:** Three places it can go wrong. We voted on the order to list them in.
-> It took forty minutes. I'm told that's good for us.
+> It took most of an hour. I'm told that's good for us.
 
 **Narrator (reading the slate):** One. **The low landing.** When the tide meets the load, the bottom streets
 flood first. Walkways, boats, and braces on the landing wall. Tavi's apprentices. Dr. Iset. The Ba Dan crew,
@@ -1243,9 +1302,11 @@ Nel." And under that, in a third: "Not enough runners. Ask."
 
 **Around the shed (each optional; only those the party's history supports appear):**
 
-- **Daiyu**, with a brace list (if `ba_dan_crew_sent`): "Eleven of mine on the landing wall. And one who
-  isn't mine, at the bad end. He asked for the bad end."
-- **Ruon**, fitting a boot on a boy from the crew (if he is free to work): "That's a size too wide. You'll
+- **Daiyu**, with a brace list (if `ba_dan_crew_sent`): "Mine are on the landing wall, every one that came."
+  _(If Ruon is working, she adds:)_ "And one who isn't mine, at the bad end. He asked for the bad end."
+- **Ruon**, fitting a boot on a boy from the crew (if he is working: `ba_dan_crew_sent`, and he is not
+  contesting the hearing, which only happens after `ruon_traded` with no repair offered): "That's a size too
+  wide. You'll
   blister by the second hour, and then you'll favour it, and then you'll slip. Give it here." _(He does not
   look up at the party. If `ruon_traded`, he never does.)_
 - **Renn** (if PQ-05 ended with trust): "I've got the brace crew at the relay. Bo knows. Bo's letting me."
@@ -1268,9 +1329,10 @@ written "Thursday" again.
 
 **Hua:** Is Thursday a difficulty?
 
-**Kaya:** I'm good at the part with the fire in it. Then I go. I've always gone. I'm saying this to you
-because you don't know me: when this is over I'm coming back here to take these down and pack them in straw.
-Somebody's heard me say it now.
+**Kaya:** A bit. I'm good up to where the fire goes out. After that there's usually a ferry.
+
+**Kaya:** You don't know me, so you'll do. When this is over I'm coming back here to take these down and pack
+them in straw. There. Somebody's heard it.
 
 **Hua:** I'll hold the ladder. I'm seventy-three. I shan't hold it well.
 
@@ -1295,7 +1357,7 @@ thought of a way to keep the...
 
 **Dr. Iset:** You're on from midnight. Which means you're off now.
 
-**Nilak:** There are forty people in this corner.
+**Nilak:** There are thirty people in this corner.
 
 **Dr. Iset:** There are. And two of me, counting the nurse, and at midnight there'll be one of you with a
 steady hand, if you lie down now. I'm not asking as a kindness. I'm scheduling you.
@@ -1308,6 +1370,10 @@ without a word.
 **Nilak:** ...That's a fair trade. I can't promise I'll sleep. I can promise I'll be flat.
 
 **Sura, with Tavi** _(at the landing model: a tray of wet sand with sticks for streets)_
+
+_This plays for every Sura: the tray is where she gets to the gap, so MQ-13 never depends on her quest. After
+`pq04_joint_ice` she has cut a gap in her own ice once already, and the variant below plays instead (the bible's
+"after PQ-04, she can suggest a barrier with an intentional release")._
 
 **Sura:** I can wall the low landing. Ice, shoulder high, the whole front. It'd hold for a night.
 
@@ -1326,7 +1392,22 @@ Tavi pours a cup of water in behind it. It rises. It goes over the top all at on
 
 **Sura:** I don't know. You've poled this landing for twenty years. You tell me how wide.
 
-**Bo, with Daiyu** _(or with the yard foreman, if no Ba Dan crew came)_
+> **After `pq04_joint_ice` —** replace the exchange above:
+>
+> **Sura:** Ice across the front, shoulder high. With a gap in it.
+>
+> **Narrator:** She pushes a wall of sand across the tray and takes a bite out of the middle with her thumb
+> before Tavi has lifted the cup.
+>
+> **Tavi:** You've done this before.
+>
+> **Sura:** Once. At Reedglass. Vessa knocked, and I cut a hole in my own ice. How wide, here? You've poled
+> this landing for twenty years.
+>
+> **Tavi:** Two boats. And you'll want somebody standing at it who can shout.
+
+**Bo, with Daiyu** _(or with the yard foreman, if no Ba Dan crew came: read "the yard foreman" for Daiyu, and
+his last line is "Third from the left. Next to my sister's boy. He talks. You'll hate it.")_
 
 **Narrator:** Bo is counting the brace crew's names on the slate. He gets to the end. He starts again from
 the top.
@@ -1438,12 +1519,13 @@ somebody. Same as ever. I'm not washing two hundred on my own.
 - **Bera, on the landing seal.**
   **Bera:** Is that for me? I've been stood by this seal since noon. Put it on the valve cap, it's warm
   there. ...Somebody read my book, then.
-- **The brace line's far end** _(Ruon, if he is working; otherwise Little Bai)._
+- **The brace line's far end** _(Ruon, if he is working; otherwise Little Bai; with no Ba Dan crew, a wall
+  ganger who says only "Ta. Mind the wedge.")._
   **Ruon:** Set it down. Thank you. I'll eat when the line's eaten.
   _(If `ruon_traded`: he takes the bowl, and nods, and that is all.)_
 - **The sentry at the Works gate.** A young officer in grey, alone, in the wet.
-  **Sentry:** I'm not allowed to... Is that from the shed? My mum's in the shed. Is she all right? Cot
-  forty. Grey shawl. Don't tell me if you don't know. ...Thank you. I'll say I found it here.
+  **Sentry:** I'm not allowed to... Is that from the shed? My mum's in the shed. Is she all right? Cot sixty-one.
+  Grey shawl. Don't tell me if you don't know. ...Thank you. I'll say I found it here.
 
 ### Scene 12.4 — A note from inside
 
@@ -1471,6 +1553,10 @@ has sent it back out of the building.
 ### Scene 12.5 — What closes
 
 **Shown:** played. The honest list before the final commitment. No clock runs while the table reads.
+
+> **If the note in 12.4 was not read —** **Bera:** This came out of the Works an hour ago, unsealed. I've read
+> it. Now you do. _(The note is shown as in 12.4. The promise in 12.7 names the green door, so every table has
+> to have seen it.)_
 
 **Edda:** Before anyone says "go". I'm going to read what shuts when you do. Nobody's rushing you. The tide
 table doesn't move because you're thinking.
@@ -1640,18 +1726,18 @@ on the loss branch).
 
 ## Hero moments in this act
 
-| Hero    | Where                                                          |
-| ------- | -------------------------------------------------------------- |
-| Kaya    | 10.5 the gate; 12.2 Miri's lanterns and "Thursday"             |
-| Tenzo   | 12.2 the rota and the bowl                                     |
-| Nilak   | 10.5 the tailgate clinic; 12.2 scheduled to rest               |
-| Sura    | 12.2 the gap in the wall                                       |
-| Bo      | 10.5 under the ramp; 12.2 handing over the chalk               |
-| Lin Mei | 12.2 the margin                                                |
-| Nima    | 12.2 the dull watch                                            |
-| Jinu    | 11.10 Pella's sealed letter; 12.2 the button                   |
-| Riko    | 10.4 her DLG-09 line; 12.2 one release, and walking away       |
-| Wen     | 10.2 the measuring rule; 12.2 Min's eight steps; 12.4 the note |
+| Hero    | Where                                                                             |
+| ------- | --------------------------------------------------------------------------------- |
+| Kaya    | 10.5 the gate; 12.2 Miri's lanterns and "Thursday"                                |
+| Tenzo   | 10.1 the peelings (kitchen shelter); 12.2 the rota and the bowl                   |
+| Nilak   | 10.5 the tailgate clinic; 12.2 scheduled to rest                                  |
+| Sura    | 10.5 the drain, for a count of sixty; 12.2 the gap in the wall                    |
+| Bo      | 10.5 under the ramp; 12.2 handing over the chalk                                  |
+| Lin Mei | 10.4 her dated promise (`pq06_negotiated`); 10.5 the ramp's rise; 12.2 the margin |
+| Nima    | 10.5 one word from the wall; 12.2 the dull watch                                  |
+| Jinu    | 10.5 fold in three (after a loss); 11.10 Pella's sealed letter; 12.2 the button   |
+| Riko    | 10.4 her DLG-09 line; 12.2 one release, and walking away                          |
+| Wen     | 10.2 the measuring rule; 12.2 Min's eight steps; 12.4 the note                    |
 
 ## Decided (owner, 2026-11-15)
 
@@ -1728,3 +1814,29 @@ record of what was accepted ("Recommend" lines are now decisions). Later correct
    whether eleven or five volunteer.
 3. **Senn carries the delivery book out of the Driller's cab** on the loss branch (added 2026-11-15 so the
    book is back on the cart for Act V).
+
+## Edit pass, 2026-11-17 (awaiting the owner)
+
+What changed in this file; the reasons and the proposals not applied are in the pass's report.
+
+1. **The clock.** The tide is four days from the assembly (decided), so the quarry is "a day west", not two,
+   and 11.1 states the four days once. Parcel sat for "a day and a night", not three.
+2. **How long it has been.** The cart has been away six weeks (Pella, 11.2). Lines that said "three months"
+   now agree: the storm drain, the release order ("six weeks old"), Bo-shan's "ten weeks", Amri's "two
+   months ago", Daiyu's "six weeks in a gallery". Pella's loss-branch ledger stays at ninety days: that is
+   the crew's six weeks before Act I and the six since.
+3. **Ruon's hearing:** the pressed harm is Bo-shan's sixteen days, which is true on both Act I branches
+   (Hesra's twenty-one was not). The satchel comes back with him on every traded road.
+4. **Counts:** eleven volunteers add up; the notice board has "names", not eleven, before the vote; Daiyu's
+   lines work when five came; Bo's and the second bowl's lines work with no Ba Dan crew. On the loss branch Hesra
+   walks out with both feet in sacking; the right boot is on her step that night.
+5. **Cross-script:** Lin Mei's dated promise has its line in 10.4 (`pq06_negotiated`), with Fenn reading it if
+   she is absent. Wen recognises the knife work, not a rule she never saw. Sura's gap plays for every Sura, with
+   a variant after `pq04_joint_ice` where she cuts it unprompted (the bible's gate, kept as a difference in who
+   thinks of it).
+6. **Set-ups paid later:** residents write their own names under the gate's names (10.7), which 13.6's
+   sergeant reads. Veyra's note is shown in 12.5 if it was not found, because the promise names its door.
+7. **Lines:** Kaya and Hua at the lanterns; four long turns split; "forty" thinned.
+8. **Hero moments added** in 10.1 and 10.5 (Tenzo, Lin Mei, Sura, Nima, Jinu).
+9. **Pace:** free roam opens between the hearing and Mira's list.
+10. **Cutscenes:** pointers to [cutscenes.md](cutscenes.md) at 10.6 and 11.10.
