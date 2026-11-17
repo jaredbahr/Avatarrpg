@@ -199,7 +199,7 @@ describe("Ba Dan's top-down ground", () => {
     const rows = seatingTable(baked);
     const kinds = new Set(rows.map((r) => r.kind));
     for (const k of ['house', 'tree', 'prop', 'bridge']) expect(kinds.has(k), k).toBe(true);
-    // the cohesion pilot (ADR 0119) took eleven props off the square, so there are fewer to measure
+    // the cohesion pilot (ADR 0119) took eight props off the square, so there are fewer to measure
     expect(rows.length).toBeGreaterThan(60);
     // most feet show; one hidden whole behind a piece in front (a rim bush behind a tree, the crate
     // under the south-east roof) is not seen, so not measured
