@@ -345,29 +345,32 @@ export const EMBERWATCH_POWER_YARD: MapDef = {
   ambience: 'quarry',
   legend: RG02_LEGEND,
   /*
-   * The live line runs along the north side on its poles (`F`: you can see and shoot over it, not
-   * walk through it). The rain cistern (`W`) has overflowed across the yard: the standing water
-   * (`~`) beside the line is SF-2.1's wet ground. The dead copper spur hangs at the back (east),
-   * on its own poles. The gate west (rows 5-6) goes back to the parade ground.
-   * The workshop bench (`d`) stands by the south-west corner.
+   * A Korra-era power yard in the old outpost, pinched between Luli's generator shed (`U`, the
+   * north-west corner, where the live line starts), a low rocky rise on the south side and the
+   * line poles. The live line runs east from the shed along the north side on its poles (`F`: you
+   * can see and shoot over it, not walk through it). The rain cistern (`W`) has overflowed across
+   * the yard: the standing water (`~`) beside the line is SF-2.1's wet ground. The dead copper spur
+   * hangs at the back (east), on its own poles. The gate west (rows 5-6) goes back to the parade
+   * ground. The yard's clutter (`d`: coils, transformer drums, cable reels, warning signs) lines
+   * its edges, and the workshop bench stands by the south-west corner.
    *
    * PLACEHOLDER RULE: a live line that shocks the wet ground beside it needs engine work (the
    * script's build list: "wet ground beside a live line as a surface"). Until then the puddles
    * are ordinary water, so lightning on them shocks as it does on the Forest Road.
    */
   rows: [
-    '###################',
-    '#FFFFFFFFFFFFFFWWW#',
-    '#....~~~~~~....WWW#',
+    '#UUUUdddddddddd####',
+    '#UUUUFFFFFFFFFFWWW#',
+    '#UUUU~~~~~~....WWW#',
     '#...~~~~~~~~~...~~#',
-    '#....~~~~~~~.....F#',
+    'd....~~~~~~~.....F#',
     '=.........~~.....F#',
     '=................F#',
-    '#........~~~.....F#',
-    '#.......~~~~~....F#',
-    '#d...............##',
-    '#.................#',
-    '###################',
+    'd........~~~.....F#',
+    'd.......~~~~~....F#',
+    'dd...............dd',
+    'd......dddd.......#',
+    '###########dddddd##',
   ],
   partySpawns: COMBAT_PARTY_SPAWNS,
   objective: 'Talk to Luli in the power yard, or go west to the parade ground.',

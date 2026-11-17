@@ -477,7 +477,7 @@ export const EMBERWATCH_PARADE_TOPDOWN_LAYOUT: TopDownLayout = {
 export const EMBERWATCH_POWER_YARD_TERRAIN = new Rg02Terrain({
   mapId: 'emberwatch_power_yard',
   rows: EMBERWATCH_POWER_YARD.rows,
-  // the yard's wall (`#`) is the rim, its gate (`=`) flagstones; the cistern (`W`) stands on the mud; the overflow (`~`) lies in puddles
+  // the void (`#`) is the rim, its gate (`=`) flagstones; the shed (`U`) and the clutter (`d`) stand on packed earth; the cistern (`W`) stands on the mud; the overflow (`~`) lies in puddles
   chars: {
     '#': RG.void,
     '.': RG.earth,
@@ -486,7 +486,10 @@ export const EMBERWATCH_POWER_YARD_TERRAIN = new Rg02Terrain({
     '~': RG.puddle,
     F: RG.earth,
     W: RG.earth,
+    U: RG.earth,
   },
+  // the shed and the clutter stand on the yard's own edge: past them the ground falls away
+  ends: 'Ud',
   beyond: RG.void,
   mouths: [
     mouth('parade', 'west', [
@@ -497,8 +500,10 @@ export const EMBERWATCH_POWER_YARD_TERRAIN = new Rg02Terrain({
 });
 
 export const EMBERWATCH_POWER_YARD_OBJECTS: readonly TopDownObject[] = [
+  // The landmark: Luli's generator shed in the north-west corner, where the live line starts.
+  piece('generator_shed', 'generator_shed', 'prop', block(1, 4, 0, 2), true),
   // The live line along the north side (`F`): a pole every two cells, each carrying its span of cable east.
-  ...[1, 3, 5, 7, 9, 11, 13].map((x) =>
+  ...[5, 7, 9, 11, 13].map((x) =>
     piece(
       `line_${x}`,
       'line_pole',
@@ -510,13 +515,51 @@ export const EMBERWATCH_POWER_YARD_OBJECTS: readonly TopDownObject[] = [
       true,
     ),
   ),
+  // Spare stock behind the line: coils, transformer drums, reels and crates of insulators.
+  piece('back_drum_a', 'transformer_drum', 'prop', [[5, 0]], true),
+  piece('back_coils_a', 'copper_coils', 'prop', [[6, 0]], true),
+  piece('back_insulators_a', 'insulator_crate', 'prop', [[7, 0]], true),
+  piece('back_drum_b', 'transformer_drum', 'prop', [[8, 0]], true),
+  flip(piece('back_reel_b', 'cable_reel', 'prop', [[9, 0]], true)),
+  piece('back_sign', 'warning_sign', 'prop', [[10, 0]], true),
+  flip(piece('back_coils_b', 'copper_coils', 'prop', [[11, 0]], true)),
+  piece('back_drum_c', 'transformer_drum', 'prop', [[12, 0]], true),
+  flip(piece('back_insulators_b', 'insulator_crate', 'prop', [[13, 0]], true)),
+  piece('back_oil', 'oil_drums', 'prop', [[14, 0]], true),
+  // Past the north edge, the yard's overflow: more stock left out on the bare ground.
+  ext('beyond_drum_a', 'transformer_drum', 'prop', [[2, -1]]),
+  flip(ext('beyond_reel_a', 'cable_reel', 'prop', [[4, -1]])),
+  ext('beyond_coils', 'copper_coils', 'prop', [[7, -1]]),
+  ext('beyond_oil', 'oil_drums', 'prop', [[10, -1]]),
+  ext('beyond_reel_b', 'cable_reel', 'prop', [[12, -1]]),
+  ext('beyond_drum_b', 'transformer_drum', 'prop', [[14, -1]]),
   // The overflowing rain cistern (`W`), and the dead copper spur on its own poles at the back (east).
   piece('cistern', 'cistern', 'prop', block(15, 17, 1, 2), true),
-  // The public workshop bench by the south-west corner, a row up so its shadow falls on the yard.
-  piece('bench', 'workshop_bench', 'prop', [[1, 9]], true),
   piece('spur_north', 'copper_spur', 'prop', block(17, 17, 4, 6), true),
   // the south spur stands back from the yard's corner, so its shadow falls on the yard and not into the rim
   piece('spur_south', 'copper_spur', 'prop', block(17, 17, 7, 8), true, { x: -8, base: -16 }),
+  // The west side, either side of the gate: the switch panel by the shed, stock down to the corner.
+  piece('switch_panel', 'switch_panel', 'prop', [[0, 4]], true),
+  piece('west_reel', 'cable_reel', 'prop', [[0, 7]], true),
+  piece('west_drum', 'transformer_drum', 'prop', [[0, 8]], true),
+  piece('west_insulators', 'insulator_crate', 'prop', [[0, 9]], true),
+  piece('west_oil', 'oil_drums', 'prop', [[0, 10]], true, { base: -12 }),
+  // The public workshop bench by the south-west corner, a row up so its shadow falls on the yard.
+  piece('bench', 'workshop_bench', 'prop', [[1, 9]], true),
+  // The low rocky rise on the south side; the last row's pieces stand back so their shadows stay on the ground.
+  piece('rise_a', 'rock_spur', 'prop', block(7, 8, 10, 10), true, { base: -12 }),
+  piece('rise_b', 'boulders', 'prop', block(9, 10, 10, 10), true, { base: -12 }),
+  piece('south_oil', 'oil_drums', 'prop', [[11, 11]], true, { base: -12 }),
+  piece('south_reel', 'cable_reel', 'prop', [[12, 11]], true, { base: -12 }),
+  piece('south_crates', 'crate_stack', 'prop', [[13, 11]], true, { base: -12 }),
+  piece('south_sign', 'warning_sign', 'prop', [[14, 11]], true, { base: -12 }),
+  piece('south_insulators', 'insulator_crate', 'prop', [[15, 11]], true, { base: -12 }),
+  piece('south_barrels', 'barrels', 'prop', [[16, 11]], true, { base: -12 }),
+  piece('east_drum', 'transformer_drum', 'prop', [[17, 9]], true, { base: -12 }),
+  flip(piece('east_reel', 'cable_reel', 'prop', [[18, 9]], true, { x: -6, base: -12 })),
+  // Cables across the yard from the shed, and from the stock in the south-east corner.
+  piece('cable_shed', 'cable_run', 'flat', block(2, 4, 3, 3), false),
+  flip(piece('cable_east', 'cable_run', 'flat', block(14, 16, 9, 9), false)),
 ];
 
 export const EMBERWATCH_POWER_YARD_TOPDOWN_LAYOUT: TopDownLayout = {

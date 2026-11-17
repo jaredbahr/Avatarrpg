@@ -71,5 +71,7 @@ export const RG02_BOARDS: readonly TopDownBoard[] = [
     terrain: EMBERWATCH_POWER_YARD_TERRAIN,
     layout: EMBERWATCH_POWER_YARD_TOPDOWN_LAYOUT,
     earth: 'yard',
+    // the gate to the shed, and the walk along the line
+    wear: { paths: [...span(1, 4, 5, 6), ...span(1, 4, 3, 4), ...span(4, 16, 6, 6)], wet: 0.3 },
   }),
 ];
