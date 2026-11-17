@@ -346,3 +346,38 @@ most of it. What cost time:
 | Freight pontoon          | Baked and shown: the planks, the winch and crane on their blocked cells, the cover crates and the pump crate on the cover cells, the barge in the water.                                                                                                                                                                                                 |
 | Emberwatch parade ground | Baked, dressed and shown: packed earth, the flagstone square (kept clear for a fight) and east gate, the wall in sections either side of the barracks, the spear-rack trellis, an outpost lamp, two training dummies, a weapon rack, a water trough, the cook's beans, and the jetty corner reworked into a stepped, organic edge over the water.        |
 | Emberwatch power yard    | Baked, dressed and shown: the yard's mud with the cistern's overflow in puddles, the live line on seven poles, the cistern, the copper spur on its poles, the workshop bench in the south-west corner, the flagstone west gate; the yard's wall is the rim.                                                                                              |
+
+## Ba Dan's houses in the Earth Kingdom style (owner, 2026-11-17: "follow the game's lore")
+
+Ba Dan is an Earth Kingdom farming village, but its five houses had drifted to a European look (half-timbering, red
+brick chimneys, terracotta roofs), as did two props (a gabled stone shrine and a wrought-iron street lamp) and the
+timber-gabled well. The same lore pass Saltstep had (the "Lore before density" note above, row 6a2), applied to the
+starting village. Tools: `prototypes/topdown/tools/v16gen.py` (houses), `v16props.py` (shrine, lamp, well), then
+`v16proc.py` and `v16propsproc.py` (1-bit alpha, largest component, outline recoloured as v14); the picks are in
+`prototypes/topdown/v16/pick.json`. The method is the quarry's and Saltstep's: `create-object-pro-flash`, low top-down,
+the **existing piece as the ONE angle reference** (its size and camera only; the prompt says not to copy its materials),
+the size in px, and a prompt that names "an Earth Kingdom village house as in the Avatar animated style" with a sage green
+glazed roof with upturned eaves, rammed-earth and limewashed walls on a stone base, dark reddish timber posts and paper
+lattice windows, and says it is not European (no half-timbering, no chimney, no Tudor, no red clay tiles). Ba Dan's pieces
+keep a warmer inland look than the harbour's (rammed-earth browns and ochre, cream limewash, sage not olive roofs).
+Each piece's door is on its sprite's centre, so `put()` keeps every door cell, route and talk point.
+
+| Piece (old size → new)               | Credits | Notes                                                                                                                    |
+| ------------------------------------ | ------: | ------------------------------------------------------------------------------------------------------------------------ |
+| `house_gao` (182x190 → 216x167)      |       9 | Gao's cottage: round lattice windows, herb bundles at the door. First take.                                              |
+| `house_mira` (226x237 → 256x238)     |       9 | Two tiers of roofs, studded double door, a paper lantern. First take.                                                    |
+| `house_pella` (214x221 → 242x216)    |      18 | First take came back with transparent walls (the green wall read as empty): retaken with "solid, opaque cream limewash". |
+| `house_se` (204x218 → 186x161)       |      18 | First take 80% as wide as the old one; retaken larger (seed 4), a timber balcony and a bamboo shade.                     |
+| `house_merchant` (250x188 → 216x164) |      18 | The wide shop-house with an open shop front and a hanging sign; retaken wider (seed 4).                                  |
+| `shrine`, `lamp`, `well`             |  5 each | A green-roofed wayside shrine, a wooden post with a paper lantern, a round stone well with a tiled roof.                 |
+
+- **Credits: 87 of the 100 cap** (11 jobs: 5 first takes, 3 retakes, 3 props; the houses cost 9, the small props 5). The
+  balance read 5,065 before; the ledger (`prototypes/topdown/ledger.json`, tag `ba_dan_valley`) is the count, since the
+  key is shared with other sessions. About an hour end to end, most of it waiting for the shared CI lock.
+- **Re-bake:** `pack-ground.ts --map ba_dan_village` (the new props are in `assets/objects_t3/`, which the board loader
+  prefers over `objects12`; the houses replace `objects_bd13/`). Layout, footprints, blocked cells and base lines are unchanged.
+- **Smoke:** the village's chimney wisps were found by detecting each drawn chimney. The new houses have none, so each house
+  now has one wisp from a roof-ridge vent (`VENT` in `boards/baDan.ts`), five as before, which `topdownAmbience.test.ts` holds.
+- **Left as they were, on purpose:** `house_ne` (unplaced, listed in `LEFT_OUT`); the red `banner_pole` (red reads Fire
+  Nation; `pack-ground.test.ts` measures its baked disc from `objects12/banner_pole.png`, so it needs its own change); the
+  striped market awning, which is a market's, not a nation's.

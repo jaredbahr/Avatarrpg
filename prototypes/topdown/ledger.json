@@ -38690,6 +38690,875 @@
     "object_id": "087cc2ee-83de-4392-991c-e97865771184"
    },
    "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "v16_house_gao_3_224x224",
+   "endpoint": "/create-object-pro-flash",
+   "job": "0e1378c0-7748-4038-8735-032caf27d741",
+   "status": "completed",
+   "settings": {
+    "description": "a small one-storey Earth Kingdom farm cottage with a round lattice window on eac...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 224,
+     "height": 224
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 182,
+      "height": 190
+     },
+     "usage_description": "the size and camera-angle reference only: the same overall size, the same low to..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 19.0,
+   "usage": {
+    "type": "generations",
+    "generations": 9.0
+   },
+   "balance_before": 5055.0654640625,
+   "balance_after": 5036.0654640625,
+   "secs": 53,
+   "notes": "",
+   "ids": {
+    "background_job_id": "0e1378c0-7748-4038-8735-032caf27d741",
+    "object_id": "494cd170-0e8a-491e-ac85-d328a7336c24"
+   },
+   "region": "ba_dan_valley"
+  },
+  {
+   "name": "v16_house_mira_3_256x256",
+   "endpoint": "/create-object-pro-flash",
+   "job": "1cedcdfd-aa1c-4ec0-8f26-371f4ca336fc",
+   "status": "completed",
+   "settings": {
+    "description": "a larger two-storey Earth Kingdom house, wide and welcoming, a big double wooden...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 256,
+     "height": 256
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 226,
+      "height": 237
+     },
+     "usage_description": "the size and camera-angle reference only: the same overall size, the same low to..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 24.0,
+   "usage": {
+    "type": "generations",
+    "generations": 9.0
+   },
+   "balance_before": 5036.0654640625,
+   "balance_after": 5012.0654640625,
+   "secs": 76,
+   "notes": "",
+   "ids": {
+    "background_job_id": "1cedcdfd-aa1c-4ec0-8f26-371f4ca336fc",
+    "object_id": "4847031f-be81-4bab-aa92-c9b3ce2623c4"
+   },
+   "region": "ba_dan_valley"
+  },
+  {
+   "name": "v16_house_pella_3_256x256",
+   "endpoint": "/create-object-pro-flash",
+   "job": "535aa4e1-2567-4831-ae63-9503403da69a",
+   "status": "completed",
+   "settings": {
+    "description": "a two-storey Earth Kingdom house with a circular moon doorway at the centre of i...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 256,
+     "height": 256
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 214,
+      "height": 221
+     },
+     "usage_description": "the size and camera-angle reference only: the same overall size, the same low to..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 19.0,
+   "usage": {
+    "type": "generations",
+    "generations": 9.0
+   },
+   "balance_before": 5012.0654640625,
+   "balance_after": 4993.0654640625,
+   "secs": 52,
+   "notes": "",
+   "ids": {
+    "background_job_id": "535aa4e1-2567-4831-ae63-9503403da69a",
+    "object_id": "a438aacc-8355-4c9e-a27f-a59481f0c248"
+   },
+   "region": "ba_dan_valley"
+  },
+  {
+   "name": "v16_house_se_3_240x240",
+   "endpoint": "/create-object-pro-flash",
+   "job": "6530b159-eb7e-4c89-8a18-74170222d155",
+   "status": "completed",
+   "settings": {
+    "description": "a two-storey Earth Kingdom house with a narrow timber balcony with a plank rail ...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 240,
+     "height": 240
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 204,
+      "height": 218
+     },
+     "usage_description": "the size and camera-angle reference only: the same overall size, the same low to..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 9.0,
+   "usage": {
+    "type": "generations",
+    "generations": 9.0
+   },
+   "balance_before": 4993.0654640625,
+   "balance_after": 4984.0654640625,
+   "secs": 37,
+   "notes": "",
+   "ids": {
+    "background_job_id": "6530b159-eb7e-4c89-8a18-74170222d155",
+    "object_id": "f715f1b2-74fd-4953-bf47-c0d3eb2bb067"
+   },
+   "region": "ba_dan_valley"
+  },
+  {
+   "name": "v16_house_merchant_3_256x224",
+   "endpoint": "/create-object-pro-flash",
+   "job": "343f759c-cf16-4c4d-890d-97fa010e9276",
+   "status": "completed",
+   "settings": {
+    "description": "a wide two-storey Earth Kingdom shop-house: lattice windows upstairs, an open wo...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 256,
+     "height": 224
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 250,
+      "height": 188
+     },
+     "usage_description": "the size and camera-angle reference only: the same overall size, the same low to..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 9.0,
+   "usage": {
+    "type": "generations",
+    "generations": 9.0
+   },
+   "balance_before": 4984.0654640625,
+   "balance_after": 4975.0654640625,
+   "secs": 36,
+   "notes": "",
+   "ids": {
+    "background_job_id": "343f759c-cf16-4c4d-890d-97fa010e9276",
+    "object_id": "2288c3c6-813b-4798-b597-efdb5288b2f5"
+   },
+   "region": "ba_dan_valley"
+  },
+  {
+   "name": "v16_house_se_4_256x256",
+   "endpoint": "/create-object-pro-flash",
+   "job": "6ef17d17-0ca1-47d5-a97c-c1dc0b0bb539",
+   "status": "completed",
+   "settings": {
+    "description": "a two-storey Earth Kingdom house with a narrow timber balcony with a plank rail ...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 256,
+     "height": 256
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 204,
+      "height": 218
+     },
+     "usage_description": "the size and camera-angle reference only: the same overall size, the same low to..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 4
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 9.0,
+   "usage": {
+    "type": "generations",
+    "generations": 9.0
+   },
+   "balance_before": 4975.0654640625,
+   "balance_after": 4966.0654640625,
+   "secs": 42,
+   "notes": "",
+   "ids": {
+    "background_job_id": "6ef17d17-0ca1-47d5-a97c-c1dc0b0bb539",
+    "object_id": "722ebd55-06fb-4250-ae9e-11d8e925d964"
+   },
+   "region": "ba_dan_valley"
+  },
+  {
+   "name": "v16_house_merchant_4_256x224",
+   "endpoint": "/create-object-pro-flash",
+   "job": "16dd565b-2feb-47b9-b469-3ffa270ef005",
+   "status": "completed",
+   "settings": {
+    "description": "a wide two-storey Earth Kingdom shop-house: lattice windows upstairs, an open wo...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 256,
+     "height": 224
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 250,
+      "height": 188
+     },
+     "usage_description": "the size and camera-angle reference only: the same overall size, the same low to..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 4
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 9.0,
+   "usage": {
+    "type": "generations",
+    "generations": 9.0
+   },
+   "balance_before": 4966.0654640625,
+   "balance_after": 4957.0654640625,
+   "secs": 44,
+   "notes": "",
+   "ids": {
+    "background_job_id": "16dd565b-2feb-47b9-b469-3ffa270ef005",
+    "object_id": "ddd97cea-4890-486a-bb23-ee90db77580e"
+   },
+   "region": "ba_dan_valley"
+  },
+  {
+   "name": "v16_house_pella_4_256x256",
+   "endpoint": "/create-object-pro-flash",
+   "job": "345681b3-0c04-454b-a775-7bdb02aeb7e7",
+   "status": "completed",
+   "settings": {
+    "description": "a two-storey Earth Kingdom house with solid, fully opaque warm cream and pale oc...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 256,
+     "height": 256
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 214,
+      "height": 221
+     },
+     "usage_description": "the size and camera-angle reference only: the same overall size, the same low to..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 4
+   },
+   "credits": 9.0,
+   "credit_source": "usage",
+   "balance_diff": 9.0,
+   "usage": {
+    "type": "generations",
+    "generations": 9.0
+   },
+   "balance_before": 4957.0654640625,
+   "balance_after": 4948.0654640625,
+   "secs": 70,
+   "notes": "",
+   "ids": {
+    "background_job_id": "345681b3-0c04-454b-a775-7bdb02aeb7e7",
+    "object_id": "6715b90f-7fa9-41a9-8f30-b89b4d1bbce0"
+   },
+   "region": "ba_dan_valley"
+  },
+  {
+   "name": "v16_shrine_3_64x80",
+   "endpoint": "/create-object-pro-flash",
+   "job": "f1f49375-1d86-4189-a0fd-92e6cb3defea",
+   "status": "completed",
+   "settings": {
+    "description": "a small Earth Kingdom wayside shrine: a little stone niche on a stepped stone ba...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 64,
+     "height": 80
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 46,
+      "height": 77
+     },
+     "usage_description": "the size and camera-angle reference only: the same overall size and the same low top-down camera height, front-on. Do NOT copy its materials, shapes or colours. Match its pixel size, one-pixel outline in a darker tone of the material, and flat shading."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 4948.0654640625,
+   "balance_after": 4943.0654640625,
+   "secs": 31,
+   "notes": "",
+   "ids": {
+    "background_job_id": "f1f49375-1d86-4189-a0fd-92e6cb3defea",
+    "object_id": "a44d5683-2c1f-4a72-b72f-df5fcb76126f"
+   },
+   "region": "ba_dan_valley"
+  },
+  {
+   "name": "v16_lamp_3_48x96",
+   "endpoint": "/create-object-pro-flash",
+   "job": "1b643587-5208-4fd1-ad45-1486532e770b",
+   "status": "completed",
+   "settings": {
+    "description": "a tall Earth Kingdom village lamp post: a slim dark reddish-brown wooden post on...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 96
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 37,
+      "height": 81
+     },
+     "usage_description": "the size and camera-angle reference only: the same overall size and the same low top-down camera height, front-on. Do NOT copy its materials, shapes or colours. Match its pixel size, one-pixel outline in a darker tone of the material, and flat shading."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 4943.0654640625,
+   "balance_after": 4938.0654640625,
+   "secs": 31,
+   "notes": "",
+   "ids": {
+    "background_job_id": "1b643587-5208-4fd1-ad45-1486532e770b",
+    "object_id": "a284a15f-9da2-449e-8316-f7f08f914e0a"
+   },
+   "region": "ba_dan_valley"
+  },
+  {
+   "name": "v16_well_3_64x72",
+   "endpoint": "/create-object-pro-flash",
+   "job": "67157b1b-2d80-4b78-9b27-b12e16d12752",
+   "status": "completed",
+   "settings": {
+    "description": "a round Earth Kingdom village well: a low round wall of fitted grey stone, two d...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 64,
+     "height": 72
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 44,
+      "height": 57
+     },
+     "usage_description": "the size and camera-angle reference only: the same overall size and the same low top-down camera height, front-on. Do NOT copy its materials, shapes or colours. Match its pixel size, one-pixel outline in a darker tone of the material, and flat shading."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 4938.0654640625,
+   "balance_after": 4933.0654640625,
+   "secs": 20,
+   "notes": "",
+   "ids": {
+    "background_job_id": "67157b1b-2d80-4b78-9b27-b12e16d12752",
+    "object_id": "bd07d961-9e13-46ec-9ed4-9f41d1542a83"
+   },
+   "region": "ba_dan_valley"
   }
  ],
  "end_balance": 16728.0,
