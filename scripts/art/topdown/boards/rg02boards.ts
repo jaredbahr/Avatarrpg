@@ -12,12 +12,31 @@ import {
 import type { TopDownBoard } from '../lib/board';
 import { rg02Board } from './rg02';
 
+/** The cells of a rectangle, for a board's worn paths. */
+const span = (x0: number, x1: number, y0: number, y1: number): [number, number][] => {
+  const out: [number, number][] = [];
+  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) out.push([x, y]);
+  return out;
+};
+
 export const RG02_BOARDS: readonly TopDownBoard[] = [
   rg02Board({
     id: 'saltstep_market',
     folder: 'saltstep-market',
     terrain: SALTSTEP_MARKET_TERRAIN,
     layout: SALTSTEP_MARKET_TOPDOWN_LAYOUT,
+    // the coast road along the quay, the lane behind it, and the walks down to each jetty
+    wear: {
+      paths: [
+        ...span(0, 20, 5, 6),
+        ...span(2, 21, 3, 3),
+        ...span(3, 3, 4, 7),
+        ...span(11, 11, 4, 7),
+        ...span(15, 15, 4, 7),
+        ...span(21, 21, 4, 6),
+      ],
+      wet: 0.3,
+    },
   }),
   rg02Board({
     id: 'saltstep_pontoon',

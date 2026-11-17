@@ -123,6 +123,11 @@ export interface Rg02BoardConfig {
   readonly terrain: Rg02Terrain;
   readonly layout: TopDownLayout;
   readonly earth?: 'parade' | 'yard';
+  /** The ground's wear: cells walked into a lighter path, and how much of the open ground lies wet. */
+  readonly wear?: {
+    readonly paths?: readonly (readonly [number, number])[];
+    readonly wet?: number;
+  };
 }
 
 export function bake(cfg: Rg02BoardConfig): Baked {
@@ -195,6 +200,41 @@ export function bake(cfg: Rg02BoardConfig): Baked {
         (c(x, y + 1) === RG.puddle || c(x + 1, y) === RG.puddle || c(x - 1, y) === RG.puddle)
       )
         mix(i, SHADE, 0.35);
+    }
+
+  // 2b. variation, so no two stretches of the same ground read alike: a slow colour drift, the paths feet wear
+  // lighter, wet patches, and a scatter of pebbles and shells with a highlight on their upper left
+  const paths = new Set((cfg.wear?.paths ?? []).map(([x, y]) => `${x},${y}`));
+  const wet = cfg.wear?.wet ?? 0.25;
+  const WORN: Rgb = [0xd9, 0xbf, 0x93];
+  const TRODDEN: Rgb = [0x9c, 0x80, 0x62];
+  const MUD: Rgb = [0x4a, 0x35, 0x2a];
+  const PEBBLE: Rgb = [0x5a, 0x4a, 0x42];
+  const GLINT: Rgb = [0xe8, 0xdc, 0xc4];
+  for (let y = 0; y < PH; y++)
+    for (let x = 0; x < PW; x++) {
+      const i = y * PW + x,
+        k = c(x, y);
+      if (k === RG.void || k === RG.water || k === RG.puddle) continue;
+      // in three steps, not a smooth ramp, so the plate keeps a pixel artist's few tones per ground
+      const t = vnoise(x, y, 77, 56) + vnoise(x, y, 78, 17) * 0.5;
+      const drift = t > 0.35 ? 1.05 : t < -0.35 ? 0.95 : 1;
+      for (let n = 0; n < 3; n++) d[i * 4 + n] = Math.min(255, at(d, i * 4 + n) * drift);
+      if (k === RG.deck) continue;
+      if (paths.size) {
+        const qx = Math.floor((x - GRID.x + vnoise(x, y, 83, 13) * 9) / CELL),
+          qy = Math.floor((y - GRID.y + vnoise(x, y, 84, 13) * 9) / CELL);
+        if (paths.has(`${qx},${qy}`) && vnoise(x, y, 85, 5) > -0.6)
+          mix(i, k === RG.sand ? TRODDEN : WORN, k === RG.stone ? 0.12 : 0.22);
+      }
+      const damp = vnoise(x, y, 81, 30) + vnoise(x, y, 82, 9) * 0.3;
+      if (damp > 1 - wet) mix(i, MUD, Math.min(0.3, (damp - (1 - wet)) * 1.2));
+      const h = hash2(x, y, 91);
+      if (h < 0.0035 && c(x, y - 1) === k && c(x - 1, y) === k) {
+        mix(i, PEBBLE, 0.7);
+        const up = (y - 1) * PW + x - 1;
+        mix(up, GLINT, 0.45);
+      }
     }
 
   const classes = new Uint8Array(PW * PH);
