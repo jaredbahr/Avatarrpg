@@ -80,6 +80,11 @@
       "source": "c1df7417c87b583cb1a4f92e10c6acb5f05521ff",
       "calibrationHarnessSha256": "fdd85f0fe80c3ba5d2a0a9d2b298a54f6dc9acaf0846ab3326c23c051c76e5b8",
       "reason": "tied largest boards benchmark one map; no new measurement"
+    },
+    {
+      "source": "fd7d2de765dd416e5fe31ab8accec4d8e5518f71",
+      "calibrationHarnessSha256": "bdd03778d50d664e3ff57d9a0c7ae4befcaffef58e2c2f6c0b154f18c1047816",
+      "reason": "Ba Dan's frozen cases keep measuring the 24 x 16 board while the village is a 32 x 20 blockout; no new measurement"
     }
   ]
 }

@@ -113,6 +113,10 @@ describe('core benchmark coverage and frozen calibration', () => {
       if (!map) throw new Error(`Missing registered map ${id}`);
       return { id, width: map.width, height: map.height };
     });
+    // Ba Dan is a 32 x 20 blockout with no scene, so it is not registered; its frozen cases keep measuring the
+    // 24 x 16 board it was calibrated on (`oldVillage.fixture.ts`) until the new board has its own calibration (ADR 0106).
+    if (!registered.some((map) => map.id === 'ba_dan_village'))
+      registered.unshift({ id: 'ba_dan_village', width: 24, height: 16 });
     const maximum = Math.max(...registered.map((map) => map.width * map.height));
     expect(suite.coverage.topDown.included).toBe(true);
     expect(suite.coverage.topDown.registeredMaps).toEqual(registered);
@@ -209,6 +213,12 @@ describe('core benchmark coverage and frozen calibration', () => {
         source: expect.stringMatching(/^[0-9a-f]{40}$/),
         calibrationHarnessSha256: expect.stringMatching(/^[0-9a-f]{64}$/),
         reason: 'tied largest boards benchmark one map; no new measurement',
+      },
+      {
+        source: expect.stringMatching(/^[0-9a-f]{40}$/),
+        calibrationHarnessSha256: expect.stringMatching(/^[0-9a-f]{64}$/),
+        reason:
+          "Ba Dan's frozen cases keep measuring the 24 x 16 board while the village is a 32 x 20 blockout; no new measurement",
       },
     ]);
     expect(BASELINE.cases['reachable/topdown/ba_dan_village']).toEqual({
