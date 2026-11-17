@@ -153,7 +153,7 @@ for (const chained of [false, true]) {
       const selected = apply(CONTENT, expected, { type: 'chooseOption', optionIndex }).state;
       await page.keyboard.press(key);
       await expect.poll(() => page.evaluate(() => window.fnt!.app.state)).toEqual(selected);
-      expect(selected.story.deciderIndex).toBe(fixture.state.story.deciderIndex + 1);
+      expect(selected.story.deciderIndex).toBe(fixture.state.story.deciderIndex);
       expect(selected.story.nodeId).toBe('escort_chosen');
       expect(selected.story.lineIndex).toBe(0);
       expect(selected.flags.ruon_spared).toBe(true);

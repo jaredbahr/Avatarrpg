@@ -6,7 +6,9 @@
  * any option sets a flag or moves a nation's standing, or when the options lead
  * to different places. Options whose replies are only dialogue and then run into
  * the very same next beat ("Rest here" / "Let's keep going", a different thing to
- * say) change nothing, and the player in charge answers them alone.
+ * say) change nothing, and the player in charge answers them alone. So does a
+ * choice marked `routine`, a now-or-later prompt whose options lead apart only
+ * because "Another time" walks away (owner, 2026-11-17).
  *
  * Pure: it reads the story graph and nothing else.
  */
@@ -43,6 +45,7 @@ export function choiceMatters(
   content: ContentIndex,
   node: Extract<StoryNode, { kind: 'choice' }>,
 ): boolean {
+  if (node.routine) return false;
   if (node.options.some(hasEffect)) return true;
   const ends = node.options.map((option) => whereReplyEnds(content, option.next));
   const first = ends[0];
