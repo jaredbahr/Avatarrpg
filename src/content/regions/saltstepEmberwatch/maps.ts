@@ -78,30 +78,32 @@ export const SALTSTEP_MARKET: MapDef = {
   ambience: 'village',
   legend: RG02_LEGEND,
   /*
-   * The quay runs west to east on rows 4-7; the coast road comes in on its west end (rows 5-6).
-   * The platforms (`w`) stand in the water south of it: the bowl stall's, the customs stall's on
-   * its mooring, and the ferry landing's to the east. Jin's freight office and the warehouses
-   * are the blocks on the north side. Every walkable rim cell is the coast road's mouth.
-   * The stalls (`G`), the bollards and the tide pole (`F`) and the quay's nets, baskets, rope and
-   * lamps (`n`) are blocked cells their pieces stand on; rows 5-6 and column 3 stay open.
+   * A fish quay curving along the bay. The town spills off the top edge (`U`, its houses), with
+   * Jin's freight office and the warehouse on the lane behind the quay (`B`); the sand quay runs
+   * west to east on rows 4-7, the coast road coming in on its west end (rows 5-6), and the water
+   * bites into it at an inlet (row 7). The jetties reach out at different lengths: the broth
+   * stall's, the customs pier (the longest), a crooked landing stage and the ferry landing to the
+   * east. Stalls (`G`), bollards and the tide pole (`F`) and the quay's scatter (`n`, `u`) are
+   * blocked cells their pieces stand on; rows 5-6 and column 3 stay open, and the rim walkable
+   * only at the coast road's mouth.
    */
   rows: [
-    'TTTTTTTTTTTTTTTTTTTTTTTT',
-    'TT,,,BBBB,,,,,BBBBB,,,TT',
-    'T,,,,BBBB,,,,,BBBBB,,,,T',
-    'T,,,,,,,,,,,,,,,,,,,,,,T',
-    'T:::::::n::n:::::::n:::T',
-    '==::::::::::::::::::::wT',
-    '==::::::::::::::::::::wT',
-    'T::::::n:n::::n:n:::::wT',
-    'TWWwwwwWWWwwGwWWWwwwwwWT',
-    'TWWwwGGWWWwwwwWWWGGwwwWT',
-    'TWWWwFWWWWWwwWWWWWFwwWWT',
-    'TWWWWWWWWWWwwWWWWWWWWWWT',
-    'TWWWWWWWWWWFwWWWWWWWWWWT',
-    'TWWWWWWWWWWWWWWWWWWWWWWT',
-    'TWWWWWWWWWWWWWWWWWWWWWWT',
-    'TTTTTTTTTTTTTTTTTTTTTTTT',
+    'UUUUUUUUUUUUUUUUUUUUUUUU',
+    'UUU,uBBBBuUUUuBBBBBuUUUU',
+    'U,u,,BBBB,u,u,BBBBB,u,UU',
+    'U,,,,,,,,,,,,,,,,,,,,,,U',
+    'U:::::::n:nn:n::::nn:nUU',
+    '==::::::::::::::::::::wU',
+    '==::::::::::::::::::::wU',
+    'U:::n:nWWn::n:n:n:::n:wU',
+    'WWWwwwwWWWwwGwWwWwwGGwwW',
+    'WWWwwGGWWWwwwwWwwWwwwwWW',
+    'WWWWwFWWWWWwwWWWwWFwwWWW',
+    'WWWWWWWWWWWwwWWWwWWWWWWW',
+    'WWWWWWWWWWWwwWWWWWWWWWWW',
+    'WWWWWWWWWWWwFWWWWWWWWWWW',
+    'WWWWWWWWWWWWWWWWWWWWWWWW',
+    'WWWWWWWWWWWWWWWWWWWWWWWW',
   ],
   // West of the coast-road crossing (column 3), so a fresh arrival still walks through it.
   partySpawns: [

@@ -45,6 +45,16 @@ const block = (x0: number, x1: number, y0: number, y1: number): [number, number]
   return out;
 };
 
+/** A piece standing past the playable edge (the town beyond the market, the boats beyond the bay). */
+const ext = (
+  id: string,
+  sprite: string,
+  kind: TopDownObject['kind'],
+  cells: readonly [number, number][],
+  nudge: { readonly x?: number; readonly base?: number } = {},
+): TopDownObject => ({ ...piece(id, sprite, kind, cells, false, nudge), exterior: true });
+const flip = (o: TopDownObject): TopDownObject => ({ ...o, flip: true });
+
 /* ------------------------------------------------------------------ */
 /* Saltstep market                                                     */
 /* ------------------------------------------------------------------ */
@@ -56,6 +66,8 @@ export const SALTSTEP_MARKET_TERRAIN = new Rg02Terrain({
     T: RG.void,
     ',': RG.earth,
     B: RG.earth,
+    U: RG.earth,
+    u: RG.earth,
     ':': RG.sand,
     '=': RG.sand,
     n: RG.sand,
@@ -74,49 +86,121 @@ export const SALTSTEP_MARKET_TERRAIN = new Rg02Terrain({
 });
 
 export const SALTSTEP_MARKET_OBJECTS: readonly TopDownObject[] = [
-  // The warehouse on the north side, and Jin's freight office with its freight stacked beside it.
+  // The town spilling off the top edge (`U`): a row of fishermen's cottages, harbour houses and narrow townhouses on
+  // row 0, a second rank in front of them where the lane narrows, and more roofs beyond the edge.
+  ...(
+    [
+      ['house_fisher', 0, 1],
+      ['house_harbour', 2, 3],
+      ['house_narrow', 4, 4],
+      ['house_fisher', 5, 6],
+      ['house_harbour', 7, 8],
+      ['house_narrow', 9, 9],
+      ['house_fisher', 10, 11],
+      ['house_harbour', 12, 13],
+      ['house_narrow', 14, 14],
+      ['house_harbour', 15, 16],
+      ['house_fisher', 17, 18],
+      ['house_narrow', 19, 19],
+      ['house_harbour', 20, 21],
+      ['house_fisher', 22, 23],
+    ] as const
+  ).map(([sprite, x0, x1], i) => {
+    const house = piece(`town_${x0}`, sprite, 'house', block(x0, x1, 0, 0), true);
+    return i % 3 === 1 ? flip(house) : house;
+  }),
+  piece('front_narrow_w', 'house_narrow', 'house', [[0, 1]], true),
+  piece('front_harbour_w', 'house_harbour', 'house', block(1, 2, 1, 1), true),
+  flip(piece('front_fisher_mid', 'house_fisher', 'house', block(10, 11, 1, 1), true)),
+  piece('front_narrow_mid', 'house_narrow', 'house', [[12, 1]], true),
+  piece('front_harbour_e', 'house_harbour', 'house', block(20, 21, 1, 1), true),
+  flip(piece('front_fisher_e', 'house_fisher', 'house', block(22, 23, 1, 1), true)),
+  piece('corner_narrow_w', 'house_narrow', 'house', [[0, 2]], true),
+  piece('corner_fisher_e', 'house_fisher', 'house', block(22, 23, 2, 2), true),
+  piece('corner_narrow_w3', 'house_narrow', 'house', [[0, 3]], true, { x: -6 }),
+  ext('beyond_a', 'house_harbour', 'house', block(1, 2, -1, -1), { base: -6 }),
+  ext('beyond_b', 'house_narrow', 'house', [[6, -1]], { base: -10 }),
+  ext('beyond_c', 'house_fisher', 'house', block(8, 9, -1, -1), { base: -4 }),
+  ext('beyond_d', 'house_harbour', 'house', block(13, 14, -1, -1), { base: -8 }),
+  ext('beyond_e', 'house_narrow', 'house', [[17, -1]], { base: -6 }),
+  ext('beyond_f', 'house_fisher', 'house', block(20, 21, -1, -1), { base: -10 }),
+  // The landmark: the lighthouse at the quay's east end, its foot on the rim.
+  piece(
+    'lighthouse',
+    'lighthouse',
+    'prop',
+    [
+      [23, 3],
+      [23, 4],
+    ],
+    true,
+    { x: 10 },
+  ),
+  piece('east_crates', 'crate_stack', 'prop', [[22, 4]], true),
+  piece('east_barrels', 'barrels', 'prop', [[23, 5]], true, { x: 8 }),
+  piece('east_pots', 'lobster_pots', 'prop', [[23, 6]], true, { x: 8 }),
+  piece('east_crates_b', 'crate_stack', 'prop', [[23, 7]], true, { x: 8, base: -12 }),
+  piece('west_barrels', 'barrels', 'prop', [[0, 4]], true, { x: -6 }),
+  piece('west_pots', 'lobster_pots', 'prop', [[0, 7]], true, { x: -6, base: -12 }),
+  // The warehouse and Jin's freight office on the lane, its freight stacked beside it.
   piece('warehouse', 'warehouse', 'house', block(5, 8, 1, 2), true),
   piece('jin_office', 'jin_office', 'house', block(14, 16, 1, 2), true),
   piece('freight_a', 'tool_crates', 'prop', [[17, 1]], true),
   piece('freight_b', 'tool_crates', 'prop', [[18, 1]], true),
   piece('freight_c', 'tool_crates', 'prop', [[17, 2]], true),
   piece('freight_d', 'tool_crates', 'prop', [[18, 2]], true),
-  // Tavi's ferry, moored off the landing.
-  piece('ferry', 'ferry', 'flat', [[20, 11]], false, { base: 10 }),
-  // The stalls on their platforms: the broth stall's, the customs stall on its mooring behind the clerk, the fish
-  // stall by the landing; the tide pole at the end of the customs pier; a bollard on each outer platform.
-  piece(
-    'broth_stall',
-    'stall_broth',
-    'prop',
-    [
-      [5, 9],
-      [6, 9],
-    ],
-    true,
-  ),
-  piece('customs_stall', 'customs_stall', 'prop', [[12, 8]], true),
-  piece(
-    'fish_stall',
-    'stall_fish',
-    'prop',
-    [
-      [17, 9],
-      [18, 9],
-    ],
-    true,
-  ),
-  piece('tide_pole', 'level_pole', 'prop', [[11, 12]], true, { x: 4, base: -14 }),
-  piece('bollard_west', 'bollard', 'prop', [[5, 10]], true, { x: -4, base: -14 }),
-  piece('bollard_east', 'bollard', 'prop', [[18, 10]], true, { base: -8 }),
-  // The quay: two lamps at the water's edge, and the day's nets, baskets, rope and a handcart along its edges.
-  piece('lamp_west', 'dock_lamp', 'prop', [[7, 7]], true, { base: -14 }),
-  piece('lamp_east', 'dock_lamp', 'prop', [[16, 7]], true, { base: -14 }),
+  // The lane (`u`): drying racks, crates, barrels and a gutting table.
+  piece('lane_crates_w', 'crate_stack', 'prop', [[4, 1]], true),
+  piece('lane_rack_a', 'drying_rack', 'prop', [[9, 1]], true),
+  piece('lane_rack_b', 'drying_rack', 'prop', [[13, 1]], true),
+  piece('lane_crates_e', 'crate_stack', 'prop', [[19, 1]], true),
+  piece('lane_barrels', 'barrels', 'prop', [[2, 2]], true),
+  flip(piece('lane_rack_c', 'drying_rack', 'prop', [[10, 2]], true)),
+  piece('lane_table', 'fish_table', 'prop', [[12, 2]], true),
+  piece('lane_pots', 'lobster_pots', 'prop', [[20, 2]], true),
+  // The quay (`n`): the fish shed, bunting, racks and baskets along the back; lamps, rope, nets and tables along the
+  // water. Rows 5-6 stay open.
   piece('handcart', 'handcart', 'prop', [[8, 4]], true),
+  piece('fish_shed', 'awning_shed', 'prop', [[10, 4]], true),
   piece('baskets_north', 'fish_baskets', 'prop', [[11, 4]], true),
-  { ...piece('baskets_east', 'fish_baskets', 'prop', [[19, 4]], true), flip: true },
-  piece('rope', 'rope_coil', 'prop', [[9, 7]], true, { base: -14 }),
+  piece('bunting', 'bunting_poles', 'prop', [[13, 4]], true),
+  piece('quay_rack', 'drying_rack', 'prop', [[18, 4]], true),
+  flip(piece('baskets_east', 'fish_baskets', 'prop', [[19, 4]], true)),
+  piece('quay_crates', 'crate_stack', 'prop', [[21, 4]], true),
+  piece('quay_pots', 'lobster_pots', 'prop', [[4, 7]], true, { base: -14 }),
+  piece('lamp_west', 'dock_lamp', 'prop', [[6, 7]], true, { x: -4, base: -14 }),
+  piece('rope', 'rope_coil', 'prop', [[9, 7]], true, { x: 4, base: -14 }),
+  piece('quay_barrels', 'barrels', 'prop', [[12, 7]], true, { base: -14 }),
   piece('nets', 'net_pile', 'prop', [[14, 7]], true, { base: -14 }),
+  piece('lamp_east', 'dock_lamp', 'prop', [[16, 7]], true, { base: -14 }),
+  piece('quay_table', 'fish_table', 'prop', [[20, 7]], true, { base: -14 }),
+  // The jetties: the broth stall's, the customs stall behind its clerk, the fish stall by the ferry landing, bollards
+  // and the tide pole at the end of the customs pier.
+  piece('broth_stall', 'stall_broth', 'prop', block(5, 6, 9, 9), true),
+  piece('customs_stall', 'customs_stall', 'prop', [[12, 8]], true),
+  piece('fish_stall', 'stall_fish', 'prop', block(19, 20, 8, 8), true),
+  piece('bollard_west', 'bollard', 'prop', [[5, 10]], true, { x: -4, base: -14 }),
+  piece('bollard_east', 'bollard', 'prop', [[18, 10]], true, { base: -14 }),
+  piece('tide_pole', 'level_pole', 'prop', [[12, 13]], true, { x: -4, base: -14 }),
+  // The bay: boats moored along the jetties and out on the water, rocks along the shore, gulls.
+  piece('ferry', 'ferry', 'flat', [[20, 11]], false, { base: 10 }),
+  piece('sailboat_west', 'sailboat', 'flat', [[8, 10]], false),
+  flip(piece('sailboat_east', 'sailboat', 'flat', [[22, 10]], false)),
+  piece('rowboat_crook', 'rowboat', 'flat', [[17, 11]], false),
+  flip(piece('rowboat_pier', 'rowboat', 'flat', [[13, 11]], false)),
+  piece('rowboat_west', 'rowboat', 'flat', [[2, 9]], false),
+  piece('rowboat_out', 'rowboat', 'flat', [[6, 13]], false),
+  piece('gulls_a', 'gulls', 'flat', [[9, 12]], false),
+  piece('gulls_b', 'gulls', 'flat', [[15, 14]], false),
+  flip(piece('gulls_c', 'gulls', 'flat', [[21, 13]], false)),
+  piece('rocks_w', 'shore_rocks', 'flat', [[0, 8]], false),
+  flip(piece('rocks_w2', 'shore_rocks', 'flat', [[1, 11]], false)),
+  piece('rocks_e', 'shore_rocks', 'flat', [[23, 9]], false),
+  flip(piece('rocks_e2', 'shore_rocks', 'flat', [[22, 13]], false)),
+  piece('rocks_inlet', 'shore_rocks', 'flat', [[7, 8]], false, { base: -12 }),
+  ext('boat_far_a', 'sailboat', 'flat', [[4, 16]]),
+  ext('boat_far_b', 'rowboat', 'flat', [[13, 16]], { base: 8 }),
+  ext('rocks_far', 'shore_rocks', 'flat', [[19, 16]]),
 ];
 
 /* ------------------------------------------------------------------ */
