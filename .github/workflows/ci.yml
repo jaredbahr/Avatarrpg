@@ -10,8 +10,8 @@
 #
 #   - `pull_request` runs ONLY the `verify` job (typecheck, lint, format, unit
 #     tests, build, budgets, balance): a few minutes on one runner.
-#   - The browser e2e shards run only on push to `main`, on the nightly
-#     schedule, and on `workflow_dispatch`.
+#   - The browser e2e shards run only on the nightly schedule (not on push, 2026-11-17)
+#     and on `workflow_dispatch`.
 #   - The gallery shards run only on `workflow_dispatch` (with `run_gallery`)
 #     and on the nightly schedule. Never on `pull_request`, never on a push.
 #   - The nightly run does nothing beyond `verify` unless `main` moved in the
@@ -29,8 +29,10 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
+  # No `push` trigger (Jared, 2026-11-17): every merge to `main` used to start the
+  # full ~270 runner-minute browser fan-out, and with auto-merge that was
+  # ~$100+/month on its own. `verify` already ran on the PR; the nightly run
+  # below runs everything on `main` HEAD and is what the Pages deploy ships.
   pull_request:
   schedule:
     # Nightly, 09:00 UTC (04:00 America/Chicago). Skips the suites when `main`
@@ -152,7 +154,7 @@ jobs:
     needs: verify
     # Never on a pull request (see the cost rule at the top). On the nightly
     # schedule only when `main` moved since the previous night.
-    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && needs.verify.outputs.fresh == 'true') }}
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && needs.verify.outputs.fresh == 'true') }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
