@@ -102,38 +102,34 @@ const door = (id: string, place: string, x: number, y: number): WorldAnchor => (
 });
 
 export const BA_DAN_ANCHORS: readonly WorldAnchor[] = [
-  // Mira's Table: the square's paving beside the canal, next to the bench
-  // rest spot (10,5). No table or awning art yet.
-  tile('bd01.table', 'BD01', VILLAGE, 11, 5),
-  // Pella's seat at Mira's table for the first talk (DLG-01): the paving on
-  // Mira's east side, clear of the party's rest spot (10,5) to her west.
-  tile('bd01.bench', 'BD01', VILLAGE, 12, 5),
-  // Gao's shopfront: the lane in front of his display, below the shop steps.
-  tile('bd02.shopfront', 'BD02', VILLAGE, 9, 4),
-  // The rear room: the merchant house's front door, its step at (7,4).
-  door('home.gao', 'BD02', 7, 4),
-  // D5: Mira lives in the north dwelling; its front door's step is at (13,4).
-  door('home.mira', 'BD01-HOME', 13, 4),
-  // D6, adjusted in W8: the gate post on the north verge where the east road
-  // leaves the square, off the cart track, looking down the road to the east
-  // exit. The verge tree's canopy covers the road from here east, and (20,9)
-  // under it read as an unguarded gate from the square. The handover tile is
-  // the verge beside it, on the village side.
-  tile('bd03.post', 'BD03', VILLAGE, 17, 6),
-  tile('bd03.handover', 'BD03', VILLAGE, 16, 6),
-  // D5: Pella's household is the south-west dwelling. The court is the lawn
-  // in front of its door, clear of both houses' walls; the household adult
-  // stands beside it. The door tile (8,14) stays free.
-  tile('bd04.court', 'BD04', VILLAGE, 11, 12),
-  tile('bd04.yard', 'BD04', VILLAGE, 11, 13),
-  door('home.pella', 'BD04', 8, 14),
-  // No school on any map (§3): Pella goes to class down the south lane.
-  door('bd05.school', 'BD05', 11, 15),
-  // Dorin's home is near the gate (ADR 0047 §3) and Hanru's is BD16:
-  // interim doors on open grass at the tree line just south of the gate,
-  // clear of the rim tree's painted trunk at (22,11), never an exit.
-  door('home.dorin', 'DORIN-HOME', 21, 12),
-  door('home.hanru', 'BD16', 22, 10),
+  // Mira's Table: the square's open cell west of the table's two blocked cells (13..14, 9), beside the
+  // rest spot at (13,9). No table or awning art yet.
+  tile('bd01.table', 'BD01', VILLAGE, 12, 9),
+  // Pella's seat at Mira's table for the first talk (DLG-01): the cell south-east of the table, clear of
+  // the rest spot and the party's spawn.
+  tile('bd01.bench', 'BD01', VILLAGE, 14, 10),
+  // Gao's shopfront: the road in front of his shop, west of the trough (21,7).
+  tile('bd02.shopfront', 'BD02', VILLAGE, 20, 7),
+  // The rear room: the back path behind his shop, north of its row (22,3).
+  door('home.gao', 'BD02', 22, 3),
+  // D5: Mira lives in the north dwelling on the square; its front door's step is at (13,7).
+  door('home.mira', 'BD01-HOME', 13, 7),
+  // D6: the gate post inside the east wall, on the north side of the road under the guard hut (27,8), and
+  // the handover tile beside it, on the village side (26,8). Column x=28 is the welcome trigger's, so
+  // neither stands on it.
+  tile('bd03.post', 'BD03', VILLAGE, 27, 8),
+  tile('bd03.handover', 'BD03', VILLAGE, 26, 8),
+  // D5: Pella's household is the family home past the canal, door at (9,14). The court is the lane
+  // in front of the houses, the household adult stands beside it at the yard.
+  tile('bd04.court', 'BD04', VILLAGE, 12, 15),
+  tile('bd04.yard', 'BD04', VILLAGE, 13, 16),
+  door('home.pella', 'BD04', 9, 14),
+  // No school on any map (§3): Pella goes to class down the lane past the canal.
+  door('bd05.school', 'BD05', 6, 15),
+  // Dorin lives by the gate, on the north-east, between the shrine (25,7) and the guard hut (27..28, 6..7)
+  // (writing pass, provisional); Hanru's is BD16, past the canal on the east lane.
+  door('home.dorin', 'DORIN-HOME', 26, 7),
+  door('home.hanru', 'BD16', 26, 15),
   // The riverside: Mira's walk on the open bank east of the banyan, and the
   // safe place to watch the otter, dry ground two tiles back from the reeds,
   // in Mira's line of sight.

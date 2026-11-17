@@ -15,35 +15,30 @@ const VILLAGE = 'ba_dan_village';
 
 export const BA_DAN_ROUTINES: readonly ResidentRoutine[] = [
   {
-    // Gao restacks his display. Its crates sit under the table, reached from
-    // the front at (8,5); the display's own corner blocks the diagonal, so he
-    // goes round by the lane. Then along the lane to his house's east side, (10,3), for the
-    // stock stacked at (10,2); (9,3) is his house and blocked.
+    // Gao restacks his display, one step west of the shopfront at (20,7). Then he goes round
+    // the trough (21,7) by the road, to the storeroom door at (23,6) for the stock, and back.
     id: 'lw.npc.gao',
     mapId: VILLAGE,
     anchor: 'bd02.shopfront',
     activities: ['shop_service', 'short_stock_service', 'honest_stock_check', 'stock_and_repairs'],
     legs: [
       {
-        path: [
-          { x: 9, y: 5 },
-          { x: 8, y: 5 },
-        ],
+        path: [{ x: 19, y: 7 }],
         hold: 4000,
         work: true,
         face: 1,
       },
       {
-        path: [
-          { x: 9, y: 5 },
-          { x: 9, y: 4 },
-        ],
+        path: [{ x: 20, y: 7 }],
         hold: 5000,
       },
       {
         path: [
-          { x: 10, y: 4 },
-          { x: 10, y: 3 },
+          { x: 20, y: 8 },
+          { x: 21, y: 8 },
+          { x: 22, y: 8 },
+          { x: 23, y: 7 },
+          { x: 23, y: 6 },
         ],
         hold: 2500,
         work: true,
@@ -51,8 +46,11 @@ export const BA_DAN_ROUTINES: readonly ResidentRoutine[] = [
       },
       {
         path: [
-          { x: 10, y: 4 },
-          { x: 9, y: 4 },
+          { x: 23, y: 7 },
+          { x: 22, y: 8 },
+          { x: 21, y: 8 },
+          { x: 20, y: 8 },
+          { x: 20, y: 7 },
         ],
         hold: 6000,
       },
@@ -70,11 +68,8 @@ export const BA_DAN_ROUTINES: readonly ResidentRoutine[] = [
  */
 export const PARKED_ROUTINES: readonly ResidentRoutine[] = [
   {
-    // Pella's household carries a basket up to the square and back. The
-    // eight-leg schema cap sends it round the west end of the south court, below the
-    // house's front door at (8,14),
-    // clear of the house, planters and the kitchen garden's fence, up the west
-    // lane at x1, then along the road and over the canal bridge.
+    // Pella's household carries a basket from the yard at (13,16) up over the canal bridge to
+    // the foot of Mira's table at (13,10), and back the same way.
     id: 'bg.pella_household',
     mapId: VILLAGE,
     anchor: 'bd04.yard',
@@ -82,97 +77,32 @@ export const PARKED_ROUTINES: readonly ResidentRoutine[] = [
     legs: [
       {
         path: [
-          { x: 10, y: 14 },
-          { x: 9, y: 15 },
-          { x: 8, y: 15 },
-          { x: 7, y: 15 },
-          { x: 6, y: 15 },
-          { x: 5, y: 15 },
-          { x: 4, y: 14 },
-          { x: 3, y: 14 },
+          { x: 13, y: 15 },
+          { x: 13, y: 14 },
+          { x: 13, y: 13 },
+          { x: 13, y: 12 },
+          { x: 13, y: 11 },
         ],
         hold: 1500,
       },
       {
-        path: [
-          { x: 3, y: 13 },
-          { x: 3, y: 12 },
-          { x: 2, y: 12 },
-          { x: 1, y: 12 },
-          { x: 1, y: 11 },
-          { x: 1, y: 10 },
-          { x: 1, y: 9 },
-          { x: 1, y: 8 },
-        ],
-        hold: 1500,
-      },
-      {
-        path: [
-          { x: 2, y: 8 },
-          { x: 3, y: 8 },
-          { x: 4, y: 8 },
-          { x: 5, y: 8 },
-          { x: 6, y: 8 },
-          { x: 7, y: 8 },
-          { x: 8, y: 8 },
-          { x: 9, y: 8 },
-        ],
-        hold: 1500,
-      },
-      {
-        path: [
-          { x: 9, y: 7 },
-          { x: 9, y: 6 },
-          { x: 9, y: 5 },
-        ],
+        path: [{ x: 13, y: 10 }],
         hold: 3500,
         work: true,
       },
       {
         path: [
-          { x: 9, y: 6 },
-          { x: 9, y: 7 },
-          { x: 9, y: 8 },
-          { x: 9, y: 9 },
+          { x: 13, y: 11 },
+          { x: 13, y: 12 },
+          { x: 13, y: 13 },
+          { x: 13, y: 14 },
         ],
         hold: 1500,
       },
       {
         path: [
-          { x: 9, y: 8 },
-          { x: 8, y: 8 },
-          { x: 7, y: 8 },
-          { x: 6, y: 8 },
-          { x: 5, y: 8 },
-          { x: 4, y: 8 },
-          { x: 3, y: 8 },
-          { x: 2, y: 8 },
-        ],
-        hold: 1500,
-      },
-      {
-        path: [
-          { x: 1, y: 8 },
-          { x: 1, y: 9 },
-          { x: 1, y: 10 },
-          { x: 1, y: 11 },
-          { x: 1, y: 12 },
-          { x: 2, y: 12 },
-          { x: 3, y: 12 },
-          { x: 3, y: 13 },
-        ],
-        hold: 1500,
-      },
-      {
-        path: [
-          { x: 4, y: 14 },
-          { x: 5, y: 15 },
-          { x: 6, y: 15 },
-          { x: 7, y: 15 },
-          { x: 8, y: 15 },
-          { x: 9, y: 15 },
-          { x: 10, y: 14 },
-          { x: 11, y: 13 },
+          { x: 13, y: 15 },
+          { x: 13, y: 16 },
         ],
         hold: 9000,
       },
