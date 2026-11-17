@@ -24,6 +24,11 @@ import {
   quarryTerrain,
 } from '../../scenes/quarry.topdown.terrain';
 
+/**
+ * Ba Dan's old layout, drawn to the 24 x 16 rows. It is NOT registered in `BA_DAN_VALLEY_LAYOUTS` while the village is
+ * a grey blockout (`docs/places/ba_dan_village.md`): the 32 x 20 rows have no scene or plates until the ground and
+ * dressing stages, which re-place these objects. It stays exported so the old baker and its sources keep compiling.
+ */
 export const BA_DAN_TOPDOWN_LAYOUT: TopDownLayout = {
   mapId: 'ba_dan_village',
   terrain: BA_DAN_TOPDOWN_TERRAIN,
@@ -64,7 +69,6 @@ export const QUARRY_FLOOR_TOPDOWN_LAYOUT: TopDownLayout = {
 };
 
 export const BA_DAN_VALLEY_LAYOUTS: readonly TopDownLayout[] = [
-  BA_DAN_TOPDOWN_LAYOUT,
   FOREST_TOPDOWN_LAYOUT,
   QUARRY_GATE_TOPDOWN_LAYOUT,
   CUTTING_TOPDOWN_LAYOUT,
