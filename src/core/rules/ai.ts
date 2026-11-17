@@ -44,9 +44,11 @@ import {
   isValidTarget,
   knownAbilities,
   resolveAbility,
+  reviveHp,
   sameSide,
   shoveOrigin,
   unitsOnTiles,
+  unitsTouched,
   usableAbilities,
   validatingOrigin,
 } from './abilities';
@@ -107,6 +109,9 @@ interface Weights {
   /** Friendly-fire aversion. Above 1 means it actively avoids its own side. */
   readonly friendlyFire: number;
 }
+
+/** What bringing a downed friend back is worth beyond the health it gives (ADR 0118). */
+const REVIVE_VALUE = 40;
 
 const WEIGHTS: Record<AiProfile, Weights> = {
   aggressive: {
@@ -567,7 +572,7 @@ export function scoreAbility(
   const origin =
     validatingOrigin(content, draft.grid, caster, ability, target, true, squareFootprints) ??
     caster.pos;
-  const struck = unitsOnTiles(draft.units, tiles, squareFootprints).filter(
+  const struck = unitsTouched(draft.units, tiles, ability, squareFootprints).filter(
     (u) => u.id !== caster.id,
   );
   // A prospective move changes the caster's occupied cells. Keep its stale
@@ -677,6 +682,14 @@ export function scoreAbility(
             score += expected * weights.damage;
             if (expected >= victim.hp) score += weights.kill;
           }
+          break;
+        }
+        case 'revive': {
+          // Helping a fallen friend up (ADR 0118) brings a whole body back to the
+          // fight, which is worth more than the health it restores: a flat bonus
+          // on top, so a side that can stand somebody up will, before it heals.
+          if (!friendly) break;
+          score += (reviveHp(victim, effect.fraction) + REVIVE_VALUE) * weights.support;
           break;
         }
         case 'heal': {
@@ -1065,6 +1078,13 @@ export function candidateTargets(
   for (const friend of draft.living()) {
     if (!sameSide(caster, friend)) continue;
     push(friend.pos);
+  }
+  // A fallen friend can be helped up, so their tile is worth scoring (ADR 0118).
+  if (abilities.some((a) => a.targeting.shape === 'unit' && a.targeting.allow === 'downed')) {
+    for (const fallen of draft.units) {
+      if (fallen.hp > 0 || !sameSide(caster, fallen)) continue;
+      push(fallen.pos);
+    }
   }
   push(caster.pos);
 

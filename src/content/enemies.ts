@@ -30,7 +30,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     stats: { maxHp: 28, maxAp: 4, maxMove: 4, power: 5, defense: 1, speed: 5, focus: 5 },
     abilities: ['club_swing', 'bandit_rush'],
     ai: 'aggressive',
-    xp: 100,
+    xp: 150,
     sprite: 'unit.enemy.thug',
     description:
       'Quarry labour that stopped getting paid and started taking. Walks straight in with a club; Rush closes four tiles, though not every turn.',
@@ -43,7 +43,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     stats: { maxHp: 22, maxAp: 4, maxMove: 4, power: 4, defense: 0, speed: 7, focus: 10 },
     abilities: ['sling_stone'],
     ai: 'cautious',
-    xp: 100,
+    xp: 150,
     sprite: 'unit.enemy.slinger',
     description:
       'Throws stones from up to six tiles and backs away from a fight. Frail once caught, and cover makes its stones miss more often.',
@@ -100,7 +100,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     stats: { maxHp: 34, maxAp: 3, maxMove: 4, power: 6, defense: 2, speed: 6, focus: 10 },
     abilities: ['fire_blast', 'oil_flask', 'torch_toss'],
     ai: 'cautious',
-    xp: 200,
+    xp: 300,
     sprite: 'unit.enemy.deserter',
     description:
       'Spills oil, then lights it with a thrown torch. Keep clear of the spill; water douses flames but leaves unburned oil in place.',
@@ -224,7 +224,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     xp: 120,
     sprite: 'unit.enemy.freighthandler',
     description:
-      '[Writer placeholder] One of the handlers loading the freight pontoon at Saltstep. Paid by the crate.',
+      'Loads freight at Saltstep, paid by the crate, and the tide is going out. Sturdy. Holds the gangway with a club and does not charge.',
   },
   {
     id: 'line_rigger',
@@ -238,7 +238,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     xp: 100,
     sprite: 'unit.enemy.rigger',
     description:
-      '[Writer placeholder] A laid-off line rigger, cutting down the dead copper spur in the Emberwatch power yard.',
+      'One of Sabi’s crew, laid off when the line was finished. Not sturdy, but Rush closes four tiles, though not every turn.',
   },
   {
     /*
@@ -257,7 +257,8 @@ export const ENEMIES: readonly EnemyDef[] = [
     ai: 'aggressive',
     xp: 1,
     sprite: 'unit.ally.veyra',
-    description: '[Writer placeholder] Veyra, fighting beside you on the freight pontoon.',
+    description:
+      'The pump woman from the pontoon, fighting beside you. Her brass lance shoves a handler back a tile, and her call gives a hero an extra AP and a harder hit.',
   },
 ];
 

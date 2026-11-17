@@ -86,7 +86,12 @@ export function occupiedCells(
 /** Whether a unit-targeted ability may resolve against its own caster. */
 export function allowsCasterTarget(ability: Pick<Ability, 'targeting'>): boolean {
   if (ability.targeting.shape === 'self') return true;
-  return ability.targeting.shape === 'unit' && ability.targeting.allow !== 'enemy';
+  return (
+    ability.targeting.shape === 'unit' &&
+    ability.targeting.allow !== 'enemy' &&
+    // A downed friend is somebody else, never the caster.
+    ability.targeting.allow !== 'downed'
+  );
 }
 
 /** Chebyshev distance from a point to the nearest cell of a possibly-large unit. */

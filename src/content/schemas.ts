@@ -282,7 +282,7 @@ export const comboSchema = z.object({
 
 const targeting = z.union([
   z.object({ shape: z.literal('self') }),
-  z.object({ shape: z.literal('unit'), allow: z.enum(['enemy', 'ally', 'any']) }),
+  z.object({ shape: z.literal('unit'), allow: z.enum(['enemy', 'ally', 'any', 'downed']) }),
   z.object({ shape: z.literal('tile') }),
   z.object({ shape: z.literal('blast'), radius: z.number().int().min(0).max(4) }),
   z.object({ shape: z.literal('line'), length: z.number().int().min(1).max(8) }),
@@ -299,6 +299,7 @@ const abilityEffect = z.union([
     includesCaster: z.boolean().optional(),
   }),
   z.object({ kind: z.literal('heal'), base: z.number().min(0), scale: z.number().min(0).max(3) }),
+  z.object({ kind: z.literal('revive'), fraction: z.number().gt(0).max(1) }),
   z.object({
     kind: z.literal('status'),
     status: statusId,
@@ -1016,6 +1017,7 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     next: id,
   }),
   z.object({ id, kind: z.literal('branch'), flag: z.string().min(1), ifSet: id, ifUnset: id }),
+  z.object({ id, kind: z.literal('branchWhen'), when: conditionSchema, ifTrue: id, ifFalse: id }),
   z.object({
     id,
     kind: z.literal('end'),
@@ -2785,6 +2787,9 @@ export function validateContent(
           );
         }
         break;
+      case 'branchWhen':
+        links.push([node.id, node.ifTrue], [node.id, node.ifFalse]);
+        break;
       case 'end':
         if (node.next) {
           links.push([node.id, node.next]);
@@ -2998,6 +3003,8 @@ export function validateContent(
         queue.push(current.next);
       } else if (current.kind === 'branch') {
         queue.push(current.ifSet, current.ifUnset);
+      } else if (current.kind === 'branchWhen') {
+        queue.push(current.ifTrue, current.ifFalse);
       }
       // explore/battle/end: a resting point, do not walk past it.
     }

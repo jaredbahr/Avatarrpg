@@ -173,6 +173,12 @@ export function enterStoryNode(
         continue;
       }
 
+      case 'branchWhen': {
+        current = { ...current, story: { ...current.story, visited } };
+        target = evaluate(current, node.when) ? node.ifTrue : node.ifFalse;
+        continue;
+      }
+
       case 'dialogue':
       case 'choice': {
         events.push({ type: 'screenChanged', screen: 'dialogue' });
@@ -266,6 +272,27 @@ export function advanceDialogue(content: ContentIndex, state: GameState): StepRe
   }
 
   return enterStoryNode(content, state, node.next);
+}
+
+/**
+ * The player in charge passes to the next person when the party walks out of one
+ * explore map into another (#846). Only a walk through an exit counts: a story
+ * beat that lands the party somewhere, or a fight's map, does not move it. The rotation is the same counter the
+ * story choices turn, so it saves and loads with nothing new in the blob.
+ */
+export function passLeadership(
+  content: ContentIndex,
+  state: GameState,
+  toMapId: string,
+): { readonly state: GameState; readonly events: readonly GameEvent[] } {
+  const from = content.maps.get(state.location.mapId);
+  if (!from || from.kind !== 'explore' || state.location.mapId === toMapId)
+    return { state, events: [] };
+  const deciderIndex = state.story.deciderIndex + 1;
+  return {
+    state: { ...state, story: { ...state.story, deciderIndex } },
+    events: [{ type: 'leaderPassed', deciderIndex }],
+  };
 }
 
 /**

@@ -50,11 +50,13 @@ function authoredPairs(nodes: readonly StoryNode[]): string[] {
             ? [node.next, node.onDefeat]
             : node.kind === 'branch'
               ? [node.ifSet, node.ifUnset]
-              : node.kind === 'end'
-                ? node.next === undefined
-                  ? []
-                  : [node.next]
-                : [node.next];
+              : node.kind === 'branchWhen'
+                ? [node.ifTrue, node.ifFalse]
+                : node.kind === 'end'
+                  ? node.next === undefined
+                    ? []
+                    : [node.next]
+                  : [node.next];
       return targets.map((target) => `${node.id} -> ${target}`);
     })
     .sort();
@@ -112,7 +114,7 @@ describe('runtime story graph', () => {
     for (const group of STORY_GROUPS) {
       const nodes = graph.nodes.filter((item) => item.group === group.slug);
       expect(documents.get(`${group.slug}.md`)).toContain(
-        `${nodes.length} nodes; ${nodes.filter((item) => item.node.kind === 'battle').length} fights; ${nodes.filter((item) => item.node.kind === 'branch').length} branches;`,
+        `${nodes.length} nodes; ${nodes.filter((item) => item.node.kind === 'battle').length} fights; ${nodes.filter((item) => ['branch', 'branchWhen'].includes(item.node.kind)).length} branches;`,
       );
     }
   });
@@ -211,6 +213,22 @@ describe('runtime story graph', () => {
       'set: result="a deliberately long stored value that must remain complete"',
     );
     expect(text).toContain('standing deltas: earth=2');
+  });
+
+  it('draws a branchWhen with both conditional edges', () => {
+    const when = { kind: 'partyHas', characterId: 'kaya' } as const;
+    const nodes: StoryNode[] = [
+      { id: 'gate', kind: 'branchWhen', when, ifTrue: 'yes', ifFalse: 'no' },
+      ending('yes'),
+      ending('no'),
+    ];
+    const graph = buildStoryGraph(fixture(nodes));
+    expect(graph.edges.map((edge) => [edge.from, edge.to, edge.label])).toEqual(
+      expect.arrayContaining([
+        ['gate', 'yes', `when: ${describeCondition(CONTENT, when)}`],
+        ['gate', 'no', expect.stringContaining('otherwise')],
+      ]),
+    );
   });
 
   it('includes both truthiness branches, battle outcomes, flag effects, ending continuations and cycles', async () => {

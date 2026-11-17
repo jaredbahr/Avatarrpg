@@ -1,0 +1,7 @@
+# Frozen duration after repeated Chilled
+
+- **Outcome:** Follow up on the remaining [#560](https://github.com/jaredbahr/Avatarrpg/issues/560) case after [#599](https://github.com/jaredbahr/Avatarrpg/pull/599). A second Chilled application upgrades to Frozen for its authored one-turn duration.
+- **Location:** `codex/issue-560-freeze-duration-01a1b3cc` from `808cae99fc1d5b64bfc9c35330dc84589b64688a`. The test is in `src/content/statuses.test.ts` and the rule is in `src/core/rules/status.ts`.
+- **Decision:** Ice Spikes still applies two-round Chilled. When the status upgrades, the resulting status supplies the duration. Frozen's shipped description and duration describe one lost turn. The upgrade still consumes Chilled. [Original reducer trace and status contract](https://github.com/jaredbahr/Avatarrpg/issues/560#issuecomment-6764889398)
+- **Verification:** The regression uses seed `3845378261`, Nilak and Sura's shipped Ice Shaping kits, and the Forest Road Thugs encounter. It checks the legal casts, the public duration and expiration events, the worker's one skipped turn, and its active turn in the next round. Restoring the original duration expression made the regression fail with Frozen(2). The fixed suite passed all 38 status tests.
+- **Next:** The exact clean local CI gate and normal hosted checks are required for publication and readiness. Record their exact revisions and results in the implementing PR.

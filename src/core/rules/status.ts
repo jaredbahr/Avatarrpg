@@ -43,7 +43,9 @@ export function applyStatus(
   const def = content.statuses.get(finalId);
   if (!def) return { unit, applied: null, cleared: [] };
 
-  const finalDuration = duration ?? def.defaultDuration;
+  // The resulting status sets an upgrade's lifetime. Repeated Chilled
+  // therefore freezes the target for its authored single turn.
+  const finalDuration = upgraded ? def.defaultDuration : (duration ?? def.defaultDuration);
 
   // An upgrade consumes the status it grew out of.
   const consumed: StatusId[] = upgraded ? [id] : [];

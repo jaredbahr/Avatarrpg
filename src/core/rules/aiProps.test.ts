@@ -30,6 +30,8 @@ function setup() {
     party: [
       { characterId: 'kaya', level: 3, autoChoose: true },
       { characterId: 'bo', level: 3, autoChoose: true },
+      // Three players, the road's baseline: two would leave one of its two enemies out (#846).
+      { characterId: 'sura', level: 3, autoChoose: true },
     ],
     startNode: '',
   });

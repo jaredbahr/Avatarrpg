@@ -255,6 +255,8 @@ export const OVERLAY = {
   koCross: 'rgba(226,88,74,0.85)',
   move: 'rgba(126, 200, 227, 0.30)',
   moveEdge: 'rgba(200, 240, 255, 0.85)',
+  reach: 'rgba(240, 198, 116, 0.2)',
+  reachEdge: 'rgba(255, 224, 160, 0.75)',
   target: 'rgba(226, 88, 74, 0.32)',
   targetEdge: 'rgba(255, 150, 130, 0.9)',
   area: 'rgba(240, 198, 116, 0.34)',

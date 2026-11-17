@@ -36,6 +36,10 @@ function references(region: RegionContent) {
         story(node.ifSet, from);
         story(node.ifUnset, from);
         break;
+      case 'branchWhen':
+        story(node.ifTrue, from);
+        story(node.ifFalse, from);
+        break;
       case 'end':
         story(node.next, from);
         break;

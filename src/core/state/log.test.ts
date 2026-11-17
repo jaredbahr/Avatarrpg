@@ -135,6 +135,10 @@ function fixtures() {
       event: { type: 'unitDied', unitId: target.id },
       expected: [target.name, 'down'],
     },
+    unitRevived: {
+      event: { type: 'unitRevived', unitId: target.id, helperId: actor.id, hp: 8 },
+      expected: [actor.name, 'helps', target.name, 'up'],
+    },
     propDamaged: {
       event: { type: 'propDamaged', propId: prop.id, name: propDef.name, amount: 2, pos: prop.pos },
       expected: null,
@@ -195,6 +199,7 @@ function fixtures() {
       expected: ['won'],
     },
     screenChanged: { event: { type: 'screenChanged', screen: 'explore' }, expected: null },
+    leaderPassed: { event: { type: 'leaderPassed', deciderIndex: 1 }, expected: null },
     comboDiscovered: {
       event: { type: 'comboDiscovered', comboId: 'fire-into-oil' },
       expected: null,
@@ -254,6 +259,9 @@ function assertCleanLine(
       break;
     case 'attackMissed':
       requiredNames.push(event.unitId, event.targetId);
+      break;
+    case 'unitRevived':
+      requiredNames.push(event.unitId, event.helperId);
       break;
     case 'damaged':
       requiredNames.push(event.unitId);
