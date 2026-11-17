@@ -3,20 +3,27 @@
  *
  * Every line is the merged script's (`docs/story/scripts/act2-sparks.md`, #814, owner-reviewed),
  * word for word, with the game's curly quotes. The script's `Party:` lines are shown as a
- * narrator-framed "The party" line until a one-option tap exists (a choice needs two options;
- * see `docs/pipeline-trial-log.md`, friction). Strings the script does not give are
- * `writerPlaceholder`s.
+ * narrator-framed "The party" line until a one-option tap exists (a choice needs two options and
+ * a line needs a speaker; see `docs/pipeline-trial-log.md`, friction). The strings the script does
+ * not give (option details, objectives) are the writing pass's.
  *
  * The driver: after an Act I win Bo-shan drives the cart; after a loss (`act1_lost`) Dorin does.
  * Where the script replaces a whole block, a `branch` on `act1_lost` runs one of two sequences
  * that rejoin; where it replaces one line, the node carries a variant.
  *
- * Not wired yet (listed in the trial log): the hero variants (Tenzo, Jinu, Sura, Wen, Riko; Kaya's
- * crates are in, through the crates' NPC route), Veyra's fight barks (no bark hook), and the
- * customs stall's drifting (the stall is an NPC on the quay).
+ * Hero variants. A hero's lines are extra nodes, and only an NPC route can choose a chain by who is
+ * in the party, so a variant is wired where its scene starts at an NPC: Kaya's crates, Tenzo at the
+ * bowl stall (`bowlStall`) and Jinu on the coast road after a loss (`lossRoad`, entered from the
+ * coast-road sign's route in `maps/world.ts`). Each is the same chain again under its own ids,
+ * ending on the hero's lines. Sura and Wen (2.4) and Riko (2.6) sit in the middle of the long
+ * chain that runs from the customs stall through the fight, and wait for a `branch` that takes a
+ * `Condition` (trial log, friction 3).
+ *
+ * Not wired yet (listed in the trial log): those three, Veyra's fight barks (no bark hook), and
+ * the customs stall's drifting (the stall is an NPC on the quay).
  */
 import type { Condition, DialogueVariant, StoryNode } from '../../../core/types';
-import { PLACEHOLDER_PORTRAIT, writerPlaceholder } from './placeholders';
+import { PLACEHOLDER_PORTRAIT } from './placeholders';
 import { staged } from './stage';
 
 const LOST: Condition = { kind: 'flag', key: 'act1_lost', op: 'set' };
@@ -36,6 +43,20 @@ const VEYRA_PORTRAIT = 'portrait.veyra';
 const TAVI_PORTRAIT = 'portrait.tavi';
 const CLERK_PORTRAIT = 'portrait.customs_clerk';
 const HANDLER = 'Freight handler';
+const BOWL_SELLER = 'Bowl-seller';
+const TENZO = 'Tenzo';
+const TENZO_PORTRAIT = 'portrait.tenzo';
+const JINU = 'Jinu';
+const JINU_PORTRAIT = 'portrait.jinu';
+
+/** The second bowl is being carried: either way through Scene 2.2 (see `bowlStall`). */
+const BOWL_CARRIED: Condition = {
+  kind: 'any',
+  of: [
+    { kind: 'visited', nodeId: 'mq02_bowl_seller' },
+    { kind: 'visited', nodeId: 'mq02_bowl_seller_tenzo' },
+  ],
+};
 
 /** XP the winch fight pays a head (5 freight handlers at 120 over a baseline of 4 with Veyra). */
 export const WINCH_XP_PER_HEAD = 150;
@@ -68,17 +89,96 @@ const driver = (
     { when: LOST, speaker: DORIN, portrait: DORIN_PORTRAIT, lines: dorin },
   ]);
 
-const NODES: readonly StoryNode[] = [
-  /* ------------------------------------------------- Scene 2.1, the coast road */
+const COAST_ROAD_OPENING =
+  'The coast road drops out of the pines. Below it the bay is flat and grey. Far across the water, a row of lamps is burning in broad daylight.';
+
+/**
+ * Scene 2.1's loss branch, Dorin and Gao's receipt. In the data twice: the plain chain, and the
+ * one a party with Jinu hears, which ends on her line about the courier office.
+ */
+const lossRoad = (suffix: '' | '_jinu', next: string): readonly StoryNode[] => [
   say(
-    'mq02_coast_road',
+    `mq02_coast_dorin${suffix}`,
+    DORIN,
+    DORIN_PORTRAIT,
+    [
+      'Those lamps were not lit last month. I have that in the watch book. I did not know what to write next to it, so I wrote “lamps”.',
+      'Gao gave me this for you. And a second water skin. He counted them out loud.',
+    ],
+    `mq02_coast_receipt${suffix}`,
+  ),
+  say(
+    `mq02_coast_receipt${suffix}`,
     'The Coast Road',
     NARRATOR,
     [
-      'The coast road drops out of the pines. Below it the bay is flat and grey. Far across the water, a row of lamps is burning in broad daylight.',
+      'A delivery receipt, from the drawer where Gao keeps the debt slips. A stone carter left it on his counter. It is not for stone. “Received at Stoneback: six sealed crates. Sent on: stop fourteen, route nine, bell three.” It is stamped with a mark nobody in Ba Dan knows: a lamp over a wavy line.',
     ],
-    'mq02_coast_driver',
+    `mq02_coast_dorin_receipt${suffix}`,
   ),
+  say(
+    `mq02_coast_dorin_receipt${suffix}`,
+    DORIN,
+    DORIN_PORTRAIT,
+    [
+      'That is all we have. There is no rubbing. The machine is still running, and Bo-shan’s delivery book is still up there with it. One receipt.',
+      'A receipt is half of something. The courier office in Saltstep keeps the other halves. If the two say the same thing, it is evidence. If they don’t, it is two pieces of paper. I looked that up.',
+      'Bo-shan’s customers are still waiting. Gao loaded what he could. I am going to deliver it. Nobody told me to.',
+    ],
+    next,
+  ),
+];
+
+/**
+ * Scene 2.2 at the bowl stall. In the data twice: the plain chain, and the one a party with Tenzo
+ * hears, which ends on his exchange with the bowl-seller.
+ */
+const bowlStall = (suffix: '' | '_tenzo', next: string): readonly StoryNode[] => [
+  say(
+    `mq02_bowl_seller${suffix}`,
+    BOWL_SELLER,
+    NARRATOR,
+    ['New faces. Sit. Here.'],
+    `mq02_bowl_set_down${suffix}`,
+  ),
+  say(
+    `mq02_bowl_set_down${suffix}`,
+    'Saltstep',
+    NARRATOR,
+    ['She puts down two bowls of pepper broth. Then she taps the second one.'],
+    `mq02_bowl_custom${suffix}`,
+  ),
+  say(
+    `mq02_bowl_custom${suffix}`,
+    BOWL_SELLER,
+    NARRATOR,
+    [
+      'That one’s not yours. First bowl you eat. Second bowl you carry to somebody. That’s how it’s done here.',
+    ],
+    `mq02_bowl_who${suffix}`,
+  ),
+  say(
+    `mq02_bowl_who${suffix}`,
+    PARTY,
+    NARRATOR,
+    ['Carry it to who?'],
+    `mq02_bowl_pump_woman${suffix}`,
+  ),
+  say(
+    `mq02_bowl_pump_woman${suffix}`,
+    BOWL_SELLER,
+    NARRATOR,
+    [
+      'Anybody who hasn’t eaten. Today, the pump woman out on the freight pontoon. She’s been out there since the tide turned, and she never comes in.',
+      'Bring the bowl back. People will tell you this custom is about kindness. It’s about me not washing bowls on a pontoon.',
+    ],
+    next,
+  ),
+];
+
+const NODES: readonly StoryNode[] = [
+  /* ------------------------------------------------- Scene 2.1, the coast road */
+  say('mq02_coast_road', 'The Coast Road', NARRATOR, [COAST_ROAD_OPENING], 'mq02_coast_driver'),
   {
     id: 'mq02_coast_driver',
     kind: 'branch',
@@ -134,33 +234,22 @@ const NODES: readonly StoryNode[] = [
     ],
     'mq02_coast_parcel',
   ),
+  ...lossRoad('', 'mq02_coast_parcel'),
+  // Jinu's moment (loss branch): the coast-road sign routes here when she is in the party.
   say(
-    'mq02_coast_dorin',
-    DORIN,
-    DORIN_PORTRAIT,
-    [
-      'Those lamps were not lit last month. I have that in the watch book. I did not know what to write next to it, so I wrote “lamps”.',
-      'Gao gave me this for you. And a second water skin. He counted them out loud.',
-    ],
-    'mq02_coast_receipt',
-  ),
-  say(
-    'mq02_coast_receipt',
+    'mq02_coast_road_jinu',
     'The Coast Road',
     NARRATOR,
-    [
-      'A delivery receipt, from the drawer where Gao keeps the debt slips. A stone carter left it on his counter. It is not for stone. “Received at Stoneback: six sealed crates. Sent on: stop fourteen, route nine, bell three.” It is stamped with a mark nobody in Ba Dan knows: a lamp over a wavy line.',
-    ],
-    'mq02_coast_dorin_receipt',
+    [COAST_ROAD_OPENING],
+    'mq02_coast_dorin_jinu',
   ),
+  ...lossRoad('_jinu', 'mq02_jinu_other_half'),
   say(
-    'mq02_coast_dorin_receipt',
-    DORIN,
-    DORIN_PORTRAIT,
+    'mq02_jinu_other_half',
+    JINU,
+    JINU_PORTRAIT,
     [
-      'That is all we have. There is no rubbing. The machine is still running, and Bo-shan’s delivery book is still up there with it. One receipt.',
-      'A receipt is half of something. The courier office in Saltstep keeps the other halves. If the two say the same thing, it is evidence. If they don’t, it is two pieces of paper. I looked that up.',
-      'Bo-shan’s customers are still waiting. Gao loaded what he could. I am going to deliver it. Nobody told me to.',
+      'Saltstep office, second drawer, under “returned, no such person”. That’s where a receipt’s other half goes when nobody claims it. I’ve filed a hundred. I never once wondered what they were for.',
     ],
     'mq02_coast_parcel',
   ),
@@ -196,7 +285,7 @@ const NODES: readonly StoryNode[] = [
     id: 'mq02_market_explore',
     kind: 'explore',
     mapId: 'saltstep_market',
-    objective: writerPlaceholder('Find a seat at the bowl stall.'),
+    objective: 'Stop at the bowl stall on the quay.',
     objectiveTargetId: 'mq02_bowl_seller',
     objectiveVariants: [
       {
@@ -207,45 +296,39 @@ const NODES: readonly StoryNode[] = [
             { kind: 'flag', key: 'inquiry_quiet', op: 'set' },
           ],
         },
-        text: writerPlaceholder('Tavi’s ferry crosses the bay at dusk.'),
+        text: 'Board Tavi’s ferry at the landing to cross the bay.',
         objectiveTargetId: 'mq02_tavi',
       },
       {
-        when: { kind: 'visited', nodeId: 'mq02_bowl_seller' },
-        text: writerPlaceholder(
-          'Carry the second bowl to the pump woman. Customs is the stall with the flag.',
-        ),
+        when: BOWL_CARRIED,
+        text: 'Carry the bowl and your papers to the customs stall with the flag.',
         objectiveTargetId: 'mq02_customs_clerk',
       },
     ],
     next: 'mq02_market_explore',
   },
-  say('mq02_bowl_seller', 'Bowl-seller', NARRATOR, ['New faces. Sit. Here.'], 'mq02_bowl_set_down'),
+  ...bowlStall('', 'mq02_market_explore'),
+  // Tenzo's moment: the bowl-seller's NPC routes here when he is in the party.
+  ...bowlStall('_tenzo', 'mq02_tenzo_broth'),
   say(
-    'mq02_bowl_set_down',
-    'Saltstep',
-    NARRATOR,
-    ['She puts down two bowls of pepper broth. Then she taps the second one.'],
-    'mq02_bowl_custom',
+    'mq02_tenzo_broth',
+    TENZO,
+    TENZO_PORTRAIT,
+    ['Pepper, river fish, and something sour right at the end. Pickled plum?'],
+    'mq02_bowl_plum_skin',
   ),
   say(
-    'mq02_bowl_custom',
-    'Bowl-seller',
+    'mq02_bowl_plum_skin',
+    BOWL_SELLER,
     NARRATOR,
-    [
-      'That one’s not yours. First bowl you eat. Second bowl you carry to somebody. That’s how it’s done here.',
-    ],
-    'mq02_bowl_who',
+    ['Pickled plum skin. The plum I eat myself.'],
+    'mq02_tenzo_both_bowls',
   ),
-  say('mq02_bowl_who', PARTY, NARRATOR, ['Carry it to who?'], 'mq02_bowl_pump_woman'),
   say(
-    'mq02_bowl_pump_woman',
-    'Bowl-seller',
-    NARRATOR,
-    [
-      'Anybody who hasn’t eaten. Today, the pump woman out on the freight pontoon. She’s been out there since the tide turned, and she never comes in.',
-      'Bring the bowl back. People will tell you this custom is about kindness. It’s about me not washing bowls on a pontoon.',
-    ],
+    'mq02_tenzo_both_bowls',
+    TENZO,
+    TENZO_PORTRAIT,
+    ['I’ll wash both bowls.'],
     'mq02_market_explore',
   ),
   say(
@@ -375,20 +458,21 @@ const NODES: readonly StoryNode[] = [
     speaker: CLERK,
     portrait: CLERK_PORTRAIT,
     prompt: 'This happens. Keep talking, I can still hear you!',
+    footer: 'All three reach the clerk.',
     options: [
       {
         label: 'Jump aboard now.',
-        detail: writerPlaceholder('Option detail for “Jump aboard now.”'),
+        detail: 'Land on the stall before the gap gets any wider. It will rock.',
         next: 'mq02_approach_jump',
       },
       {
         label: 'Follow along the pole walk.',
-        detail: writerPlaceholder('Option detail for “Follow along the pole walk.”'),
+        detail: 'Keep level with the stall along the plank walk and shout across the water.',
         next: 'mq02_approach_walk',
       },
       {
         label: 'Ask Tavi for a tow.',
-        detail: writerPlaceholder('Option detail for “Ask Tavi for a tow.”'),
+        detail: 'The ferry is at the landing, and Tavi has towed that stall back before.',
         next: 'mq02_approach_tow',
       },
     ],
@@ -1121,6 +1205,11 @@ const SCENE_2_1 = [
   'mq02_coast_dorin',
   'mq02_coast_receipt',
   'mq02_coast_dorin_receipt',
+  'mq02_coast_road_jinu',
+  'mq02_coast_dorin_jinu',
+  'mq02_coast_receipt_jinu',
+  'mq02_coast_dorin_receipt_jinu',
+  'mq02_jinu_other_half',
   'mq02_coast_parcel',
   'mq02_parcel',
 ] as const;
@@ -1138,6 +1227,7 @@ export const MQ02_STORY: readonly StoryNode[] = staged(
   'saltstep_market',
   {
     mq02_bowl_seller: 'mq02_bowl_seller',
+    mq02_bowl_seller_tenzo: 'mq02_bowl_seller',
     mq02_tavi: 'mq02_tavi',
     mq02_ferry: 'mq02_tavi',
     mq02_freight_office: 'mq02_freight_clerk',

@@ -48,7 +48,14 @@ const SPRITE = {
 } as const;
 
 const ARRIVED = { kind: 'visited', nodeId: 'mq02_saltstep_arrival' } as const;
-const BOWL_CARRIED = { kind: 'visited', nodeId: 'mq02_bowl_seller' } as const;
+// Either way in to Scene 2.2: the bowl-seller's own chain, or the one that ends on Tenzo's exchange.
+const BOWL_CARRIED = {
+  kind: 'any',
+  of: [
+    { kind: 'visited', nodeId: 'mq02_bowl_seller' },
+    { kind: 'visited', nodeId: 'mq02_bowl_seller_tenzo' },
+  ],
+} as const;
 const VOTED = {
   kind: 'any',
   of: [
@@ -99,7 +106,7 @@ export const SALTSTEP_MARKET: MapDef = {
     { x: 1, y: 4 },
     { x: 2, y: 4 },
   ],
-  objective: 'Look around the market on the water.',
+  objective: 'Stop at the bowl stall on the quay.',
   props: [],
   exits: [
     {
@@ -107,7 +114,7 @@ export const SALTSTEP_MARKET: MapDef = {
       toMapId: 'ba_dan_village',
       // Beside the coast-road sign on Ba Dan's south lawn.
       toPos: { x: 16, y: 14 },
-      label: 'Coast road → Ba Dan',
+      label: 'Coast road → Ba Dan Village',
       direction: 'west',
       area: mouth(0, [5, 6]),
     },
@@ -134,6 +141,10 @@ export const SALTSTEP_MARKET: MapDef = {
       pos: { x: 5, y: 4 },
       sprite: SPRITE.bowlSeller,
       node: 'mq02_bowl_seller',
+      // Tenzo's moment (Scene 2.2): the same conversation, ending on his exchange with her.
+      routes: [
+        { when: { kind: 'partyHas', characterId: 'tenzo' }, node: 'mq02_bowl_seller_tenzo' },
+      ],
     },
     {
       id: 'mq02_tavi',
@@ -266,7 +277,7 @@ export const EMBERWATCH_PARADE: MapDef = {
     { x: 5, y: 12 },
     { x: 5, y: 13 },
   ],
-  objective: 'Look around Emberwatch.',
+  objective: 'Look around Emberwatch, or go east to the power yard.',
   props: [],
   exits: [
     {
@@ -331,7 +342,7 @@ export const EMBERWATCH_POWER_YARD: MapDef = {
     '###################',
   ],
   partySpawns: COMBAT_PARTY_SPAWNS,
-  objective: 'The power yard. Luli keeps the line here.',
+  objective: 'Talk to Luli in the power yard, or go west to the parade ground.',
   exits: [
     {
       pos: { x: 0, y: 5 },

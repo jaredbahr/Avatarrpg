@@ -224,7 +224,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     xp: 120,
     sprite: 'unit.enemy.freighthandler',
     description:
-      '[Writer placeholder] One of the handlers loading the freight pontoon at Saltstep. Paid by the crate.',
+      'Loads freight at Saltstep, paid by the crate, and the tide is going out. Sturdy. Holds the gangway with a club and does not charge.',
   },
   {
     id: 'line_rigger',
@@ -238,7 +238,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     xp: 100,
     sprite: 'unit.enemy.rigger',
     description:
-      '[Writer placeholder] A laid-off line rigger, cutting down the dead copper spur in the Emberwatch power yard.',
+      'One of Sabi’s crew, laid off when the line was finished. Not sturdy, but Rush closes four tiles, though not every turn.',
   },
   {
     /*
@@ -257,7 +257,8 @@ export const ENEMIES: readonly EnemyDef[] = [
     ai: 'aggressive',
     xp: 1,
     sprite: 'unit.ally.veyra',
-    description: '[Writer placeholder] Veyra, fighting beside you on the freight pontoon.',
+    description:
+      'The pump woman from the pontoon, fighting beside you. Her brass lance shoves a handler back a tile, and her call gives a hero an extra AP and a harder hit.',
   },
 ];
 
