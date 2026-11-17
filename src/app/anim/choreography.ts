@@ -95,6 +95,13 @@ export type PresentationTimingProfile = {
 };
 
 /** Shared behavior remains the default; top-down timing is opt-in per Animator. */
+/**
+ * The readable beat (ms) after the last enemy action has finished playing, before the hand-off card
+ * or the defeat panel takes the board: long enough to see the hit and read the damage number.
+ * Reduced motion keeps it and only drops the motion.
+ */
+export const ENEMY_PHASE_BEAT_MS = 500;
+
 export const DEFAULT_PRESENTATION_TIMING: PresentationTimingProfile = {
   ...TIMING,
   tail: 0,
