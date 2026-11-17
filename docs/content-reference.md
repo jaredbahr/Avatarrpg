@@ -204,7 +204,7 @@ Names are shown in authored content order within each entry; sections and record
 
 - Stats: defense 2, focus 10, maxAp 3, maxHp 34, maxMove 4, power 6, speed 6
 - Abilities: Fire Blast, Oil Flask, Torch Toss
-- XP: 200
+- XP: 300
 
 ### Freight Handler
 
@@ -252,13 +252,13 @@ Names are shown in authored content order within each entry; sections and record
 
 - Stats: defense 1, focus 5, maxAp 4, maxHp 28, maxMove 4, power 5, speed 5
 - Abilities: Club Swing, Rush
-- XP: 100
+- XP: 150
 
 ### Slinger
 
 - Stats: defense 0, focus 10, maxAp 4, maxHp 22, maxMove 4, power 4, speed 7
 - Abilities: Sling Stone
-- XP: 100
+- XP: 150
 
 ### The Driller
 
@@ -279,9 +279,9 @@ Names are shown in authored content order within each entry; sections and record
 - Map: The Forest Road
 - Expected level: 1
 - Baseline party size: 3
-- Authored roster: Quarry Worker; Quarry Worker; Slinger (300 XP)
+- Authored roster: Quarry Worker; Slinger (300 XP)
 - Conditional enemies: —
-- Variants: thugs: Quarry Worker; Quarry Worker; Slinger (300 XP, 0.0% vs authored roster); slingers: Slinger; Slinger; Slinger (300 XP, 0.0% vs authored roster); bruisers: Quarry Hauler; Quarry Hauler (300 XP, 0.0% vs authored roster)
+- Variants: thugs: Quarry Worker; Slinger (300 XP, 0.0% vs authored roster); slingers: Slinger; Slinger (300 XP, 0.0% vs authored roster); bruisers: Quarry Hauler; Quarry Hauler (300 XP, 0.0% vs authored roster)
 - Allies: —
 - Reinforcements: Quarry Worker; Slinger
 
@@ -312,7 +312,7 @@ Names are shown in authored content order within each entry; sections and record
 - Map: The Quarry Gate
 - Expected level: 2
 - Baseline party size: 3
-- Authored roster: Fire Nation Deserter; Quarry Worker; Quarry Hauler (450 XP)
+- Authored roster: Fire Nation Deserter; Quarry Worker (450 XP)
 - Conditional enemies: —
 - Variants: bluffed: Quarry Hauler; Quarry Bender; Quarry Hauler (450 XP, 0.0% vs authored roster)
 - Allies: —

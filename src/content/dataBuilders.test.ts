@@ -137,18 +137,15 @@ describe('content builders preserve their authored values', () => {
     expect(placements).toEqual(
       [
         ['bandit_thug', 17, 5],
-        ['bandit_thug', 17, 7],
         ['bandit_slinger', 18, 3],
         ['bandit_thug', 18, 6],
         ['bandit_slinger', 16, 2],
         ['bandit_slinger', 17, 5],
         ['bandit_slinger', 18, 3],
-        ['bandit_slinger', 18, 7],
         ['bandit_bruiser', 17, 5],
         ['bandit_bruiser', 17, 7],
         ['fire_deserter', 16, 3],
         ['bandit_thug', 17, 6],
-        ['bandit_bruiser', 16, 8],
         ['bandit_thug', 17, 4],
         ['bandit_slinger', 17, 9],
         ['bandit_bruiser', 16, 3],

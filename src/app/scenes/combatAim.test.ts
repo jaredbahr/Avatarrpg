@@ -69,10 +69,11 @@ function tap(tile: Vec2, mode: Mode = { kind: 'aim', abilityId: checkpoint.abili
 }
 
 describe('combat tap aim acceptance', () => {
+  // Re-pinned for #846: the Forest Road and the quarry gate lost a body each, so the earned campaign replays 5 commands shorter.
   it('uses the earned Grumbler turn and exact reloadable save', () => {
-    expect(checkpoint.transcript).toHaveLength(91);
+    expect(checkpoint.transcript).toHaveLength(86);
     expect(createHash('sha256').update(checkpoint.json).digest('hex')).toBe(
-      'd3fceb3afe44f47ab5a0bb500f260f55c20a5f07f8f95dec9a61599d061baea9',
+      '5385b964a586c143908d0c98cfd712d55463517aa7da3601ca7c20a973d8cebe',
     );
     expect(loadQuarryCheckpoint(checkpoint.json)).toEqual(checkpoint.state);
     expect(checkpoint.state.battle).toMatchObject({
