@@ -234,8 +234,9 @@ bank. Then we drag it back down in autumn. That's what the runners are for.
 **Shown:** played. **Where:** the step of Dabi's house, with the notice. This is the bible's DLG-06, word for
 word; only the choice at the end is set out as a vote.
 
-**Narrator:** Fenn takes the notice out of her apron pocket and unfolds it on the step. She puts one finger on
-the small survey mark in the corner.
+**Narrator:** Lessons are over. Dabi hands the survey case back with both arms, and Lin Mei is still holding
+it when Fenn takes the notice out of her apron pocket and unfolds it on the step. Fenn puts one finger on the
+small survey mark in the corner.
 
 **Fenn:** That's your mark.
 
@@ -488,8 +489,8 @@ it goes. Nima sits against the wall with his eyes shut, nudging the gusts with t
 
 **Narrator:** It works. It works very well for about twenty paces.
 
-**Narrator:** Then a real gust comes down off the ridge. The broom goes the rest of the terrace in one
-swing, and takes eleven cushions and a board game off the end of it into the tea garden below.
+**Narrator:** Then a real gust comes down off the ridge. The broom goes the rest of the terrace in one swing,
+and takes fourteen cushions and a board game off the end of it into the tea garden below.
 
 **Narrator:** Sena has been watching from the kitchen door, holding a cup under a weighted lid.
 
@@ -499,8 +500,8 @@ swing, and takes eleven cushions and a board game off the end of it into the tea
 
 **Sena:** There won't be a second time. Those are my cushions.
 
-**Narrator:** Nima goes down and fetches eleven cushions. He finds all the game pieces but one. He sweeps the
-last twenty paces with his hands on the broom.
+**Narrator:** Nima goes down and fetches thirteen cushions. The fourteenth has gone on over the wall into the
+cloud. He finds all the game pieces but one. He sweeps the last twenty paces with his hands on the broom.
 
 > **If Bo is in the party —**
 > **Narrator:** Bo has picked up the kite line and is running it through his fingers.
@@ -655,8 +656,8 @@ cushion and the string.
 forgotten to light.
 
 **Student:** There's a sky bison on the landing meadow! A wild one! It came down out of the cloud and it's
-just lying there! Everybody's going down. Sena says we can, if we're quiet. It'll be gone by morning. They
-never stay.
+just lying there! Everybody who isn't on the wall is going down. Sena says we can, if we're quiet. It'll be
+gone by morning. They never stay.
 
 **Narrator:** She is gone again before she has finished.
 
@@ -743,8 +744,8 @@ Bell, basket: Kip sends the basket down empty and brings it back. Lamp, book.
 twice.
 
 **Narrator:** Kip does the flag again. Nima opens the book and writes: "Watch handed to Kip, of the lower
-camps, at dusk. Shown the card. Did each thing twice. Nima gone down the switchbacks to meet the oil
-carrier. Back by first light." He reads it over. He adds his name.
+camps, at dusk. Shown the card. Did each thing, and the flag twice. Nima gone down the switchbacks to meet the
+oil carrier. Back by first light." He reads it over. He adds his name.
 
 **Narrator:** He goes down the cliff path with a lantern. From the third turn he can see the meadow, a long
 way off: a ring of small lights, and something pale and enormous in the middle of them. He stops walking for
@@ -826,7 +827,8 @@ west shelter is repaired a day late._
 
 **Nima:** Nothing happened. One gust and two cans.
 
-**Sena:** That's what a good night is. I've got forty years of these books. The good ones are all four lines.
+**Sena:** That's what a good night is. I've a shelf of these books, every one since the rebuilding. The good
+ones are all four lines.
 
 **After `pq07_handed_over`:**
 
@@ -964,8 +966,8 @@ opened them. Nobody sent them on, either. They just put a rock on them").
 **Shown:** played. **Where:** the Bellweather mail shelter: a plank hut with a half-door, pigeonholes, and a
 sorting table weighted with stones against the wind. _Sets `pq08_open`._
 
-**Narrator:** The bundle has burst its string coming up on the tram. There are thirty-odd pieces on the
-sorting table and a stone on each.
+**Narrator:** The bundle has burst its string on the way up. There are thirty-odd pieces on the sorting table
+and a stone on each.
 
 **Jinu:** Right. What's your name?
 
@@ -1066,18 +1068,20 @@ after.
 **Tram operator:** "Gusts from the east follow each pressure test within the hour. Suspend the car during
 tests and for one hour after. Dates of tests below." There's twelve dates. Four of them have been and gone.
 
-**Tram operator:** I ran the car on all four.
+**Tram operator:** I ran the car on all four. The fourth was the day it hung.
 
 **Jinu:** Who stamped it private?
 
 **Narrator:** A clerk in the station office has stopped writing.
 
-**Station clerk:** I did. Head office sent a note with it. A posted gust warning with our own tests named
-on it "invites misunderstanding". So it was for the station master's eyes, and he was to use his judgement.
+**Station clerk:** I did. Nine days ago, when it came in. The line office sent a note with it. A posted gust
+warning with the ridge station's tests named on it "invites misunderstanding". So it was for the station
+master's eyes, and he was to use his judgement. You were up the line. I put it in the up-bag.
 
-**Tram operator:** I'd have used my judgement if I'd had the post! It's sat in a bundle for nine days!
+**Tram operator:** I'd have used my judgement if I'd had the post! That bag's sat in a luggage cage for nine
+days!
 
-**Station clerk:** I didn't lose the bundle. I only stamped it.
+**Station clerk:** I didn't lose the bag. I only stamped it.
 
 **Jinu:** I'm not after you. I'm asking whose it is.
 
@@ -1748,9 +1752,9 @@ morning. Haro's fond of me. He's fonder of being booked. And that sergeant's cla
 - **Testify, and teach only in the open.** Seli gives her account to the yard and the Halt, in front of
   Ruvi and Bodi, signed. After that she teaches on this platform, in daylight, to anyone, with the getting
   out taught first, and with the yard and the Halt deciding who learns what. _Sets `pq09_testify_program`._
-- **Report it herself, and stop being Seli's student.** Riko takes Ruvi's account, Bodi's, and the board at
-  Stoneback to the yard and the Halt without Seli. It will be heard. The two of them will not be what they
-  were. _Sets `pq09_reported`._
+- **Report it herself, and stop being Seli's student.** Riko takes Ruvi's account and Bodi's (and the board at
+  Stoneback, if `reason.riko` is set) to the yard and the Halt without Seli. It will be heard. The two of them
+  will not be what they were. _Sets `pq09_reported`._
 - **Take the apology, here, between the two of them.** Seli says it to Riko. Ruvi carries the public case
   herself, since she is willing; Riko is not part of it. _Sets `pq09_private`._
 
@@ -1762,7 +1766,7 @@ Footer: "Ruvi's account is heard on all three. What changes is who stands beside
 still standing behind her. The yard is there. Half the Halt is there. Ruvi stands at the front with her
 picking bag. Bodi stands at the back.
 
-**Seli:** My name is Seli. For nine years I trained gate guards for four quarry companies. I taught them to
+**Seli:** My name is Seli. For eight years I trained gate guards for four quarry companies. I taught them to
 hold a person without marking them. I knew what that was worth to the people who paid me.
 
 **Seli:** I trained the twelve who held the Tin Cut hewers on the day of the complaint. One of them is
@@ -1797,7 +1801,10 @@ whole class.
 **If `pq09_reported`:**
 
 **Narrator:** Riko goes to the foreman's hut alone. She puts it on the table in order: what Ruvi said, what
-Bodi said, what is chalked on a board at Stoneback. She gives the name.
+Bodi said. She gives the name.
+
+> **If `reason.riko` is set —** **Narrator:** Last, she draws the board at Stoneback from memory: a thumb, an
+> elbow, a wrist.
 
 **Hesh:** That's your own teacher.
 
@@ -1968,11 +1975,11 @@ Where the lever should be, a brass plate with a keyhole, and six words stamped r
 service only. Do not force."
 
 > **If `reason.wen` is set —**
-> **Wen:** There was one of these in the drilling machine at Stoneback. No lever. I stood next to it while it
-> was running, and there was nothing on it I could pull.
+> **Wen:** There was one of these in the drilling machine at Stoneback. No lever. I had my arm in its housing
+> once it had stopped. There was nothing in there anybody could have pulled while it ran.
 >
-> **Wen:** I'd drawn that machine a way to be stopped by whoever was closest. Whoever was closest was me. And
-> I couldn't.
+> **Wen:** I'd drawn that machine a way to be stopped by whoever was closest. Somebody took the way out and
+> left the closest person standing there.
 
 **Edda:** Go on, then. You've got that look. What do you want to build?
 
@@ -2097,10 +2104,10 @@ gets more excited, and it begins with the history of the pressure valve.
 slightly.
 
 > **After MQ-04 —**
-> **Wen:** The Director built a stop wheel a child of eight can turn. I watched a child turn it. And the same
-> office signed off on a keyhole.
+> **Wen:** There's a lift wheel on the low landing that a child of eight can turn. The Director built that.
+> And the same office signed off on a keyhole.
 >
-> **Ruda:** Both of those are her. I pump water under both of them.
+> **Ruda:** It's one office. I pump water under both ends of it.
 
 ### Scene W.3 — The key had a reason
 
@@ -2330,13 +2337,17 @@ idea, with somebody else holding it.
 stamp, and with no word changed. The sheet goes up by the door of Tanner's Stair pump house. The first
 entry on it is in Ruda's capitals.
 
-> **After MQ-04 —**
-> **Narrator:** Under the stamp, in a neat hand in a hurry, is one line: "Term 4 is the right term. I should
-> have asked for it myself. V. Sen."
+> **After MQ-04 and before MQ-09 —**
+> **Narrator:** Under the stamp, in a neat hand in a hurry, is one line: "Term 4 stays. A stop nobody can
+> reach is not a stop. V. Sen."
 >
 > **Wen:** She agreed to it.
 >
 > **Ruda:** She agreed to one pump house. Count the rest before you frame that.
+
+> **After MQ-09 —** **Narrator:** The page goes up the valley under Ruda's name and the district's. Wen's is
+> left off it, at her own asking: a name on a wanted poster is no help to a pump house. It comes back stamped
+> by a clerk, with no word changed and nothing added.
 
 ### Scene W.6 — The napkin
 
@@ -2355,7 +2366,8 @@ entry on it is in Ruda's capitals.
 
 **Wen:** There. Now it's right.
 
-**Narrator:** She opens Edda's drawer to put the pencil back. There is a snap.
+**Narrator:** She pokes the pencil into Edda's drawer to put it back. There is a snap. The pencil comes out
+again with something on the end of it.
 
 **Narrator:** It is a mousetrap with a paper flag on it. The flag says "told you".
 

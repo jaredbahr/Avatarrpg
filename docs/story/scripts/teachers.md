@@ -48,8 +48,8 @@ a teacher story:
 **Theme card:** TR-01, A Safe Place for Thunder
 
 Themes: responsibility, fairness. Lightning here is a trade: little careful pieces into a wire, all day, so
-that somebody's grandmother can see her stairs. The first thing Luli teaches is when to stop. She is well into
-her second week without a day off, and nobody has taught the lamp-hours board the same lesson.
+that somebody's grandmother can see her stairs. The first thing Luli teaches is when to stop. She has stopped
+counting her own days without one, and nobody has taught the lamp-hours board the same lesson.
 
 - [x] No nation, element or culture stereotype
 - [x] Every valid party has a real route through (this lesson is optional; fire's other path needs no flag)
@@ -205,9 +205,9 @@ and under them a boy is counting red beans out loud.
 > **Luli:** Badly. Ask the board.
 
 > **If Tenzo is the student —**
-> **Tenzo:** You've done ten days without a day off.
+> **Tenzo:** When was your last day off?
 >
-> **Luli:** Nine. Ten tomorrow.
+> **Luli:** I've stopped counting. The board counts.
 >
 > **Tenzo:** Who tells you when to stop?
 >
@@ -220,8 +220,8 @@ and under them a boy is counting red beans out loud.
 **Luli:** Go on, then. The spur wants one sneeze every little while to hold eight. You know the size. I'm
 going to shut my eyes until the riggers change. If the wire hums, you stop, and you wake me.
 
-**Narrator:** The student keeps eight lamps lit for an hour. The wire does not hum. Luli does not wake. One
-of the riggers puts his jacket over her.
+**Narrator:** The riggers stay at their rods. The student keeps eight lamps lit for an hour. The wire does not
+hum. Luli does not wake. At the change of shift, one of the riggers puts his jacket over her.
 
 _Sets `learned_lightning`. Fire heroes may now choose the lightning path at level five; the power itself
 comes through the ordinary levels._
@@ -297,8 +297,8 @@ load tomorrow.
 > **If Nilak is the student —**
 > **Nilak:** I've done this for years, Aru. I can tell you which muscle it is from the door.
 >
-> **Aru:** I know you can. You always could. You were the best in our year at knowing. You never once
-> asked.
+> **Aru:** I know you can. You always could. You were the best in our year at knowing. You'd say "may I?" when
+> you had already decided what.
 >
 > **Nilak:** ...Good morning, Bem. I'm Nilak. May I sit down?
 
@@ -442,7 +442,8 @@ a day. Hesh knows what that means about who has been allowed to learn this. He d
 - [x] Absent heroes are never voiced
 
 **Where:** the public goods lift at the Saltstep rail annex, after MQ-03, when Hesh is visiting. **Later:**
-the braking yard at Copper Orchard. **Needs:** Bo or Lin Mei.
+the braking yard at Copper Orchard, where the gate is the tool store's and Nanu carries pears; her lines hold.
+**Needs:** Bo or Lin Mei.
 
 > **The offer, already written (Act II, Scene 5.5):**
 >
