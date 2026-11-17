@@ -11,12 +11,13 @@ import {
   quarryRouteBoundary,
 } from './quarry-checkpoints';
 
-// The trade pins were re-pinned for #846: the Forest Road and the quarry gate lost a body each, so the
-// scripted fights play out differently. The escort pins are unchanged.
+// Re-pinned for #846: the Forest Road and the quarry gate lost a body each, so the scripted fights play
+// out differently (trade). Re-pinned again for ADR 0118: the scripted party AI now stands a fallen hero
+// up, so the legal transcripts differ.
 const PINS = {
   trade: {
     gate: {
-      save: '62485b18b5c3c2bd2f90ba4f97775cd5849b039fa7bd440d354ce300851b01ee',
+      save: '8bc16f4b95685b12ce2c3c8f98fd7984073cb46153aa56e4c09bca3a58535b04',
       commands: 'eecef9f6363a9332ace47ac39f96796c1913295a59ac5082ceac889bdcc21d18',
       count: 64,
       node: 'gate_trade_explore',
@@ -26,9 +27,9 @@ const PINS = {
       cleared: ['enc_forest_road'],
     },
     afterDriller: {
-      save: '5de6a209b9628af9135b0a74a61e9eb793133ee2c29cbeddb58e2145321044a5',
-      commands: 'fa9a48628fb57ef427c047a7bc63b77fe00b0d885227262873213e82cf7fd0e3',
-      count: 162,
+      save: '7d6121315accafea68b18b664490ebdc6e52b5bfad3827ec5b91c9d15e31da6d',
+      commands: 'd4f25c33a7f30af32b27680a03ea468e36fb697442bd658e4d152bd4098d6dd6',
+      count: 166,
       node: 'quarry_after_explore',
       map: 'quarry_floor',
       level: 4,
@@ -38,9 +39,9 @@ const PINS = {
   },
   escort: {
     gate: {
-      save: 'e3f553fa74d4532c4eb4dd6279ea63921206350f775fde67e924fdd5e7766491',
-      commands: 'ec3785f624b43ca361ae35580cfcde9eba051a240152cb0a2be8f8fe4c73faaa',
-      count: 98,
+      save: '630df4462a7f88f94503cfdcde57a07769162078f0e18b9cd6e9a08bcfafe679',
+      commands: 'a3532850c95dcf0861215d90ec70491513f90f23e83319b04fb3166ed237d84b',
+      count: 99,
       node: 'gate_escort_explore',
       map: 'quarry_gate',
       level: 3,
@@ -48,9 +49,9 @@ const PINS = {
       cleared: ['enc_forest_road'],
     },
     afterDriller: {
-      save: '2d38241f15a50c7da2c21d50746a00056a9abf9c9e6632dc380eb187677f0de9',
-      commands: 'dc7760a14e84cffa64c43941d3fae88e5050b3a243a558042af90b0dbdb7f9e3',
-      count: 395,
+      save: '93fa7617df5c57012a2558b852154bea9aee8917f3c47f695e6410a57491f938',
+      commands: '229324095442c06395baf3b9a7dc6e1573a8914064c24c94ab4a7279f19553eb',
+      count: 400,
       node: 'quarry_after_explore',
       map: 'quarry_floor',
       level: 4,

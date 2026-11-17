@@ -232,7 +232,7 @@ export function kindFor(ability: Markable): MarkKind {
   if (kinds.has('dash')) return 'dash';
   if (kinds.has('wall')) return 'wall';
   if (ability.targeting.shape === 'self') return kinds.has('revealSurfaces') ? 'sense' : 'guard';
-  if (kinds.has('heal')) return 'heal';
+  if (kinds.has('heal') || kinds.has('revive')) return 'heal';
   if (kinds.has('pull')) return 'pull';
   if (!kinds.has('damage')) {
     if (kinds.has('push')) return 'push';

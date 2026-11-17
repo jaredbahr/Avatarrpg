@@ -268,7 +268,11 @@ export interface Unit {
 
 export type Targeting =
   | { readonly shape: 'self' }
-  | { readonly shape: 'unit'; readonly allow: 'enemy' | 'ally' | 'any' }
+  /**
+   * `downed` aims at a fallen friend (hp 0), whom no other `unit` ability can see: a
+   * downed unit stays on the board, but only a revive effect looks for one.
+   */
+  | { readonly shape: 'unit'; readonly allow: 'enemy' | 'ally' | 'any' | 'downed' }
   | { readonly shape: 'tile' }
   | { readonly shape: 'blast'; readonly radius: number }
   | { readonly shape: 'line'; readonly length: number }
@@ -286,6 +290,12 @@ export type AbilityEffect =
       readonly includesCaster?: boolean;
     }
   | { readonly kind: 'heal'; readonly base: number; readonly scale: number }
+  /**
+   * Stands a downed friend back up with `fraction` of their maximum health (at
+   * least 1), AP spent, statuses cleared. Once per unit per fight
+   * (`BattleState.helpedUp`; ADR 0118). Only a `downed` target can receive it.
+   */
+  | { readonly kind: 'revive'; readonly fraction: number }
   | {
       readonly kind: 'status';
       readonly status: StatusId;
@@ -1349,7 +1359,7 @@ export type StoryNode =
   | {
       /**
        * A pass-through node that takes `ifTrue` when `when` holds and `ifFalse`
-       * otherwise (ADR 0117). Unlike `branch` it reads any `Condition`: who is
+       * otherwise (ADR 0118). Unlike `branch` it reads any `Condition`: who is
        * in the party, standing, scene memory, visited nodes, nested all/any/not.
        */
       readonly id: string;
@@ -1427,6 +1437,12 @@ export interface BattleState {
    * exactly for "Try again". Null on a save written before it existed.
    */
   readonly openingRng: RngState | null;
+  /**
+   * Units already helped up this fight, so each gets one stand-up (ADR 0118).
+   * Absent until somebody is: an older save, and a fight where no one fell,
+   * carry no key at all.
+   */
+  readonly helpedUp?: readonly string[];
 }
 
 /**
@@ -1635,6 +1651,13 @@ export type GameEvent =
     }
   | { readonly type: 'unitPushed'; readonly unitId: string; readonly to: Vec2 }
   | { readonly type: 'unitDied'; readonly unitId: string }
+  /** A downed unit stood back up with `hp` health, helped by `helperId` (ADR 0118). */
+  | {
+      readonly type: 'unitRevived';
+      readonly unitId: string;
+      readonly helperId: string;
+      readonly hp: number;
+    }
   | {
       readonly type: 'propDamaged';
       readonly propId: string;

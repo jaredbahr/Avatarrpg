@@ -1131,6 +1131,28 @@ export function choreograph(input: ChoreographyInput): Choreography {
         break;
       }
 
+      case 'unitRevived': {
+        // Helped up (ADR 0118): the same green pulse as a heal, from lying down to standing.
+        tailRequired = true;
+        const pos = positions.get(event.unitId);
+        const at = Math.max(cursor, landing().at);
+        readyBy(at + landing().hitStop);
+        const before = unitHealth.get(event.unitId);
+        if (before) {
+          unitHealth.set(event.unitId, { ...before, hp: event.hp, fallen: false });
+          health.push({ unitId: event.unitId, hp: event.hp, fallen: false, at });
+        }
+        cue('heal', at, 6, eventIndex);
+        if (pos) {
+          const { recipe, palette } = effect('fx.heal.pulse');
+          const centre = unitEffectCentre(event.unitId, pos);
+          emit(recipe.impact, at, centre, centre, palette, eventIndex, 4);
+          floater(unitFloaterPos(event.unitId, pos), `+${event.hp}`, '#8fe39b', at + 30 * rate);
+        }
+        cursor = Math.max(cursor, at) + timing.gap * rate;
+        break;
+      }
+
       case 'attackMissed': {
         tailRequired = true;
         const pos = positions.get(event.targetId);

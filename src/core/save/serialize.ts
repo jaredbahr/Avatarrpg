@@ -131,6 +131,8 @@ const battle = z.object({
   nextUnitSerial: z.number(),
   // #620's retry seed. Null on an older mid-battle save: that fight offers Carry on only.
   openingRng: z.number().nullable().default(null),
+  // ADR 0118: who has been helped up this fight. Absent until somebody has.
+  helpedUp: z.array(z.string()).optional(),
 });
 
 const flagValue = z.union([z.boolean(), z.number(), z.string()]);

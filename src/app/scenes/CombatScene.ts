@@ -31,6 +31,7 @@ import {
   knownAbilities,
   previewAbility,
   resolveAim,
+  sameSide,
   aimReachTiles,
   targetableTiles,
   affectedTiles,
@@ -133,6 +134,11 @@ import {
   type CombatTipFeature,
 } from './combatGuidance';
 import { defendHintFlag, defendHintFor, type DefendHint } from './defendHint';
+
+/** An ability that stands a downed friend up (ADR 0118): aimed at the fallen, not the living. */
+function isDownedAbility(ability: Ability): boolean {
+  return ability.targeting.shape === 'unit' && ability.targeting.allow === 'downed';
+}
 
 /** What the HUD says while the AI acts; a guest is named as one (ADR 0116). */
 export function actingTurnCopy(unit: Pick<Unit, 'faction' | 'name'>): string {
@@ -2429,6 +2435,7 @@ export class CombatScene implements Scene {
     row.appendChild(moveButton);
 
     for (const ability of knownAbilities(this.app.content, unit)) {
+      if (!this.worthListing(unit, ability)) continue;
       row.appendChild(this.abilityButton(unit, ability, interactive));
     }
 
@@ -2486,8 +2493,33 @@ export class CombatScene implements Scene {
     return header;
   }
 
+  /**
+   * "Help up" (ADR 0118) is on everyone's bar, but a button for it is noise until
+   * someone is down: it appears while a friend lies on the board who has not been
+   * helped up this fight, and goes live once the hero stands next to them.
+   */
+  private worthListing(unit: Unit, ability: Ability): boolean {
+    if (!isDownedAbility(ability)) return true;
+    const battle = this.battle();
+    return (
+      !!battle &&
+      battle.units.some(
+        (other) => !isAlive(other) && sameSide(unit, other) && !battle.helpedUp?.includes(other.id),
+      )
+    );
+  }
+
   private abilityButton(unit: Unit, ability: Ability, interactive = true): HTMLElement {
-    const check = canUseAbility(this.app.content, unit, ability);
+    const battle = this.battle();
+    const baseCheck = canUseAbility(this.app.content, unit, ability);
+    // A friend is down but not within reach: say where to go rather than open an empty aim.
+    const check =
+      baseCheck.ok &&
+      battle &&
+      isDownedAbility(ability) &&
+      targetableTiles(this.app.content, battle, unit, ability).length === 0
+        ? { ok: false, reason: 'Stand next to a friend who is down to help them up.' }
+        : baseCheck;
     const selected = this.mode.kind === 'aim' && this.mode.abilityId === ability.id;
     const cooldown = unit.cooldowns[ability.id] ?? 0;
 

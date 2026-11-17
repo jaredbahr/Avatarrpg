@@ -135,6 +135,10 @@ function fixtures() {
       event: { type: 'unitDied', unitId: target.id },
       expected: [target.name, 'down'],
     },
+    unitRevived: {
+      event: { type: 'unitRevived', unitId: target.id, helperId: actor.id, hp: 8 },
+      expected: [actor.name, 'helps', target.name, 'up'],
+    },
     propDamaged: {
       event: { type: 'propDamaged', propId: prop.id, name: propDef.name, amount: 2, pos: prop.pos },
       expected: null,
@@ -255,6 +259,9 @@ function assertCleanLine(
       break;
     case 'attackMissed':
       requiredNames.push(event.unitId, event.targetId);
+      break;
+    case 'unitRevived':
+      requiredNames.push(event.unitId, event.helperId);
       break;
     case 'damaged':
       requiredNames.push(event.unitId);
