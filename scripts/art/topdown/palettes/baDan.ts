@@ -5,7 +5,8 @@
  * pixel count so the small objects count beside the acres of grass), then tidied by hand into
  * ramps: near-duplicates merged, the void's four blacks cut to two, a stone highlight, a white, a
  * water glint and a cool slate ramp for the dressed stone added (without it the plinths' cool greys
- * fell to the water's blue).
+ * fell to the water's blue). The stone ramp was then warmed toward limestone and packed earth, after
+ * the pilot's first bake read cold (owner, 2026-11-17).
  *
  * The board's bake remaps every plate and upright pixel to its nearest colour here (OKLab, no
  * dithering). Characters are never remapped. The shadow tone `#322125` is in the ink ramp, so the
@@ -14,20 +15,26 @@
 export const BA_DAN_RAMPS = {
   /** The void, the darkest outlines, and the hard shadow tone. */
   ink: ['#110c0e', '#1d1719', '#322125'],
-  /** Cobble, plinths, flags, the well and the shrine: warm greys. */
+  /**
+   * The paving and the flags: warm grey-brown, toward the art bible's limestone (`#d8cbb0`) and packed
+   * earth (`#b39064`). Warmed by hand after the pilot's first bake read cold and lifeless (owner, 2026-11-17).
+   */
   stone: [
-    '#3e3234',
-    '#4c4241',
-    '#564e4c',
-    '#635f60',
-    '#77726f',
-    '#857f7a',
-    '#938e86',
-    '#acaba2',
-    '#c8c3b6',
+    '#3d3230',
+    '#4b3f38',
+    '#5b4d43',
+    '#6b5c4f',
+    '#7c6c5c',
+    '#8d7c69',
+    '#9f8d77',
+    '#b3a289',
+    '#cbbda2',
   ],
-  /** The plinths' and kerbs' cooler dressed stone (the baker's own `STONE` ramp), kept off the water. */
-  slate: ['#3e3d47', '#4f4e58', '#5d5b63', '#706e77'],
+  /**
+   * The dressed stone of plinths, kerbs, the well and the shrine: neutral to cool greys (the baker's own
+   * `STONE` ramp and the old cobble's mid and light), kept off both the water and the warm paving.
+   */
+  slate: ['#3e3d47', '#4f4e58', '#5d5b63', '#706e77', '#85807f', '#aea89c'],
   /** Earth, timber and thatch-browns: the aprons, doors, carts, barrels and crates. */
   wood: [
     '#312626',

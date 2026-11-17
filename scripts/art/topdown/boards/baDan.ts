@@ -235,11 +235,16 @@ export interface GroundLook {
 
 /** The paving's quiet variants (`var_cobble`): no rubble, cracks or brown stones. */
 const CALM_COBBLE = [0, 1, 2, 3] as const;
+/** On the paving, the dark joints (this far below its mean) keep more contrast than the faces. */
+const JOINT_DEPTH = 10;
+const JOINT_CONTRAST = 0.62;
+/** The paving's mean is warmed by these per-channel factors: limestone and packed earth, not slate. */
+const PAVING_WARM = [1.13, 1.06, 0.92] as const;
 /** The grass's soft variants (`var_grass`): clover, a speck and flowers; no stones or big clumps. */
 const CALM_GRASS = [2, 3, 7, 12, 13] as const;
 /** How far each ground keeps its own contrast round its mean when calm (1 keeps it all). */
 const CALM_CONTRAST: Readonly<Partial<Record<number, number>>> = {
-  [CLASS.C]: 0.42,
+  [CLASS.C]: 0.38,
   [CLASS.G]: 0.72,
   [CLASS.D]: 0.75,
 };
@@ -776,6 +781,8 @@ export function bake(
 
   // 4b. calm: each ground's contrast drawn in toward its own mean (paving most, grass and earth less)
   if (look.calm) calmGround(d, classes);
+  // 4c. the worn lines along the plan's paths
+  if (look.calm && look.aprons) wearPaths(d, classes);
 
   // the clean ground, before any object is grounded: what a cast is measured against
   const clean: RgbaImage = { width: PW, height: PH, data: new Uint8ClampedArray(d) };
@@ -861,8 +868,11 @@ export function bake(
 }
 
 /**
- * Draws each soft ground's colours in toward that ground's mean, by its `CALM_CONTRAST`: the stones'
- * joints and highlights stay, quieter. Water, the cliff face and the void are left alone.
+ * Draws each soft ground's colours in toward that ground's mean, by its `CALM_CONTRAST`. On the paving
+ * the stones' dark joints keep more of their contrast than the faces' speckle (`JOINT_CONTRAST`), so
+ * it still reads as cobble, and its mean is warmed toward the art bible's limestone and packed-earth
+ * family (`PAVING_WARM`), so calm never means a cold grey fill. Water, the cliff face and the void are
+ * left alone.
  */
 function calmGround(d: Uint8ClampedArray, classes: Uint8Array): void {
   const sum = new Map<number, [number, number, number, number]>();
@@ -876,15 +886,82 @@ function calmGround(d: Uint8ClampedArray, classes: Uint8Array): void {
     s[3]++;
     sum.set(c, s);
   }
+  const means = new Map(
+    [...sum].map(([c, s]) => [c, [0, 1, 2].map((ch) => at(s, ch) / at(s, 3))] as const),
+  );
+  const paving = means.get(CLASS.C);
+  const pavingLum = paving ? 0.3 * at(paving, 0) + 0.59 * at(paving, 1) + 0.11 * at(paving, 2) : 0;
   for (let i = 0; i < classes.length; i++) {
     const c = classes[i] ?? CLASS.void,
-      k = CALM_CONTRAST[c],
-      s = sum.get(c);
-    if (k === undefined || !s) continue;
+      m = means.get(c);
+    let k = CALM_CONTRAST[c];
+    if (k === undefined || !m) continue;
+    if (c === CLASS.C && lum(d, i * 4) < pavingLum - JOINT_DEPTH) k = JOINT_CONTRAST;
     for (let ch = 0; ch < 3; ch++) {
-      const m = at(s, ch) / at(s, 3);
-      d[i * 4 + ch] = Math.round(m + (at(d, i * 4 + ch) - m) * k);
+      const mean = c === CLASS.C ? at(m, ch) * at(PAVING_WARM, ch) : at(m, ch);
+      d[i * 4 + ch] = Math.round(mean + (at(d, i * 4 + ch) - at(m, ch)) * k);
     }
+  }
+}
+
+/**
+ * The worn lines along the plan's paths (`BA_DAN_DRESSING_PLAN.paths`): where feet and wheels go, the
+ * paving is a step lighter (dust and polish) and the grass trodden toward earth. A broad, soft band
+ * (most of a cell wide, sparse at its edges) along each run of neighbouring path cells, its edge wandering on value noise, mixed
+ * in faintly, so it guides the eye without drawing a line.
+ */
+function wearPaths(d: Uint8ClampedArray, classes: Uint8Array): void {
+  const W = PLATE_W;
+  const segs: [number, number, number, number][] = [];
+  for (const path of BA_DAN_DRESSING_PLAN.paths)
+    path.cells.forEach((c, i) => {
+      const n = path.cells[i + 1];
+      if (n && Math.max(Math.abs(n.x - c.x), Math.abs(n.y - c.y)) === 1)
+        segs.push([
+          c.x * 40 + 20 - ORIGIN.x,
+          c.y * 40 + 20 - ORIGIN.y,
+          n.x * 40 + 20 - ORIGIN.x,
+          n.y * 40 + 20 - ORIGIN.y,
+        ]);
+    });
+  const dust = hex('#c2b296'),
+    trodden = hex(DIRT[2]);
+  const seen = new Uint8Array(PLATE_W * PLATE_H);
+  for (const [ax, ay, bx, by] of segs) {
+    const x0 = Math.min(ax, bx) - 26,
+      x1 = Math.max(ax, bx) + 26,
+      y0 = Math.min(ay, by) - 26,
+      y1 = Math.max(ay, by) + 26;
+    for (let y = y0; y <= y1; y++)
+      for (let x = x0; x <= x1; x++) {
+        const p = y * W + x;
+        if (seen[p]) continue;
+        const vx = bx - ax,
+          vy = by - ay,
+          t = Math.max(0, Math.min(1, ((x - ax) * vx + (y - ay) * vy) / (vx * vx + vy * vy || 1))),
+          // the line wanders off the cell centres on slow noise, so it never runs ruler straight
+          dist = Math.hypot(
+            x - ax - vx * t + vnoise(x, y, 141, 23) * 6,
+            y - ay - vy * t + vnoise(x, y, 143, 23) * 6,
+          );
+        const half = 17 + vnoise(x, y, 131, 13) * 5;
+        if (dist > half) continue;
+        seen[p] = 1;
+        const cls = classes[p],
+          core = 1 - dist / half;
+        const i = p * 4,
+          here: Rgb = [at(d, i), at(d, i + 1), at(d, i + 2)];
+        let out: Rgb | null = null;
+        // one ramp step lighter in the band's core, broken toward its edge, so the palette lock keeps it
+        if (cls === CLASS.C && hash2(x, y, 139) < 0.42 * core * core) out = mix(here, dust, 0.4);
+        else if (cls === CLASS.G && hash2(x, y, 137) < 0.25 + 0.5 * core)
+          out = mix(here, trodden, 0.35);
+        if (out) {
+          d[i] = out[0];
+          d[i + 1] = out[1];
+          d[i + 2] = out[2];
+        }
+      }
   }
 }
 
