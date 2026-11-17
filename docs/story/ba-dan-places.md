@@ -1,9 +1,10 @@
 # Ba Dan: who lives where, and what the places are
 
-**Status: DRAFT for Jared (the writing pass, 2026-11-17).** These are the story's answers to the questions in the
-Ba Dan place brief (`docs/places/ba_dan_village.md`, "Questions for the writing pass"). They are facts for the
-level design to build on, not lines. Where a fact is already in the game or the bible it is marked **(shipped)**
-or **(bible)**; everything else is new and is the owner's to overrule.
+**Status: approved (owner, 2026-11-17).** The owner approved the seven new items listed at the end, and Dorin's and
+Hanru's houses, in the build session on 2026-11-17; the build session relayed that to the writing pass. These are
+the story's answers to the questions in the Ba Dan place brief (`docs/places/ba_dan_village.md`, "Questions for
+the writing pass"). They are facts for the level design to build on, not lines. Where a fact was already in the
+game or the bible it is marked **(shipped)** or **(bible)**.
 
 ## Who lives where
 
@@ -96,7 +97,7 @@ is Ba Dan's east road. It is not this one. The board should not label the ford's
   at the end of the gardens, and whatever is left goes into Gao's trough-side bucket for the cart animals.
 - **Pella's household adult** is Nala from the start. The stand-in can carry her name once she has art.
 
-## New here, for the owner
+## New here (approved: owner, 2026-11-17)
 
 1. The mason is named Tuo.
 2. The tea terrace is Nala's, and Pella picks for her.
