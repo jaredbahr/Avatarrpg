@@ -149,23 +149,20 @@ const DRESSING: readonly TopDownObject[] = [
   put('shop-crates', 'crates', 'prop', 420, 114, cells([10, 2])),
   put('banner-north', 'banner_pole', 'prop', 452, 116, cells([11, 2])),
   put('laundry', 'laundry_line', 'prop', 720, 116, cells([17, 2], [18, 2])),
-  // Row 4: the north garden and the handcart's yard.
-  put('north-planter', 'planter', 'prop', 704, 196, cells([17, 4])),
-  put('north-pots', 'flower_pots', 'prop', 742, 196, cells([18, 4])),
-  put('handcart', 'handcart', 'prop', 778, 196, cells([19, 4])),
-  put('haystack', 'haystack', 'prop', 820, 196, cells([20, 4])),
-  put('firewood', 'firewood', 'prop', 860, 194, cells([21, 4])),
+  // Dorin's handcart, parked on the verge behind the notice board by his post (the cohesion pilot: it
+  // stood in a row of five things on the open lawn, with the hay and a woodpile no house was near).
+  put('handcart', 'handcart', 'prop', 780, 236, cells([19, 5])),
   // Row 5: Dorin's fence and bench on the west bank, Gao's display, the north market. The bank's
   // pieces stand at y 220, on the quay's paving behind the canal's kerb (which starts at 224): the
   // fence once stood on the kerb itself, its foot along the water ("this wall on the canal is off").
   put('west-fence', 'fence', 'prop', 80, 220, cells([1, 5], [2, 5])),
-  put('west-bench', 'bench', 'prop', 160, 220, cells([3, 5], [4, 5])),
   put('gao-display', 'market_jars', 'prop', 280, 220, cells([6, 5], [7, 5])),
-  put('north-market', 'market_veg', 'prop', 600, 234, cells([14, 5], [15, 5])),
   // Mira's table at the rest spot (10, 5): a table the party sits at, so it never stops feet.
   put('mira-table', 'mira_table', 'prop', 420, 220, cells([10, 5]), { solid: false }),
+  // The bench the crews built from offcuts, behind her table (the cohesion pilot: it stood alone
+  // on the west bank, three cells from anything it served).
+  put('crew-bench', 'bench', 'prop', 480, 194, cells([11, 4], [12, 4])),
   // Row 6: the shrine at the dry crossing, the watch post's notice board and lamp.
-  put('shrine', 'shrine', 'prop', 588, 274, cells([14, 6])),
   put('notice-board', 'notice_board', 'prop', 740, 274, cells([18, 6])),
   put('lamp-post', 'lamp', 'prop', 820, 274, cells([20, 6])),
   put('exit-sign', 'signpost', 'prop', 940, 272, cells([23, 6])),
@@ -173,16 +170,18 @@ const DRESSING: readonly TopDownObject[] = [
   put('south-produce', 'produce', 'prop', 96, 392, cells([2, 9])),
   put('south-stall', 'stall', 'prop', 160, 394, cells([3, 9], [4, 9])),
   // Under the south-east house's roof: a lamp there stood on the roof line.
-  put('square-crate', 'crate', 'prop', 660, 394, cells([16, 9])),
   put('lamp-east', 'lamp', 'prop', 820, 394, cells([20, 9])),
+  // The wayside shrine at the east gate, facing the quarry road the missing went up (moved from the
+  // canal's end, where it crowded Mira's table out of the square's one focal place).
+  put('shrine', 'shrine', 'prop', 740, 394, cells([18, 9])),
   // Rows 10-11: the garden plot, the planter between the south houses, the pole and the trough.
   put('garden', 'garden', 'prop', 124, 474, rect(2, 10, 3, 11)),
   put('garden-pots', 'pots', 'prop', 180, 432, cells([4, 10])),
-  put('garden-sack', 'sack', 'prop', 178, 474, cells([4, 11])),
-  put('stone-lantern', 'stone_lantern', 'prop', 220, 474, cells([5, 11])),
-  put('west-planter', 'planter', 'prop', 456, 434, cells([11, 10], [12, 10])),
-  put('banner-south', 'banner_pole', 'prop', 740, 434, cells([18, 10])),
+  // a harvest crate by the beds (v12's sack was drawn larger than a sack is: the scale chart)
+  put('garden-sack', 'crate', 'prop', 178, 474, cells([4, 11])),
   put('trough', 'trough', 'prop', 800, 434, cells([19, 10], [20, 10])),
+  // The carters' hay beside the trough they water their animals at.
+  put('haystack', 'haystack', 'prop', 862, 436, cells([21, 10])),
   put('southeast-barrels', 'barrels', 'prop', 700, 474, cells([17, 10], [17, 11])),
   // The well at (12, 13).
   put('well', 'well', 'prop', 496, 556, cells([12, 13])),
@@ -197,7 +196,6 @@ const FLATS: readonly TopDownObject[] = [
   }),
   put('river-steps', 'steps', 'steps', 784, 773, cells([19, 19]), { exterior: true }),
   put('flowers-west', 'flowers', 'flat', 52, 528, cells([1, 13])),
-  put('flowers-east', 'flowers', 'flat', 832, 508, cells([20, 12])),
   put('tuft-1', 'tuft', 'flat', 432, 638, cells([10, 15])),
   // clear of s-bush-1: its pale flower under the bush's edge read as the bush's old mound
   put('tuft-2', 'tuft', 'flat', 300, 672, cells([7, 16]), { exterior: true }),
