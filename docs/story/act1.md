@@ -6,7 +6,7 @@
 
 Source: [act1.ts](../../src/content/story/act1.ts).
 
-68 nodes; 4 fights; 0 branches; 3 choices
+68 nodes; 4 fights; 0 branches; 2 choices
 
 Green nodes are story entry points (new game, map interactions, cross-file targets, or roots). Hexagons are fights; diamonds are flag branches. Purple placeholders exit this file; dashed placeholders continue in another part. Counts include owned story nodes only.
 
@@ -71,7 +71,7 @@ flowchart TD
   n99["mira_table_hush<br/>Elder Mira: Pella—"]
   n100["mira_table_names<br/>Elder Mira: Leto. Amri. Hesra. Senn. And—"]
   n101["mira_table_names_pella<br/>Pella: Bo-shan."]
-  n102["mira_table_promise<br/>Elder Mira: Then tell me what you find. Even if you have to com…"]
+  n102["mira_table_promise<br/>Elder Mira: Tell me what you find. Even if you have to come bac…"]
   n103["mira_table_road<br/>Pella: Are you going now?"]
   n104["mira_table_set<br/>Mira’s Table: Mira slides another bowl across to you. The cover…"]
   n247["pella_again<br/>Pella: He puts the cabbages on top of the turnips. Every bump, …"]:::entry
@@ -144,19 +144,17 @@ flowchart TD
   n88 -->|"Next"| n89
   n89 -->|"set: rubbing_given=true"| n372
   n90 -->|"Next"| n372
-  n91 -->|"Tell us their names."| n100
-  n91 -->|"What can you tell us about the gate?"| n97
-  n91 -->|"We can look. We can’t promise."| n102
+  n91 -->|"Next"| n100
   n92 -->|"Next"| n93
   n93 -->|"Next"| n91
-  n94 -->|"Next"| n103
+  n94 -->|"Next"| n102
   n95 -->|"Next"| n98
   n96 -->|"Next"| n99
   n97 -->|"Next"| n94
   n98 -->|"Next"| n104
   n99 -->|"Next"| n92
   n100 -->|"Next"| n101
-  n101 -->|"Next"| n103
+  n101 -->|"Next"| n97
   n102 -->|"Next"| n103
   n103 -->|"Next"| n95
   n104 -->|"Next"| n370

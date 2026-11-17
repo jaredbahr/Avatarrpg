@@ -1,9 +1,9 @@
 /**
  * Mira's table and the reunion (canon DLG-01 and DLG-07; story bible C-13, C-14).
  *
- * The structure is what is held here: five people counted at the table, every
- * answer meeting again at Bo-shan's covered bowl, the names reachable for any
- * party, no absent hero voiced, and the reunion staged between Pella and
+ * The structure is what is held here: five people counted at the table, one
+ * straight scene with no vote (owner, 2026-11-17) ending at Bo-shan's covered
+ * bowl, the names told to any party, no absent hero voiced, and the reunion staged between Pella and
  * Bo-shan rather than told. The wording itself is the owner's to change.
  */
 
@@ -45,29 +45,43 @@ function play(state: GameState, nodeId: string, option: number) {
 }
 
 describe("Mira's table (DLG-01)", () => {
-  const ask = CONTENT.story.get('mira_table_ask');
-
-  it('counts five, and every answer meets again at the covered bowl', () => {
-    if (ask?.kind !== 'choice') throw new Error('mira_table_ask moved');
-    expect(ask.options).toHaveLength(3);
-    for (let option = 0; option < ask.options.length; option++) {
-      const run = play(game('sura'), 'mira_intro', option);
-      expect(run.state.screen).toBe('explore');
-      expect(run.state.story.nodeId).toBe('village_explore');
-      expect(run.heard.map((turn) => turn.lines.join(' '))).toContain('Five.');
-      expect(run.text).toContain('Don’t take that bowl. That’s his.');
-      expect(run.text).toContain('The covered one stays where Pella can see it.');
+  it('is one straight scene: five counted, no vote, ending at the covered bowl', () => {
+    const run = play(game('sura'), 'mira_intro', 0);
+    expect(run.state.screen).toBe('explore');
+    expect(run.state.story.nodeId).toBe('village_explore');
+    expect(run.heard.map((turn) => turn.lines.join(' '))).toContain('Five.');
+    expect(run.text).toContain('Don’t take that bowl. That’s his.');
+    expect(run.text).toContain('The covered one stays where Pella can see it.');
+    // No node between Mira's door and the village asks the table to choose.
+    let id: string | undefined = 'mira_intro';
+    for (let step = 0; id !== undefined && id !== 'village_explore' && step < 40; step++) {
+      const node = CONTENT.story.get(id);
+      if (node?.kind !== 'dialogue') throw new Error(`${id} is not a dialogue node`);
+      id = node.next;
     }
+    expect(id).toBe('village_explore');
   });
 
-  it('names the four messengers when asked, with Pella supplying Bo-shan', () => {
+  it('tells the names, then the gate, then what Mira asks, in that order', () => {
+    const run = play(game('sura'), 'mira_intro', 0);
+    const names = run.text.indexOf('Leto. Amri. Hesra. Senn.');
+    const gate = run.text.indexOf('There are guards on it now.');
+    const cart = run.text.indexOf('Look for his cart, too.');
+    const ask = run.text.indexOf('Tell me what you find.');
+    expect(names).toBeGreaterThan(0);
+    expect(gate).toBeGreaterThan(names);
+    expect(cart).toBeGreaterThan(gate);
+    expect(ask).toBeGreaterThan(cart);
+  });
+
+  it('names the four messengers, with Pella supplying Bo-shan', () => {
     const run = play(game('sura'), 'mira_intro', 0);
     expect(run.text).toContain('Leto. Amri. Hesra. Senn.');
     const last = run.heard.findIndex((turn) => turn.lines.join(' ').includes('Leto'));
     expect(run.heard[last + 1]).toEqual({ speaker: 'Pella', lines: ['Bo-shan.'] });
   });
 
-  it('keeps the names in the journal whichever question the table chose', () => {
+  it('keeps the names in the journal', () => {
     const note = JOURNAL_NOTES.find((entry) => entry.id === 'mira_table');
     expect(note?.when).toEqual({ kind: 'visited', nodeId: 'mira_intro' });
     for (const name of ['Leto', 'Amri', 'Hesra', 'Senn', 'Bo-shan'])
