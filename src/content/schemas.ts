@@ -968,6 +968,7 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     speaker: z.string().min(1),
     portrait: z.string().min(1),
     prompt: z.string().min(1),
+    routine: z.boolean().optional(),
     presentation: nodePresentation.optional(),
     options: z
       .array(

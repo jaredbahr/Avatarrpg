@@ -68,6 +68,11 @@ describe('choiceMatters', () => {
     expect(choiceMatters(content, choice([opt('Yes', 'a1'), opt('No', 'c1')]))).toBe(true);
   });
 
+  it('is false for a routine now-or-later prompt, wherever its options lead', () => {
+    const ask = { ...choice([opt('Sit down', 'a1'), opt('Another time', 'c1')]), routine: true };
+    expect(choiceMatters(content, ask)).toBe(false);
+  });
+
   it('is true when the graph does not say', () => {
     expect(choiceMatters(content, choice([opt('Yes', 'a1'), opt('No', 'missing')]))).toBe(true);
   });
@@ -85,5 +90,10 @@ describe('choiceMatters over the shipped story', () => {
       );
       if (effect) expect(choiceMatters(CONTENT, node), node.id).toBe(true);
     }
+  });
+
+  it('marks the now-or-later prompts routine, so the one in charge answers them (#846)', () => {
+    const routine = choices.filter((node) => node.routine).map((node) => node.id);
+    expect(routine.sort()).toEqual(['plant_chair', 'sq02_ask', 'sq03_ask']);
   });
 });
