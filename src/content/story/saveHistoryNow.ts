@@ -18,7 +18,7 @@ import { readersOf, visitedReaders, writeSites } from './saveHistory';
 import type { HistoryInput, HistorySnapshot, StoryHistory } from './saveHistory';
 
 /** Bundle collection to area prefix, as `flags.test.ts` names them. */
-export const AREA_NAMES: Readonly<Record<string, string>> = {
+const AREA_NAMES: Readonly<Record<string, string>> = {
   story: 'story',
   maps: 'map',
   encounters: 'encounter',
@@ -33,7 +33,7 @@ export const AREA_NAMES: Readonly<Record<string, string>> = {
 };
 
 /** The registry's `app:` areas as uses: the content walk cannot see app code. */
-export function appUses(registry: readonly FlagDef[]): FlagUse[] {
+function appUses(registry: readonly FlagDef[]): FlagUse[] {
   return registry.flatMap((flag) => [
     ...flag.setBy
       .filter((area) => area.startsWith('app:'))
@@ -45,7 +45,7 @@ export function appUses(registry: readonly FlagDef[]): FlagUse[] {
 }
 
 /** A content bundle, its followers and its journal as the records the walks read. */
-export function bundleSources(
+function bundleSources(
   bundle: Readonly<Record<string, unknown>>,
   followers: readonly unknown[],
   journal: readonly unknown[],
@@ -57,17 +57,8 @@ export function bundleSources(
   return sources;
 }
 
-/** Every flag read and write in a content bundle, its followers and its journal. */
-export function bundleUses(
-  bundle: Readonly<Record<string, unknown>>,
-  followers: readonly unknown[],
-  journal: readonly unknown[],
-): FlagUse[] {
-  return collectFlagUses(bundleSources(bundle, followers, journal));
-}
-
 /** Every area each region owns. */
-export function regionAreas(
+function regionAreas(
   regions: readonly Pick<
     RegionContent,
     'id' | 'story' | 'maps' | 'encounters' | 'residents' | 'anchors' | 'backgroundRoles'

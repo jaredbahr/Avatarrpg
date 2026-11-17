@@ -38,6 +38,10 @@ const PARTY = 'The party';
 const VEYRA = 'Veyra';
 const TAVI = 'Tavi Ren';
 const CLERK = 'Customs clerk';
+// RG-02's style B portraits (ADR 0107); the region's other speakers keep the narrator frame.
+const VEYRA_PORTRAIT = 'portrait.veyra';
+const TAVI_PORTRAIT = 'portrait.tavi';
+const CLERK_PORTRAIT = 'portrait.customs_clerk';
 const HANDLER = 'Freight handler';
 const BOWL_SELLER = 'Bowl-seller';
 const TENZO = 'Tenzo';
@@ -330,7 +334,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq02_tavi',
     TAVI,
-    PLACEHOLDER_PORTRAIT,
+    TAVI_PORTRAIT,
     [
       'Ferry goes when the tide says. The company wants it to go when the company says. So far the tide’s winning.',
       'You’re from up the stone road. You’ll want customs. It’s the stall with the flag, the one that’s drifting. Run.',
@@ -417,7 +421,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq02_stall_count',
     CLERK,
-    PLACEHOLDER_PORTRAIT,
+    CLERK_PORTRAIT,
     ['It says nine crates. I count ten. I can count to ten. They test us.'],
     'mq02_stall_handler',
   ),
@@ -433,7 +437,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq02_stall_stool',
     CLERK,
-    PLACEHOLDER_PORTRAIT,
+    CLERK_PORTRAIT,
     ['Everything gets counted. That’s why they gave me a stool.'],
     'mq02_stall_rope',
   ),
@@ -452,7 +456,7 @@ const NODES: readonly StoryNode[] = [
     id: 'mq02_approach',
     kind: 'choice',
     speaker: CLERK,
-    portrait: PLACEHOLDER_PORTRAIT,
+    portrait: CLERK_PORTRAIT,
     prompt: 'This happens. Keep talking, I can still hear you!',
     footer: 'All three reach the clerk.',
     options: [
@@ -494,7 +498,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq02_approach_tow',
     TAVI,
-    PLACEHOLDER_PORTRAIT,
+    TAVI_PORTRAIT,
     ['Again? That’s the third time this month. Get in. Sit low. Don’t help.'],
     'mq02_stall_reads',
   ),
@@ -517,7 +521,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq02_stall_plate',
     CLERK,
-    PLACEHOLDER_PORTRAIT,
+    CLERK_PORTRAIT,
     [
       'A Republic City plate. Came in four months back, in parts, on a Commonworks contractor’s manifest. I stamped it. “Excavation plant, public works.”',
       'And that stencil, the lamp over the wave. That’s Emberwatch stores. Everything the contractor lands goes across the bay first and comes back with that on it.',
@@ -545,7 +549,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq02_stall_match',
     CLERK,
-    PLACEHOLDER_PORTRAIT,
+    CLERK_PORTRAIT,
     [
       'They match. Six sealed crates, landed here on a Commonworks contractor’s manifest. That stamp, the lamp over the wave, is Emberwatch stores. Everything the contractor lands goes across the bay first and comes back with that on it.',
       'Same contractor brought an excavating machine through in parts, four months back. From Republic City. I stamped that too.',
@@ -564,7 +568,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq02_stall_stamp',
     CLERK,
-    PLACEHOLDER_PORTRAIT,
+    CLERK_PORTRAIT,
     [
       'I stamp what the paper says. If the paper said “cabbages” I’d have stamped that. I want that understood before anybody is cross with me.',
       'The same contractor’s loading at the freight pontoon right now. Ten crates. Nine on paper.',
@@ -593,7 +597,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq02_veyra_bollard',
     VEYRA,
-    PLACEHOLDER_PORTRAIT,
+    VEYRA_PORTRAIT,
     [
       'If that’s for me, put it on the bollard. If you’re with the freight office, I already said no.',
     ],
@@ -609,7 +613,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq02_veyra_bowl_back',
     VEYRA,
-    PLACEHOLDER_PORTRAIT,
+    VEYRA_PORTRAIT,
     ['Did she say to bring the bowl back?'],
     'mq02_party_twice',
   ),
@@ -624,7 +628,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq02_veyra_corner',
     VEYRA,
-    PLACEHOLDER_PORTRAIT,
+    VEYRA_PORTRAIT,
     [
       'Then I’d better eat it. Veyra. Take that corner, would you? Not that one. The one that looks heavier.',
     ],
@@ -640,7 +644,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq02_veyra_pump',
     VEYRA,
-    PLACEHOLDER_PORTRAIT,
+    VEYRA_PORTRAIT,
     [
       'This goes to the low end of Saltstep. Hand pump. One person can work it, any person. No waiting on a crew to come and move the water for you.',
       'The last one I fitted, a girl of ten kept it going for an hour because she wanted to beat her brother. I’ve stopped fitting them for adults in my head. I fit them for her.',
@@ -663,7 +667,7 @@ const NODES: readonly StoryNode[] = [
     ],
     'mq02_veyra_show_me',
   ),
-  say('mq02_veyra_show_me', VEYRA, PLACEHOLDER_PORTRAIT, ['Show me.'], 'mq02_crate_tips'),
+  say('mq02_veyra_show_me', VEYRA, VEYRA_PORTRAIT, ['Show me.'], 'mq02_crate_tips'),
   say(
     'mq02_crate_tips',
     'The Freight Pontoon',
@@ -700,7 +704,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq02_veyra_other_corner',
     VEYRA,
-    PLACEHOLDER_PORTRAIT,
+    VEYRA_PORTRAIT,
     ['Good morning, Dorin, gate guard. Take the other corner.'],
     'mq02_dorin_echo',
   ),
@@ -724,7 +728,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq02_veyra_odd',
     VEYRA,
-    PLACEHOLDER_PORTRAIT,
+    VEYRA_PORTRAIT,
     ['Odd. The piles do that some days. I keep meaning to look into it.'],
     'mq02_veyra_tea',
   ),
@@ -751,7 +755,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq02_clerk_put_down',
     CLERK,
-    PLACEHOLDER_PORTRAIT,
+    CLERK_PORTRAIT,
     ['That’s the one! Put it down! I haven’t counted it!'],
     'mq02_handler_paid',
   ),
@@ -774,18 +778,12 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq02_veyra_winch',
     VEYRA,
-    PLACEHOLDER_PORTRAIT,
+    VEYRA_PORTRAIT,
     ['Stop that winch. That strap is going. There are people under it.'],
     'mq02_handler_who',
   ),
   say('mq02_handler_who', HANDLER, NARRATOR, ['Who are you to say?'], 'mq02_veyra_strap'),
-  say(
-    'mq02_veyra_strap',
-    VEYRA,
-    PLACEHOLDER_PORTRAIT,
-    ['Somebody who can see a strap.'],
-    'mq02_lance',
-  ),
+  say('mq02_veyra_strap', VEYRA, VEYRA_PORTRAIT, ['Somebody who can see a strap.'], 'mq02_lance'),
   say(
     'mq02_lance',
     'The Freight Pontoon',
@@ -798,7 +796,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq02_veyra_coming',
     VEYRA,
-    PLACEHOLDER_PORTRAIT,
+    VEYRA_PORTRAIT,
     ['I’d rather not. Are you coming?'],
     'mq02_winch_battle',
   ),
@@ -828,7 +826,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq02_veyra_who_docks',
     VEYRA,
-    PLACEHOLDER_PORTRAIT,
+    VEYRA_PORTRAIT,
     ['I do now. Who docks you?'],
     'mq02_handler_contract',
   ),
@@ -863,7 +861,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq02_duplicate_manifest',
     CLERK,
-    PLACEHOLDER_PORTRAIT,
+    CLERK_PORTRAIT,
     [
       'I’ll write you a duplicate manifest. Nine crates on paper, ten on the water, and the name of the barge. Tavi will witness it. It takes a day. Everything takes a day.',
     ],
@@ -891,7 +889,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq02_pay_packet',
     CLERK,
-    PLACEHOLDER_PORTRAIT,
+    CLERK_PORTRAIT,
     ['That’s a pay packet. I know a pay packet. I get one.'],
     'mq02_clerk_reads',
   ),
@@ -905,7 +903,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq02_wages',
     CLERK,
-    PLACEHOLDER_PORTRAIT,
+    CLERK_PORTRAIT,
     ['“Stoneback Quarry. Lower galleries crew. Wages, third month.” The seal’s never been broken.'],
     'mq02_rope_creaks',
   ),
@@ -930,7 +928,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq02_veyra_somebodys_pay',
     VEYRA,
-    PLACEHOLDER_PORTRAIT,
+    VEYRA_PORTRAIT,
     ['That shouldn’t be in there. That’s somebody’s pay.'],
     'mq02_veyra_hands_packet',
   ),
@@ -944,7 +942,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq02_veyra_log_it',
     VEYRA,
-    PLACEHOLDER_PORTRAIT,
+    VEYRA_PORTRAIT,
     [
       'Log it. Properly. Date and weight. Whoever packed that crate should have to explain it to somebody with a stamp.',
     ],
@@ -960,7 +958,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq02_veyra_before_dark',
     VEYRA,
-    PLACEHOLDER_PORTRAIT,
+    VEYRA_PORTRAIT,
     [
       'I have to get this fitted before dark or forty households carry water another night. Thank you for the corner. And the bowl.',
       'Ask your questions loudly. People round here answer better when their neighbours are listening.',
@@ -981,7 +979,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq02_two_ways',
     CLERK,
-    PLACEHOLDER_PORTRAIT,
+    CLERK_PORTRAIT,
     [
       'I can do this two ways. I can read that packet out at the level pole at noon, with the seal in my hand. Everybody on the water will hear it. Including whoever packed it.',
       'Or I seal a copy, you carry it over the bay in your coat, and the first anyone at Emberwatch knows is you standing in the doorway.',
@@ -991,7 +989,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq02_tavi_how_it_goes',
     TAVI,
-    PLACEHOLDER_PORTRAIT,
+    TAVI_PORTRAIT,
     [
       'Loud, and my crews will talk to you. Half of them have carried a crate they didn’t like the weight of. Quiet, and they’ll wonder why you sat on a stolen pay packet. I’m only telling you how it’ll go.',
     ],
@@ -1139,7 +1137,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq02_ferry_ramp',
     TAVI,
-    PLACEHOLDER_PORTRAIT,
+    TAVI_PORTRAIT,
     ['Give him a minute. First time on a boat, they all want to read the ramp.'],
     'mq02_ferry_parcel_boards',
   ),
@@ -1155,7 +1153,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq02_long_blink',
     TAVI,
-    PLACEHOLDER_PORTRAIT,
+    TAVI_PORTRAIT,
     [
       'This crossing’s called the Long Blink. Old pilots’ name. Halfway over, you blink, and the shore you left looks like the one you’re going to.',
       'Nine years I’ve made it with that headland dark. I’m not saying dark was better.',

@@ -183,6 +183,7 @@ describe('content builders preserve their authored values', () => {
       ['world.runoff_marker', 'art/world/runoff-marker.png', 'neutral'],
       ['world.tea_station', 'art/props/tea-station.png', 'earth'],
       ['world.route_sign', 'art/world/route-sign.png', 'neutral'],
+      ['world.parcel_cart', 'art/topdown/objects/parcel_cart.png', 'neutral'],
       ['prop.barrel', 'art/props/barrel.png', 'water'],
       ['prop.flask', 'art/props/flask.png', 'earth'],
       ['prop.brazier', 'art/props/brazier.png', 'fire'],
@@ -217,6 +218,10 @@ describe('content builders preserve their authored values', () => {
       ['portrait.jin', 'art/portraits/jin.png', 'nonbender'],
       ['portrait.dema', 'art/portraits/dema.png', 'neutral'],
       ['portrait.sen', 'art/portraits/sen.png', 'neutral'],
+      ['portrait.veyra', 'art/portraits/veyra.png', 'neutral'],
+      ['portrait.tavi', 'art/portraits/tavi.png', 'neutral'],
+      ['portrait.luli', 'art/portraits/luli.png', 'fire'],
+      ['portrait.customs_clerk', 'art/portraits/customs_clerk.png', 'neutral'],
     ]);
     expect(ASSETS['unit.enemy.crossbow']).toEqual(
       topdownSheet('crossbow', 'unit.enemy.crossbow', 'enemy'),

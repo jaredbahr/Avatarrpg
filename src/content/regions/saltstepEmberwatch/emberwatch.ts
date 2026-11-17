@@ -14,12 +14,14 @@
  * clock as it is), and the live line's shock (needs a surface rule).
  */
 import type { Condition, DialogueVariant, StoryNode } from '../../../core/types';
-import { PLACEHOLDER_PORTRAIT } from './placeholders';
 import { staged } from './stage';
 
 const LOST: Condition = { kind: 'flag', key: 'act1_lost', op: 'set' };
 const NARRATOR = 'portrait.narrator';
 const LULI = 'Luli';
+// RG-02's style B portraits (ADR 0107).
+const LULI_PORTRAIT = 'portrait.luli';
+const TAVI_PORTRAIT = 'portrait.tavi';
 
 /** XP SF-2.1 pays a head (4 line riggers at 100 over a baseline of 3), on a win or a loss. */
 export const SF21_XP_PER_HEAD = 133;
@@ -80,7 +82,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq03_tavi',
     'Tavi Ren',
-    PLACEHOLDER_PORTRAIT,
+    TAVI_PORTRAIT,
     [
       'Come and meet the two people who’ll actually tell you things. Luli! Edda! I’ve brought you some trouble with good manners.',
     ],
@@ -98,7 +100,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq03_luli',
     LULI,
-    PLACEHOLDER_PORTRAIT,
+    LULI_PORTRAIT,
     [
       'Mind the line. It’s live. That one lights the clinic, the ferry steps and forty kitchens over in Saltstep.',
     ],
@@ -114,7 +116,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'mq03_luli_proud',
     LULI,
-    PLACEHOLDER_PORTRAIT,
+    LULI_PORTRAIT,
     [
       'Lightning into a wire, all day, in little careful pieces. Used to be a thing you did to show off. Now somebody’s grandmother can see her stairs. I’m proud of that. I’m also on my ninth day without a day off, so ask me again tomorrow and I’ll say something ruder.',
     ],
@@ -136,7 +138,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'sf21_wet_ground',
     LULI,
-    PLACEHOLDER_PORTRAIT,
+    LULI_PORTRAIT,
     [
       'Off the wet! All of you! That line is live, and I am not explaining a puddle to four families!',
     ],
@@ -187,7 +189,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'sf21_won',
     LULI,
-    PLACEHOLDER_PORTRAIT,
+    LULI_PORTRAIT,
     [
       'I’m owed nine days off and nobody to cover them. Two of you can splice. Come back at six. It’s day wages. It’s something.',
     ],
@@ -213,7 +215,7 @@ const NODES: readonly StoryNode[] = [
   say(
     'sf21_lost_luli',
     LULI,
-    PLACEHOLDER_PORTRAIT,
+    LULI_PORTRAIT,
     ['I’d have given them the scrap. They only had to ask in daylight.'],
     'mq03_power_yard_explore',
   ),

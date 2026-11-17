@@ -205,8 +205,8 @@ export const ENEMIES: readonly EnemyDef[] = [
 
   /*
    * RG-02, the pipeline-trial slice (Saltstep and Emberwatch). PLACEHOLDERS: the stat blocks are
-   * first guesses at level-1 figures, not yet swept by the balance simulator; the sprites borrow
-   * Act I figures until the region's art exists; the descriptions wait for the writing pass.
+   * first guesses at level-1 figures, not yet swept by the balance simulator; the descriptions
+   * wait for the writing pass. The sprites are the region's own (`tools/rg02chars.py`).
    * Shared content, not region content: a region cannot carry its own enemies yet (ADR 0111 §1),
    * so these ship in the boot chunk (see `docs/pipeline-trial-log.md`, friction).
    */
@@ -222,7 +222,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     abilities: ['club_swing'],
     ai: 'aggressive',
     xp: 120,
-    sprite: 'unit.enemy.thug',
+    sprite: 'unit.enemy.freighthandler',
     description:
       'Loads freight at Saltstep, paid by the crate, and the tide is going out. Sturdy. Holds the gangway with a club and does not charge.',
   },
@@ -236,7 +236,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     abilities: ['club_swing', 'bandit_rush'],
     ai: 'aggressive',
     xp: 100,
-    sprite: 'unit.enemy.bruiser',
+    sprite: 'unit.enemy.rigger',
     description:
       'One of Sabi’s crew, laid off when the line was finished. Not sturdy, but Rush closes four tiles, though not every turn.',
   },
@@ -256,7 +256,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     abilities: ['strike', 'shield_bash', 'rally'],
     ai: 'aggressive',
     xp: 1,
-    sprite: 'unit.enemy.sergeant',
+    sprite: 'unit.ally.veyra',
     description:
       'The pump woman from the pontoon, fighting beside you. Her brass lance shoves a handler back a tile, and her call gives a hero an extra AP and a harder hit.',
   },

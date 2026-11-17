@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { mapSchema } from '../schemas';
-import { LEGEND, LEGEND_KEYS } from './legend';
+import { LEGEND } from './legend';
+
+const legendKeys = Object.keys(LEGEND);
 
 /**
  * The M1 legend additions. They are new keys only: `src/content/maps/*` maps
@@ -24,7 +26,7 @@ describe('map legend (M1 keys)', () => {
 
   it('lists the new keys and keeps the pre-existing ones untouched', () => {
     for (const key of ['X', 'W', 'G', 'R', 'F', 'U']) {
-      expect(LEGEND_KEYS, key).toContain(key);
+      expect(legendKeys, key).toContain(key);
       expect(LEGEND[key], key).toBeDefined();
     }
     // Spot checks across the sections: blockers, cover, elevation and surfaces.
@@ -59,7 +61,7 @@ describe('map legend (M1 keys)', () => {
 describe('map legend (E4 ramp key)', () => {
   it('resolves S to a tier-1 stone ramp', () => {
     expect(LEGEND.S).toEqual({ terrain: 'stone', elevation: 1, ramp: true });
-    expect(LEGEND_KEYS).toContain('S');
+    expect(legendKeys).toContain('S');
   });
 
   it('parses a map that draws a ramp beside a bare tier step', () => {

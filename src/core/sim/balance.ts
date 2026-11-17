@@ -135,23 +135,6 @@ export function partyOfSize(size: number): PartySlot[] {
   }));
 }
 
-export interface TableSizeReport {
-  readonly size: number;
-  readonly report: BalanceReport;
-}
-
-/** Runs the whole report at every table size the game supports. */
-export function runTableSizeSweep(
-  content: ContentIndex,
-  sizes: readonly number[],
-  options: BalanceOptions = {},
-): TableSizeReport[] {
-  return sizes.map((size) => ({
-    size,
-    report: runBalanceReport(content, { ...options, party: partyOfSize(size) }),
-  }));
-}
-
 /* ------------------------------------------------------------------ */
 /* Discipline sweep                                                     */
 /* ------------------------------------------------------------------ */
@@ -183,7 +166,7 @@ export function defaultDisciplineFor(
  * everybody else is on their element's default path. One variable at a time,
  * so a win rate that moves can be blamed on one discipline.
  */
-export function partyOnDiscipline(
+function partyOnDiscipline(
   content: ContentIndex,
   party: readonly PartySlot[],
   disciplineId: string,
@@ -198,31 +181,6 @@ export function partyOnDiscipline(
         : defaultDisciplineFor(content, element);
     return chosen ? { ...slot, discipline: chosen } : slot;
   });
-}
-
-/**
- * Win rate per discipline, above the gate.
- *
- * Act 1's encounters are all tuned for level 3 or below, so the ordinary report
- * never sees a discipline at all — this forces both sides to a level past the
- * gate and swaps one path at a time. What it prints is a *shape* check (is one
- * path miles ahead of the others?), not a statement about a fight anybody can
- * currently reach: these are Act 1 rosters stretched to a level they were never
- * written for.
- *
- * Read the spread, not the rows. At the default trial count one run is worth
- * roughly three points, so anything under about ten points apart is noise. The
- * first real measurement will come from Act 2 encounters actually tuned for
- * level 5+; until those exist this is a tripwire for a path that is obviously
- * broken, nothing finer.
- */
-export function runDisciplineSweep(
-  content: ContentIndex,
-  options: BalanceOptions = {},
-): DisciplineReport[] {
-  return [...content.disciplines.values()].map((discipline) =>
-    runDisciplineRow(content, discipline, options),
-  );
 }
 
 /** One discipline's line of the sweep: every encounter, `trials` times each. */
