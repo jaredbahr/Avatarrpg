@@ -52,6 +52,8 @@ import {
 import type { MapScene, SceneScenery } from '../../../../src/core/types';
 import type { TopDownObject } from '../../../../src/content/topdownLayout';
 import { BA_DAN_TOPDOWN_LAYOUT } from '../../../../src/content/topdownLayouts';
+import { BA_DAN_DRESSING_PLAN } from '../../../../src/content/scenes/baDan.dressing';
+import type { Apron } from '../../../../src/content/setPieces';
 import cliffPatterns from '../cliff-patterns.json' with { type: 'json' };
 import {
   ASSETS,
@@ -72,6 +74,8 @@ import {
 } from '../lib/grounding';
 import { at, blank, crop, draw, fill, hex, load, lum, SHADOW_RGB, type Rgb } from '../lib/raster';
 import { cleanSprite } from '../lib/sprites';
+import { lockBaked } from '../lib/look';
+import { BA_DAN_PALETTE } from '../palettes/baDan';
 
 export const OUT = 'public/art/topdown/ba-dan';
 export const URL_ROOT = 'art/topdown/ba-dan';
@@ -211,7 +215,44 @@ function cliffTile(x: number, y: number): number {
   return best;
 }
 
-export function bake(objects: readonly TopDownObject[] = BA_DAN_TOPDOWN_LAYOUT.objects): Baked {
+/**
+ * How a board's ground is finished (ADR 0119, the cohesion pilot). Off by default, so a map keeps the
+ * look the owner approved until its own pass turns these on.
+ *
+ * - `calm`: SNES-calm floors, detailed objects. The paving keeps only its quiet variants (no rubble
+ *   stones, cracks or puddles), the grass only its soft ones and fewer of them, and the paving's and
+ *   the grass's contrast is drawn in toward each one's mean, so the ground stops competing with what
+ *   stands on it. The house aprons, doorsteps and every shadow are drawn after, at full strength.
+ * - `aprons`: the set pieces' ground aprons (`BA_DAN_DRESSING_PLAN`), baked into the plate.
+ * - `palette`: the region palette lock, applied last, to the plates and the uprights alike.
+ */
+export interface GroundLook {
+  readonly calm?: boolean;
+  readonly aprons?: boolean;
+  /** The region palette every plate and upright pixel is remapped to (`lib/look.ts`). */
+  readonly palette?: readonly string[];
+}
+
+/** The paving's quiet variants (`var_cobble`): no rubble, cracks or brown stones. */
+const CALM_COBBLE = [0, 1, 2, 3] as const;
+/** On the paving, the dark joints (this far below its mean) keep more contrast than the faces. */
+const JOINT_DEPTH = 10;
+const JOINT_CONTRAST = 0.62;
+/** The paving's mean is warmed by these per-channel factors: limestone and packed earth, not slate. */
+const PAVING_WARM = [1.13, 1.06, 0.92] as const;
+/** The grass's soft variants (`var_grass`): clover, a speck and flowers; no stones or big clumps. */
+const CALM_GRASS = [2, 3, 7, 12, 13] as const;
+/** How far each ground keeps its own contrast round its mean when calm (1 keeps it all). */
+const CALM_CONTRAST: Readonly<Partial<Record<number, number>>> = {
+  [CLASS.C]: 0.38,
+  [CLASS.G]: 0.72,
+  [CLASS.D]: 0.75,
+};
+
+export function bake(
+  objects: readonly TopDownObject[] = BA_DAN_TOPDOWN_LAYOUT.objects,
+  look: GroundLook = {},
+): Baked {
   const src = loadSources(objects);
   const grnd = makeLcg(RNG_AFTER_RIM);
   const PW = PLATE_W,
@@ -350,15 +391,24 @@ export function bake(objects: readonly TopDownObject[] = BA_DAN_TOPDOWN_LAYOUT.o
           if (tile) draw(g, tile, x * T, y * T);
           drawn = true;
         } else if (grnd() < 0.3) {
-          const pool = grnd() < 0.12 ? [4, 5, 6, 7] : [0, 1, 2, 3, 12, 13, 14, 15];
+          const loud = grnd() < 0.12;
+          const pool = look.calm ? CALM_COBBLE : loud ? [4, 5, 6, 7] : [0, 1, 2, 3, 12, 13, 14, 15];
           const tile = src.variants.C[at(pool, Math.floor(grnd() * pool.length))];
           if (tile) draw(g, tile, x * T, y * T);
           drawn = true;
         }
       } else if (pure && c[0] === 'G' && grnd() < 0.45) {
-        const tile = src.variants.G[Math.floor(grnd() * src.variants.G.length)];
-        if (tile) draw(g, tile, x * T, y * T);
-        drawn = true;
+        const pick = grnd();
+        // calm: one tile in three of those keeps a soft variant; open grass stays plain on purpose
+        const tile = look.calm
+          ? hash2(x, y, 301) < 0.34
+            ? src.variants.G[at(CALM_GRASS, Math.floor(pick * CALM_GRASS.length))]
+            : undefined
+          : src.variants.G[Math.floor(pick * src.variants.G.length)];
+        if (tile) {
+          draw(g, tile, x * T, y * T);
+          drawn = true;
+        }
       }
       if (!drawn) {
         const tile = src.wang[set].get(bits);
@@ -390,7 +440,12 @@ export function bake(objects: readonly TopDownObject[] = BA_DAN_TOPDOWN_LAYOUT.o
       pureD = src.wang.dirt.get('0000');
     if (!pureG || !pureC || !pureD) throw new Error('missing pure tiles');
     const GT = [pureG, ...src.variants.G];
-    const CT = [pureC, ...[0, 1, 2, 3, 12, 13, 14, 15].map((i) => src.variants.C[i] ?? pureC)];
+    const CT = [
+      pureC,
+      ...(look.calm ? CALM_COBBLE : [0, 1, 2, 3, 12, 13, 14, 15]).map(
+        (i) => src.variants.C[i] ?? pureC,
+      ),
+    ];
     for (const [x, y, c] of MIXED) {
       const dirt = c.includes('D'),
         both = dirt && c.includes('C'),
@@ -724,6 +779,11 @@ export function bake(objects: readonly TopDownObject[] = BA_DAN_TOPDOWN_LAYOUT.o
       if (a) fill(g, x * T, y * T, T, T, [10, 7, 9], a);
     }
 
+  // 4b. calm: each ground's contrast drawn in toward its own mean (paving most, grass and earth less)
+  if (look.calm) calmGround(d, classes);
+  // 4c. the worn lines along the plan's paths
+  if (look.calm && look.aprons) wearPaths(d, classes);
+
   // the clean ground, before any object is grounded: what a cast is measured against
   const clean: RgbaImage = { width: PW, height: PH, data: new Uint8ClampedArray(d) };
 
@@ -735,6 +795,17 @@ export function bake(objects: readonly TopDownObject[] = BA_DAN_TOPDOWN_LAYOUT.o
       draw(g, p.img, p.x, p.y);
       draw(bare, p.img, p.x, p.y);
     }
+  // 5a. the set pieces' ground aprons (ADR 0119): under every shadow, on the ground each piece stands on
+  if (look.aprons) {
+    const dirtTile = src.wang.dirt.get('0000');
+    if (!dirtTile) throw new Error('missing dirt');
+    BA_DAN_DRESSING_PLAN.setPieces.forEach((sp, i) =>
+      sp.aprons.forEach((a, j) => {
+        for (const img of [g, bare]) drawApron(img, a, classes, dirtTile, 400 + i * 16 + j);
+      }),
+    );
+  }
+
   const fringes = new Map<Placed, RgbaImage>();
   for (const p of placed) {
     const { o, img } = p;
@@ -794,6 +865,257 @@ export function bake(objects: readonly TopDownObject[] = BA_DAN_TOPDOWN_LAYOUT.o
     uprights,
     placed,
   };
+}
+
+/**
+ * Draws each soft ground's colours in toward that ground's mean, by its `CALM_CONTRAST`. On the paving
+ * the stones' dark joints keep more of their contrast than the faces' speckle (`JOINT_CONTRAST`), so
+ * it still reads as cobble, and its mean is warmed toward the art bible's limestone and packed-earth
+ * family (`PAVING_WARM`), so calm never means a cold grey fill. Water, the cliff face and the void are
+ * left alone.
+ */
+function calmGround(d: Uint8ClampedArray, classes: Uint8Array): void {
+  const sum = new Map<number, [number, number, number, number]>();
+  for (let i = 0; i < classes.length; i++) {
+    const c = classes[i] ?? CLASS.void;
+    if (CALM_CONTRAST[c] === undefined) continue;
+    const s = sum.get(c) ?? [0, 0, 0, 0];
+    s[0] += at(d, i * 4);
+    s[1] += at(d, i * 4 + 1);
+    s[2] += at(d, i * 4 + 2);
+    s[3]++;
+    sum.set(c, s);
+  }
+  const means = new Map(
+    [...sum].map(([c, s]) => [c, [0, 1, 2].map((ch) => at(s, ch) / at(s, 3))] as const),
+  );
+  const paving = means.get(CLASS.C);
+  const pavingLum = paving ? 0.3 * at(paving, 0) + 0.59 * at(paving, 1) + 0.11 * at(paving, 2) : 0;
+  for (let i = 0; i < classes.length; i++) {
+    const c = classes[i] ?? CLASS.void,
+      m = means.get(c);
+    let k = CALM_CONTRAST[c];
+    if (k === undefined || !m) continue;
+    if (c === CLASS.C && lum(d, i * 4) < pavingLum - JOINT_DEPTH) k = JOINT_CONTRAST;
+    for (let ch = 0; ch < 3; ch++) {
+      const mean = c === CLASS.C ? at(m, ch) * at(PAVING_WARM, ch) : at(m, ch);
+      d[i * 4 + ch] = Math.round(mean + (at(d, i * 4 + ch) - at(m, ch)) * k);
+    }
+  }
+}
+
+/**
+ * The worn lines along the plan's paths (`BA_DAN_DRESSING_PLAN.paths`): where feet and wheels go, the
+ * paving is a step lighter (dust and polish) and the grass trodden toward earth. A broad, soft band
+ * (most of a cell wide, sparse at its edges) along each run of neighbouring path cells, its edge wandering on value noise, mixed
+ * in faintly, so it guides the eye without drawing a line.
+ */
+function wearPaths(d: Uint8ClampedArray, classes: Uint8Array): void {
+  const W = PLATE_W;
+  const segs: [number, number, number, number][] = [];
+  for (const path of BA_DAN_DRESSING_PLAN.paths)
+    path.cells.forEach((c, i) => {
+      const n = path.cells[i + 1];
+      if (n && Math.max(Math.abs(n.x - c.x), Math.abs(n.y - c.y)) === 1)
+        segs.push([
+          c.x * 40 + 20 - ORIGIN.x,
+          c.y * 40 + 20 - ORIGIN.y,
+          n.x * 40 + 20 - ORIGIN.x,
+          n.y * 40 + 20 - ORIGIN.y,
+        ]);
+    });
+  const dust = hex('#c2b296'),
+    trodden = hex(DIRT[2]);
+  const seen = new Uint8Array(PLATE_W * PLATE_H);
+  for (const [ax, ay, bx, by] of segs) {
+    const x0 = Math.min(ax, bx) - 26,
+      x1 = Math.max(ax, bx) + 26,
+      y0 = Math.min(ay, by) - 26,
+      y1 = Math.max(ay, by) + 26;
+    for (let y = y0; y <= y1; y++)
+      for (let x = x0; x <= x1; x++) {
+        const p = y * W + x;
+        if (seen[p]) continue;
+        const vx = bx - ax,
+          vy = by - ay,
+          t = Math.max(0, Math.min(1, ((x - ax) * vx + (y - ay) * vy) / (vx * vx + vy * vy || 1))),
+          // the line wanders off the cell centres on slow noise, so it never runs ruler straight
+          dist = Math.hypot(
+            x - ax - vx * t + vnoise(x, y, 141, 23) * 6,
+            y - ay - vy * t + vnoise(x, y, 143, 23) * 6,
+          );
+        const half = 17 + vnoise(x, y, 131, 13) * 5;
+        if (dist > half) continue;
+        seen[p] = 1;
+        const cls = classes[p],
+          core = 1 - dist / half;
+        const i = p * 4,
+          here: Rgb = [at(d, i), at(d, i + 1), at(d, i + 2)];
+        let out: Rgb | null = null;
+        // one ramp step lighter in the band's core, broken toward its edge, so the palette lock keeps it
+        if (cls === CLASS.C && hash2(x, y, 139) < 0.42 * core * core) out = mix(here, dust, 0.4);
+        else if (cls === CLASS.G && hash2(x, y, 137) < 0.25 + 0.5 * core)
+          out = mix(here, trodden, 0.35);
+        if (out) {
+          d[i] = out[0];
+          d[i + 1] = out[1];
+          d[i + 2] = out[2];
+        }
+      }
+  }
+}
+
+/** A colour mixed toward another by `t`. */
+const mix = (a: Rgb, b: Rgb, t: number): Rgb => [
+  Math.round(a[0] + (b[0] - a[0]) * t),
+  Math.round(a[1] + (b[1] - a[1]) * t),
+  Math.round(a[2] + (b[2] - a[2]) * t),
+];
+const FLAG = { face: hex('#97918a'), lit: hex('#aaa397'), joint: hex('#625d5f') } as const;
+const STRAW = [hex('#8a6a35'), hex('#b48f4b'), hex('#d4b46a')] as const;
+const WET_GLINT = hex('#b4c6c4');
+const WET_CATCH = hex('#93a6a7');
+
+/**
+ * One ground apron (ADR 0119), drawn by code into the plate in the ground's own ramps, its edge
+ * organic per pixel (an ellipse wobbled by two octaves of value noise, its outer band broken), as
+ * the Wang edges are. `k` seeds its noise. See `ApronKind` for what each kind is.
+ */
+function drawApron(
+  g: RgbaImage,
+  a: Apron,
+  classes: Uint8Array,
+  dirtTile: RgbaImage,
+  k: number,
+): void {
+  const ox = a.x - ORIGIN.x,
+    oy = a.y - ORIGIN.y;
+  const W = g.width,
+    d = g.data;
+  const x0 = Math.floor(ox - a.rx - 4),
+    x1 = Math.ceil(ox + a.rx + 4),
+    y0 = Math.floor(oy - a.ry - 4),
+    y1 = Math.ceil(oy + a.ry + 4);
+  /** How far inside the apron a pixel is: over 0 is inside, 1 at the centre. */
+  const depth = (x: number, y: number): number => {
+    const r = Math.hypot((x - ox) / a.rx, (y - oy) / a.ry);
+    const wob = vnoise(x, y, k, 7) * 0.16 + vnoise(x, y, k + 1, 2.6) * 0.07;
+    return 1 - r + wob;
+  };
+  const get = (i: number): Rgb => [at(d, i), at(d, i + 1), at(d, i + 2)];
+  const put = (i: number, c: Rgb): void => {
+    d[i] = c[0];
+    d[i + 1] = c[1];
+    d[i + 2] = c[2];
+  };
+  // flagstones: courses of flags of uneven width, each course its own height; the pad's edge is a
+  // wobbled ellipse, cut per pixel, with a joint line round it so the flags end in their own mortar
+  const course = (y: number): { top: number; h: number; n: number } => {
+    let top = y0,
+      n = 0;
+    for (;;) {
+      const h = 7 + Math.floor(hash2(n, 0, k + 11) * 4);
+      if (y < top + h) return { top, h, n };
+      top += h;
+      n++;
+    }
+  };
+  const flagLeft = (x: number, n: number): { left: number; m: number } => {
+    let left = x0 - Math.floor(hash2(n, 1, k + 12) * 8),
+      m = 0;
+    for (;;) {
+      const w = 9 + Math.floor(hash2(n, m, k + 13) * 9);
+      if (x < left + w) return { left, m };
+      left += w;
+      m++;
+    }
+  };
+  for (let y = Math.max(0, y0); y <= Math.min(g.height - 1, y1); y++)
+    for (let x = Math.max(0, x0); x <= Math.min(W - 1, x1); x++) {
+      const i = (y * W + x) * 4,
+        cls = classes[y * W + x];
+      if (cls === CLASS.void || cls === CLASS.face || cls === CLASS.W) continue;
+      const f = depth(x, y);
+      const here = get(i);
+      switch (a.kind) {
+        case 'flags': {
+          if (f <= 0) break;
+          const { top, h, n } = course(y),
+            { left, m } = flagLeft(x, n);
+          const tint = Math.round((hash2(n, m, k + 14) - 0.5) * 14);
+          const rim = depth(x - 1, y) <= 0 || depth(x + 1, y) <= 0 || depth(x, y + 1) <= 0;
+          // a worn flag's corner is chipped round, so the joints never meet as a ruled grid
+          const corner =
+            (x - left <= 1 || flagLeft(x + 2, n).m !== m) && (y - top <= 1 || y >= top + h - 2);
+          const joint = rim || x === left || y === top || corner;
+          // light from the upper left: each flag's top row catches it, its bottom row sits in shade
+          const c = joint
+            ? FLAG.joint
+            : y === top + 1
+              ? FLAG.lit
+              : y === top + h - 1
+                ? mix(FLAG.face, FLAG.joint, 0.35)
+                : FLAG.face;
+          put(i, [c[0] + tint, c[1] + tint, c[2] + tint]);
+          break;
+        }
+        case 'earth':
+        case 'hay': {
+          if (f <= 0) break;
+          // the outer band thins out, so the trodden ground fades into the grass or the stones
+          if (f < 0.22 && hash2(x, y, k + 2) > f / 0.22) break;
+          const j = dirtIndex(x, y);
+          const earth = mix(
+            [at(dirtTile.data, j), at(dirtTile.data, j + 1), at(dirtTile.data, j + 2)],
+            hex(DIRT[1]),
+            0.45,
+          );
+          const grass = cls === CLASS.G;
+          // on paving the dust settles in the joints first and only dulls the stones
+          const t = grass ? 1 : lum(d, i) < 95 ? 0.5 : 0.18;
+          put(i, mix(here, earth, t));
+          if (a.kind === 'hay' && hash2(x, y, k + 3) > 0.9) {
+            const len = 2 + Math.floor(hash2(x, y, k + 4) * 3),
+              c = STRAW[Math.floor(hash2(x, y, k + 5) * 3)] ?? STRAW[1],
+              dy = hash2(x, y, k + 6) > 0.6 ? 1 : 0;
+            for (let s = 0; s < len; s++) {
+              const X = x + s,
+                Y = y + (s === len - 1 ? dy : 0);
+              if (X < W) put((Y * W + X) * 4, c);
+            }
+          }
+          break;
+        }
+        case 'wet': {
+          if (f <= 0) break;
+          if (f < 0.12 && hash2(x, y, k + 2) > f / 0.12) break;
+          const wet: Rgb = [
+            Math.round(here[0] * 0.62),
+            Math.round(here[1] * 0.66),
+            Math.round(here[2] * 0.74 + 6),
+          ];
+          // the upper-left catch where the wet starts, and glints at two scales
+          const lit = depth(x - 1, y) <= 0 || depth(x, y - 1) <= 0;
+          const glint =
+            hash2(x, y, k + 7) > 0.985 || (y % 3 === 0 && vnoise(x * 0.5, y, k + 8, 3) > 0.62);
+          put(i, lit && f < 0.3 ? WET_CATCH : glint ? WET_GLINT : wet);
+          break;
+        }
+        case 'weeds': {
+          if (f <= 0 || hash2(x, y, k + 9) < 0.86) break;
+          // a tuft of three blades leaning out from its root, the verge's own
+          const len = 2 + Math.floor(hash2(x, y, k + 10) * 3);
+          for (let b = 0; b < 3; b++)
+            for (let s = 0; s < len; s++) {
+              const X = x + Math.round((b - 1) * s * 0.5),
+                Y = y - s;
+              if (X >= 0 && X < W && Y >= 0)
+                put((Y * W + X) * 4, hex(s >= len - 1 ? GR[4] : s ? GR[3] : GR[1]));
+            }
+          break;
+        }
+      }
+    }
 }
 
 /** The sprite's foundation: the columns its bottom six rows cover. */
@@ -1126,6 +1448,9 @@ export function topdownScene(
   };
 }
 
+/** Ba Dan's finish: the cohesion pilot's calm ground, set-piece aprons and palette lock (ADR 0119). */
+export const BA_DAN_LOOK: GroundLook = { calm: true, aprons: true, palette: BA_DAN_PALETTE };
+
 /** Ba Dan's board: the village map, its plates, uprights and scene under `ba-dan/`. */
 export const BA_DAN_BOARD: TopDownBoard = {
   id: 'ba_dan_village',
@@ -1134,7 +1459,8 @@ export const BA_DAN_BOARD: TopDownBoard = {
   bake: () => {
     // the baker reads Ba Dan's own Wang-and-rim terrain module; the layout must agree
     if (BA_DAN_TOPDOWN_LAYOUT.terrain.kind !== 'wang-rim') throw new Error('Ba Dan bakes wang-rim');
-    return bake();
+    const baked = bake(BA_DAN_TOPDOWN_LAYOUT.objects, BA_DAN_LOOK);
+    return BA_DAN_LOOK.palette ? lockBaked(baked, BA_DAN_LOOK.palette) : baked;
   },
   scene: (baked, uprights) => topdownScene(uprights, chimneys(baked), pavedCells(baked)),
 };

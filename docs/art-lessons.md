@@ -107,6 +107,20 @@ animation or presentation work. Add to it when something fails.
   - Stripping a bush's baked mound inside the root flare's columns left a brown stump plate with tan in it. Cut to
     the trunk's own width, and test every plant for plate pixels.
 
+- **The cohesion pilot (2026-11-17, ADR 0119, `docs/art-cohesion.md`):**
+  - Density passes that add props as islands made the village feel thrown together. Design the place first (who,
+    a day, paths, storage, one focus), then subtract: nine pieces left the square and it read better at once.
+  - A flagstone pad laid as a regular course of equal flags read as a pale rectangle of bricks. Vary the flags'
+    widths and heights, chip their corners, and cut the pad's outline per pixel on a wobbled ellipse.
+  - The palette lock first turned the plinths' cool greys into the water's blue: a ramp the area needs was missing.
+    Compare 3x crops before and after a lock, and add the ramp rather than nudging colours.
+  - Lowering the cobble's contrast to 0.55 still read busy in game at 3x, though it looked calm in a 1x composite.
+    Judge the ground in the game at the explore zoom.
+  - Pulled to its mean at 0.42, the cobble went a flat, cold grey: "lifeless" beside the old warm cobble. Calm needs
+    warmth and a little of the stones' shape: warm the mean, keep the joints at more contrast than the faces.
+  - A worn-path tint first came back as thin, ruled pale lines (road markings), and before that a faint tint
+    vanished in the palette lock. Lift the paving a whole ramp step, in a broad band that wanders and thins.
+
 ### Characters and objects
 
 - **"No effects" in a `skeleton-v3` prompt is a hint, not a rule.** Fire and earth got painted into strike frames;
