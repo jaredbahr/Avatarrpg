@@ -72,9 +72,10 @@ describe('combat tap aim acceptance', () => {
   it('uses the earned Grumbler turn and exact reloadable save', () => {
     // Re-pinned for #846: the Forest Road and the quarry gate lost a body each, so the earned campaign replays 5 commands shorter.
     // Re-pinned for #789: Ruon answers the trade (`ruon_traded`), three more dialogue advances on the way.
-    expect(checkpoint.transcript).toHaveLength(89);
+    // Re-pinned for Mira's table as one straight scene (owner, 2026-11-17): four more dialogue advances.
+    expect(checkpoint.transcript).toHaveLength(93);
     expect(createHash('sha256').update(checkpoint.json).digest('hex')).toBe(
-      '3505c79624ceac431d918dd78728871b211063222da859958540d3958dc76f31',
+      '2fafa9f7827ee814b0d7877e3cb3e7696d63ba2a3c634577e3b6a7abaebcc72f',
     );
     expect(loadQuarryCheckpoint(checkpoint.json)).toEqual(checkpoint.state);
     expect(checkpoint.state.battle).toMatchObject({

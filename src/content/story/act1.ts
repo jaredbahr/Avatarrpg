@@ -110,8 +110,9 @@ export const ACT1_NODES: readonly StoryNode[] = [
   /*
    * Mira's table (canon DLG-01; story bible C-13). The first conversation is a
    * table with a covered fifth bowl on it, and Pella making the count right.
-   * Mira names her four messengers only when asked; Pella supplies Bo-shan.
-   * Every answer meets again at the bowl Pella will not let anyone take. The
+   * It is one straight scene with no vote (owner, 2026-11-17): Mira names her
+   * four messengers and Pella supplies Bo-shan, then the gate, then what Mira
+   * asks of the party, ending at the bowl Pella will not let anyone take. The
    * names also stay in the journal (`mira_table`), so nobody is quizzed later.
    * Their outsiders' details are planted elsewhere and never remarked on here.
    */
@@ -163,27 +164,11 @@ export const ACT1_NODES: readonly StoryNode[] = [
   },
   {
     id: 'mira_table_ask',
-    kind: 'choice',
+    kind: 'dialogue',
     speaker: MIRA,
     portrait: 'portrait.mira',
-    prompt: 'Yes. Five people from this village. And the crews who were already working there.',
-    options: [
-      {
-        label: 'Tell us their names.',
-        detail: 'Mira tells you who she sent.',
-        next: 'mira_table_names',
-      },
-      {
-        label: 'What can you tell us about the gate?',
-        detail: 'Mira tells you what Dorin found there.',
-        next: 'mira_table_gate',
-      },
-      {
-        label: 'We can look. We can’t promise.',
-        detail: 'Be honest with her about what you can do.',
-        next: 'mira_table_promise',
-      },
-    ],
+    lines: ['Yes. Five people from this village. And the crews who were already working there.'],
+    next: 'mira_table_names',
   },
   {
     id: 'mira_table_names',
@@ -199,7 +184,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: PELLA,
     portrait: 'portrait.pella',
     lines: ['Bo-shan.'],
-    next: 'mira_table_road',
+    next: 'mira_table_gate',
   },
   {
     id: 'mira_table_gate',
@@ -218,14 +203,14 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: PELLA,
     portrait: 'portrait.pella',
     lines: ['Look for his cart, too. He wouldn’t leave it unless he had to.'],
-    next: 'mira_table_road',
+    next: 'mira_table_promise',
   },
   {
     id: 'mira_table_promise',
     kind: 'dialogue',
     speaker: MIRA,
     portrait: 'portrait.mira',
-    lines: ['Then tell me what you find. Even if you have to come back without them.'],
+    lines: ['Tell me what you find. Even if you have to come back without them.'],
     next: 'mira_table_road',
   },
   {
