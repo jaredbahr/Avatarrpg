@@ -122,11 +122,12 @@ describe('core benchmark coverage and frozen calibration', () => {
         .filter((map) => map.width * map.height === maximum)
         .sort((a, b) => a.id.localeCompare(b.id)),
     );
-    // the Saltstep market and Emberwatch's parade ground tie with Ba Dan; only Ba Dan, which has frozen limits, is measured
+    // Emberwatch's parade ground ties with Ba Dan; only Ba Dan, which has frozen limits, is measured. The Saltstep
+    // market is a 32 x 18 grey blockout with no scene, so it is not registered here; when its board is baked it will
+    // be the largest alone and needs its own frozen limits (ADR 0106).
     expect(suite.coverage.topDown.largestMaps).toEqual([
       { id: 'ba_dan_village', width: 24, height: 16 },
       { id: 'emberwatch_parade', width: 24, height: 16 },
-      { id: 'saltstep_market', width: 24, height: 16 },
     ]);
     expect(suite.coverage.topDown.benchmarkedMap).toBe('ba_dan_village');
     const supplemental = createTopDownBenchSuite();

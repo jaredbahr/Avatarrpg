@@ -4,8 +4,6 @@ import {
   EMBERWATCH_PARADE_TOPDOWN_LAYOUT,
   EMBERWATCH_POWER_YARD_TERRAIN,
   EMBERWATCH_POWER_YARD_TOPDOWN_LAYOUT,
-  SALTSTEP_MARKET_TERRAIN,
-  SALTSTEP_MARKET_TOPDOWN_LAYOUT,
   SALTSTEP_PONTOON_TERRAIN,
   SALTSTEP_PONTOON_TOPDOWN_LAYOUT,
 } from '../../../../src/content/scenes/rg02.topdown';
@@ -20,28 +18,8 @@ const span = (x0: number, x1: number, y0: number, y1: number): [number, number][
 };
 
 export const RG02_BOARDS: readonly TopDownBoard[] = [
-  rg02Board({
-    id: 'saltstep_market',
-    folder: 'saltstep-market',
-    terrain: SALTSTEP_MARKET_TERRAIN,
-    layout: SALTSTEP_MARKET_TOPDOWN_LAYOUT,
-    // the coast road along the quay, the lane behind it, and the walks down to each jetty
-    wear: {
-      paths: [
-        ...span(0, 20, 5, 6),
-        ...span(2, 21, 3, 3),
-        ...span(1, 3, 1, 2),
-        ...span(10, 10, 1, 2),
-        ...span(20, 21, 1, 2),
-        ...span(3, 3, 4, 7),
-        ...span(11, 11, 4, 7),
-        ...span(15, 15, 4, 7),
-        ...span(21, 21, 4, 6),
-      ],
-      wet: 0.3,
-      soft: true,
-    },
-  }),
+  // TODO(region): the Saltstep market's board comes back at its ground and dressing stages
+  // (`docs/places/saltstep_market.md`); it is a grey blockout with no plates until then.
   rg02Board({
     id: 'saltstep_pontoon',
     folder: 'saltstep-pontoon',

@@ -1,7 +1,12 @@
 # Place brief: `saltstep_market`
 
-**Status (2026-11-17):** stages 0 to 2 of `docs/level-design.md`, waiting for the owner's yes. No rows, layout or
-art are changed by this brief. It is the first brief written under the guide, and the pilot for the method.
+**Status (2026-11-17):** stage 3 of `docs/level-design.md`: a grey blockout, waiting for the owner to walk it. The
+rows, people and exits are moved; there is no ground art or dressing yet, so the map draws its bare board.
+
+**Owner (2026-11-17):** the open questions are delegated; plan 2, 32 by 18, rise and fall told not shown, no new
+track for now.
+
+`blockout: 3937a652ac8fb71f5ad9f1e1baf8a10983ecc3e7aace8d3c84e7d27d670a3b36` (sha256 of the rows joined by newlines)
 
 **One line:** a market that floats: you walk out over the water on planks to buy your lunch, and the shops move
 with the tide.
@@ -192,10 +197,13 @@ Pieces marked _have_ are in the art merged with #844; the rest are for the kit l
 - **Blocked cells come from this plan only:** buildings, stall bodies, racks, posts, boats. No scatter cells. The
   `n` and `u` cells on today's quay go.
 
-## Open questions for the owner
+## What the blockout review should ask
 
-1. Is "out on the water" (plan 2) right, or should the market stay on the shore?
-2. Is a bigger board (about 32 by 18) fine here?
-3. Should the platforms visibly rise and fall, or is that told and not shown? (Motion would be ambience only and
-   would freeze under reduced motion.)
-4. Does Saltstep get its own music track? That is a Suno credit decision.
+Walk it grey, at the explore zoom, and answer one at a time:
+
+1. From the coast road, does the pole walk pull you out onto the water, or do you drift along the shore?
+2. Does each of the six views have its one idea, or is one empty and the next crowded?
+3. Is the loop (shore, pole walk, platforms, ferry landing, shore) a good length, or a trudge?
+4. Is the basin the right size to watch the customs stall drift across?
+5. Is the shore lane worth walking, or should the freight office come closer to the quay?
+6. Does the side jetty earn its place before the pontoon can be seen from it?
