@@ -146,7 +146,7 @@ async function assertChoiceOwner(page: Page, size: number, index: number): Promi
   const next = roster[(index + 1) % size];
   if (!current || !next) throw new Error('Missing configured story owner');
   await expect(banner.locator('strong')).toHaveText(current.name);
-  await expect(banner.locator('span').last()).toHaveText(`Next choice: ${next.name}`);
+  await expect(banner.locator('span').last()).toHaveText(`Next area: ${next.name}`);
 }
 
 async function saveAndReload(page: Page): Promise<void> {
@@ -179,6 +179,22 @@ async function atChoice(page: Page, node: string, size: number, index: number): 
   await enterNode(page, node);
   await expect.poll(async () => (await observe(page)).story.nodeId).toBe(node);
   await assertChoiceOwner(page, size, index);
+}
+
+/** Walks the party out of Ba Dan through its exit, the one move that passes the lead (#846). */
+async function leaveVillage(page: Page, expected: number): Promise<void> {
+  await enterNode(page, 'village_explore');
+  await expect.poll(async () => (await observe(page)).story.nodeId).toBe('village_explore');
+  await settled(page);
+  await page.evaluate(() => {
+    const app = window.fnt?.app;
+    const exit = app?.content.maps.get('ba_dan_village')?.exit;
+    if (!app || !exit) throw new Error('Missing the village exit');
+    app.dispatch({ type: 'walkTo', pos: exit.pos });
+  });
+  await expect
+    .poll(async () => (await observe(page)).story.deciderIndex, { timeout: 15_000 })
+    .toBe(expected);
 }
 
 async function finishGaoSeat(page: Page): Promise<void> {
@@ -217,7 +233,7 @@ async function assertHudOwner(page: Page, character: string, name: string): Prom
 }
 
 for (const size of [1, 2, 4, 6]) {
-  test(`${size} named players keep story ownership through refusal, a wrap and reload`, async ({
+  test(`${size} named players keep story ownership through refusal, choices, exits and reload`, async ({
     page,
   }, info) => {
     const { configured, expectedPlayers } = await setupNamedParty(page, size);
@@ -237,11 +253,13 @@ for (const size of [1, 2, 4, 6]) {
     await assertChoiceOwner(page, size, 0);
     await evidence(page, info, 'story-refusal-owner-unchanged');
 
+    // Gao's chair is a now-or-later prompt: the one in charge answers it alone (#846).
     await atChoice(page, 'plant_chair', size, 0);
     await evidence(page, info, 'story-first-owner');
     await page.locator('.choice-option').first().click();
     await finishGaoSeat(page);
-    await assertChoiceOwner(page, size, 1);
+    // A taken choice keeps the lead: it passes only through an exit (owner, 2026-11-17).
+    await assertChoiceOwner(page, size, 0);
     const saved = await observe(page);
     await saveAndReload(page);
     const loaded = await observe(page);
@@ -252,35 +270,25 @@ for (const size of [1, 2, 4, 6]) {
     expect(loaded.participants).toEqual(
       configured.map((person, index) => ({ id: `player-${index + 1}`, name: person.name })),
     );
-    await assertChoiceOwner(page, size, 1);
-    await evidence(page, info, 'story-midrotation-loaded');
+    await assertChoiceOwner(page, size, 0);
+    await evidence(page, info, 'story-owner-loaded');
 
-    // The first two choices are a natural authored pair. The later fixtures
-    // cover four distinct authored choice nodes and enough accepted choices
-    // to pass the last named player and wrap back to the first at every size.
-    let index = 1;
-    const totalChoices = Math.max(size + 1, 4);
-    while (index < totalChoices) {
-      const step = index % 4;
-      if (step === 0) await atChoice(page, 'plant_chair', size, index);
-      else if (step === 1) await assertChoiceOwner(page, size, index);
-      else await atChoice(page, step === 2 ? 'gate_parley' : 'ruon_choice', size, index);
+    // Walk out of Ba Dan enough times to pass the last named player and wrap back
+    // to the first at every size; between walks, two authored choices keep the lead.
+    const totalExits = Math.max(size + 1, 2);
+    for (let index = 1; index <= totalExits; index++) {
+      await leaveVillage(page, index);
+      const step = index % 2;
+      await atChoice(page, step ? 'gate_parley' : 'ruon_choice', size, index);
       await page
         .locator('.choice-option')
-        .nth(step === 2 ? 2 : 0)
+        .nth(step ? 2 : 0)
         .click();
-      index++;
       const accepted = await observe(page);
       expect(accepted.story.deciderIndex).toBe(index);
-      expect(accepted.story.nodeId).toBe(
-        ['plant_chair_seat', 'plant_chair_leaf', 'gate_kinship', 'escort_chosen'][step],
-      );
-      if (step === 0) await finishGaoSeat(page);
-      // Every accepted choice moves exactly once; node entry does not rotate.
-      if (step !== 0) await atChoice(page, 'plant_chair_talk', size, index);
-      else await assertChoiceOwner(page, size, index);
+      expect(accepted.story.nodeId).toBe(step ? 'gate_kinship' : 'escort_chosen');
+      await atChoice(page, 'plant_chair_talk', size, index);
     }
-    await assertChoiceOwner(page, size, totalChoices);
     expect((await observe(page)).players).toEqual(expectedPlayers);
     await evidence(page, info, 'story-after-wrap');
   });
@@ -293,10 +301,9 @@ for (const size of [1, 2, 4, 6]) {
     test.setTimeout(180_000);
     const { configured, heroes, expectedPlayers } = await setupNamedParty(page, size);
     // Earn a nonzero story rotation before entering the combat fixture, so a
-    // combat save must preserve both kinds of ownership at once.
-    await atChoice(page, 'plant_chair', size, 0);
-    await page.locator('.choice-option').first().click();
-    expect((await observe(page)).story.deciderIndex).toBe(1);
+    // combat save must preserve both kinds of ownership at once. The lead
+    // passes when the party walks out through an exit (#846).
+    await leaveVillage(page, 1);
     await enterNode(page, 'battle_forest_road');
 
     const witnessed = new Set<string>();

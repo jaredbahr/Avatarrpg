@@ -384,7 +384,7 @@ function choicePanel(
           }),
           el('strong', { text: decider?.name ?? 'the party' }),
           nextDecider && nextDecider.id !== decider?.id
-            ? el('span', { class: 'tiny muted', text: 'Next choice: ' + nextDecider.name })
+            ? el('span', { class: 'tiny muted', text: 'Next area: ' + nextDecider.name })
             : null,
         );
 
