@@ -1003,7 +1003,7 @@ Bellweather."
 
 **Ilo:** You said you knew what was in it.
 
-**Jinu:** That's Hana's seal. Ferry clerk at Saltstep. She writes to her mother once a month, and she's been
+**Jinu:** That's Chun's seal. Ferry clerk at Saltstep. She writes to her mother once a month, and she's been
 walking out with the customs man's nephew since autumn. Everybody on the pole walk knows it. And this one's
 two sheets, where she only ever sends one.
 
@@ -1258,7 +1258,7 @@ one piece, with the little boat whole.
 
 **Narrator:** She reads both sheets. It takes her less time than it took to decide.
 
-**Narrator:** There is no wedding in it. Hana has been made permanent on the ferry desk. She has a room with
+**Narrator:** There is no wedding in it. Chun has been made permanent on the ferry desk. She has a room with
 a stove. She is not coming up for the summer work. She wants her mother to come down to her before the
 spring tide, and she has drawn the stairs.
 
@@ -1371,14 +1371,14 @@ you can admire someone and still tell them to stop.
       used by non-bender guards on non-bender workers)
 - [x] Every valid party, non-benders included, has a real route through
 - [x] No instant forgiveness or absolution (forgiveness stays Riko's to give, and no route makes her give it)
-- [x] The other side's reasons are shown (Bodi's account: the holds replaced sticks; the recruiter's hands
+- [x] The other side's reasons are shown (Zan's account: the holds replaced sticks; the recruiter's hands
       are laid-off rail workers)
 - [x] The theme is never stated outright
 - [x] Absent heroes are never voiced
 
 **Opens:** at Copper Orchard, in Scene 6.4 of MQ-06, with Riko in the party. **Other people:** Seli, she/her,
 52, Riko's former teacher, now a travelling theatre's movement coach; Haro, he/him, 36, the troupe's manager;
-Bodi, he/him, fifties, a porter at Pear Halt; Ruvi, she/her, forties, an orchard picker; a recruiting
+Zan, he/him, fifties, a porter at Pear Halt; Tamsa, she/her, forties, an orchard picker; a recruiting
 sergeant from Commonworks Security. **What the party may know:** everything through MQ-05, including the
 Marshal's name and his instruction.
 
@@ -1557,57 +1557,57 @@ that undone? Because I taught you with the same hands.
 
 **Shown:** found (two conversations at Pear Halt, either order; both are needed before R.4).
 
-**Bodi, the porter.**
+**Zan, the porter.**
 
-**Narrator:** Bodi is stacking pear crates on the Halt's platform, three high, each one squared to the one
+**Narrator:** Zan is stacking pear crates on the Halt's platform, three high, each one squared to the one
 below.
 
-**Bodi:** Seli? She's here? I'll be blowed. I'd shake her hand.
+**Zan:** Seli? She's here? I'll be blowed. I'd shake her hand.
 
-**Bodi:** I was nineteen and they gave me a stick and a gate. First week, I broke a man's collarbone, because
+**Zan:** I was nineteen and they gave me a stick and a gate. First week, I broke a man's collarbone, because
 he came at me and I didn't know anything else. I was sick behind the hut.
 
-**Bodi:** Then she came. Six weeks. After that I never hit anybody again, not once in eleven years. You take
+**Zan:** Then she came. Six weeks. After that I never hit anybody again, not once in eleven years. You take
 hold, you wait, they get tired, they go home. I've had drunks off the line that way, here, since. Two of
 them would be dead under a wagon.
 
 **Party:** And the people you held?
 
-**Bodi:** They went home. That's what I'm telling you. Every one of them went home.
+**Zan:** They went home. That's what I'm telling you. Every one of them went home.
 
-**Ruvi, the picker.**
+**Tamsa, the picker.**
 
-**Narrator:** Ruvi is up a ladder in the third row of the orchard. She comes down when she hears the name,
+**Narrator:** Tamsa is up a ladder in the third row of the orchard. She comes down when she hears the name,
 slowly, and stands with the picking bag held in front of her.
 
-**Ruvi:** I was one of the forty. One of three women. Seli said I had the best wrists in the shed.
+**Tamsa:** I was one of the forty. One of three women. Seli said I had the best wrists in the shed.
 
-**Ruvi:** The year of the short pay, the hewers at the Tin Cut drew up a complaint. They were going to put
+**Tamsa:** The year of the short pay, the hewers at the Tin Cut drew up a complaint. They were going to put
 their marks on it in the yard, at noon, with the pay clerk there to see, so it would be on record.
 
-**Ruvi:** We were told: no sticks, no bruises. Twelve of us went into that yard and took eleven hewers by
+**Tamsa:** We were told: no sticks, no bruises. Twelve of us went into that yard and took eleven hewers by
 the wrist. Just held them. From noon until the clerk had packed his table and gone. Four hours.
 
-**Ruvi:** Nobody had a mark on them. That was what we were for. No bruise, so nothing to show a magistrate.
+**Tamsa:** Nobody had a mark on them. That was what we were for. No bruise, so nothing to show a magistrate.
 And the paper never got marked, because you can't make your mark when somebody's got your hand.
 
 **Narrator:** She shifts the picking bag.
 
-**Ruvi:** Mine was a woman. She didn't fight. She kept saying her boy was at the school gate, and who'd
+**Tamsa:** Mine was a woman. She didn't fight. She kept saying her boy was at the school gate, and who'd
 fetch him. She said it for four hours. I can do her voice.
 
-**Ruvi:** He was all right. A neighbour took him. I went and found out, after. I handed my coat in the next
+**Tamsa:** He was all right. A neighbour took him. I went and found out, after. I handed my coat in the next
 morning.
 
-**Party:** Bodi says everyone went home.
+**Party:** Zan says everyone went home.
 
-**Ruvi:** They did. Bodi's not lying. They all went home, and they never got their pay, and nobody could
+**Tamsa:** They did. Zan's not lying. They all went home, and they never got their pay, and nobody could
 say a hand had been laid on them.
 
 > **If Tenzo is in the party —**
 > **Tenzo:** Would you say that again, in front of people? If they asked?
 >
-> **Ruvi:** I've said it to the trees for twenty years. I'd say it to people. Nobody's asked.
+> **Tamsa:** I've said it to the trees for twenty years. I'd say it to people. Nobody's asked.
 
 ### Scene R.4 — The sign-up table
 
@@ -1709,9 +1709,9 @@ Her hands are not quite steady. She does not look up.
 
 **Seli:** You went and asked them.
 
-**Riko:** Bodi would shake your hand. Ruvi can still do a woman's voice from twenty years ago.
+**Riko:** Zan would shake your hand. Tamsa can still do a woman's voice from twenty years ago.
 
-**Seli:** Ruvi. Best wrists in the shed.
+**Seli:** Tamsa. Best wrists in the shed.
 
 **Riko:** She said you'd said so.
 
@@ -1750,21 +1750,21 @@ morning. Haro's fond of me. He's fonder of being booked. And that sergeant's cla
 **VOTE — What does Riko ask of Seli?**
 
 - **Testify, and teach only in the open.** Seli gives her account to the yard and the Halt, in front of
-  Ruvi and Bodi, signed. After that she teaches on this platform, in daylight, to anyone, with the getting
+  Tamsa and Zan, signed. After that she teaches on this platform, in daylight, to anyone, with the getting
   out taught first, and with the yard and the Halt deciding who learns what. _Sets `pq09_testify_program`._
-- **Report it herself, and stop being Seli's student.** Riko takes Ruvi's account and Bodi's (and the board at
+- **Report it herself, and stop being Seli's student.** Riko takes Tamsa's account and Zan's (and the board at
   Stoneback, if `reason.riko` is set) to the yard and the Halt without Seli. It will be heard. The two of them
   will not be what they were. _Sets `pq09_reported`._
-- **Take the apology, here, between the two of them.** Seli says it to Riko. Ruvi carries the public case
+- **Take the apology, here, between the two of them.** Seli says it to Riko. Tamsa carries the public case
   herself, since she is willing; Riko is not part of it. _Sets `pq09_private`._
 
-Footer: "Ruvi's account is heard on all three. What changes is who stands beside her."
+Footer: "Tamsa's account is heard on all three. What changes is who stands beside her."
 
 **If `pq09_testify_program`:**
 
 **Narrator:** Seli says it the next morning, on the old passenger platform, with the painted drawing room
-still standing behind her. The yard is there. Half the Halt is there. Ruvi stands at the front with her
-picking bag. Bodi stands at the back.
+still standing behind her. The yard is there. Half the Halt is there. Tamsa stands at the front with her
+picking bag. Zan stands at the back.
 
 **Seli:** My name is Seli. For eight years I trained gate guards for four quarry companies. I taught them to
 hold a person without marking them. I knew what that was worth to the people who paid me.
@@ -1774,11 +1774,11 @@ standing there. She handed in her coat the next day. I didn't hand in anything f
 
 **Narrator:** She does not ask anyone for anything. When she has finished, she stays where she is.
 
-**Ruvi:** That's all true. I was there for it.
+**Tamsa:** That's all true. I was there for it.
 
-**Narrator:** Bodi turns his cap round in his hands.
+**Narrator:** Zan turns his cap round in his hands.
 
-**Bodi:** I never broke another bone after you. I want that said as well. It doesn't cancel hers. I only
+**Zan:** I never broke another bone after you. I want that said as well. It doesn't cancel hers. I only
 want it said.
 
 **Hesh:** It's said. Both are down. Coach, if you teach on this yard, you teach where I can see it, and you
@@ -1800,8 +1800,8 @@ whole class.
 
 **If `pq09_reported`:**
 
-**Narrator:** Riko goes to the foreman's hut alone. She puts it on the table in order: what Ruvi said, what
-Bodi said. She gives the name.
+**Narrator:** Riko goes to the foreman's hut alone. She puts it on the table in order: what Tamsa said, what
+Zan said. She gives the name.
 
 > **If `reason.riko` is set —** **Narrator:** Last, she draws the board at Stoneback from memory: a thumb, an
 > elbow, a wrist.
@@ -1841,16 +1841,16 @@ keeping people safe. And I'm sorry about the woman at the Tin Cut, though it isn
 
 **Riko:** I'll take the part that's mine. I can't take hers for her. Nobody gave me that to hand out.
 
-**Narrator:** Next morning Ruvi goes up to the foreman's hut by herself, with her picking bag, and says it
+**Narrator:** Next morning Tamsa goes up to the foreman's hut by herself, with her picking bag, and says it
 to Hesh and the yard foreman. It is written down. Riko is not in the room.
 
-**Narrator:** Afterwards Ruvi passes her on the platform steps.
+**Narrator:** Afterwards Tamsa passes her on the platform steps.
 
-**Ruvi:** I'd thought you might be in there.
+**Tamsa:** I'd thought you might be in there.
 
 **Riko:** I thought about it.
 
-**Ruvi:** Mm. Well. It's said now. You've got her wrists, you know. I saw it yesterday.
+**Tamsa:** Mm. Well. It's said now. You've got her wrists, you know. I saw it yesterday.
 
 **Narrator:** She goes back to her ladder. Riko stays on the steps for some time.
 
@@ -1888,7 +1888,7 @@ every route; after `pq09_reported` Riko takes it off the easel herself). Sets `p
 | `lost_halt_recruiters` | Six rail hands signed; three sleep in the waiting room               |
 | `pq09_testify_program` | Seli's public account, and open teaching under the yard and the Halt |
 | `pq09_reported`        | Riko reported it without her; the two part                           |
-| `pq09_private`         | A private apology; Ruvi carries the public case alone                |
+| `pq09_private`         | A private apology; Tamsa carries the public case alone               |
 | `pq09_done`            | The quest is closed (any of the three)                               |
 
 - **Trust:** Pear Halt and the rail crews rise with winning R.4 and with `pq09_testify_program` or
@@ -2431,7 +2431,7 @@ At most one cutscene candidate per quest, and none is relied on: every one also 
 Everything below is written into the scripts as recommended, per the standing instruction.
 
 1. **Names I invented.** Dabi (Fenn's pupil); Hobb (the caretaker with bad knees) and Kip (the lower-camp
-   runner); Ilo (the "young courier" of Scene 8.2), Marda and her daughter Hana; Bodi and Ruvi (Seli's former
+   runner); Ilo (the "young courier" of Scene 8.2), Marda and her daughter Chun; Zan and Tamsa (Seli's former
    trainees), and "the Tin Cut" for the quarry where they served; Ruda (the pump mechanic) and Pol (the
    company fitter); the play's title, "The Lamp at Midnight". All were checked against the cast lists and the
    identity locks. Recommend: approve.
