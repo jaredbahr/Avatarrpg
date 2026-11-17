@@ -76,9 +76,13 @@ const FACE: readonly Rgb[] = [
 ];
 
 /** The plain tile's pixel at plate px (x, y): warped regions about 56 px across, each offset and flipped its own way. */
-function quilt(tile: RgbaImage, x: number, y: number, k: number): Rgb {
-  const wx = x + vnoise(x, y, k + 1, 19) * 14,
-    wy = y + vnoise(x, y, k + 2, 19) * 14;
+function quilt(tile: RgbaImage, x: number, y: number, k: number, ragged = false): Rgb {
+  // `ragged` lets each pixel pick its region from a coordinate jittered a few px, so a region's seam is a grainy,
+  // organic edge instead of a straight, square one (the market's sand)
+  const jx = ragged ? (hash2(x, y, k + 6) - 0.5) * 9 : 0,
+    jy = ragged ? (hash2(x, y, k + 7) - 0.5) * 9 : 0;
+  const wx = x + jx + vnoise(x, y, k + 1, 19) * 14,
+    wy = y + jy + vnoise(x, y, k + 2, 19) * 14;
   const rx = Math.floor(wx / 56),
     ry = Math.floor(wy / 56);
   const ox = Math.floor(hash2(rx, ry, k + 3) * T),
@@ -127,6 +131,8 @@ export interface Rg02BoardConfig {
   readonly wear?: {
     readonly paths?: readonly (readonly [number, number])[];
     readonly wet?: number;
+    /** Organic edges for the colour drift, the wet patches and the quilt's seams: per-pixel, not stepped and square. */
+    readonly soft?: boolean;
   };
 }
 
@@ -158,7 +164,11 @@ export function bake(cfg: Rg02BoardConfig): Baked {
       const t = tiles[k];
       set(
         y * PW + x,
-        !t ? VOID : k === RG.deck ? planks(t, x, y, 31 + k * 13) : quilt(t, x, y, 31 + k * 13),
+        !t
+          ? VOID
+          : k === RG.deck
+            ? planks(t, x, y, 31 + k * 13)
+            : quilt(t, x, y, 31 + k * 13, cfg.wear?.soft && (k === RG.sand || k === RG.earth)),
       );
     }
 
@@ -206,6 +216,7 @@ export function bake(cfg: Rg02BoardConfig): Baked {
   // lighter, wet patches, and a scatter of pebbles and shells with a highlight on their upper left
   const paths = new Set((cfg.wear?.paths ?? []).map(([x, y]) => `${x},${y}`));
   const wet = cfg.wear?.wet ?? 0.25;
+  const soft = cfg.wear?.soft ?? false;
   const WORN: Rgb = [0xd9, 0xbf, 0x93];
   const TRODDEN: Rgb = [0x9c, 0x80, 0x62];
   const MUD: Rgb = [0x4a, 0x35, 0x2a];
@@ -218,17 +229,45 @@ export function bake(cfg: Rg02BoardConfig): Baked {
       if (k === RG.void || k === RG.water || k === RG.puddle) continue;
       // in three steps, not a smooth ramp, so the plate keeps a pixel artist's few tones per ground
       const t = vnoise(x, y, 77, 56) + vnoise(x, y, 78, 17) * 0.5;
-      const drift = t > 0.35 ? 1.05 : t < -0.35 ? 0.95 : 1;
+      // soft: a finer noise and a per-pixel jitter carry each step's edge, so a patch's border is a grain, not a line
+      const tt = soft ? t + vnoise(x, y, 79, 6) * 0.22 + (hash2(x, y, 92) - 0.5) * 0.22 : t;
+      const drift = tt > 0.35 ? (soft ? 1.04 : 1.05) : tt < -0.35 ? (soft ? 0.96 : 0.95) : 1;
       for (let n = 0; n < 3; n++) d[i * 4 + n] = Math.min(255, at(d, i * 4 + n) * drift);
       if (k === RG.deck) continue;
-      if (paths.size) {
+      if (paths.size && soft) {
+        // the trodden ground's border: the distance to the nearest worn cell's rectangle, broken by a slow noise and a
+        // per-pixel jitter, so the path ends in a grain of its own, not along the cells' straight edges
+        const gx = Math.floor((x - GRID.x) / CELL),
+          gy = Math.floor((y - GRID.y) / CELL);
+        let dist = 1e9;
+        for (let oy = -1; oy <= 1; oy++)
+          for (let ox = -1; ox <= 1; ox++) {
+            if (!paths.has(`${gx + ox},${gy + oy}`)) continue;
+            const x0 = GRID.x + (gx + ox) * CELL,
+              y0 = GRID.y + (gy + oy) * CELL;
+            const ex = Math.max(x0 - x, 0, x - (x0 + CELL - 1)),
+              ey = Math.max(y0 - y, 0, y - (y0 + CELL - 1));
+            dist = Math.min(dist, Math.hypot(ex, ey));
+          }
+        const edge = dist + vnoise(x, y, 86, 14) * 8 + (hash2(x, y, 87) - 0.5) * 6;
+        if (edge < 3)
+          mix(
+            i,
+            k === RG.sand ? TRODDEN : WORN,
+            (edge < 0 ? 0.22 : 0.12) * (k === RG.stone ? 0.55 : 1),
+          );
+      } else if (paths.size) {
         const qx = Math.floor((x - GRID.x + vnoise(x, y, 83, 13) * 9) / CELL),
           qy = Math.floor((y - GRID.y + vnoise(x, y, 84, 13) * 9) / CELL);
         if (paths.has(`${qx},${qy}`) && vnoise(x, y, 85, 5) > -0.6)
           mix(i, k === RG.sand ? TRODDEN : WORN, k === RG.stone ? 0.12 : 0.22);
       }
       const damp = vnoise(x, y, 81, 30) + vnoise(x, y, 82, 9) * 0.3;
-      if (damp > 1 - wet) mix(i, MUD, Math.min(0.3, (damp - (1 - wet)) * 1.2));
+      if (soft) {
+        // a damp patch in two tones, its border dithered per pixel as a Wang tile's edge is
+        const w = damp - (1 - wet) + (hash2(x, y, 93) - 0.5) * 0.2 + vnoise(x, y, 94, 5) * 0.08;
+        if (w > 0) mix(i, MUD, w > 0.12 ? 0.24 : 0.14);
+      } else if (damp > 1 - wet) mix(i, MUD, Math.min(0.3, (damp - (1 - wet)) * 1.2));
       const h = hash2(x, y, 91);
       if (h < 0.0035 && c(x, y - 1) === k && c(x - 1, y) === k) {
         mix(i, PEBBLE, 0.7);

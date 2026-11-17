@@ -39,6 +39,7 @@ export const RG02_BOARDS: readonly TopDownBoard[] = [
         ...span(21, 21, 4, 6),
       ],
       wet: 0.3,
+      soft: true,
     },
   }),
   rg02Board({
