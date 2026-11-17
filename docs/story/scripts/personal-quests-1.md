@@ -2863,8 +2863,8 @@ telling you now, so you can't say nobody asked.
 **Renn:** Don't remember it. Write it down. You've got a slate.
 
 _Keepsake: **Renn's sugar pear, with the leaf facing wrong**, in oilcloth on the cart's shelf (after
-`pq05_shared` or `pq05_delegated`). After `pq05_alone`: **six pairs of work gloves, less two**, which come
-back to the cart in Bo's pack. Sets `pq05_done`._
+`pq05_shared` or `pq05_delegated`). After `pq05_alone`: **four pairs of work gloves**, handed back by the four
+who went, which ride in Bo's pack. Sets `pq05_done`._
 
 ### PQ-05: what it sets and where it pays off
 
