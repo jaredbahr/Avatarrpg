@@ -58,6 +58,9 @@ on Scene 3.9, the invitation to Causeway. The build list for it is at the end of
 1. **The ferry under the lamps** (end of MQ-02): rope, water, the lamps coming on across the bay.
 2. **The handwheel** (MQ-04, DLG-04): the child's hands on the wheel, Veyra's wet glove coming off.
 
+Shot lists for both are in [cutscenes.md](cutscenes.md) (CS-2A, CS-2B), a proposal pending the trial
+cutscene (#810).
+
 ---
 
 ## MQ-02 — Paper and Stone
@@ -508,7 +511,8 @@ evening boat. I don't know what was in it. I've found I sleep better.
 
 ### Scene 2.9 — The ferry
 
-**Shown:** cutscene candidate 1 (also works played). **Where:** Tavi's ferry, at dusk.
+**Shown:** cutscene candidate 1 (also works played). **Where:** Tavi's ferry, at dusk. Shot list:
+[cutscenes.md](cutscenes.md), CS-2A (a proposal, pending the trial).
 
 **Narrator:** Parcel will not walk up the ferry ramp. He stands at the bottom of it with both feet planted and
 looks at the sea.
@@ -1221,7 +1225,8 @@ the thing we built them works.
 
 ### Scene 4.5 — DLG-04, Veyra at the handwheel
 
-**Shown:** cutscene candidate 2 (also works played). **Where:** the goods lift from Scene 4.1.
+**Shown:** cutscene candidate 2 (also works played). **Where:** the goods lift from Scene 4.1. Shot list:
+[cutscenes.md](cutscenes.md), CS-2B (a proposal, pending the trial).
 
 The exchange from here to "Her answer is not immediate" is **bible DLG-04, word for word**. `Player` in the
 bible is `Party` here. The party knows her supply order; it does not know of any refused shutdown.

@@ -28,6 +28,9 @@ MQ-11: Mira's part in who was sent to the quarry.
 1. **The refusal slip** (MQ-10): an old hand holding a small paper, and Veyra's face while she reads it.
 2. **The wheel pin** (MQ-11): Pella at the east gate, checking the cart instead of waving.
 
+Shot lists for both are in [cutscenes.md](cutscenes.md) (CS-4A, CS-4B), a proposal pending the trial
+cutscene (#810).
+
 ---
 
 ## MQ-10 — Everyone in the Room
@@ -352,7 +355,8 @@ nobody on Rusk's staff is willing to move the Director's mother._
 
 ### Scene 10.6 — The refusal slip
 
-**Shown:** cutscene candidate 1 (also works played). **Where:** the platform.
+**Shown:** cutscene candidate 1 (also works played). **Where:** the platform. Shot list:
+[cutscenes.md](cutscenes.md), CS-4A (a proposal, pending the trial).
 
 **Narrator:** Veyra is wet to the knee. She went down into it with everyone else. She is counting heads on
 the platform under her breath when someone taps her on the arm with a whittled stick.
@@ -1173,7 +1177,8 @@ _Sets `latch_returned`._
 
 ### Scene 11.10 — The wheel pin
 
-**Shown:** cutscene candidate 2 (also works played). **Where:** the east gate, early.
+**Shown:** cutscene candidate 2 (also works played). **Where:** the east gate, early. Shot list:
+[cutscenes.md](cutscenes.md), CS-4B (a proposal, pending the trial).
 
 **Narrator:** Morning. The cart is loaded low and even, with a canopy, a ramp, and a barrel. Eleven people
 (or five, or none but the party) are waiting by the stone wagons. Half the village has come to the east gate.

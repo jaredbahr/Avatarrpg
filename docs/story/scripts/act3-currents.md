@@ -32,6 +32,9 @@ control. Rusk's past in the Blackreed Flood is not known until MQ-10.
 1. **The audience at the mirror pool** (MQ-07): the heron in the water, and the laugh it kept.
 2. **The door in the rain** (end of the act): a wet street, a poster, a door opening.
 
+Shot lists for both are in [cutscenes.md](cutscenes.md) (CS-3A, CS-3B), a proposal pending the trial
+cutscene (#810).
+
 ---
 
 ## MQ-06 — The Train That Forgot a Town
@@ -553,7 +556,8 @@ its hands before the audience can practise the echo rule there. It stays optiona
 
 ### Scene 7.5 — The audience
 
-**Shown:** cutscene candidate 1 (also works played). **Where:** the mirror pool.
+**Shown:** cutscene candidate 1 (also works played). **Where:** the mirror pool. Shot list:
+[cutscenes.md](cutscenes.md), CS-3A (a proposal, pending the trial).
 
 **Narrator:** Fenn has come along behind you with her shoes in her hand. For once she has nothing to say.
 
@@ -1567,7 +1571,8 @@ shoes. A shutter closes. Another.
 
 **Narrator:** At the bottom of a stair street, in the rain, there is one door.
 
-**The door (cutscene candidate 2; the first matching variant plays):**
+**The door (cutscene candidate 2; the first matching variant plays).** Shot list: [cutscenes.md](cutscenes.md),
+CS-3B (a proposal, pending the trial).
 
 - **If PQ-02 was resolved (either constructive way):** the back door of the Six-Ladle Kitchen.
   **Dema:** Don't stand there reading the poster. I've read it. I've also read my wage sheet, and I know

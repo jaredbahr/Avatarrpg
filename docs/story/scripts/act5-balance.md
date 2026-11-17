@@ -28,6 +28,9 @@ Whether Veyra will put the key down. Nothing else is held back. No franchise mys
 2. **The last stop** (MQ-15): the cart at a settlement that is on no map, and a chair being moved at Mira's
    table.
 
+Shot lists for both are in [cutscenes.md](cutscenes.md) (CS-5A, CS-5B), a proposal pending the trial
+cutscene (#810).
+
 ---
 
 ## MQ-13 — Three Ways to Hold a Night
@@ -807,7 +810,8 @@ choice stays tied to how the fights went). In Resistance she is removed from com
 
 #### Surrender — DLG-11, Veyra lets go
 
-**Cutscene candidate 1.** **Bible DLG-11, word for word.** `Player` is `Party`. The local operator is Bera.
+**Cutscene candidate 1.** Shot list: [cutscenes.md](cutscenes.md), CS-5A, part one (a proposal, pending the
+trial). **Bible DLG-11, word for word.** `Player` is `Party`. The local operator is Bera.
 
 **Narrator:** Veyra has come down from the control gallery. She is soaked, and she has the central control
 key on its cord in her fist.
@@ -898,7 +902,8 @@ without a guest. Sets `veyra_removed`. Do not use the key-on-the-ledge image in 
 
 ### Scene 14.6 — The valve
 
-**Shown:** played (both versions join here).
+**Shown:** played (both versions join here). Shot list: [cutscenes.md](cutscenes.md), CS-5A, part two (a
+proposal, pending the trial).
 
 **Narrator:** The last quarter-turn. A hand on a valve wheel, and water coming over the gallery floor, and a
 turbine, somewhere below, winding down from a scream to a hum.
@@ -1423,7 +1428,8 @@ _The party can join the repair, keep eating while another resident helps, or qui
 
 ### Scene 15.7 — The last stop
 
-**Shown:** cutscene candidate 2 (also works played). The final image.
+**Shown:** cutscene candidate 2 (also works played). The final image. Shot list: [cutscenes.md](cutscenes.md),
+CS-5B (a proposal, pending the trial).
 
 **Narrator:** A road none of you has driven. The cart has a canopy that is not square, a ramp that is too
 wide, a barrel with the tap on the left, and a lamp with a chip in the glass.
