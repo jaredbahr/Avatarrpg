@@ -1,7 +1,10 @@
+import { readFileSync } from 'node:fs';
 import { PNG } from 'pngjs';
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import type { CameraInfo } from '../src/app/App';
+import { CONTENT } from '../src/content';
+import { loadTopDownPresentations, topDownMap } from '../src/content/topdown';
 import type { Vec2 } from '../src/core/types';
 import { PARTICLE_STRIDE, sampleParticles } from '../src/render/fx/simulate';
 import type { Renderer } from '../src/render/renderer';
@@ -27,7 +30,32 @@ declare global {
     topdownAmbienceProbe?: AmbientProbe;
   }
 }
-const mouth = { x: 8.025, y: 8.075 };
+/** The chimney the spec watches: the frozen scene's third, set from its data when a test starts. */
+let mouth: Vec2 = { x: 0, y: 0 };
+
+/**
+ * Ba Dan's scene as it shipped before the grey blockout, frozen (`src/content/maps/fixtures/oldVillageScene.json`):
+ * the village has no scene while it is a blockout, and this is the only sample with chimneys. It is merged into the
+ * village exactly as the shipped scene was, then its plates are dropped so no art is fetched; its chimneys, canopies
+ * and paint rules are what the ambience draws from.
+ */
+async function frozenScene() {
+  const presentations = await loadTopDownPresentations(
+    () =>
+      Promise.resolve(
+        JSON.parse(
+          readFileSync('src/content/maps/fixtures/oldVillageScene.json', 'utf8'),
+        ) as unknown,
+      ),
+    new Map([['ba_dan_village', { url: 'art/topdown/ba-dan/scene.json', cameraCentreMargin: 1 }]]),
+  );
+  const live = CONTENT.maps.get('ba_dan_village');
+  const presentation = presentations.get('ba_dan_village');
+  if (!live || !presentation) throw new Error('Missing the frozen top-down village');
+  const scene = topDownMap(live, presentation).scene;
+  if (!scene) throw new Error('The frozen village has no scene');
+  return { ...scene, ground: [], scenery: [] };
+}
 
 function samples(emitters: readonly EmitterInstance[]) {
   return emitters.map(({ def, elapsed, seed, from, to, arc }) => {
@@ -144,7 +172,7 @@ function hasVisibleSmoke(
 }
 
 for (const renderer of ['canvas', 'webgl'] as const) {
-  test(`${renderer}: the shipped top-down chimney is frozen under reduce motion and moves otherwise`, async ({
+  test(`${renderer}: the frozen top-down chimney is frozen under reduce motion and moves otherwise`, async ({
     page,
   }) => {
     const errors: string[] = [];
@@ -155,6 +183,14 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     await page.emulateMedia({ reducedMotion: 'no-preference' });
     await resetStorage(page, `?style=topdown&renderer=${renderer}`);
     await startGame(page, ['Jared'], ['kaya'], 'topdown-ambience-471', { reduceMotion: false });
+    // Give the bare village the frozen scene's chimneys before its scene mounts.
+    const scene = await frozenScene();
+    mouth = scene.chimneys?.[2] ?? mouth;
+    await page.evaluate((scene) => {
+      const map = window.fnt?.app.content.maps.get('ba_dan_village');
+      if (!map) throw new Error('Ba Dan village missing');
+      Object.assign(map, { scene });
+    }, scene);
     await enterNode(page, 'village_explore');
     await page.locator('.explore-scene .map-canvas').waitFor();
     await page.evaluate(async () => {

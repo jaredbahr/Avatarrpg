@@ -419,7 +419,7 @@ for (const custody of ['trade', 'escort'] as const) {
     await continueStory(page);
     expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe('village_explore');
 
-    await walkTo(page, 11, 5); // Mira's invitation, reached by walking from a new game.
+    await walkTo(page, 12, 9); // Mira's invitation, reached by walking from a new game.
     expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe('mira_intro');
     await continueStory(page);
     await takeRoute(page, 'East road → Forest Road', 'forest_road');
@@ -546,7 +546,7 @@ for (const custody of ['trade', 'escort'] as const) {
     );
     // The first step in from the east road plays the welcome home and the
     // demo-complete card; keep exploring from it to reach the homecomings.
-    await walkTo(page, 19, 7);
+    await walkTo(page, 24, 9);
     expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe(
       'welcome_home_mira',
     );
@@ -564,7 +564,7 @@ for (const custody of ['trade', 'escort'] as const) {
     expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe('dorin_home');
     expect(await page.evaluate(() => window.fnt?.app.state?.world.talk?.npcId)).toBe('guard_dorin');
     await continueStory(page);
-    await walkTo(page, 11, 5);
+    await walkTo(page, 12, 9);
     expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe('mira_epilogue');
     await expect(page.locator('.dialogue-line')).toContainText('Bo-shan');
     await page.locator('.dialogue-panel button.btn-primary').click();
@@ -595,7 +595,7 @@ for (const custody of ['trade', 'escort'] as const) {
 
     await saveAndReload(page);
     expect(await page.evaluate(() => window.fnt?.app.state?.location.mapId)).toBe('ba_dan_village');
-    await walkTo(page, 11, 5);
+    await walkTo(page, 12, 9);
     // Once she has the rubbing, Mira never asks for it again.
     expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe(
       'mira_rubbing_kept',

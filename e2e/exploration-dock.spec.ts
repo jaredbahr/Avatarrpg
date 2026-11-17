@@ -437,13 +437,13 @@ test('resizing exploration keeps zoom and map focus while taps follow the painte
   expect(after.centreX).toBeCloseTo(before.centreX, 1);
   expect(after.centreY).toBeCloseTo(before.centreY, 1);
 
-  const target = await paintedTileCentre(page, { x: 6, y: 7 });
+  const target = await paintedTileCentre(page, { x: 8, y: 11 });
   if (!target) throw new Error('No exploration camera');
   await page.mouse.click(target.x, target.y);
   await expect
     .poll(() => page.evaluate(() => window.fnt?.app.state?.location.pos))
     .toEqual({
-      x: 6,
-      y: 7,
+      x: 8,
+      y: 11,
     });
 });

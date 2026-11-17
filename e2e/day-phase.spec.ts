@@ -42,13 +42,20 @@ test('waiting at Mira’s table moves the day on and relabels it', async ({ page
   await expect(page.locator('.explore-phase')).toHaveText('Midday');
   // The time of day stands where 'Exploring' did.
   await expect(page.locator('.explore-mode')).toHaveCount(0);
-  // Away from the table the hotbar keeps Look around, which leads to the seat.
+  // The new game opens one step from the wash steps, where Practice takes Look around's slot: step
+  // away from the canal first. Away from the table the hotbar keeps Look around, which leads to the seat.
+  await page.evaluate(() => {
+    const app = window.fnt!.app;
+    const state = app.state!;
+    app.adoptSave({ ...state, location: { ...state.location, pos: { x: 16, y: 9 } } }, undefined);
+  });
+  await waitForIdle(page);
   const wait = page.locator('.action-button').filter({ hasText: "Mira's table" });
   await expect(wait).toHaveCount(0);
   await page.getByRole('button', { name: /^Look around/ }).click();
   await page.getByRole('button', { name: "Mira's table · Sit and wait", exact: true }).click();
   await waitForIdle(page);
-  expect(await page.evaluate(() => window.fnt!.app.state?.location.pos)).toEqual({ x: 10, y: 5 });
+  expect(await page.evaluate(() => window.fnt!.app.state?.location.pos)).toEqual({ x: 13, y: 10 });
   await expect(page.getByRole('button', { name: /^Look around/ })).toHaveCount(0);
   await expect(wait).toContainText('Wait');
   await wait.click();
@@ -204,7 +211,7 @@ test('the handover bark is said once per watch, even after leaving the map', asy
           screen: 'explore',
           flags: { ...state.flags, 'scene.bd03_handover': 'completed' },
           story: { ...state.story, nodeId: 'village_explore', visited: ['mira_intro'] },
-          location: { mapId: 'ba_dan_village', pos: { x: 20, y: 7 } },
+          location: { mapId: 'ba_dan_village', pos: { x: 26, y: 9 } },
           world: { ...state.world, clock: { day, phase: 'evening' } },
         },
         undefined,
@@ -216,7 +223,7 @@ test('the handover bark is said once per watch, even after leaving the map', asy
   await enterNode(page, 'riverside_explore');
   await expect(page.locator('.village-controls')).toBeVisible();
   await atGate(1);
-  await page.evaluate(() => window.fnt!.app.dispatch({ type: 'walkTo', pos: { x: 21, y: 7 } }));
+  await page.evaluate(() => window.fnt!.app.dispatch({ type: 'walkTo', pos: { x: 25, y: 9 } }));
   await waitForIdle(page);
   expect(await said()).toBe(1);
   // The next evening's handover has its own.
