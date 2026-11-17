@@ -6,7 +6,7 @@
 
 Source: [../regions/saltstepEmberwatch/emberwatch.ts](../../src/content/story/../regions/saltstepEmberwatch/emberwatch.ts).
 
-16 nodes; 1 fights; 0 branches; 0 choices
+18 nodes; 1 fights; 0 branches; 0 choices
 
 Green nodes are story entry points (new game, map interactions, cross-file targets, or roots). Hexagons are fights; diamonds are flag branches. Purple placeholders exit this file; dashed placeholders continue in another part. Counts include owned story nodes only.
 
@@ -16,43 +16,47 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 
 ## Part 1: entry `mq03_luli`
 
-16 owned nodes.
+18 owned nodes.
 
 ```mermaid
 flowchart TD
-  n225["mq03_emberwatch_explore<br/>Explore emberwatch_parade: Look around Emberwatch. The power ya…"]
-  n226["mq03_luli<br/>Luli: Mind the line. It’s live. That one lights the clinic, the…"]:::entry
-  n227["mq03_luli_laughs<br/>The Power Yard: She laughs. It sounds like an engine trying to …"]
-  n228["mq03_luli_proud<br/>Luli: Lightning into a wire, all day, in little careful pieces.…"]
-  n229["mq03_parade_ground<br/>Emberwatch: Emberwatch was built for soldiers. The parade groun…"]:::entry
-  n230["mq03_power_yard_explore<br/>Explore emberwatch_power_yard: The power yard. Luli keeps the l…"]
-  n231["mq03_retired_cook<br/>Retired cook: Mind the edge. Those are the red ones and they ro…"]:::entry
-  n232["mq03_slogans<br/>Emberwatch: Someone has painted over the slogans on the barrack…"]
-  n233["mq03_tavi<br/>Tavi Ren: Come and meet the two people who’ll actually tell you…"]:::entry
-  n307{{"sf21_battle<br/>Fight: enc_sf21_wet_ground (expected level 4)"}}
-  n308["sf21_driver<br/>Bo-shan: Lightning goes straight across a puddle. I told Pella.…"]
-  n309["sf21_lost<br/>Set flags"]
-  n310["sf21_lost_luli<br/>Luli: I’d have given them the scrap. They only had to ask in da…"]
-  n311["sf21_sabi<br/>Sabi: We strung that spur. Nine weeks. Then they said the job w…"]
-  n312["sf21_wet_ground<br/>Luli: Off the wet! All of you! That line is live, and I am not …"]:::entry
-  n313["sf21_won<br/>Luli: I’m owed nine days off and nobody to cover them. Two of y…"]
-  n225 -->|"Legacy/audit exit (live map exits differ)"| n225
-  n226 -->|"Next"| n227
-  n227 -->|"Next"| n228
-  n228 -->|"Next"| n230
-  n229 -->|"Next"| n225
-  n230 -->|"Legacy/audit exit (live map exits differ)"| n230
-  n231 -->|"Next"| n232
-  n232 -->|"Next"| n225
-  n233 -->|"Next"| n225
-  n307 -->|"Victory"| n313
-  n307 -->|"Defeat"| n309
-  n308 -->|"Next"| n307
-  n309 -->|"set: (none); grant XP: 133"| n310
-  n310 -->|"Next"| n230
-  n311 -->|"Next"| n308
-  n312 -->|"Next"| n311
-  n313 -->|"Next"| n230
+  n238["mq03_emberwatch_explore<br/>Explore emberwatch_parade: Look around Emberwatch, or go east t…"]
+  n239["mq03_luli<br/>Luli: Mind the line. It’s live. That one lights the clinic, the…"]:::entry
+  n240["mq03_luli_laughs<br/>The Power Yard: She laughs. It sounds like an engine trying to …"]
+  n241["mq03_luli_proud<br/>Luli: Lightning into a wire, all day, in little careful pieces.…"]
+  n242["mq03_parade_ground<br/>Emberwatch: Emberwatch was built for soldiers. The parade groun…"]:::entry
+  n243["mq03_power_yard_explore<br/>Explore emberwatch_power_yard: Talk to Luli in the power yard, …"]
+  n244["mq03_retired_cook<br/>Retired cook: Mind the edge. Those are the red ones and they ro…"]:::entry
+  n245["mq03_slogans<br/>Emberwatch: Someone has painted over the slogans on the barrack…"]
+  n246["mq03_tavi<br/>Tavi Ren: Come and meet the two people who’ll actually tell you…"]:::entry
+  n320{{"sf21_battle<br/>Fight: enc_sf21_wet_ground (expected level 4)"}}
+  n321["sf21_cutters_down<br/>The Power Yard: The riggers put down their cutters."]
+  n322["sf21_driver<br/>Bo-shan: Lightning goes straight across a puddle. I told Pella.…"]
+  n323["sf21_lost<br/>Set flags"]
+  n324["sf21_lost_luli<br/>Luli: I’d have given them the scrap. They only had to ask in da…"]
+  n325["sf21_over_the_wall<br/>The Power Yard: The riggers get away over the wall with one coi…"]
+  n326["sf21_sabi<br/>Sabi: We strung that spur. Nine weeks. Then they said the job w…"]
+  n327["sf21_wet_ground<br/>Luli: Off the wet! All of you! That line is live, and I am not …"]:::entry
+  n328["sf21_won<br/>Luli: I’m owed nine days off and nobody to cover them. Two of y…"]
+  n238 -->|"Legacy/audit exit (live map exits differ)"| n238
+  n239 -->|"Next"| n240
+  n240 -->|"Next"| n241
+  n241 -->|"Next"| n243
+  n242 -->|"Next"| n238
+  n243 -->|"Legacy/audit exit (live map exits differ)"| n243
+  n244 -->|"Next"| n245
+  n245 -->|"Next"| n238
+  n246 -->|"Next"| n238
+  n320 -->|"Victory"| n321
+  n320 -->|"Defeat"| n323
+  n321 -->|"Next"| n328
+  n322 -->|"Next"| n320
+  n323 -->|"set: (none); grant XP: 133"| n325
+  n324 -->|"Next"| n243
+  n325 -->|"Next"| n324
+  n326 -->|"Next"| n322
+  n327 -->|"Next"| n326
+  n328 -->|"Next"| n243
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

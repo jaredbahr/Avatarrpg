@@ -24,6 +24,11 @@ the bible gives exact dialogue (DLG-04), it is used word for word and marked.
   (`act1_lost`) Dorin drives it, Bo-shan and the four messengers are still held at the quarry, and Gao has
   patched the cart. Lines marked **Driver** are written twice.
 - **Ruon.** `ruon_spared`: he is in Ba Dan under watch. `ruon_traded`: Jin has him.
+- **What is already in the game.** Scenes 2.1 to 2.9, the arrival half of 3.1 (the cook, Tavi, Luli and her
+  offer) and SF-2.1 are built word for word from this script (`src/content/regions/saltstepEmberwatch/`). The
+  2026-11-17 edit pass left those lines alone; what it would change there is listed as proposals in the
+  pass's report. Not yet wired, and so edited here: Sura's and Wen's lines in 2.4, Riko's in 2.6, Veyra's
+  fight barks.
 
 ## What Act II may reveal
 
@@ -52,6 +57,9 @@ on Scene 3.9, the invitation to Causeway. The build list for it is at the end of
 
 1. **The ferry under the lamps** (end of MQ-02): rope, water, the lamps coming on across the bay.
 2. **The handwheel** (MQ-04, DLG-04): the child's hands on the wheel, Veyra's wet glove coming off.
+
+Shot lists for both are in [cutscenes.md](cutscenes.md) (CS-2A, CS-2B), a proposal pending the trial
+cutscene (#810).
 
 ---
 
@@ -308,11 +316,14 @@ go. They both look at it.
 > **Driver (Dorin):** I heard that. I am not going to write it down.
 
 > **If Sura is in the party —** (place before Veyra's "Odd.")
-> **Sura:** There. Under the boards. Did nobody else... It did that in the culvert. At the quarry.
+> **Sura:** There. Under the boards. Did nobody else hear that?
 >
-> **Veyra:** Did what?
+> **Veyra:** Hear what?
 >
-> **Sura:** Said it twice.
+> **Sura:** It said it twice.
+>
+> _(If the party saw the culvert in the Cutting, `cutting_culvert`, Sura's first line ends: "It did that in the
+> Cutting. Under the road." The culvert is optional in Act I, so the plain version asks nothing of it.)_
 
 > **If Wen is in the party —**
 > **Wen:** That's a lift-and-force pump with the handle on a long throw. And you've put the stop where a short
@@ -500,7 +511,8 @@ evening boat. I don't know what was in it. I've found I sleep better.
 
 ### Scene 2.9 — The ferry
 
-**Shown:** cutscene candidate 1 (also works played). **Where:** Tavi's ferry, at dusk.
+**Shown:** cutscene candidate 1 (also works played). **Where:** Tavi's ferry, at dusk. Shot list:
+[cutscenes.md](cutscenes.md), CS-2A (a proposal, pending the trial).
 
 **Narrator:** Parcel will not walk up the ferry ramp. He stands at the bottom of it with both feet planted and
 looks at the sea.
@@ -612,6 +624,13 @@ went to Saltstep's low end this week. The tally is long.
 **Supply clerk:** Take a look. It's all real. People think because it comes off a company boat there must be a
 trick in it. There isn't a trick in soap.
 
+> **If Nilak is in the party —**
+> **Nilak:** Fever bark cut to one length, and kept off the floor. Whoever stocks this has nursed.
+>
+> **Supply clerk:** Eleven years on a ward. Then my knees went.
+>
+> **Nilak:** Then I'll stop inspecting your shelves.
+
 ### Scene 3.2 — The count is wrong
 
 **Shown:** played.
@@ -675,6 +694,8 @@ since they reopened and it started this year.
 
 > **If Sura is in the party —**
 > **Sura:** That's three. The culvert, the harbour, here. It only ever takes one thing.
+> _(If the culvert was not seen in Act I: "That's twice. The harbour, and here. It only ever takes one
+> thing.")_
 >
 > **Kesi:** Takes?
 >
@@ -810,8 +831,10 @@ stopped filling it in.
 **Tavi:** I can take eleven tonight. No tokens. I'll say the ferry was light and I wanted ballast.
 
 **Tavi:** Or. The lantern keeper and I sit in that dispatch room at dawn with the Compact's seal. Every one of
-them walks onto the morning ferry with their name written down and why they were held. Slower. One more
-night in here. But then it's on paper that it happened, and paper's what a council reads.
+them walks onto the morning ferry with their name written down and why they were held.
+
+**Tavi:** It's slower. One more night in here. But then it's on paper that it happened, and paper's what a
+council reads.
 
 **Kesi's brother:** One more night's nothing. We've done thirty. But ask us, don't tell us.
 
@@ -951,7 +974,7 @@ while; Parcel has eaten the corner of his notebook.
 
 **Clerk:** For the party from Ba Dan. From the Director's office. I'm to say it is not a summons.
 
-**The card:** "You have been asking about a supply order. So have I. Commissioning Day is in four days at
+**The card:** "You have been asking about a supply order. So have I. Long-Light Evening is in four days at
 Causeway. Come and see what the order was for, and then tell me to my face what it did. V. Sen."
 
 **Narrator:** The handwriting is the same as the two corrections on the order. Neat, and in a hurry.
@@ -1002,13 +1025,19 @@ shut.
 
 **Old bather:** Sixty-eight years I've washed in a bucket. Don't talk to me. I'm busy.
 
+> **If Nima is in the party —**
+> **Nima:** Four flights, every time? Lend me that rope. And the laundry basket. And ten minutes.
+>
+> **Narrator:** It takes him longer to rig the basket on the stair rail than it would have taken to carry the
+> towels. The second load goes down in one go. The attendant keeps the rope.
+
 **Task two — the lift.**
 
 **Narrator:** A small goods lift runs between the water stairs and the market. It has a handwheel on a post,
 low down. A girl of about eight has both hands on it. A supervisor stands close, with her arms folded so they
 will not help.
 
-**Supervisor:** Slow. Slower. There. You've got forty pounds of turnips coming up, and you're doing it.
+**Supervisor:** Slow. Slower. There. You've got thirty pounds of turnips coming up, and you're doing it.
 
 **Girl:** I know I'm doing it.
 
@@ -1127,7 +1156,11 @@ counterweight; move the crowd back from the canal edge.
 - **A gate fitter (Bera), from the bank:** "The seal! It's the lower seal, it's swelled, I told them!"
 
 > **If Kaya is in the party —** (on entering the water)
-> **Kaya:** I'm going in. Who's on the chain with me? You, with the grease on your arms? Good. Count me in.
+> **Kaya:** I've got the chain! I've got it! ...Which way does it unhook?
+>
+> **Gate crew:** Toward you!
+>
+> **Kaya:** Toward me. That's what I thought.
 
 > **If Bo is in the party —**
 > **Bo:** Crowd first. Twenty back from the edge, then twenty more. You, in the red, you're counting for me.
@@ -1192,7 +1225,8 @@ the thing we built them works.
 
 ### Scene 4.5 — DLG-04, Veyra at the handwheel
 
-**Shown:** cutscene candidate 2 (also works played). **Where:** the goods lift from Scene 4.1.
+**Shown:** cutscene candidate 2 (also works played). **Where:** the goods lift from Scene 4.1. Shot list:
+[cutscenes.md](cutscenes.md), CS-2B (a proposal, pending the trial).
 
 The exchange from here to "Her answer is not immediate" is **bible DLG-04, word for word**. `Player` in the
 bible is `Party` here. The party knows her supply order; it does not know of any refused shutdown.
@@ -1251,7 +1285,15 @@ task-givers each have one new line, below)._
 - **Dema:** She went in after him herself. I'll give her that. I'll give her that, and I'll still want the
   late shelf paid.
 
-> **Optional line, any party, if the table opens with it at the next scene —**
+### Scene 4.6 — VOTE: the commission
+
+**Shown:** played. **Where:** the terrace above the canal, later that evening.
+
+**Narrator:** Veyra has found a dry coat. It is the same blue. She has a folder, and two cups, and the mended
+teapot. A carved wooden rule sticks out of her breast pocket. One end of it is worn pale.
+
+> **Optional, any party** _(a `Party:` line the table may tap before she speaks; she saw the packet in 2.6
+> on every route)_ **—**
 > **Party:** You saw the pay packet at Saltstep.
 >
 > **Veyra:** I did. I had it logged. I asked my office who packed the crate.
@@ -1260,13 +1302,6 @@ task-givers each have one new line, below)._
 >
 > **Veyra:** I was told it was being looked into. I accepted that. I'm telling you I accepted it, so you don't
 > have to find it out.
-
-### Scene 4.6 — VOTE: the commission
-
-**Shown:** played. **Where:** the terrace above the canal, later that evening.
-
-**Narrator:** Veyra has found a dry coat. It is the same blue. She has a folder, and two cups, and the mended
-teapot.
 
 **Veyra:** People saw a gate jam tonight. Next week they'll hear about a quarry. If I tell them it's in hand,
 that's the Director saying the Director is fine.
@@ -1356,7 +1391,7 @@ left at home.
 
 **Shown:** played. **Where:** Causeway dispatch office.
 
-**Narrator:** The dispatch office has a wall-sized map of the Common Current, painted for Commissioning Day.
+**Narrator:** The dispatch office has a wall-sized map of the Common Current, painted for Long-Light Evening.
 Blue for water, red for power, black for rail. It is very handsome. Every line reaches a dot, and every dot
 has a name.
 
@@ -1468,14 +1503,16 @@ wall.
 >
 > **Narrator:** He has Gao's receipt out, the one the stone carter left on the counter.
 >
-> **Driver (Dorin):** "Sent on: stop fourteen, route nine, bell three." I have carried this for three weeks and
-> read it as arithmetic.
+> **Driver (Dorin):** "Sent on: stop fourteen, route nine, bell three." I have carried this all the way from Ba Dan
+> and read it as arithmetic.
 >
 > **Yenna:** Pear Halt was stop fourteen. It's painted on my lamp.
 >
 > **Driver (Dorin):** Then crates that went through that quarry went on to three places that are not on this
-> wall. Bo-shan's cart was at the quarry when they did. I would like to see where. I am going to write it in
-> the watch book, with the date, so he can read where his cart was sent without him.
+> wall. Bo-shan's cart was at the quarry when they did. I would like to see where.
+>
+> **Driver (Dorin):** I am going to write it in the watch book, with the date, so he can read where his cart was
+> sent without him.
 
 > **If Lin Mei is in the party —**
 > **Narrator:** Lin Mei has turned the painted map's corner over. On the back, in pencil, is the survey it was
@@ -1794,7 +1831,8 @@ Scene 3.8 (the manifest). Scene 2.2 and 2.8 plant her office and her clerk at Sa
 | MQ-04   | The demonstration canal lock | A child's laugh from the terraces                     |
 | MQ-05   | The river below the camp     | "...come home", from Pella's question, read out loud  |
 
-Nobody explains any of them. Sura, when present, is the only one who keeps count.
+Nobody explains any of them. Sura, when present, is the only one who keeps count. Her count starts at the
+culvert in the Cutting only if the party saw it (`cutting_culvert`); otherwise it starts at the pontoon.
 
 ## Pella's letter for this act
 
@@ -1804,13 +1842,13 @@ Scene 5.6, with a loss-branch version addressed to Dorin.
 
 | Hero    | Where                                                                           |
 | ------- | ------------------------------------------------------------------------------- |
-| Kaya    | 2.2 Miri's crates (PQ-01 planted; opens at Saltstep after MQ-03); 4.3 the canal |
+| Kaya    | 2.2 Miri's crates (PQ-01 planted; opens at Saltstep after MQ-03); 4.3 the chain |
 | Tenzo   | 2.2 the bowl-seller; 4.1 Dema (PQ-02 opens); 5.6 the second sauce               |
-| Nilak   | 5.5 Aru's table (PQ-03 opens, with the bible's line)                            |
+| Nilak   | 3.1 the supply room; 5.5 Aru's table (PQ-03 opens, with the bible's line)       |
 | Sura    | 2.4, 3.3, 5.6: she is the one counting the echoes                               |
 | Bo      | 4.3 moving the crowd                                                            |
 | Lin Mei | 3.5 the careful order; 5.3 her own phrase on the back of the map                |
-| Nima    | 4.1 Oru's offer                                                                 |
+| Nima    | 4.1 the towel basket; 4.1 Oru's offer                                           |
 | Jinu    | 2.1 the courier-office copy (loss branch); 5.6 she carries Pella's letter       |
 | Riko    | 2.6 the packet and the stamp; 3.5 "suspended"; 4.5 "Who gets the key?" (DLG-04) |
 | Wen     | 2.4 the pump; 3.1 her regulator (PQ-10 opens); 4.2 "napkins"                    |
@@ -1953,3 +1991,17 @@ record of what was accepted ("Recommend" lines are now decisions). Later correct
    This is a build question, not a story one.
 6. **Not yet written:** the five teacher stories (TR-01 to TR-05) and the personal quests that open in this
    act (PQ-01, PQ-02, PQ-03, PQ-10).
+
+## Edit pass, 2026-11-17 (awaiting the owner)
+
+A script editor's pass over all four acts. What changed in this file; the reasons, the before-and-after lines
+and the proposals not applied are in the pass's report.
+
+1. **Left alone:** every line already built (2.1 to 2.9, the arrival half of 3.1, SF-2.1).
+2. **Continuity:** the card in 3.9 and the map in 5.1 say "Long-Light Evening", not "Commissioning Day"
+   (commissioning is the spring tide, in Act V). Dorin has carried Gao's receipt "all the way from Ba Dan",
+   not "three weeks". Sura's echo count no longer assumes the optional culvert was seen. Veyra's carved rule
+   is seen in 4.6, so Act IV can name it. The optional pay-packet exchange sits at the top of 4.6.
+3. **Lines:** Kaya at the chain (4.3); Tavi's and Dorin's long turns split.
+4. **Hero moments added:** Nilak in the supply room (3.1), Nima and the towel basket (4.1).
+5. **Cutscenes:** pointers to [cutscenes.md](cutscenes.md) at 2.9 and 4.5.
