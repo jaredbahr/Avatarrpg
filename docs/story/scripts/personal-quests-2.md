@@ -42,7 +42,7 @@ start, and then there's the work.
 - [x] Absent heroes are never voiced
 
 **Opens:** at Reedglass, in Scene 7.2 of MQ-07, with Lin Mei in the party. Best played before MQ-09; still
-open afterwards. **Other people:** Fenn, she/her, 32, the marsh schoolteacher; Dabi, she/her, 8, one of her
+open afterwards. **Other people:** Fenn, she/her, 32, the marsh schoolteacher; Twig, she/her, 8, one of her
 pupils; a corridor clerk from the pump station. **What the party may know:** that the vanes went in and the
 water changed (7.1, 7.2). Nothing about why.
 
@@ -74,7 +74,7 @@ nine children and a coil of rope.
 
 **Lin Mei:** It contains the original survey.
 
-**Fenn:** Then it's coming. Dabi, you carry the lady's case. Don't open it. Don't swing it.
+**Fenn:** Then it's coming. Twig, you carry the lady's case. Don't open it. Don't swing it.
 
 **Narrator:** A girl of about eight takes the case in both arms, with great seriousness.
 
@@ -88,14 +88,14 @@ ones.
 
 **Lin Mei:** Then it is not the same path.
 
-**Dabi:** It's the same path. It goes from our house to school.
+**Twig:** It's the same path. It goes from our house to school.
 
 **Narrator:** Lin Mei does not have an answer to that. She steps onto the first stump.
 
 **Narrator:** The children do not walk the stumps. They hop them, one foot only, and whoever touches water
 goes back to the start. They have been doing it since they could stand.
 
-**Dabi:** You have to hop. Walking's cheating.
+**Twig:** You have to hop. Walking's cheating.
 
 **Lin Mei:** I am not playing. I am measuring.
 
@@ -104,7 +104,7 @@ measures the second gap. She stands looking at the third.
 
 **Lin Mei:** These are not even. The third gap is a hand longer. That is not a fair course.
 
-**Dabi:** It's the same for everybody.
+**Twig:** It's the same for everybody.
 
 **Lin Mei:** ...That is true.
 
@@ -113,7 +113,7 @@ measures the second gap. She stands looking at the third.
 **Narrator:** She makes the first gap, and the second. On the third she lands with her arms going round like
 a windmill, and puts a foot down in the water to the ankle.
 
-**Dabi:** Back to the start.
+**Twig:** Back to the start.
 
 **Lin Mei:** I had my weight wrong. I see what I did. Again.
 
@@ -127,7 +127,7 @@ obviously more important than school.
 **Narrator:** She clears all seven stumps on the second try and arrives at the rope slightly out of breath.
 She does not look at anybody. She looks extremely pleased.
 
-**Dabi:** I do it backwards.
+**Twig:** I do it backwards.
 
 **Narrator:** Lin Mei looks at the stumps, and then at Fenn's face, and decides against it.
 
@@ -147,21 +147,21 @@ of poles with a pair of long wooden runners under it, like a sledge.
 
 _Cutscene candidate (suggested, not yet seen by the owner), from here to "So do we.": [cutscenes.md](cutscenes.md), CS-PQ06 (a proposal, pending the trial). The scene works played exactly as written._
 
-**Narrator:** Dabi stops at the third house and sets the case down on its step.
+**Narrator:** Twig stops at the third house and sets the case down on its step.
 
-**Dabi:** That's ours. Can I see the map now? Fenn said it's in there.
+**Twig:** That's ours. Can I see the map now? Fenn said it's in there.
 
 **Narrator:** Lin Mei opens the case. The survey sheet is on top: fine black lines, soundings, a neat scale.
-She holds it so that Dabi can see.
+She holds it so that Twig can see.
 
-**Narrator:** Dabi looks for a long time. She finds the row of houses. She finds the third one. Beside each
+**Narrator:** Twig looks for a long time. She finds the row of houses. She finds the third one. Beside each
 is a small letter T.
 
-**Dabi:** You drew our house.
+**Twig:** You drew our house.
 
 **Lin Mei:** Yes.
 
-**Dabi:** You didn't draw a way to get home.
+**Twig:** You didn't draw a way to get home.
 
 _(The three lines above are the bible's, word for word.)_
 
@@ -171,7 +171,7 @@ is clean white paper, and a depth.
 **Lin Mei:** A route has to be in the same place for two seasons before it is entered. That is the standard.
 Yours moves.
 
-**Dabi:** So do we.
+**Twig:** So do we.
 
 **Narrator:** She picks up the case again, because nobody has told her to stop carrying it, and goes on along
 the path toward the school.
@@ -186,7 +186,7 @@ colours.
 
 **Fenn:** High water. Every year, the day it tops out, whoever's nearest cuts it and says what year it was.
 
-**Narrator:** Lin Mei reads up the post. "Dabi born." "The two floods." "Year the eels were late." "Grandfather
+**Narrator:** Lin Mei reads up the post. "Twig born." "The two floods." "Year the eels were late." "Grandfather
 Osk's last." "Roof came off the school; nobody hurt." It goes back further than the paint lasts.
 
 **Narrator:** She takes out her own level book and holds it against the post. She reads from one to the
@@ -233,10 +233,10 @@ bank. Then we drag it back down in autumn. That's what the runners are for.
 
 ### Scene L.3 — A survey correction (DLG-06)
 
-**Shown:** played. **Where:** the step of Dabi's house, with the notice. This is the bible's DLG-06, word for
+**Shown:** played. **Where:** the step of Twig's house, with the notice. This is the bible's DLG-06, word for
 word; only the choice at the end is set out as a vote.
 
-**Narrator:** Lessons are over. Dabi hands the survey case back with both arms, and Lin Mei is still holding
+**Narrator:** Lessons are over. Twig hands the survey case back with both arms, and Lin Mei is still holding
 it when Fenn takes the notice out of her apron pocket and unfolds it on the step. Fenn puts one finger on the
 small survey mark in the corner.
 
@@ -307,7 +307,7 @@ pushes the pencil across the table.
 **Lin Mei:** The path. Where it is today, and where it goes at high water. I have walked it once. You have
 walked it every day.
 
-**Narrator:** Fenn draws the path. Her line wobbles. Dabi adds the seven stumps, as seven circles, with the
+**Narrator:** Fenn draws the path. Her line wobbles. Twig adds the seven stumps, as seven circles, with the
 third gap drawn longer. The old netmaker comes in from the rail and puts a cross where the log is rotten.
 
 **Narrator:** Lin Mei's hand moves toward the wobbling line, to true it. She puts the hand in her lap.
@@ -320,7 +320,7 @@ Corrected by:" and leaves the rest of the line empty.
 
 **Lin Mei:** I want it to show who knew.
 
-**Narrator:** They sign it: Fenn in chalky pencil, the netmaker with a net-knot for his mark, Dabi in capitals
+**Narrator:** They sign it: Fenn in chalky pencil, the netmaker with a net-knot for his mark, Twig in capitals
 that take up most of the margin.
 
 **Narrator:** The clerk has been standing in the doorway of the raft with his own copy rolled under his arm.
@@ -337,7 +337,7 @@ to. It'd make my nine days easier. I can't.
 
 **Corridor clerk:** Somebody will have to tell me how my boat gets through.
 
-**Dabi:** You lift the rope. We lift it for the eel man. You only have to shout.
+**Twig:** You lift the rope. We lift it for the eel man. You only have to shout.
 
 **If `pq06_negotiated`:**
 
@@ -382,18 +382,18 @@ either.
 
 ### Scene L.5 — A map of a place too small to need one
 
-**Shown:** found (Dabi, on the plank, as the party leaves). Plays after `pq06_published` or
+**Shown:** found (Twig, on the plank, as the party leaves). Plays after `pq06_published` or
 `pq06_negotiated`.
 
-**Narrator:** Dabi is waiting at the first plank with a square of paper no bigger than her hand.
+**Narrator:** Twig is waiting at the first plank with a square of paper no bigger than her hand.
 
-**Dabi:** I made you one. It's from our step to the first stump. That's all it is.
+**Twig:** I made you one. It's from our step to the first stump. That's all it is.
 
 **Narrator:** It is a map of four paces. It has a scale. The scale is a drawing of a foot.
 
 **Lin Mei:** This is to scale.
 
-**Dabi:** It's my foot.
+**Twig:** It's my foot.
 
 **Narrator:** Lin Mei holds it very carefully by the edges. For a moment her face does several things at
 once.
@@ -403,11 +403,11 @@ one by the person who lives on it.
 
 **Lin Mei:** I would like to play you at the stumps again. Next time. Backwards. I will have practised.
 
-**Dabi:** You'll still lose.
+**Twig:** You'll still lose.
 
 **Lin Mei:** Very probably. I would still like to.
 
-_Keepsake: **Dabi's map of four paces**, pinned inside the lid of Lin Mei's survey case, which rides on the
+_Keepsake: **Twig's map of four paces**, pinned inside the lid of Lin Mei's survey case, which rides on the
 cart (not after `pq06_technical`). Sets `pq06_done`._
 
 ### PQ-06: what it sets and where it pays off
@@ -2766,17 +2766,25 @@ The owner read the edit pass's proposals on 2026-11-17. What he decided for this
    back. The bench versions stay for Emberwatch and the Orchard. W.3 and W.5 are unchanged but for where
    they stand. This closes open item 12.
 
+4. **Dabi is now Twig.** Fenn's pupil in PQ-06 sat too close to Sabi, the rigger of SF-2.1. She is Twig in
+   every line, on the flood post ("Twig born."), on the petition (in capitals) and on the keepsake (Twig's
+   map of four paces). It is what the marsh calls her, like Wick and Latch, and no other name in the scripts
+   sounds like it. Nothing else about her changed.
+5. **Cutscene candidates.** None of this file's five is approved. Two are suggested, with shot lists in
+   [cutscenes.md](cutscenes.md): the map with no way home on it (L.1, CS-PQ06) and Ruda's capitals in Wen's
+   card (W.4, CS-PQ10). Both wait on the trial in issue #810.
+
 ## Open, for the owner
 
 Everything below is written into the scripts as recommended, per the standing instruction.
 
-1. **Names I invented.** Dabi (Fenn's pupil); Hobb (the caretaker with bad knees) and Kip (the lower-camp
+1. **Names I invented.** Twig (Fenn's pupil; Dabi in the first draft); Hobb (the caretaker with bad knees) and Kip (the lower-camp
    runner); Ilo (the "young courier" of Scene 8.2), Marda and her daughter Chun; Zan and Tamsa (Seli's former
    trainees), and "the Tin Cut" for the quarry where they served; Ruda (the pump mechanic) and Pol (the
    company fitter); the play's title, "The Lamp at Midnight". All were checked against the cast lists and the
    identity locks. Recommend: approve.
 2. **The child's line in PQ-06.** The bible gives "You drew our house." / "Yes." / "You didn't draw a way to
-   get home." without a speaker for the first and third. I gave them to a child, Dabi, and put DLG-06 with
+   get home." without a speaker for the first and third. I gave them to a child, Twig, and put DLG-06 with
    Fenn after it, since DLG-06 is set "after walking the omitted path". Recommend: approve.
 3. **A corridor clerk in DLG-06.** DLG-06 has only Lin Mei, Fenn and Bo. I bring a clerk onto the plank after
    its last line so that the three choices have somebody to be made to, and so that the other side (a
@@ -2853,8 +2861,8 @@ Everything below is written into the scripts as recommended, per the standing in
       regulators until after MQ-04.
 15. **Edit pass (2026-11-17): three names changed.** Bodi is now Zan (Bo and Bo-shan already need a naming
     lock), Ruvi is Tamsa (she alternated with Riko, line by line) and Hana is Chun (beside Hanru, Haro and
-    Hua). Still close to an existing name, and left for you: Dabi beside Sabi (the rigger of SF-2.1), and
-    Marda beside Mira, Miri and Meren.
+    Hua). Still close to an existing name, and left for you: Marda beside Mira, Miri and Meren. (Dabi, who
+    sat beside Sabi, the rigger of SF-2.1, is now Twig: see "Decided".)
 16. **Edit pass: the tram bulletin.** The station clerk stamped it nine days ago and sent it up the line in
     the up-bag, which is how a bulletin he had handled could sit unread; and the fourth of the test dates is
     the day the car hung (Scene 8.1).
