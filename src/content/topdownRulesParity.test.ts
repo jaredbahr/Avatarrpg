@@ -21,7 +21,9 @@ function leadsToBattle(nodeId: string, seen = new Set<string>()): boolean {
     case 'branch':
       return leadsToBattle(node.ifSet, new Set(seen)) || leadsToBattle(node.ifUnset, new Set(seen));
     case 'branchWhen':
-      return leadsToBattle(node.ifTrue, new Set(seen)) || leadsToBattle(node.ifFalse, new Set(seen));
+      return (
+        leadsToBattle(node.ifTrue, new Set(seen)) || leadsToBattle(node.ifFalse, new Set(seen))
+      );
     default:
       return false;
   }
