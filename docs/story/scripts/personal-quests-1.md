@@ -354,6 +354,8 @@ for the noise you made.
 
 **Kaya:** My uncle's barge was going upriver that night. I asked to be on it. Nobody said no.
 
+_Cutscene candidate, from here to "Ours was short.": [cutscenes.md](cutscenes.md), CS-PQ01 (a proposal, pending the trial). The scene works played exactly as written._
+
 **Narrator:** Kaya reaches into her sash. What she takes out is a folded letter. It has been carried so long
 that the corners have gone round and the paper is soft as cloth.
 
@@ -1234,6 +1236,8 @@ for the first.
 **Tenzo:** I was only going to...
 
 **Dema:** You're on the rota as washing-up, third shift. Until then you're a customer. Sit down.
+
+_Cutscene candidate, from here to Yuna's hand on his shoulder: [cutscenes.md](cutscenes.md), CS-PQ02 (a proposal, pending the trial). The scene works played exactly as written._
 
 **Narrator:** Tenzo sits. Yuna puts a bowl in front of him. It is a river-fish stew with greens, and it is
 not how he would have done it.
@@ -2274,6 +2278,8 @@ pile-heads if we break them up. It's three more days' work, with hammers.
 
 **Shown:** played. **Where:** the landing, at the end of whichever day it was.
 
+_Cutscene candidate, from here to "After a while she nods at the pole.": [cutscenes.md](cutscenes.md), CS-PQ04 (a proposal, pending the trial). The scene works played exactly as written._
+
 **Narrator:** Vessa is washing tar off her hands in a bucket. Sura sits down on the upturned hull beside her,
 with the pole across her knees.
 
@@ -2853,15 +2859,17 @@ person, and that is written in the scenes.
 
 ## How each scene is shown
 
-At most one cutscene candidate per quest, and none is relied on: every one also works played.
+At most one cutscene candidate per quest, and none is relied on: every one also works played. The owner
+approved three as candidates on 2026-11-17 (Kaya's letter, Sura's "I heard you", Tenzo's salt). Their shot
+lists are in [cutscenes.md](cutscenes.md), pending the trial in issue #810.
 
-| Quest | Found         | Played             | Cutscene candidate                                      |
-| ----- | ------------- | ------------------ | ------------------------------------------------------- |
-| PQ-01 | K.1, K.6, K.7 | K.2, K.3, K.4, K.5 | K.3, the letter: the unbroken seal, and four lines      |
-| PQ-02 | none          | T.1, T.2, T.3, T.4 | T.4, the hand that does not reach the salt              |
-| PQ-03 | none          | N.1 to N.5         | None                                                    |
-| PQ-04 | S.1           | S.2, S.3, S.4, S.5 | S.4 (`pq04_joint_ice`): cutting the hole in her own ice |
-| PQ-05 | none          | B.1 to B.5         | B.4, Bo's hands on the jack handle while the beam binds |
+| Quest | Found         | Played             | Cutscene candidate                                                                          |
+| ----- | ------------- | ------------------ | ------------------------------------------------------------------------------------------- |
+| PQ-01 | K.1, K.6, K.7 | K.2, K.3, K.4, K.5 | K.3, the letter: the unbroken seal, and four lines (CS-PQ01)                                |
+| PQ-02 | none          | T.1, T.2, T.3, T.4 | T.4, the hand that does not reach the salt (CS-PQ02)                                        |
+| PQ-03 | none          | N.1 to N.5         | None                                                                                        |
+| PQ-04 | S.1           | S.2, S.3, S.4, S.5 | S.5, "I heard you" (CS-PQ04). It plays on every route; S.4's hole in the ice is seen on one |
+| PQ-05 | none          | B.1 to B.5         | None now. B.4 stays in the table's hands (see cutscenes.md)                                 |
 
 ## Decided (owner, 2026-11-17)
 
@@ -2886,6 +2894,11 @@ The owner read the edit pass's proposals on 2026-11-17. What he decided for this
    a person: Ruon signed for two crates as bandage and never lifted a lid, and Daiyu hands over the second
    label, so eight becomes seven. Both are guarded on `pq03_labels_known`, both work without Nilak, and seven
    are left unfound on purpose.
+
+5. **Cutscene candidates.** Kaya opening the letter (K.3), Sura's "I heard you" (S.5) and Tenzo's hand not
+   reaching for the salt (T.4) are approved as candidates and have shot lists in
+   [cutscenes.md](cutscenes.md): CS-PQ01, CS-PQ04, CS-PQ02. They are hands and objects only, and all three
+   wait on the trial in issue #810. Sura's candidate moved from S.4 to S.5 because S.5 plays on every route.
 
 ## Open, for the owner
 

@@ -589,6 +589,8 @@ the gate swings shut by itself and stays there.
 >
 > **Hesh:** Put it at the top.
 
+_Cutscene candidate (suggested, not yet seen by the owner), from here to the end of the scene: [cutscenes.md](cutscenes.md), CS-TR03 (a proposal, pending the trial). The scene works played exactly as written._
+
 **Narrator:** Nanu's daughter has her hand on the hinge pin, flat, the way the student had theirs. She is
 frowning with concentration.
 
@@ -1066,8 +1068,10 @@ further reward.
 ## How each scene is shown
 
 All five are **played**, and all five are **found** in the sense that a table has to walk up to the teacher
-to begin. None is a cutscene candidate. If one were wanted, it would be TR-04: the red board dropping three
-times and twice, and a boy holding up his fingers.
+to begin. None is an approved cutscene candidate. One is suggested, pending the trial in issue #810: the end
+of TR-03, where Hesh moves the girl's thumb ([cutscenes.md](cutscenes.md), CS-TR03). It has no hero in
+frame, so it is the same for either student. If a second were wanted, it would be TR-04: the red board
+dropping three times and twice, and a boy holding up his fingers.
 
 ## Open, for the owner
 

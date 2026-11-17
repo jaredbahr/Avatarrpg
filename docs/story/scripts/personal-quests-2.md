@@ -145,6 +145,8 @@ She does not look at anybody. She looks extremely pleased.
 **Narrator:** Past the log, the path runs along the back of a row of reed houses. Each one stands on a frame
 of poles with a pair of long wooden runners under it, like a sledge.
 
+_Cutscene candidate (suggested, not yet seen by the owner), from here to "So do we.": [cutscenes.md](cutscenes.md), CS-PQ06 (a proposal, pending the trial). The scene works played exactly as written._
+
 **Narrator:** Dabi stops at the third house and sets the case down on its step.
 
 **Dabi:** That's ours. Can I see the map now? Fenn said it's in there.
@@ -2381,6 +2383,8 @@ on one side. The regulator ticks over as quietly as a clock.
 
 **Ruda:** There. That's Tanner's Stair, that sound. I've not heard it since they fitted the plate.
 
+_Cutscene candidate (suggested, not yet seen by the owner), from here to the fitter taking the pencil: [cutscenes.md](cutscenes.md), CS-PQ10 (a proposal, pending the trial). The scene works played exactly as written._
+
 **Narrator:** She picks up Wen's card and a stub of pencil. Between step two and step three she writes, in
 square capitals: "SET YOUR SPANNER NOW." She hands it back.
 
@@ -2534,6 +2538,8 @@ _(The party works the handle. Water comes at the spout on the third stroke.)_
 
 **Narrator:** Water comes at the spout. The first bucket under it is the boy's. After that there is a queue,
 and it moves.
+
+_Cutscene candidate (suggested, not yet seen by the owner), from here to the fitter taking the pencil: [cutscenes.md](cutscenes.md), CS-PQ10 (a proposal, pending the trial). The scene works played exactly as written._
 
 **Narrator:** Ruda picks up Wen's card and a stub of pencil. Between step two and step three she writes, in
 square capitals: "SET YOUR SPANNER NOW." She hands it back.
@@ -2725,15 +2731,17 @@ Read by lines, never a lock (see Act II).
 
 ## How each scene is shown
 
-At most one cutscene candidate per quest, and none is relied on: every one also works played.
+At most one cutscene candidate per quest, and none is relied on: every one also works played. None of these
+five is approved. Two have suggested shot lists in [cutscenes.md](cutscenes.md) (CS-PQ06, CS-PQ10), pending
+the trial in issue #810; why the others are left as played is at the end of that file.
 
-| Quest | Found    | Played             | Cutscene candidate                                          |
-| ----- | -------- | ------------------ | ----------------------------------------------------------- |
-| PQ-06 | L.5      | L.1 to L.4         | L.4 (`pq06_published`): the pencil pushed across the table  |
-| PQ-07 | none     | M.1 to M.5         | M.4: the red flag going up, seen from the cliff path        |
-| PQ-08 | J.3, J.5 | J.1, J.2, J.4      | J.4: the letter, the half-door, and Jinu's hands gone still |
-| PQ-09 | R.3, R.6 | R.1, R.2, R.4, R.5 | R.1: the hold, done by two people who have done it before   |
-| PQ-10 | W.6      | W.1 to W.5         | W.4: Ruda's capitals going into the middle of Wen's card    |
+| Quest | Found    | Played             | Cutscene candidate                                                                                          |
+| ----- | -------- | ------------------ | ----------------------------------------------------------------------------------------------------------- |
+| PQ-06 | L.5      | L.1 to L.4         | L.1: the map with no way home on it (CS-PQ06, suggested). It plays in every game; L.4's pencil on one route |
+| PQ-07 | none     | M.1 to M.5         | None now. The flag and the bison are each seen on one route in three                                        |
+| PQ-08 | J.3, J.5 | J.1, J.2, J.4      | None now. J.4's letter is close to Kaya's, which is the better one                                          |
+| PQ-09 | R.3, R.6 | R.1, R.2, R.4, R.5 | None now. R.1's hold is two bodies, which the board can show                                                |
+| PQ-10 | W.6      | W.1 to W.5         | W.4: Ruda's capitals going into the middle of Wen's card (CS-PQ10, suggested)                               |
 
 ## Decided (owner, 2026-11-17)
 
