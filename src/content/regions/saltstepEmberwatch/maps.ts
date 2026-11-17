@@ -101,7 +101,7 @@ export const SALTSTEP_MARKET: MapDef = {
   rows: [
     'UUUUUUUUUUUUUUUUUUUUUUUU',
     'U,,,uBBBBu,UUuBBBBBu,UUU',
-    'U,u,,BBBB,u,u,BBBBB,u,,U',
+    'U,u,,BBBBu,,u,BBBBB,,u,U',
     'U,,,,,,,,,,,,,,,,,,,,,,U',
     'U:::::::n:nn:n::::nn:nUU',
     '==::::::::::::::::::::wU',

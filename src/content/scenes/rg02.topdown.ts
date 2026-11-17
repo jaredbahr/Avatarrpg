@@ -156,9 +156,9 @@ export const SALTSTEP_MARKET_OBJECTS: readonly TopDownObject[] = [
   piece('lane_shrine', 'wayside_shrine', 'prop', [[13, 1]], true),
   piece('lane_laundry', 'laundry_line', 'prop', [[19, 1]], true),
   piece('lane_barrels', 'barrels', 'prop', [[2, 2]], true),
-  flip(piece('lane_rack_c', 'drying_rack', 'prop', [[10, 2]], true)),
+  flip(piece('lane_rack_c', 'drying_rack', 'prop', [[9, 2]], true)),
   piece('lane_table', 'fish_table', 'prop', [[12, 2]], true),
-  piece('lane_pots', 'lobster_pots', 'prop', [[20, 2]], true),
+  piece('lane_pots', 'lobster_pots', 'prop', [[21, 2]], true),
   // The quay (`n`): the fish shed, green and gold banners, racks and baskets along the back; lamps, rope, nets and tables along the
   // water. Rows 5-6 stay open.
   piece('handcart', 'handcart', 'prop', [[8, 4]], true),
