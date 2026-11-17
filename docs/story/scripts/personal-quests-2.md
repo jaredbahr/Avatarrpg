@@ -645,13 +645,13 @@ cushion and the string.
 forgotten to light.
 
 **Student:** There's a sky bison on the landing meadow! A wild one! It came down out of the cloud and it's
-just lying there! Everybody who isn't on the wall is going down. Sena says we can, if we're quiet. It'll be
-gone by morning. They never stay.
+just lying there! Everybody who isn't on the wall is going down. Sena says we can, if we're quiet. It'll go
+at first light, off the high side. They never stay.
 
 **Narrator:** She is gone again before she has finished.
 
 **Narrator:** Nima has stood up. From the hut door he can see the path to the meadow, and lanterns going down
-it in a line.
+it in a line. He cannot see the meadow. The ridge is in the way.
 
 **Nima:** I haven't been close to one since I was nine.
 
@@ -659,8 +659,8 @@ it in a line.
 lower camps, about fifteen, with a carrying frame.
 
 **Kip:** Is this the watch? I'm to say the oil carrier's late. She set off up the switchbacks at four and
-she's not at the hoist. It's getting gusty. Somebody ought to walk down and meet her. I would, but I've done
-the climb twice today.
+she's not at the hoist. It's getting gusty. Somebody ought to walk down the east face and meet her. I would,
+but I've done the climb twice today.
 
 **Narrator:** Kip looks round the hut while they get their breath. They look at the card by the door, the
 side with the pictures.
@@ -678,11 +678,12 @@ side with the pictures.
 
 **VOTE — What does Nima do with the watch?**
 
-- **Keep it himself.** He stays in the hut all night. Kip rests by the stove and goes down to meet the
-  carrier at first light if she has not come. _Sets `pq07_kept`._
+- **Keep it himself.** He stays in the hut all night and does every part of it. Kip is thanked and sent to
+  rest by the stove, and nobody goes down to meet the carrier. From the hut he may see the bison go at first
+  light, a long way off. The watch stays a job for the seven. _Sets `pq07_kept`._
 - **Hand it over properly, and go down the switchbacks.** He teaches Kip the card and watches them do each
-  thing once. He writes the handover in the book. Then he goes down the trail to meet the carrier. _Sets
-  `pq07_handed_over`._
+  thing once. He writes the handover in the book. Then he goes down the east face to meet the carrier. The
+  meadow is on the other side of the ridge: he will not see the bison at all. _Sets `pq07_handed_over`._
 - **Slip down to the meadow.** Ten minutes. Nothing ever happens. _Sets `pq07_slipped`._
 
 Footer: "Nobody is hurt on any of these. On one of them, a delivery is missed."
@@ -692,6 +693,14 @@ Footer: "Nobody is hurt on any of these. On one of them, a delivery is missed."
 **Shown:** played. **Where:** the watch hut and the cliff path.
 
 **If `pq07_kept`:**
+
+**Kip:** I could do the flag. It's only a picture of a flag.
+
+**Nima:** You could. I said I'd do it, though. Tonight it has to be me.
+
+**Kip:** So you do have to be one of you.
+
+**Narrator:** Kip sits down by the stove, with their back to the card.
 
 **Narrator:** Nima trims the lamp and hauls it up. He coils the hoist rope the way it will run. He opens the
 book and writes the date. Then there is nothing to do.
@@ -708,19 +717,31 @@ below, on the path, a small light stops moving and gets low.
 down. The rope runs clean, because he coiled it at dusk. It comes up heavy: two cans of lamp oil, and a note
 tied to the handle.
 
-**The note:** "Late. Sorry. Sat out the gusts under the overhang. Saw your flag. C."
+**The note:** "Late. Sorry. Sat out the gusts under the overhang, by myself. Saw your flag. C."
 
 **Narrator:** He writes it in the book. "Flat ribbon, flag up, one gust. Basket: two cans oil, from C. All
 well." It is four lines. It is the whole night.
 
-**Narrator:** At dawn the lanterns come back up from the meadow. People are talking in low, happy voices
-about how big it was.
+**Narrator:** At first light Kip shoulders the carrying frame and goes down to the camps. They do not look at
+the card on the way out.
 
-**Nima:** Was it very big?
+**Narrator:** The sky is going grey. Something pale comes up over the ridge from the meadow side, a long way
+off, and turns north. Nima holds his thumb up at arm's length. It is no bigger than the nail. Then it is in
+the cloud.
 
-**Student:** You could have put the kitchen inside it. It snored. Hobb slept through the entire thing.
+**Narrator:** He picks up the pencil and adds a fifth line: "First light: one sky bison, going north."
 
-**Nima:** Good.
+**Narrator:** Hobb comes up the shelter stairs in three stages, with nine hours' sleep in his face.
+
+**Hobb:** Was it big?
+
+**Nima:** From here? About so.
+
+**Narrator:** He shows him the thumbnail.
+
+**Hobb:** Hm. They tell me you could have put the kitchen in it.
+
+**Nima:** I expect you could. I had the far end of it.
 
 **If `pq07_handed_over`:**
 
@@ -733,9 +754,8 @@ Bell, basket: Kip sends the basket down empty and brings it back. Lamp, book.
 camps, at dusk. Shown the card. Did each thing, and the flag twice. Nima gone down the switchbacks to meet the
 oil carrier. Back by first light." He reads it over. He adds his name.
 
-**Narrator:** He goes down the cliff path with a lantern. From the third turn he can see the meadow, a long
-way off: a ring of small lights, and something pale and enormous in the middle of them. He stops walking for
-the space of one breath, and then goes on.
+**Narrator:** He goes down the east face with a lantern. At the first turn he looks back. The lanterns on the
+meadow path have gone behind the ridge, one after another. After that there is only rock, and the next turn.
 
 **Narrator:** He finds the carrier at the seventh turn, sitting on her cans with her back to the rock.
 
@@ -755,8 +775,23 @@ carrier laughs with relief.
 
 **Nima:** They learned it tonight. From a drawing.
 
-**Narrator:** At dawn Kip is asleep on the two stools, with the string to the kettle round one finger. The
+**Narrator:** They come up the last turn at first light, a can each. The meadow path is full of people
+walking home, talking in low, happy voices. The meadow is empty.
+
+**Narrator:** In the hut, Kip is asleep on the two stools, with the string to the kettle round one finger. The
 book has a new entry, in a round, careful hand: "Ribbon flat. Flag up. They got low. I saw them get low."
+
+**Narrator:** Hobb comes up the shelter stairs in three stages, with nine hours' sleep in his face.
+
+**Hobb:** Was it big?
+
+**Nima:** I don't know. I was round the other side of the cliff.
+
+**Hobb:** Hm. I was asleep.
+
+**Narrator:** They both look at Kip.
+
+**Hobb:** And that one was watching a ribbon. Well. Somebody will have seen it.
 
 **If `pq07_slipped`:**
 
@@ -809,12 +844,22 @@ west shelter is repaired a day late._
 
 **After `pq07_kept`:**
 
-**Sena:** Four lines.
+**Sena:** Five lines.
 
-**Nima:** Nothing happened. One gust and two cans.
+**Nima:** Nothing happened. One gust and two cans. The fifth one's not really the watch.
 
 **Sena:** That's what a good night is. I've a shelf of these books, every one since the rebuilding. The good
-ones are all four lines.
+ones are all four lines. You can keep the fifth.
+
+**Narrator:** She turns back a page, and forward again.
+
+**Sena:** The runner from the camps stopped me on the stairs. They asked why the card has pictures on it, if
+it's only ever for us.
+
+**Nima:** What did you say?
+
+**Sena:** I hadn't an answer. You had one last night, and you sat on it till morning. I asked you to. I'm not
+complaining. Hobb's back on tonight, that's all.
 
 **After `pq07_handed_over`:**
 
@@ -829,6 +874,10 @@ I had. It's in the book.
 
 **Sena:** Kip can have the fourth night, if Kip wants it. Seven of us isn't enough. I've known that for a
 year.
+
+**Sena:** They tell me it was the size of the kitchen.
+
+**Nima:** So I hear.
 
 **Both:**
 
@@ -888,7 +937,7 @@ Sets `pq07_done`._
 | Sets                  | Meaning                                                 |
 | --------------------- | ------------------------------------------------------- |
 | `pq07_open`           | Nima took the broom                                     |
-| `pq07_kept`           | He kept the night watch himself                         |
+| `pq07_kept`           | He kept the night watch himself; Kip was sent to rest   |
 | `pq07_handed_over`    | He trained Kip, wrote the handover, and met the carrier |
 | `pq07_slipped`        | He went to the meadow without a handover                |
 | `lost_watch_delivery` | The oil was missed (with `pq07_slipped`)                |
@@ -896,6 +945,11 @@ Sets `pq07_done`._
 
 - **Trust:** Act III's table reads "PQ-07 kept" for the Bellweather sanctuary: that is `pq07_kept` or
   `pq07_handed_over`. The lower camps rise a little with `pq07_handed_over` (Kip has the fourth night).
+- **What each route costs.** After `pq07_kept` Nima sees the bison go, thumbnail-sized, from the hut; Kip
+  goes home believing the watch is for the seven, and Hobb is back on the next night. After
+  `pq07_handed_over` the sanctuary has an eighth watcher and the carrier was met; Nima did not see the bison
+  at all. After `pq07_slipped` he saw it close, and a delivery was missed. Hobb asks "Was it big?" on all
+  three, and gets a different answer each time; a table hears only one.
 - **The watch hut** keeps Nima's pulley, cleat and picture card on every route. They do not depend on the
   vote.
 - **MQ-12, Scene 12.2:** Sena gives Nima "the dullest one I've got". It plays for every Nima; after
@@ -2414,6 +2468,14 @@ The owner read the edit pass's proposals on 2026-11-17. What he decided for this
 
 1. **Which takeaway Wen's card names.** "Good people can cause harm" (her lever scalded a man, and the keyhole
    had a reason), in place of a second "saying sorry isn't the end of it". Approved as exchanged. Cards only.
+
+2. **PQ-07's vote is a real choice.** Nima no longer glimpses the sky bison from the switchbacks. The two
+   responsible routes now cost different things. Keeping the watch himself: he sees the bison leave at first
+   light, the size of his thumbnail, but he has told Kip no, the carrier sat out the gusts by herself, and
+   Hobb is back on the next night. Handing over: Kip has the fourth night and the carrier is walked up, but
+   the east face is the wrong side of the ridge and he sees nothing. The vote text says both costs. Sena
+   sets out the board game on both. Hobb's "Was it big?" is asked on all three routes, with three answers
+   ("About so", a thumbnail; "I don't know. I was round the other side of the cliff"; and the old one).
 
 ## Open, for the owner
 
