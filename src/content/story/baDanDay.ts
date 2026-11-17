@@ -30,6 +30,7 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
   {
     id: 'plant_chair',
     kind: 'choice',
+    routine: true,
     speaker: GAO,
     portrait: 'portrait.gao',
     prompt: 'Come in out of the sun. Sit down a minute.',
