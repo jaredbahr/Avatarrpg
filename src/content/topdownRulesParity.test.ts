@@ -20,6 +20,8 @@ function leadsToBattle(nodeId: string, seen = new Set<string>()): boolean {
       return leadsToBattle(node.next, seen);
     case 'branch':
       return leadsToBattle(node.ifSet, new Set(seen)) || leadsToBattle(node.ifUnset, new Set(seen));
+    case 'branchWhen':
+      return leadsToBattle(node.ifTrue, new Set(seen)) || leadsToBattle(node.ifFalse, new Set(seen));
     default:
       return false;
   }
