@@ -2307,10 +2307,34 @@ html[data-contrast='high'] .hud-panel::after {
   color: var(--el, var(--c-ink));
 }
 
+/*
+ * The chosen action (Move or an ability) is never told by colour alone: a heavy inset frame in
+ * the deep gold, a lit gold body, bold type and a check badge in the corner. Nothing here moves
+ * or animates, so reduce motion and Large text change nothing but the badge's size, in rem.
+ */
 .action-button.selected {
-  border-color: var(--c-gold);
-  background-color: color-mix(in srgb, var(--c-gold) 20%, transparent);
-  box-shadow: 0 0 0 var(--stroke-bold) color-mix(in srgb, var(--c-gold) 40%, transparent);
+  border-color: var(--c-gold-deep);
+  background-color: color-mix(in srgb, var(--c-gold-hi) 55%, var(--c-panel-raised));
+  font-weight: 700;
+  box-shadow:
+    inset 0 0 0 var(--stroke-emphasis) var(--c-gold-deep),
+    0 0 0 var(--stroke-bold) var(--c-gold-hi);
+}
+
+.action-button.selected::before {
+  content: '\2713';
+  position: absolute;
+  top: var(--stroke-emphasis);
+  left: var(--stroke-emphasis);
+  display: grid;
+  place-items: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background-color: var(--c-gold-deep);
+  color: var(--c-panel-raised);
+  font-size: var(--fs-xs);
+  line-height: 1;
 }
 
 .action-sub {
