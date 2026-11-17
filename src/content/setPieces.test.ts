@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { OLD_VILLAGE_ROWS } from './maps/oldVillage.fixture';
 import { BA_DAN_VILLAGE } from './maps/village';
 import { LEGEND } from './maps/legend';
 import { BA_DAN_DRESSING_PLAN } from './scenes/baDan.dressing';
@@ -7,7 +8,8 @@ import { validateDressing, type DressingPlan } from './setPieces';
 import type { TopDownObject } from './topdownLayout';
 
 const blocked = (x: number, y: number): boolean => {
-  const ch = BA_DAN_VILLAGE.rows[y]?.[x];
+  // The dressing plan was drawn to the old 24 x 16 rows; the live village is a blockout until its dressing stage.
+  const ch = OLD_VILLAGE_ROWS[y]?.[x];
   if (ch === undefined) return true;
   const def = BA_DAN_VILLAGE.legend?.[ch] ?? LEGEND[ch];
   return def ? def.blocked === true : true;

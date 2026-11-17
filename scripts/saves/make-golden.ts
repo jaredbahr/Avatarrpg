@@ -53,7 +53,7 @@ const SAVED_AT = 1_700_000_000_000;
 const MAX_BYTES = 200_000;
 const CHARACTERS = ['kaya', 'nilak', 'bo', 'riko'] as const;
 /** The welcome-home crossing in Ba Dan: the first step in from the east road. */
-const WELCOME_HOME: Vec2 = { x: 20, y: 7 };
+const WELCOME_HOME: Vec2 = { x: 28, y: 9 };
 
 /** Past the last checkpoint, `playForward` reads on to the demo's ending card. */
 export const ROUTE_ENDING = 'ending';

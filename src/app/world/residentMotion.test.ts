@@ -29,7 +29,28 @@ import { smoothPath } from '../../render/geometry/curve';
  */
 
 const VILLAGE = CONTENT.maps.get('ba_dan_village') as MapDef;
-const SEAT: Vec2 = { x: 10, y: 5 };
+/** Where a content anchor stands, so the cells below follow the village's data. */
+const anchorAt = (id: string): Vec2 => {
+  const site = CONTENT.anchors.get(id)?.site;
+  if (site?.kind === 'map') return site.pos;
+  if (site?.kind === 'private') return site.door.pos;
+  throw new Error(`No anchor ${id}`);
+};
+const TABLE = anchorAt('bd01.table');
+const SHOPFRONT = anchorAt('bd02.shopfront');
+const GAO_DOOR = anchorAt('home.gao');
+const POST = anchorAt('bd03.post');
+const HANDOVER = anchorAt('bd03.handover');
+const PELLA_COURT = anchorAt('bd04.court');
+const PELLA_YARD = anchorAt('bd04.yard');
+const PELLA_DOOR = anchorAt('home.pella');
+const RIVER_MOUTH = (VILLAGE.exits ?? []).find((exit) => exit.toMapId === 'ba_dan_riverside')
+  ?.pos as Vec2;
+const EAST_EXIT = VILLAGE.exit?.pos as Vec2;
+/** The cell below Mira's table, within one cell of its rest spot. */
+const SEAT: Vec2 = { x: 13, y: 10 };
+/** A second cell for the party, beside the seat. */
+const BESIDE: Vec2 = { x: 12, y: 10 };
 
 function at(phase: DayPhase, pos: Vec2 = SEAT, visited: readonly string[] = ['mira_intro']) {
   const base = createGame(CONTENT, {
@@ -74,7 +95,7 @@ function expectWalkable(map: MapDef, from: Vec2, path: readonly Vec2[]) {
 describe('planResidentMotion', () => {
   const before = at('midday');
   const after = waited(before, 'afternoon');
-  const party = [SEAT, { x: 9, y: 5 }];
+  const party = [SEAT, BESIDE];
   const plan = planResidentMotion({ content: CONTENT, map: VILLAGE, before, after, party });
   const moves = byId(plan);
 
@@ -97,33 +118,33 @@ describe('planResidentMotion', () => {
       // The household adult goes in at Pella's front door when she leaves the court.
       {
         id: 'bg.pella_household',
-        from: { x: 11, y: 13 },
-        to: { x: 8, y: 14 },
+        from: PELLA_YARD,
+        to: PELLA_DOOR,
         enter: false,
         leave: true,
       },
       // The relief watch goes back down the east road; nobody placed it anywhere.
       {
         id: 'bg.relief_watch',
-        from: { x: 17, y: 6 },
-        to: { x: 23, y: 7 },
+        from: POST,
+        to: EAST_EXIT,
         enter: false,
         leave: true,
       },
       // Dorin comes up the river path to the post.
       {
         id: 'lw.npc.dorin',
-        from: { x: 19, y: 15 },
-        to: { x: 17, y: 6 },
+        from: RIVER_MOUTH,
+        to: POST,
         enter: true,
         leave: false,
       },
       // Mira and Pella go down the river path to the riverside.
-      { id: 'lw.npc.mira', from: { x: 11, y: 5 }, to: { x: 19, y: 15 }, enter: false, leave: true },
+      { id: 'lw.npc.mira', from: TABLE, to: RIVER_MOUTH, enter: false, leave: true },
       {
         id: 'lw.npc.pella',
-        from: { x: 11, y: 12 },
-        to: { x: 19, y: 15 },
+        from: PELLA_COURT,
+        to: RIVER_MOUTH,
         enter: false,
         leave: true,
       },
@@ -137,7 +158,7 @@ describe('planResidentMotion', () => {
   });
 
   it('walks round the people standing still', () => {
-    const standing = new Set(['9,4', '17,6']); // Gao, and Dorin's post
+    const standing = new Set([posKey(SHOPFRONT), posKey(POST)]); // Gao, and Dorin's post
     for (const motion of plan)
       if (motion.kind === 'walk' && motion.who.id !== 'lw.npc.dorin')
         for (const step of motion.path) expect(standing.has(posKey(step))).toBe(false);
@@ -159,8 +180,8 @@ describe('planResidentMotion', () => {
     const gao = byId(
       planResidentMotion({ content: CONTENT, map: VILLAGE, before: evening, after: night, party }),
     ).get('lw.npc.gao');
-    expect(gao).toMatchObject({ kind: 'walk', from: { x: 9, y: 4 }, enter: false, leave: true });
-    expect(gao?.kind === 'walk' && gao.path.at(-1)).toEqual({ x: 7, y: 4 });
+    expect(gao).toMatchObject({ kind: 'walk', from: SHOPFRONT, enter: false, leave: true });
+    expect(gao?.kind === 'walk' && gao.path.at(-1)).toEqual(GAO_DOOR);
   });
 
   it('retries through the party, whom the rules walk through anyway', () => {
@@ -172,7 +193,7 @@ describe('planResidentMotion', () => {
     const ring: Vec2[] = [];
     for (let dy = -1; dy <= 1; dy++)
       for (let dx = -1; dx <= 1; dx++) {
-        const p = { x: 9 + dx, y: 4 + dy };
+        const p = { x: SHOPFRONT.x + dx, y: SHOPFRONT.y + dy };
         const tile = tileAt(grid, p);
         if ((dx || dy) && tile && !tile.blocked) ring.push(p);
       }
@@ -187,7 +208,7 @@ describe('planResidentMotion', () => {
       }),
     ).get('lw.npc.gao');
     expect(gao?.kind).toBe('walk');
-    expect(gao?.kind === 'walk' && gao.path.at(-1)).toEqual({ x: 7, y: 4 });
+    expect(gao?.kind === 'walk' && gao.path.at(-1)).toEqual(GAO_DOOR);
   });
 
   it('fades out and in when there is no route at all, and never teleports mid-stride', () => {
@@ -198,7 +219,11 @@ describe('planResidentMotion', () => {
       rows: VILLAGE.rows.map((row, y) =>
         [...row]
           .map((c, x) =>
-            Math.abs(x - 9) <= 1 && Math.abs(y - 4) <= 1 && !(x === 9 && y === 4) ? 'X' : c,
+            Math.abs(x - SHOPFRONT.x) <= 1 &&
+            Math.abs(y - SHOPFRONT.y) <= 1 &&
+            !(x === SHOPFRONT.x && y === SHOPFRONT.y)
+              ? 'X'
+              : c,
           )
           .join(''),
       ),
@@ -211,7 +236,7 @@ describe('planResidentMotion', () => {
     expect(gao).toEqual({
       kind: 'fade',
       who: expect.objectContaining({ id: 'lw.npc.gao' }),
-      from: { x: 9, y: 4 },
+      from: SHOPFRONT,
       to: null,
     });
   });
@@ -228,7 +253,7 @@ describe('planResidentMotion', () => {
 });
 
 describe('ResidentWalks', () => {
-  const party = [SEAT, { x: 9, y: 5 }];
+  const party = [SEAT, BESIDE];
   const walks = (reduced = false) => new ResidentWalks(CONTENT, () => reduced);
   const figure = (w: ResidentWalks, id: string) => w.figures().find((f) => f.id === id);
 
@@ -254,17 +279,17 @@ describe('ResidentWalks', () => {
     const before = at('midday');
     w.tick(0, false);
     expect(w.update(VILLAGE, before, party, true)).toBe(false);
-    expect(figure(w, 'lw.npc.mira')?.drawPos).toEqual({ x: 11, y: 5 });
+    expect(figure(w, 'lw.npc.mira')?.drawPos).toEqual(TABLE);
     const after = waited(before, 'afternoon');
     expect(w.update(VILLAGE, after, party, true)).toBe(true);
     expect(w.moving()).toBe(true);
     // Dorin's rules tile is the post at once; the drawing starts at the river path.
     expect(figure(w, 'lw.npc.dorin')).toMatchObject({
-      pos: { x: 17, y: 6 },
-      drawPos: { x: 19, y: 15 },
+      pos: POST,
+      drawPos: RIVER_MOUTH,
       alpha: 0,
     });
-    expect(w.walkingTo({ x: 17, y: 6 })).toBe(true);
+    expect(w.walkingTo(POST)).toBe(true);
     const trace: Vec2[] = [];
     for (let t = 50; t <= 4000; t += 50) {
       w.tick(t, false);
@@ -283,12 +308,12 @@ describe('ResidentWalks', () => {
     for (let t = 4050; t <= deadline; t += 50) w.tick(t, false);
     expect(figure(w, 'lw.npc.mira')).toBeUndefined();
     expect(figure(w, 'lw.npc.dorin')).toMatchObject({
-      drawPos: { x: 17, y: 6 },
+      drawPos: POST,
       alpha: 1,
       walking: false,
     });
     expect(w.moving()).toBe(false);
-    expect(w.walkingTo({ x: 17, y: 6 })).toBe(false);
+    expect(w.walkingTo(POST)).toBe(false);
   });
 
   it('keeps a walk running when a command mid-walk leaves the walker’s tile alone', () => {
@@ -356,15 +381,15 @@ describe('ResidentWalks', () => {
     const w = walks();
     // Mira's pre-intro hold keeps her at her table; opening mira_intro lifts
     // it on entry, and only the pin keeps her there (W5 amendment).
-    const before = at('afternoon', { x: 12, y: 5 }, []);
+    const before = at('afternoon', BESIDE, []);
     w.tick(0, false);
     w.update(VILLAGE, before, party, true);
-    const talk = apply(CONTENT, before, { type: 'walkTo', pos: { x: 11, y: 5 } }).state;
+    const talk = apply(CONTENT, before, { type: 'walkTo', pos: TABLE }).state;
     expect(talk.world.talk?.npcId).toBe('elder_mira');
     for (let t = 50; t <= 1000; t += 50) {
       w.tick(t, true);
       w.update(VILLAGE, talk, party, false);
-      expect(figure(w, 'lw.npc.mira')).toMatchObject({ drawPos: { x: 11, y: 5 }, alpha: 1 });
+      expect(figure(w, 'lw.npc.mira')).toMatchObject({ drawPos: TABLE, alpha: 1 });
     }
   });
 
@@ -373,7 +398,9 @@ describe('ResidentWalks', () => {
     const walled: MapDef = {
       ...VILLAGE,
       legend: { ...VILLAGE.legend, X: { terrain: 'wall', blocked: true } },
-      rows: VILLAGE.rows.map((row, y) => (y === 6 ? `${row.slice(0, 16)}X${row.slice(17)}` : row)),
+      rows: VILLAGE.rows.map((row, y) =>
+        y === HANDOVER.y ? `${row.slice(0, HANDOVER.x)}X${row.slice(HANDOVER.x + 1)}` : row,
+      ),
     };
     const w = walks();
     const before = at('afternoon', SEAT, ['mira_intro', 'mira_epilogue']);
@@ -387,9 +414,9 @@ describe('ResidentWalks', () => {
       if (dorin) seen.push({ ...dorin.drawPos, alpha: dorin.alpha });
     }
     // Only ever drawn on one of the two tiles: out at the post, then in at the verge.
-    expect(seen.every((f) => (f.x === 17 || f.x === 16) && f.y === 6)).toBe(true);
-    const out = seen.filter((f) => f.x === 17).map((f) => f.alpha);
-    const back = seen.filter((f) => f.x === 16).map((f) => f.alpha);
+    expect(seen.every((f) => (f.x === POST.x || f.x === HANDOVER.x) && f.y === POST.y)).toBe(true);
+    const out = seen.filter((f) => f.x === POST.x).map((f) => f.alpha);
+    const back = seen.filter((f) => f.x === HANDOVER.x).map((f) => f.alpha);
     expect(out.length).toBeGreaterThan(3);
     expect(out).toEqual([...out].sort((a, b) => b - a));
     expect(back).toEqual([...back].sort((a, b) => a - b));
@@ -405,7 +432,7 @@ describe('ResidentWalks', () => {
     w.tick(100, false);
     w.tick(200, false);
     expect(w.moving()).toBe(false);
-    expect(figure(w, 'lw.npc.dorin')?.drawPos).toEqual({ x: 17, y: 6 });
+    expect(figure(w, 'lw.npc.dorin')?.drawPos).toEqual(POST);
   });
 
   it('keeps a reduced-motion multi-tile placement walk neutral while sampled', () => {
@@ -453,17 +480,20 @@ describe('ResidentWalks', () => {
     w.reset();
     expect(w.update(VILLAGE, waited(before, 'afternoon'), party, true)).toBe(false);
     expect(w.moving()).toBe(false);
-    expect(figure(w, 'lw.npc.dorin')?.drawPos).toEqual({ x: 17, y: 6 });
+    expect(figure(w, 'lw.npc.dorin')?.drawPos).toEqual(POST);
   });
 });
 
 describe('routines (Working Ba Dan)', () => {
   const GAO = 'lw.npc.gao';
   const CARRIER = 'bg.pella_household';
-  const SHOP: Vec2 = { x: 9, y: 4 };
-  const YARD: Vec2 = { x: 11, y: 13 };
-  /** Out on the east lawn, well clear of the square, the bridge and the lanes. */
-  const AWAY: Vec2[] = [{ x: 20, y: 11 }];
+  const SHOP: Vec2 = SHOPFRONT;
+  const YARD: Vec2 = PELLA_YARD;
+  /** His display, one step west of the shopfront, and the storeroom door where he stocks. */
+  const DISPLAY: Vec2 = { x: 19, y: 7 };
+  const STOCK: Vec2 = { x: 23, y: 6 };
+  /** Out on the west lawn, well clear of the square, the bridge and the lanes. */
+  const AWAY: Vec2[] = [{ x: 4, y: 10 }];
   const key = (p: Vec2) => posKey({ x: Math.round(p.x), y: Math.round(p.y) });
   /**
    * An afternoon with both errands out: Gao at his stock and Pella's household
@@ -524,9 +554,9 @@ describe('routines (Working Ba Dan)', () => {
     const gao = of(frames, GAO);
     expect(gao).toHaveLength(frames.length);
     const stops = new Set(gao.filter((f) => !f.walking).map((f) => key(f.drawPos)));
-    expect(stops).toEqual(new Set(['9,4', '8,5', '10,3']));
-    // Walking the lane to the display, never cutting the display's corner.
-    expect(gao.some((f) => key(f.drawPos) === '9,5')).toBe(true);
+    expect(stops).toEqual(new Set([key(SHOP), key(DISPLAY), key(STOCK)]));
+    // Walking round the trough by the road to the storeroom door, never over the trough.
+    expect(gao.some((f) => key(f.drawPos) === '20,8')).toBe(true);
     for (let i = 1; i < gao.length; i++) {
       const a = gao[i - 1]!.drawPos;
       const b = gao[i]!.drawPos;
@@ -536,7 +566,7 @@ describe('routines (Working Ba Dan)', () => {
     expect(gao.every((f) => f.pos && samePos(f.pos, SHOP))).toBe(true);
     expect(gao.some((f) => f.walking)).toBe(true);
     // A work beat at the display: he leans in, holds, straightens and holds.
-    const work = gao.filter((f) => key(f.drawPos) === '8,5' && !f.walking);
+    const work = gao.filter((f) => key(f.drawPos) === key(DISPLAY) && !f.walking);
     expect(work.some((f) => Math.abs(f.lean ?? 0) >= 0.029)).toBe(true);
     expect(work.some((f) => (f.lean ?? 0) === 0)).toBe(true);
     // No errand leg is a placement walk: nothing waits on any leg of it.
@@ -549,12 +579,12 @@ describe('routines (Working Ba Dan)', () => {
     const frames = play(w, at('midday', AWAY[0]), 0, 120_000);
     const carrier = of(frames, CARRIER);
     const tiles = carrier.map((f) => key(f.drawPos));
-    expect(tiles).toContain('9,6'); // on the bridge deck
+    expect(tiles).toContain('13,12'); // on the bridge deck
     const held = (tile: string) =>
       carrier.filter((f) => !f.walking && key(f.drawPos) === tile).length * 50;
-    expect(held('9,9')).toBeGreaterThanOrEqual(1500); // the kerb, south of the road
-    expect(held('9,5')).toBeGreaterThanOrEqual(3500); // the square, north of the canal
-    expect(held('11,13')).toBeGreaterThanOrEqual(9000); // home in the yard
+    expect(held('13,11')).toBeGreaterThanOrEqual(1500); // the kerb, north of the bridge
+    expect(held('13,10')).toBeGreaterThanOrEqual(3500); // the foot of Mira's table
+    expect(held(key(YARD))).toBeGreaterThanOrEqual(9000); // home in the yard
     expect(carrier.every((f) => f.pos && samePos(f.pos, YARD))).toBe(true);
   });
 
@@ -562,7 +592,9 @@ describe('routines (Working Ba Dan)', () => {
     const run = () => {
       const w = walks();
       const state = bothErrands();
-      return play(w, state, 0, 45_000, (t) => (t > 20_000 && t < 26_000 ? [{ x: 9, y: 7 }] : AWAY));
+      return play(w, state, 0, 45_000, (t) =>
+        t > 20_000 && t < 26_000 ? [{ x: 13, y: 11 }] : AWAY,
+      );
     };
     const a = run();
     expect(JSON.stringify(run())).toBe(JSON.stringify(a));
@@ -626,32 +658,32 @@ describe('routines (Working Ba Dan)', () => {
 
   it('holds rather than cross the party’s way, and sets off once it has passed', () => {
     const w = walks();
-    // The party stands on the road beside the bridge.
-    const road: Vec2[] = [{ x: 9, y: 7 }];
+    // The party stands at the bridge's north foot.
+    const road: Vec2[] = [{ x: 13, y: 11 }];
     const waiting = play(w, at('midday', AWAY[0]), 0, 40_000, () => road);
     const carrier = of(waiting, CARRIER);
     for (const f of carrier)
-      expect(Math.max(Math.abs(f.drawPos.x - 9), Math.abs(f.drawPos.y - 7))).toBeGreaterThan(2);
-    // It can reach the front of the house, but never the kerb next to the party.
-    expect(carrier.some((f) => key(f.drawPos) === '9,9')).toBe(false);
+      expect(Math.max(Math.abs(f.drawPos.x - 13), Math.abs(f.drawPos.y - 11))).toBeGreaterThan(2);
+    // It can reach the lane in front of the houses, but never the bridge beside the party.
+    expect(carrier.some((f) => key(f.drawPos) === '13,12')).toBe(false);
     // The party moves on: the basket goes over the bridge.
     const going = of(play(w, at('midday', AWAY[0]), 40_050, 30_000), CARRIER);
-    expect(going.some((f) => key(f.drawPos) === '9,6')).toBe(true);
+    expect(going.some((f) => key(f.drawPos) === '13,12')).toBe(true);
   });
 
   it('comes home early when the party comes close', () => {
     const w = walks();
     const state = at('morning', AWAY[0]);
     const frames = play(w, state, 0, 30_000);
-    const reached = of(frames, GAO).find((f) => !f.walking && key(f.drawPos) === '8,5');
+    const reached = of(frames, GAO).find((f) => !f.walking && key(f.drawPos) === key(DISPLAY));
     if (!reached) throw new Error('Gao reached the display');
     // Replay to that moment, then bring the party to the square beside him.
     const v = walks();
     play(v, state, 0, reached.t);
     // The scene seats no follower where he stands.
-    expect(v.errandTiles()).toContainEqual({ x: 8, y: 5 });
-    // Mira's bench, two tiles from the display.
-    const near: Vec2[] = [{ x: 10, y: 5 }];
+    expect(v.errandTiles()).toContainEqual(DISPLAY);
+    // The road beside the display.
+    const near: Vec2[] = [{ x: 18, y: 7 }];
     const after = of(
       play(v, state, reached.t + 50, 2 * TIMING.strollStep + STROLL_RAMP_MS, () => near),
       GAO,
@@ -670,7 +702,7 @@ describe('routines (Working Ba Dan)', () => {
     const w = walks();
     const state = at('morning', AWAY[0]);
     const reached = of(play(w, state, 0, 30_000), GAO).find(
-      (f) => !f.walking && key(f.drawPos) === '8,5',
+      (f) => !f.walking && key(f.drawPos) === key(DISPLAY),
     );
     if (!reached) throw new Error('Gao reached the display');
     const gao = (v: ResidentWalks) => v.figures().find((f) => f.id === GAO);
@@ -685,7 +717,7 @@ describe('routines (Working Ba Dan)', () => {
       naive.tick(t, true);
       naive.update(VILLAGE, opened, [opened.location.pos], false);
     }
-    expect(gao(naive)?.drawPos).toEqual({ x: 8, y: 5 });
+    expect(gao(naive)?.drawPos).toEqual(DISPLAY);
 
     // The scene's way (ExploreScene.requestWalk): he is away, so the tap walks
     // the party beside his shop and the talk waits until he is home.
@@ -718,13 +750,13 @@ describe('routines (Working Ba Dan)', () => {
     }
   });
 
-  /** Gao at the crates, then `ms` more of the loop with the party on `party`. */
-  function homeFromCrates(party: readonly Vec2[], ms: number) {
+  /** Gao at the storeroom door, then `ms` more of the loop with the party on `party`. */
+  function homeFromStock(party: readonly Vec2[], ms: number) {
     const state = at('morning', AWAY[0]);
-    const reached = of(play(walks(), state, 0, 30_000), GAO).find(
-      (f) => !f.walking && key(f.drawPos) === '8,5',
+    const reached = of(play(walks(), state, 0, 60_000), GAO).find(
+      (f) => !f.walking && key(f.drawPos) === key(STOCK),
     );
-    if (!reached) throw new Error('Gao reached the display');
+    if (!reached) throw new Error('Gao reached the storeroom door');
     const v = walks();
     play(v, state, 0, reached.t);
     return of(
@@ -734,31 +766,29 @@ describe('routines (Working Ba Dan)', () => {
   }
 
   it('goes home round the party, never through it', () => {
-    // The party on the lane tile his home leg crosses.
-    const home = homeFromCrates([{ x: 9, y: 5 }], 6 * TIMING.strollStep + 2 * STROLL_RAMP_MS);
+    // The party on the road cell his home leg crosses, in front of the trough.
+    const block = { x: 22, y: 8 };
+    const home = homeFromStock([block], 8 * TIMING.strollStep + 2 * STROLL_RAMP_MS);
     expect(home.at(-1)?.drawPos).toEqual(SHOP);
     expect(home.every((f) => f.alpha === 1)).toBe(true);
     expect(home.some((f) => f.walking)).toBe(true);
     for (const f of home)
-      expect(Math.hypot(f.drawPos.x - 9, f.drawPos.y - 5)).toBeGreaterThanOrEqual(0.7);
+      expect(Math.hypot(f.drawPos.x - block.x, f.drawPos.y - block.y)).toBeGreaterThanOrEqual(0.7);
   });
 
   it('fades home when the party leaves no way round', () => {
-    // Every open neighbour of his shop tile but the crates he stands at.
+    // Every open neighbour of the storeroom door he stands at.
     const ring: Vec2[] = [
-      { x: 8, y: 3 },
-      { x: 9, y: 3 },
-      { x: 10, y: 3 },
-      { x: 8, y: 4 },
-      { x: 10, y: 4 },
-      { x: 9, y: 5 },
-      { x: 10, y: 5 },
+      { x: 24, y: 6 },
+      { x: 22, y: 7 },
+      { x: 23, y: 7 },
+      { x: 24, y: 7 },
     ];
-    const home = homeFromCrates(ring, 1_000);
+    const home = homeFromStock(ring, 1_000);
     expect(home.at(-1)).toMatchObject({ drawPos: SHOP, alpha: 1 });
     expect(home.some((f) => f.alpha < 1)).toBe(true);
-    // Out at the crates, in at home: never drawn on a tile between.
-    for (const f of home) expect(['8,5', '9,4']).toContain(key(f.drawPos));
+    // Out at the storeroom door, in at home: never drawn on a tile between.
+    for (const f of home) expect([key(STOCK), key(SHOP)]).toContain(key(f.drawPos));
     expect(home.some((f) => f.walking)).toBe(false);
   });
 
@@ -785,7 +815,7 @@ describe('routines (Working Ba Dan)', () => {
     const w = walks();
     const morning = at('morning', AWAY[0]);
     const frames = play(w, morning, 0, 30_000);
-    const reached = of(frames, GAO).find((f) => !f.walking && key(f.drawPos) === '8,5');
+    const reached = of(frames, GAO).find((f) => !f.walking && key(f.drawPos) === key(DISPLAY));
     if (!reached) throw new Error('Gao reached the display');
     const v = walks();
     play(v, morning, 0, reached.t);
@@ -798,10 +828,10 @@ describe('routines (Working Ba Dan)', () => {
     expect(v.update(VILLAGE, midday, AWAY, true, AWAY)).toBe(true);
     expect(v.moving()).toBe(true);
     // Long enough for Dorin, off watch at midday, to walk the river path out
-    // to its mouth on the rim, (19,15), and fade.
-    const transitionMs = 20 * TIMING.strollStep;
+    // to its mouth on the rim, and fade.
+    const transitionMs = 40 * TIMING.strollStep;
     const back = of(play(v, midday, reached.t + 100, transitionMs), GAO);
-    expect(back[0]?.drawPos.x).toBeLessThan(9);
+    expect(back[0]?.drawPos.x).toBeLessThan(SHOP.x);
     expect(back.at(-1)).toMatchObject({ drawPos: SHOP, walking: false });
     expect(v.moving()).toBe(false);
     // And no errand starts again during the break.

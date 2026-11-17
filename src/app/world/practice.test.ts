@@ -36,21 +36,21 @@ function baDan() {
 
 const MAP = CONTENT.maps.get('ba_dan_village') as MapDef;
 const RIVERSIDE = CONTENT.maps.get('ba_dan_riverside');
-/** Ba Dan's south canal bank, as the village map declares it (`MapDef.practice`). */
+/** Ba Dan's wash steps on the canal's north bank, as the village map declares it (`MapDef.practice`). */
 const BA_DAN_PRACTICE: PracticeGround = (() => {
   const ground = practiceGround(MAP);
   if (!ground) throw new Error('Ba Dan declares no practice ground');
   return ground;
 })();
-/** The road at the bridge's foot and the bank beside it, as the party stands for the review capture. */
+/** The bank at the wash steps, as the party stands for the review capture. */
 const STANDING: readonly Vec2[] = [
-  { x: 10, y: 8 },
-  { x: 11, y: 7 },
-  { x: 11, y: 8 },
+  { x: 10, y: 11 },
+  { x: 9, y: 11 },
+  { x: 11, y: 11 },
 ];
 
 describe('where the party can practise', () => {
-  it('offers Ba Dan’s south canal bank by the bridge, and nowhere else', () => {
+  it('offers Ba Dan’s wash steps on the canal bank, and nowhere else', () => {
     expect(RIVERSIDE).toBeDefined();
     expect(practiceAt(RIVERSIDE, BA_DAN_PRACTICE.anchor)).toBeNull();
     for (const pos of STANDING)
@@ -58,17 +58,16 @@ describe('where the party can practise', () => {
     expect(practiceAt(MAP, { x: 9, y: 3 })).toBeNull();
     expect(practiceAt(MAP, { x: 6, y: 8 })).toBeNull();
     expect(practiceAt(MAP, BA_DAN_CANAL_BRIDGE)).toBeNull();
-    expect(practiceAt(RIVERSIDE, { x: 10, y: 8 })).toBeNull();
-    expect(practiceAt(undefined, { x: 10, y: 8 })).toBeNull();
+    expect(practiceAt(RIVERSIDE, { x: 10, y: 11 })).toBeNull();
+    expect(practiceAt(undefined, { x: 10, y: 11 })).toBeNull();
   });
 
-  it('stands in the demo slice, on ground the party can walk to, aimed at the canal’s edge', () => {
+  it('stands on ground the party can walk to, aimed out over the canal', () => {
     const grid = buildGrid(MAP);
     const { anchor, reach, mark } = BA_DAN_PRACTICE;
-    const inSlice = (p: Vec2) => p.x >= 0 && p.x <= 13 && p.y >= 0 && p.y <= 9;
-    expect(inSlice(anchor) && inSlice(mark)).toBe(true);
-    // The near edge of the open canal: the impact, drawn at body height, lands over the water.
-    expect(BA_DAN_WATER_CELLS).toContainEqual({ x: mark.x, y: mark.y - 1 });
+    // The mark is the canal's near edge: the impact, drawn at body height, lands over the water.
+    expect(BA_DAN_WATER_CELLS).toContainEqual(mark);
+    expect(tileAt(grid, anchor)?.blocked).toBe(false);
     let walkable = 0;
     for (let dy = -reach; dy <= reach; dy++)
       for (let dx = -reach; dx <= reach; dx++) {
@@ -215,11 +214,11 @@ describe('practice playback', () => {
 describe('the practice camera', () => {
   it('frames the benders and leans toward the mark', () => {
     const benders = [
-      { x: 10, y: 8 },
-      { x: 9, y: 8 },
-      { x: 8, y: 7 },
+      { x: 10, y: 11 },
+      { x: 9, y: 11 },
+      { x: 8, y: 10 },
     ];
-    expect(practiceFrame(benders, BA_DAN_PRACTICE.mark)).toEqual({ x: 7, y: 7.25 });
+    expect(practiceFrame(benders, BA_DAN_PRACTICE.mark)).toEqual({ x: 9.5, y: 11.5 });
   });
 
   it('glides with an ease and lands exactly on its target', () => {

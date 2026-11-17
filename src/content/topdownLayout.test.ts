@@ -6,6 +6,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { MapDef } from '../core/types';
 import { CONTENT, CONTENT_BUNDLE } from './index';
+import { oldVillage } from './maps/oldVillage.fixture';
 import { validateContent, validateTopDownLayout } from './schemas';
 import type { TopDownLayout, TopDownObject } from './topdownLayout';
 import { BA_DAN_TOPDOWN_LAYOUT, TOPDOWN_LAYOUTS } from './topdownLayouts';
@@ -17,17 +18,25 @@ import {
   type TopDownTerrainLayer,
 } from './scenes/baDan.topdown.terrain';
 
-/** The village as the game runs it, with the exits `connectAct1` adds (the riverside path). */
+/**
+ * The village as the old layout was drawn to it: the 24 x 16 board, frozen. The layout is not registered while the
+ * village is a grey blockout (`docs/places/ba_dan_village.md`), so the live rows are not its premise.
+ */
 function village(): MapDef {
   const map = CONTENT.maps.get('ba_dan_village');
   if (!map) throw new Error('no village');
-  return map;
+  return oldVillage(map);
 }
 
 describe("Ba Dan's top-down layout", () => {
   it('passes the content validation with its map', () => {
     const problems = validateContent({ ...CONTENT_BUNDLE, topdownLayouts: TOPDOWN_LAYOUTS });
     expect(problems, `\n${problems.join('\n')}\n`).toEqual([]);
+  });
+
+  it('is unregistered while the village is a grey blockout, and agrees with the frozen old board', () => {
+    expect(TOPDOWN_LAYOUTS.some((layout) => layout.mapId === 'ba_dan_village')).toBe(false);
+    expect(validateTopDownLayout(village(), BA_DAN_TOPDOWN_LAYOUT)).toEqual([]);
   });
 
   it('keeps the classifier pure and seeded', () => {

@@ -8,6 +8,11 @@ import { apply } from './reducer';
 import { deserialize, serialize, stateFromBlob } from '../save/serialize';
 import type { GameState, Vec2 } from '../types';
 
+/** The village's east gate, and the cell the forest road lands on one step inside it. */
+const EAST: Vec2 = CONTENT.maps.get('ba_dan_village')?.exit?.pos ?? { x: 0, y: 0 };
+const HOME_ARRIVAL: Vec2 = CONTENT.maps
+  .get('forest_road')
+  ?.exits?.find((exit) => exit.toMapId === 'ba_dan_village')?.toPos ?? { x: 0, y: 0 };
 const META = { label: 'World', summary: 'On the road', savedAt: 1, session: { players: [] } };
 function start(): GameState {
   const state = createGame(CONTENT, {
@@ -45,26 +50,26 @@ function resolve(state: GameState, lose = false): GameState {
   );
 }
 function forest(): GameState {
-  const arrived = walk(start(), 23, 7).state;
+  const arrived = walk(start(), EAST.x, EAST.y).state;
   return finishDialogue(walk(arrived, 19, 4).state);
 }
 
 describe('connected world traversal', () => {
   it('walks to another map without needing a story cursor and returns beside its gate', () => {
     const state = start();
-    const arrived = walk(state, 23, 7);
+    const arrived = walk(state, EAST.x, EAST.y);
     expect(arrived.state.location).toEqual({ mapId: 'forest_road', pos: { x: 1, y: 4 } });
     expect(arrived.state.story.nodeId).toBeNull();
     expect(arrived.state.screen).toBe('explore');
-    expect(arrived.state.world.returnPos.ba_dan_village).toEqual({ x: 23, y: 7 });
+    expect(arrived.state.world.returnPos.ba_dan_village).toEqual(EAST);
     const returned = walk(arrived.state, 0, 4).state;
-    expect(returned.location).toEqual({ mapId: 'ba_dan_village', pos: { x: 22, y: 7 } });
+    expect(returned.location).toEqual({ mapId: 'ba_dan_village', pos: HOME_ARRIVAL });
     expect(returned.party).toEqual(state.party);
     expect(state.world.returnPos).toEqual({});
   });
 
   it('stops a long walk at the first event crossed, then at the enemies', () => {
-    const state = walk(start(), 23, 7).state;
+    const state = walk(start(), EAST.x, EAST.y).state;
     const intro = walk(state, 19, 4);
     expect(intro.state.story.nodeId).toBe('road_depart');
     expect(intro.state.location.pos.x).toBe(4);
@@ -100,7 +105,7 @@ describe('connected world traversal', () => {
     expect(stateFromBlob(saved.blob)).toEqual(state);
     const beforeXp = state.party.map((unit) => unit.xp);
     state = walk(stateFromBlob(saved.blob), 0, 4).state;
-    state = walk(state, 23, 7).state;
+    state = walk(state, EAST.x, EAST.y).state;
     state = walk(state, 19, 4).state;
     expect(state.location.mapId).toBe('quarry_gate');
     expect(state.battle).toBeNull();
@@ -174,11 +179,8 @@ describe('connected world traversal', () => {
     const base = CONTENT.maps.get('ba_dan_village');
     const [east, ...rest] = base?.exits ?? [];
     if (!base || !east) throw new Error('Missing the village east exit');
-    // The gate tile and the road tile immediately west of it.
-    const area = [
-      { x: 23, y: 7 },
-      { x: 22, y: 7 },
-    ];
+    // The gate tile and the road tile immediately west of it (the cell the forest road lands on).
+    const area = [EAST, HOME_ARRIVAL];
     const map = { ...base, exits: [{ ...east, area }, ...rest] };
     const content = { ...CONTENT, maps: new Map(CONTENT.maps).set(map.id, map) };
 
@@ -194,9 +196,9 @@ describe('connected world traversal', () => {
   });
 
   it('keeps a single-tile exit exactly as it was when no area is given (M2)', () => {
-    const beside = walk(start(), 22, 7);
-    expect(beside.state.location).toEqual({ mapId: 'ba_dan_village', pos: { x: 22, y: 7 } });
-    const entered = walk(start(), 23, 7);
+    const beside = walk(start(), HOME_ARRIVAL.x, HOME_ARRIVAL.y);
+    expect(beside.state.location).toEqual({ mapId: 'ba_dan_village', pos: HOME_ARRIVAL });
+    const entered = walk(start(), EAST.x, EAST.y);
     expect(entered.state.location).toEqual({ mapId: 'forest_road', pos: { x: 1, y: 4 } });
   });
 
@@ -266,7 +268,7 @@ describe('connected world traversal', () => {
         state = walk(state, 0, 5).state;
         state = walk(state, 0, 4).state;
         expect(state.location.mapId).toBe('ba_dan_village');
-        state = walk(state, 23, 7).state;
+        state = walk(state, EAST.x, EAST.y).state;
         state = walk(state, 19, 4).state;
         state = walk(state, 19, 5).state;
         state = walk(state, 19, 4).state;

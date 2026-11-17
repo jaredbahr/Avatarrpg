@@ -323,7 +323,7 @@ export function generateQuarryCheckpoints(custody: QuarryCustody): QuarryCheckpo
 
   issue({ type: 'enterNode', nodeId: STORY_ENTRY });
   story();
-  walk({ x: 11, y: 5 });
+  walk({ x: 12, y: 9 });
   story();
   travel('forest_road');
   walk({ x: 19, y: 4 });

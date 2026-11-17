@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 import { CONTENT } from '../index';
 import { BA_DAN_VILLAGE } from './village';
-import { BA_DAN_WATER_CELLS } from './baDanLayout';
+import { BA_DAN_CANAL_BRIDGE, BA_DAN_WATER_CELLS } from './baDanLayout';
 import { BA_DAN_ROUTINES, PARKED_ROUTINES } from '../residents/routines';
 import { PartyTrail, placeParty } from '../../app/anim/trail';
 import { buildGrid, findPath, pathCost, posKey, tileAt } from '../../core/rules/grid';
@@ -14,7 +14,8 @@ import { exitCells, visibleNpcs } from '../../core/story/world';
 const map = BA_DAN_VILLAGE;
 const grid = buildGrid(map);
 const ctx = { grid, blocked: new Set<string>(), surfaces: CONTENT.surfaces, size: 1 as const };
-const spawn = map.partySpawns[0] ?? { x: 3, y: 7 };
+const spawn = map.partySpawns[0] ?? { x: 11, y: 10 };
+const BRIDGE_COLUMNS = [BA_DAN_CANAL_BRIDGE.x, BA_DAN_CANAL_BRIDGE.x + 1];
 const water = new Set(BA_DAN_WATER_CELLS.map(posKey));
 const base = createGame(CONTENT, {
   seed: 'village-canal',
@@ -29,14 +30,15 @@ function dry(path: readonly Vec2[]) {
   }
 }
 
-it('blocks the painted canal without blocking sight or either authored crossing', () => {
+it('blocks the canal without blocking sight, and leaves the bridge open', () => {
   for (const cell of BA_DAN_WATER_CELLS) {
     expect(tileAt(grid, cell)).toMatchObject({ blocked: true, blocksSight: false });
   }
-  for (const x of [9, 13]) {
-    expect(tileAt(grid, { x, y: 6 })?.blocked).toBe(false);
-    const route = findPath(ctx, { x, y: 7 }, { x, y: 5 }, Infinity);
-    expect(route?.path).toContainEqual({ x, y: 6 });
+  for (const x of BRIDGE_COLUMNS) {
+    for (const y of [12, 13]) expect(tileAt(grid, { x, y })?.blocked).toBe(false);
+    const route = findPath(ctx, { x, y: 11 }, { x, y: 14 }, Infinity);
+    expect(route?.path).toContainEqual({ x, y: 12 });
+    expect(route?.path).toContainEqual({ x, y: 13 });
   }
 });
 
@@ -60,12 +62,19 @@ it('keeps all public resident anchors, exits and rest spots reachable across the
     ),
     ...(map.exits ?? []).flatMap(exitCells),
     ...(map.exit ? [map.exit.pos] : []),
-    ...(map.restSpots ?? []).map((spot) => spot.pos),
   ];
   for (const target of targets) {
     const route = findPath(ctx, spawn, target, Infinity);
     expect(route, posKey(target)).not.toBeNull();
     dry(route?.path ?? []);
+  }
+  // Mira's table is a blocked seat: Wait works within one cell of it (`seatHere`), so a dry cell there must be reachable.
+  for (const spot of map.restSpots ?? []) {
+    const near = [-1, 0, 1]
+      .flatMap((dx) => [-1, 0, 1].map((dy) => ({ x: spot.pos.x + dx, y: spot.pos.y + dy })))
+      .filter((cell) => tileAt(grid, cell)?.blocked === false)
+      .filter((cell) => findPath(ctx, spawn, cell, Infinity) !== null);
+    expect(near.length, spot.label).toBeGreaterThan(0);
   }
   for (const phase of DAY_PHASES) {
     for (const complete of [false, true]) {
@@ -83,17 +92,17 @@ it('keeps all public resident anchors, exits and rest spots reachable across the
   }
 });
 
-it('takes the party and follower trail over both crossings without entering canal water', () => {
-  for (const x of [9, 13]) {
-    const start = { x, y: 8 };
-    const goal = { x, y: 4 };
+it('takes the party and follower trail over the bridge without entering canal water', () => {
+  for (const x of BRIDGE_COLUMNS) {
+    const start = { x, y: 10 };
+    const goal = { x, y: 16 };
     const trail = new PartyTrail(placeParty(grid, start, 4, { awayFrom: goal }));
     for (const target of [goal, start]) {
       const from = trail.head ?? start;
       const route = findPath(ctx, from, target, Infinity);
       expect(route).not.toBeNull();
       const path = route?.path ?? [];
-      expect(path).toContainEqual({ x, y: 6 });
+      expect(path).toContainEqual({ x, y: 12 });
       dry([from, ...path]);
       const plan = trail.planWalk(path, 4, grid);
       expect(plan).not.toBeNull();
@@ -110,14 +119,14 @@ it('takes the party and follower trail over both crossings without entering cana
   }
 });
 
-it('reconciles a legacy save on canal cell (5,6) onto reachable dry ground, idempotently', () => {
+it('reconciles a legacy save on a cell that is canal water now onto reachable dry ground, idempotently', () => {
   const saved = {
     ...base,
     screen: 'explore' as const,
-    location: { mapId: map.id, pos: { x: 5, y: 6 } },
+    location: { mapId: map.id, pos: { x: 5, y: 12 } },
   };
   const repaired = reconcileWorld(CONTENT, saved);
-  expect(saved.location.pos).toEqual({ x: 5, y: 6 });
+  expect(saved.location.pos).toEqual({ x: 5, y: 12 });
   expect(repaired.location.pos).not.toEqual(saved.location.pos);
   dry([repaired.location.pos]);
   expect(findPath(ctx, spawn, repaired.location.pos, Infinity)).not.toBeNull();

@@ -16,6 +16,16 @@ function readScene(url: string): Payload {
   return JSON.parse(readFileSync(`public/${url}`, 'utf8')) as Payload;
 }
 
+/**
+ * Ba Dan's scene as it shipped before the grey blockout, frozen: the only payload with chimneys, canopies and a
+ * flock, so the optional-field cases keep a real sample (`maps/fixtures/oldVillageScene.json`).
+ */
+function readOldBaDan(): Payload {
+  return JSON.parse(
+    readFileSync('src/content/maps/fixtures/oldVillageScene.json', 'utf8'),
+  ) as Payload;
+}
+
 function first(items: Record<string, unknown>[]): Record<string, unknown> {
   const item = items[0];
   if (!item) throw new Error('Missing shipped scene entry');
@@ -75,7 +85,7 @@ describe('fetched top-down scene validation', () => {
     'rejects invalid ground size %s without changing the payload',
     async (value) => {
       const url = 'art/topdown/ba-dan/scene.json';
-      const payload = readScene(url);
+      const payload = readOldBaDan();
       first(payload.ground).height = value;
       await rejectsAt(payload, url, 'ground.0.height');
     },
@@ -85,7 +95,7 @@ describe('fetched top-down scene validation', () => {
     'rejects non-integer or negative crop origin %s at its exact path',
     async (value) => {
       const url = 'art/topdown/ba-dan/scene.json';
-      const payload = readScene(url);
+      const payload = readOldBaDan();
       const crop = first(payload.scenery).sourceRect as Record<string, unknown>;
       crop.x = value;
       await rejectsAt(payload, url, 'scenery.0.sourceRect.x');
@@ -93,7 +103,7 @@ describe('fetched top-down scene validation', () => {
   );
 
   it('uses the supplied scene location for valid custom sibling image URLs', async () => {
-    const payload = readScene('art/topdown/ba-dan/scene.json');
+    const payload = readOldBaDan();
     const url = 'art/topdown/custom-board/scene.json';
     for (const plate of payload.ground) plate.url = 'art/topdown/custom-board/ground.webp';
     for (const piece of payload.scenery) piece.url = 'art/topdown/custom-board/uprights.webp';
@@ -102,7 +112,7 @@ describe('fetched top-down scene validation', () => {
 
   it('preserves supported optional scene/image fields and legitimate negative world coordinates', async () => {
     const url = 'art/topdown/ba-dan/scene.json';
-    const payload = readScene(url);
+    const payload = readOldBaDan();
     const extras: Partial<MapScene> = {
       marginTone: 'quarry',
       groundMode: 'partial',
@@ -145,7 +155,7 @@ describe('fetched top-down scene validation', () => {
 
   it('drops the retired oblique `reliefLift` from a scene that still carries it (ADR 0104 T7)', async () => {
     const url = 'art/topdown/ba-dan/scene.json';
-    const payload = readScene(url);
+    const payload = readOldBaDan();
     const expected = structuredClone(payload);
     Object.assign(payload, { reliefLift: [0, 0.25] });
     const scene = (await load(payload, url)).get('fixture')?.scene;

@@ -73,9 +73,10 @@ describe('combat tap aim acceptance', () => {
     // Re-pinned for #846: the Forest Road and the quarry gate lost a body each, so the earned campaign replays 5 commands shorter.
     // Re-pinned for #789: Ruon answers the trade (`ruon_traded`), three more dialogue advances on the way.
     // Re-pinned for Mira's table as one straight scene (owner, 2026-11-17): four more dialogue advances.
+    // Re-pinned for the Ba Dan grey blockout: the scripted walk to Mira's table goes to her new cell.
     expect(checkpoint.transcript).toHaveLength(93);
     expect(createHash('sha256').update(checkpoint.json).digest('hex')).toBe(
-      '2fafa9f7827ee814b0d7877e3cb3e7696d63ba2a3c634577e3b6a7abaebcc72f',
+      '63df2eee31af493ddbeb12c1bed99e322a1ca55303c6eee526128ad53c39e02a',
     );
     expect(loadQuarryCheckpoint(checkpoint.json)).toEqual(checkpoint.state);
     expect(checkpoint.state.battle).toMatchObject({

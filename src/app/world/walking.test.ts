@@ -37,18 +37,19 @@ describe('walking feedback', () => {
 
   it('labels a walk onto any cell of a widened road mouth as that route (M2)', () => {
     const base = village();
-    const state = { ...base, location: { ...base.location, pos: { x: 22, y: 8 } } };
-    const preview = previewWalk(CONTENT, state, { x: 23, y: 8 });
-    expect(preview.path.at(-1)).toEqual({ x: 23, y: 8 });
+    const state = { ...base, location: { ...base.location, pos: { x: 30, y: 10 } } };
+    const preview = previewWalk(CONTENT, state, { x: 31, y: 10 });
+    expect(preview.path.at(-1)).toEqual({ x: 31, y: 10 });
     expect(preview.label).toBe('East road → Forest Road');
     expect(preview.refusal).toBeNull();
   });
 
   it('approaches a person instead of promising a walk onto their tile', () => {
     const state = village();
-    const preview = previewWalk(CONTENT, state, { x: 11, y: 5 });
+    const mira = { x: 12, y: 9 };
+    const preview = previewWalk(CONTENT, state, mira);
     expect(preview.label).toBe('Elder Mira');
-    expect(preview.path.at(-1)).not.toEqual({ x: 11, y: 5 });
+    expect(preview.path.at(-1)).not.toEqual(mira);
     expect(preview.refusal).toBeNull();
   });
 
@@ -74,8 +75,8 @@ describe('walking feedback', () => {
   it('discards stale intent after a conversation, map crossing, or loaded state', () => {
     const state = village();
     for (const changed of [
-      apply(CONTENT, state, { type: 'walkTo', pos: { x: 11, y: 5 } }).state,
-      apply(CONTENT, state, { type: 'walkTo', pos: { x: 23, y: 7 } }).state,
+      apply(CONTENT, state, { type: 'walkTo', pos: { x: 12, y: 9 } }).state,
+      apply(CONTENT, state, { type: 'walkTo', pos: { x: 31, y: 9 } }).state,
       structuredClone(state),
     ]) {
       const queue = new NextWalk();

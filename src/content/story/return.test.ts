@@ -129,11 +129,12 @@ describe('the authored walk home', () => {
       home = advanceDialogue(CONTENT, home).state;
     expect(home.location.mapId).toBe('ba_dan_village');
     expect(home.screen).toBe('explore');
-    const at = { ...home, location: { ...home.location, pos: { x: 22, y: 7 } } };
+    const at = { ...home, location: { ...home.location, pos: { x: 30, y: 9 } } };
 
-    const welcomed = apply(CONTENT, at, { type: 'walkTo', pos: { x: 18, y: 7 } }).state;
+    // The first step in from the east gate crosses column 28, whatever row the walk takes.
+    const welcomed = apply(CONTENT, at, { type: 'walkTo', pos: { x: 22, y: 9 } }).state;
     expect(welcomed.story.nodeId).toBe('welcome_home_mira');
-    expect(welcomed.location.pos).toEqual({ x: 20, y: 7 });
+    expect(welcomed.location.pos).toEqual({ x: 28, y: 9 });
 
     let card = welcomed;
     const speakers: string[] = [];
@@ -235,7 +236,7 @@ describe('the authored walk home', () => {
     expect(worldObjective(CONTENT, road)).not.toContain('home');
 
     const village = withProfiles(
-      { ...road, location: { mapId: 'ba_dan_village', pos: { x: 22, y: 7 } } },
+      { ...road, location: { mapId: 'ba_dan_village', pos: { x: 30, y: 9 } } },
       'resting',
     );
     expect(worldObjective(CONTENT, village)).toContain('home');

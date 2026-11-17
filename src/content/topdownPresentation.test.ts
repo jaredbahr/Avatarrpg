@@ -41,9 +41,9 @@ function map(id: string, content = CONTENT): MapDef {
 }
 
 describe('withTopDownMaps', () => {
-  it('registers Ba Dan (T3), the Forest Road (T4), the quarry (T5) and RG-02, their scenes assets', async () => {
+  it('registers the Forest Road (T4), the quarry (T5) and RG-02, their scenes assets; Ba Dan draws bare', async () => {
+    // Ba Dan has no scene while it is a grey blockout (`docs/places/ba_dan_village.md`).
     expect([...TOPDOWN_SCENES.keys()]).toEqual([
-      'ba_dan_village',
       'forest_road',
       'quarry_gate',
       'ambush_road',
@@ -57,9 +57,7 @@ describe('withTopDownMaps', () => {
     const swapped = withTopDownMaps(CONTENT, presentations);
     const badan = map('ba_dan_village', swapped);
     expect(badan.projection).toBe('topdown');
-    expect(badan.cameraCentreMargin).toBe(1);
-    expect(badan.scene?.ground[0]?.url).toBe('art/topdown/ba-dan/ground.webp');
-    expect(badan.scene?.scenery.length).toBeGreaterThan(50);
+    expect(badan.scene).toBeUndefined();
     const forest = map('forest_road', swapped);
     expect(forest.projection).toBe('topdown');
     expect(forest.scene?.ground[0]?.url).toBe('art/topdown/forest-road/ground.webp');
