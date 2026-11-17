@@ -56,7 +56,12 @@ export const RG02_BOARDS: readonly TopDownBoard[] = [
     layout: EMBERWATCH_PARADE_TOPDOWN_LAYOUT,
     // the walk up from the jetty, the lane under the wall, and the way out east
     wear: {
-      paths: [...span(3, 9, 10, 13), ...span(1, 22, 2, 2), ...span(2, 2, 3, 9), ...span(21, 23, 7, 8)],
+      paths: [
+        ...span(3, 9, 10, 13),
+        ...span(1, 22, 2, 2),
+        ...span(2, 2, 3, 9),
+        ...span(21, 23, 7, 8),
+      ],
       wet: 0.15,
     },
   }),
