@@ -409,7 +409,7 @@ export function checkReleases(input: HistoryInput): string[] {
 /* ------------------------------------------------------------------ */
 
 /** Every node a condition's `visited` names and every flag key it reads. */
-export function conditionInputs(condition: Condition): { nodes: string[]; flags: string[] } {
+function conditionInputs(condition: Condition): { nodes: string[]; flags: string[] } {
   const nodes: string[] = [];
   const flags: string[] = [];
   const walk = (value: Condition): void => {

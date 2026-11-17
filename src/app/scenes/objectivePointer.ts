@@ -30,7 +30,7 @@ export interface ObjectivePointerBox {
   readonly size: number;
 }
 
-export type ObjectivePointerSide = 'north' | 'east' | 'south' | 'west';
+type ObjectivePointerSide = 'north' | 'east' | 'south' | 'west';
 
 export interface ObjectivePointerPlacement {
   readonly x: number;

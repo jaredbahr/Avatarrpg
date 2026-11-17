@@ -54,7 +54,7 @@ export interface PoseTrack extends Track {
   readonly heading?: Heading;
 }
 
-export interface FlashTrack extends Track {
+interface FlashTrack extends Track {
   readonly kind: 'flash';
   readonly unitId: string;
   /** 0..1 at the start, fading to nothing. */
@@ -90,7 +90,7 @@ export interface FloaterTrack extends Track {
   readonly emphasis?: number;
 }
 
-export interface ShakeTrack extends Track {
+interface ShakeTrack extends Track {
   readonly kind: 'shake';
   /** Peak displacement in tiles. */
   readonly amplitude: number;
@@ -98,13 +98,13 @@ export interface ShakeTrack extends Track {
 }
 
 /** A top-down Earth Wall rising out of the ground on one cell (#590). */
-export interface RiseTrack extends Track {
+interface RiseTrack extends Track {
   readonly kind: 'rise';
   readonly pos: Vec2;
 }
 
 /** A top-down projectile in flight (#588). */
-export interface ShotTrack extends Shot {
+interface ShotTrack extends Shot {
   readonly kind: 'shot';
 }
 

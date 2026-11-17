@@ -131,7 +131,7 @@ export function upcomingOrder(battle: BattleState, count = 8): Unit[] {
   return out;
 }
 
-export function livingByFaction(battle: BattleState) {
+function livingByFaction(battle: BattleState) {
   const party = battle.units.filter((u) => isAlive(u) && u.faction === 'party');
   const allies = battle.units.filter((u) => isAlive(u) && u.faction === 'ally');
   const enemies = battle.units.filter((u) => isAlive(u) && u.faction === 'enemy');
@@ -150,7 +150,7 @@ export function livingByFaction(battle: BattleState) {
  * Observed fights finish in single-digit rounds, so this should never fire in
  * real play. It exists so that if it ever does, the tablet keeps working.
  */
-export const MAX_BATTLE_ROUNDS = 50;
+const MAX_BATTLE_ROUNDS = 50;
 
 /**
  * Victory when no enemies stand; defeat when no party members do, or time runs

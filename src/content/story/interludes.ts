@@ -93,7 +93,7 @@ export function isCardStill(
   return 'card' in art;
 }
 
-export type InterludeArt = keyof typeof INTERLUDE_ART;
+type InterludeArt = keyof typeof INTERLUDE_ART;
 
 export interface InterludeDef {
   readonly title: string;

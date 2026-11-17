@@ -7,7 +7,7 @@
  */
 import { gzipSync } from 'node:zlib';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, resolve, dirname } from 'node:path';
+import { join, resolve, dirname, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 // ADR 0104 amendment (396, owner, 2026-11-07, permanent): the top-down combat presentation (T4/T5).
@@ -45,7 +45,7 @@ const rows = [];
 for (const file of js) {
   const gz = gzipSync(readFileSync(file)).length;
   total += gz;
-  rows.push([file.slice(dist.length + 1), gz]);
+  rows.push([relative(dist, file).split(sep).join('/'), gz]);
 }
 
 rows.sort((a, b) => b[1] - a[1]);

@@ -10,7 +10,7 @@ import type {
 import { FIRE_ABILITIES } from '../../content/abilities/fire';
 import type { MarkKind } from './marks';
 
-export interface PropInspectChip {
+interface PropInspectChip {
   readonly text: string;
   readonly icon?: MarkKind;
 }

@@ -64,7 +64,7 @@ export type TerrainId =
  *  what happens when a second one is applied. */
 export type SurfaceId = 'water' | 'ice' | 'fire' | 'mud' | 'steam' | 'oil' | 'rubble';
 
-export interface SurfaceInstance {
+interface SurfaceInstance {
   readonly id: SurfaceId;
   /** Rounds remaining. -1 means permanent (map-authored water, for example). */
   readonly duration: number;
@@ -425,7 +425,7 @@ export interface EncounterPlacement {
  * - `ai`: the guest plays itself through the enemy AI, on the party's side. The default.
  * - `table`: the people at the table take its turns, one person per round in rotation.
  */
-export type GuestControl = 'ai' | 'table';
+type GuestControl = 'ai' | 'table';
 
 /** A guest's level: a fixed number, or an offset from the party's rounded mean level. */
 export type GuestLevel = number | { readonly partyOffset: number };
@@ -498,7 +498,7 @@ export type WeatherIntensity = 0 | 1 | 2;
  * whose `fromRound` is not after it, so the value is derived from the
  * encounter and the round rather than stored on `BattleState`.
  */
-export interface EncounterWeather {
+interface EncounterWeather {
   readonly id: 'sandstorm';
   readonly schedule: readonly {
     readonly fromRound: number;
@@ -628,7 +628,7 @@ export type PropEffect =
   | { readonly kind: 'push'; readonly distance: number; readonly radius: number };
 
 /** How readily fire crosses from one prop to the next. */
-export interface PropIgnite {
+interface PropIgnite {
   /** Tiles fire reaches out to when this prop ignites. */
   readonly radius: number;
   /** How many tiles the fire advances per round while it burns. */
@@ -639,7 +639,7 @@ export interface PropIgnite {
 export type DousingType = 'water' | 'cold' | 'earth';
 
 /** Short semantic labels the inspect card and future prop rules can read. */
-export type PropTag = 'container' | 'fuel' | 'iron' | 'stone' | 'cover';
+type PropTag = 'container' | 'fuel' | 'iron' | 'stone' | 'cover';
 
 /**
  * Something on the battlefield you can shove, break, or set on fire.
@@ -790,11 +790,11 @@ export interface ResidentSlot {
 /** Override tiers in precedence order; the resolver ranks them 1-5 (§2). */
 export const RESIDENT_TIERS = ['mission', 'hazard', 'presence', 'care', 'appointment'] as const;
 
-export type ResidentTier = (typeof RESIDENT_TIERS)[number];
+type ResidentTier = (typeof RESIDENT_TIERS)[number];
 
 export type ResidentSlotValue = ResidentSlot | 'home' | 'absent';
 
-export interface ResidentOverride {
+interface ResidentOverride {
   readonly id: string;
   readonly tier: ResidentTier;
   readonly when: Condition;
@@ -866,13 +866,13 @@ export type MapEdgeSide = 'north' | 'south' | 'east' | 'west';
  * records what the map author intends so the report-only edge-contract
  * validator can tell an intended boundary from an accidentally open one.
  */
-export type MapEdgeTreatment = 'barrier' | 'band' | 'exit';
+type MapEdgeTreatment = 'barrier' | 'band' | 'exit';
 
 /**
  * An authored claim about one run of a map border. `span` is an inclusive
  * `[from, to]` measured in x for north/south edges and in y for east/west.
  */
-export interface MapEdge {
+interface MapEdge {
   readonly side: MapEdgeSide;
   readonly span: readonly [number, number];
   readonly treatment: MapEdgeTreatment;
@@ -947,7 +947,7 @@ export interface MapDef {
   readonly arrivalShot?: MapArrivalShot;
 }
 
-export interface MapPractice {
+interface MapPractice {
   /** What the action calls the place. */
   readonly label: string;
   readonly anchor: Vec2;
@@ -957,7 +957,7 @@ export interface MapPractice {
   readonly mark: Vec2;
 }
 
-export interface MapArrivalShot {
+interface MapArrivalShot {
   readonly at: Vec2;
   /** A story node; once visited the map frames as usual. */
   readonly unlessVisited: string;
@@ -1362,7 +1362,7 @@ export interface EndRecap {
   readonly choices: readonly { readonly when: Condition; readonly text: string }[];
 }
 
-export interface StoryState {
+interface StoryState {
   readonly nodeId: string | null;
   /** Index into the app's player list; rotated after every choice. */
   readonly deciderIndex: number;
@@ -1429,7 +1429,7 @@ export interface PendingChoice {
   readonly options: readonly string[];
 }
 
-export type Screen = 'title' | 'setup' | 'explore' | 'dialogue' | 'combat' | 'ended';
+type Screen = 'title' | 'setup' | 'explore' | 'dialogue' | 'combat' | 'ended';
 
 /**
  * The one list of phases, in clock order. `clock.ts`'s `PHASE_ORDER`, the
@@ -1460,7 +1460,7 @@ export type ResidentProfile = (typeof RESIDENT_PROFILES)[number];
 /** How far the quarry runoff has been dealt with. Persisted, not yet acted on. */
 export const RUNOFF_STATES = ['unresolved', 'inspected', 'repaired'] as const;
 
-export type RunoffState = (typeof RUNOFF_STATES)[number];
+type RunoffState = (typeof RUNOFF_STATES)[number];
 
 /**
  * How hard the table asked the fights to be (ADR 0110). Story is the forgiving
@@ -1754,7 +1754,7 @@ export interface CombatTuning {
 }
 
 /** One authored weather intensity's obscurement curve. */
-export interface WeatherLevel {
+interface WeatherLevel {
   /** Accuracy removed per tile of distance past `minDistance - 1`. */
   readonly perTile: number;
   /** Attacks closer than this are unaffected. */

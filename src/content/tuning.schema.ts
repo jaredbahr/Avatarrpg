@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 /** One weather intensity's obscurement curve, checked band by band. */
-export const weatherLevelSchema = z
+const weatherLevelSchema = z
   .object({
     perTile: z.number().int().min(0),
     minDistance: z.number().int().min(1),

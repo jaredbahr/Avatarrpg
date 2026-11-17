@@ -1296,9 +1296,9 @@ export function positionScore(
 export const OBJECTIVE_HOLD = 60;
 export const OBJECTIVE_BLOCK = 24;
 /** Points per step nearer the nearest objective cell, for the party's side. */
-export const OBJECTIVE_PULL = 3;
+const OBJECTIVE_PULL = 3;
 /** Points per step an enemy stands further than adjacent to the nearest objective cell. */
-export const OBJECTIVE_GUARD = 1.5;
+const OBJECTIVE_GUARD = 1.5;
 
 /** What standing at `pos` is worth to `unit` for the encounter's objective; 0 without one. */
 export function objectiveValue(draft: BattleDraft, unit: Unit, pos: Vec2): number {

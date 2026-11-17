@@ -10,7 +10,7 @@ import type { ContentIndex, GameEvent, GameState, Grid, MapDef, StepResult, Vec2
 import { DIRECTIONS, cachedGrid, inBounds, posKey, tileAt } from '../rules/grid';
 import { activeTriggers, backgroundFigures, exitCells, visibleNpcs } from './world';
 
-export interface SettleTile {
+interface SettleTile {
   readonly pos: Vec2;
   readonly path: readonly Vec2[];
 }
