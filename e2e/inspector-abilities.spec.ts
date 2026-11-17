@@ -116,7 +116,10 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         (candidate) => candidate.id === battle.order[battle.turnIndex],
       );
       if (!unit || unit.faction !== 'party') throw new Error('No party unit is acting');
-      const abilities = knownAbilities(CONTENT, unit);
+      const abilities = knownAbilities(CONTENT, unit).filter(
+        // Help up (ADR 0118) is on the hotbar only while a friend is down; nobody is.
+        (ability) => !(ability.targeting.shape === 'unit' && ability.targeting.allow === 'downed'),
+      );
       const hotbar = page.locator('.action-bar .action-row');
       await Promise.all([
         expect(hotbar.locator('button[class*="element-"]')).toHaveCount(abilities.length),

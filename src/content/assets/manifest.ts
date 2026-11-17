@@ -162,6 +162,8 @@ const TOPDOWN_ACTIONS: Partial<
   wen: { cast: 'attack', by: { spark: ['gauntlet_spark', 'electrified_glove', 'shock_mine'] } },
   deserter: { cast: 'attack', by: { throw: ['oil_flask', 'torch_toss'] } },
   driller: { cast: 'slam', idle: 'rumble' },
+  // RG-02: Veyra's pressure lance is her blow; the signal flare is her rally.
+  veyra: { cast: 'lance', by: { flare: ['rally'] } },
 };
 
 /** A sheet's `actionMap`, from `TOPDOWN_ACTIONS` (its own `attack` for a sheet not listed there). */
@@ -291,6 +293,16 @@ export const TOPDOWN_KEYS: Readonly<Record<string, readonly [TopdownName, string
   // their placeholder names (`dema`, `sen`) so the shipped sheets and portraits stay put.
   'npc.dema': ['dema', 'earth'],
   'npc.sen': ['sen', 'earth'],
+  // RG-02 (Saltstep and Emberwatch): Veyra, the guest ally, and the region's two enemies.
+  'unit.ally.veyra': ['veyra', 'neutral'],
+  'unit.enemy.freighthandler': ['freighthandler', 'enemy'],
+  'unit.enemy.rigger': ['rigger', 'enemy'],
+  'npc.tavi': ['tavi', 'nonbender'],
+  'npc.customsclerk': ['customsclerk', 'neutral'],
+  'npc.luli': ['luli', 'fire'],
+  'npc.bowlseller': ['bowlseller', 'neutral'],
+  'npc.freightclerk': ['freightclerk', 'neutral'],
+  'npc.cook': ['cook', 'neutral'],
 };
 
 /**
@@ -301,6 +313,10 @@ export const TOPDOWN_OBJECTS: Readonly<Record<string, { readonly w: number; read
   {
     'world.route_sign': { w: 40, h: 54 },
     'world.school_notice': { w: 45, h: 47 },
+    // RG-02: Bo-shan's delivery cart with Parcel, the ostrich horse, in harness.
+    'world.parcel_cart': { w: 58, h: 79 },
+    // RG-02: Miri's lantern crates on the Saltstep quay, stamped with her crooked-handle lantern.
+    'world.lantern_crates': { w: 34, h: 33 },
   };
 
 function topdownObject(key: string, size: { readonly w: number; readonly h: number }): SheetEntry {
@@ -368,6 +384,10 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'unit.enemy.sergeant': topdownSheet('sergeant', 'unit.enemy.sergeant', 'enemy'),
   'unit.enemy.driller': topdownSheet('driller', 'unit.enemy.driller', 'enemy'),
   'unit.ally.ruon': topdownSheet('ruon', 'unit.ally.ruon', 'neutral'),
+  // RG-02 (Saltstep and Emberwatch): the freight pontoon's handlers, Sabi's riggers and Veyra.
+  'unit.enemy.freighthandler': topdownSheet('freighthandler', 'unit.enemy.freighthandler', 'enemy'),
+  'unit.enemy.rigger': topdownSheet('rigger', 'unit.enemy.rigger', 'enemy'),
+  'unit.ally.veyra': topdownSheet('veyra', 'unit.ally.veyra', 'neutral'),
 
   /* --------------------------------------------------------------- NPCs */
   // The residents (issue #284), drawn top-down since T7 retired their G sheets. The shrine figure shares Mira's.
@@ -387,9 +407,19 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'npc.hanru': painter('villager', 'nonbender', 'guard'),
   // An adult of Pella's household who is no named person; the returnees share it.
   'npc.household': topdownSheet('household', 'npc.household', 'earth'),
+  // RG-02 (Saltstep and Emberwatch): the region's people (`tools/rg02chars.py`).
+  'npc.tavi': topdownSheet('tavi', 'npc.tavi', 'nonbender'),
+  'npc.customsclerk': topdownSheet('customsclerk', 'npc.customsclerk', 'neutral'),
+  'npc.luli': topdownSheet('luli', 'npc.luli', 'fire'),
+  'npc.bowlseller': topdownSheet('bowlseller', 'npc.bowlseller', 'neutral'),
+  'npc.freightclerk': topdownSheet('freightclerk', 'npc.freightclerk', 'neutral'),
+  'npc.cook': topdownSheet('cook', 'npc.cook', 'neutral'),
   // Until A1's notice art: a marker stone.
   'world.school_notice': painter('discovery', 'neutral', 'marker'),
   'world.route_sign': image('art/world/route-sign.png', 'neutral'),
+  // RG-02: the cart with Parcel in harness; the top-down object (`TOPDOWN_OBJECTS`) is laid over it.
+  'world.parcel_cart': image('art/topdown/objects/parcel_cart.png', 'neutral'),
+  'world.lantern_crates': image('art/topdown/objects/lantern_crates.png', 'neutral'),
 
   /* --------------------------------------------------------------- Props */
   'prop.barrel': image('art/props/barrel.png', 'water'),
@@ -422,12 +452,18 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'portrait.mira': image('art/portraits/mira.png', 'earth'),
   'portrait.gao': image('art/portraits/gao.png', 'earth'),
   'portrait.hanru': image('art/portraits/hanru.png', 'nonbender'),
+  'portrait.bo_shan': image('art/portraits/bo_shan.png', 'earth'),
   'portrait.pella': image('art/portraits/pella.png', 'air'),
   'portrait.dorin': image('art/portraits/dorin.png', 'earth'),
   'portrait.ruon': image('art/portraits/ruon.png', 'neutral'),
   'portrait.jin': image('art/portraits/jin.png', 'nonbender'),
   'portrait.dema': image('art/portraits/dema.png', 'neutral'),
   'portrait.sen': image('art/portraits/sen.png', 'neutral'),
+  // RG-02 (Saltstep and Emberwatch): Veyra, Tavi Ren, Luli and the customs clerk (style B, ADR 0107).
+  'portrait.veyra': image('art/portraits/veyra.png', 'neutral'),
+  'portrait.tavi': image('art/portraits/tavi.png', 'neutral'),
+  'portrait.luli': image('art/portraits/luli.png', 'fire'),
+  'portrait.customs_clerk': image('art/portraits/customs_clerk.png', 'neutral'),
 
   /* ------------------------------------------------------------ Probe */
   /*

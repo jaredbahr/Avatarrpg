@@ -65,6 +65,14 @@ export const WORLD_STORY: readonly StoryNode[] = [
     mapId: 'forest_road',
     objective: 'Follow the road east to the quarry gate, past the roadblock. Ba Dan is west.',
     objectiveTargetId: 'quarry_gate',
+    objectiveVariants: [
+      {
+        // After a Driller loss, Lanfen's conversation comes back here (lost.ts).
+        when: { kind: 'flag', key: 'act1_lost', op: 'set' },
+        text: 'The quarry is still held. Ba Dan is west.',
+        objectiveTargetId: 'ba_dan_village',
+      },
+    ],
     next: 'battle_forest_road',
   },
   {
@@ -87,6 +95,13 @@ export const WORLD_STORY: readonly StoryNode[] = [
     kind: 'explore',
     mapId: 'ambush_road',
     objective: 'Follow the east path down to the quarry floor, or go back west to Ba Dan.',
+    objectiveVariants: [
+      {
+        // After a Driller loss, Kuan's conversation comes back here (lost.ts).
+        when: { kind: 'flag', key: 'act1_lost', op: 'set' },
+        text: 'Someone is watching the far end of the cutting. Ba Dan lies west.',
+      },
+    ],
     next: 'quarry_descent',
   },
   {

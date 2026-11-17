@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { CONTENT } from '../src/content';
 import { apply } from '../src/core/state/reducer';
-import { resetStorage, settleLayout, waitForIdle } from './helpers';
+import { enterNode, resetStorage, settleLayout, waitForIdle } from './helpers';
 
 test.describe.configure({ retries: 0, timeout: 60_000 });
 
@@ -24,7 +24,11 @@ async function walk(page: Page, pos: { x: number; y: number }): Promise<void> {
   await settleLayout(page);
 }
 
-/** Two real suggested setups, opening dialogue, Wait and canonical Talk; only walking uses commands. */
+/**
+ * Two real suggested setups, opening dialogue, Wait and canonical Talk; walking uses
+ * commands. Gao's chair is a now-or-later prompt the player in charge answers alone
+ * (#846), so the route then steps to the gate parley, a choice the table votes on.
+ */
 async function newFirstChoice(page: Page) {
   await page.getByRole('button', { name: 'New game', exact: true }).tap();
   await page.getByRole('button', { name: '2 players', exact: true }).tap();
@@ -108,6 +112,15 @@ async function newFirstChoice(page: Page) {
   expect(
     await page.evaluate(() => window.fnt!.app.state!.flags['guidance.firstFightEligible']),
   ).toBe(true);
+  const chair = page.locator('.choice-panel');
+  await expect(chair).not.toHaveAttribute('data-vote', /.+/);
+  await expect(chair.locator('.decider-banner strong')).toHaveText('Player 1');
+  await enterNode(page, 'gate_parley');
+  await expect
+    .poll(() => page.evaluate(() => window.fnt!.app.state!.story.nodeId))
+    .toBe('gate_parley');
+  await expect(page.locator('.choice-panel')).toHaveAttribute('data-vote', 'pick');
+  await waitForIdle(page);
   return snapshot(page);
 }
 
@@ -136,10 +149,14 @@ async function expectFresh(page: Page): Promise<void> {
   await expect(panel.locator('.vote-banner')).toContainText('A tie goes to Player 1.');
   await expect(panel.locator('.vote-names, .is-winner, .is-tied')).toHaveCount(0);
   await expect(panel.locator('[data-vote-control]')).toHaveCount(0);
-  await expect(panel.locator('.choice-option:not([disabled])')).toHaveCount(2);
+  await expect(panel.locator('.choice-option').filter({ hasText: KNOCK })).toBeEnabled();
+  await expect(panel.locator('.choice-option').filter({ hasText: FIREBENDER })).toBeEnabled();
 }
 
-async function pick(page: Page, voter: string, option: 'Sit down' | 'Another time'): Promise<void> {
+const KNOCK = 'Walk up and knock';
+const FIREBENDER = 'Let the firebender do the talking';
+
+async function pick(page: Page, voter: string, option: string): Promise<void> {
   const panel = page.locator('.choice-panel');
   await expect(panel).toHaveAttribute('data-vote', 'pick');
   await expect(panel.locator('.vote-banner strong')).toHaveText(`${voter}, your pick`);
@@ -178,10 +195,10 @@ for (const oldPhase of ['pass', 'result', 'tie'] as const) {
     const first = await newFirstChoice(page);
     const panel = page.locator('.choice-panel');
     await expectFresh(page);
-    await pick(page, 'Player 1', 'Sit down');
+    await pick(page, 'Player 1', KNOCK);
     if (oldPhase !== 'pass') {
       await handOff(page);
-      await pick(page, 'Player 2', oldPhase === 'tie' ? 'Another time' : 'Sit down');
+      await pick(page, 'Player 2', oldPhase === 'tie' ? FIREBENDER : KNOCK);
     }
     await expect(panel).toHaveAttribute('data-vote', oldPhase);
     if (oldPhase === 'result') {
@@ -226,7 +243,7 @@ for (const oldPhase of ['pass', 'result', 'tie'] as const) {
     expect(errors).toEqual([]);
     await expectFresh(page);
 
-    await pick(page, 'Player 1', 'Sit down');
+    await pick(page, 'Player 1', KNOCK);
     const partial = await ballotView(page);
     expect(await snapshot(page)).toEqual(second);
     // A regular Settings sync rebuilds the scene; it must preserve this game's partial vote.
@@ -237,7 +254,7 @@ for (const oldPhase of ['pass', 'result', 'tie'] as const) {
     expect(await ballotView(page)).toEqual(partial);
     expect(await snapshot(page)).toEqual(second);
     await handOff(page);
-    await pick(page, 'Player 2', 'Sit down');
+    await pick(page, 'Player 2', KNOCK);
     await expect(panel).toHaveAttribute('data-vote', 'result');
     await expect(panel.locator('.is-winner')).toHaveCount(1);
     await expect(panel.locator('.vote-names')).toHaveText('Picked by Player 1, Player 2');
@@ -247,7 +264,8 @@ for (const oldPhase of ['pass', 'result', 'tie'] as const) {
     await panel.getByRole('button', { name: 'Continue', exact: true }).tap();
     const after = await snapshot(page);
     expect(after).toEqual({ state: expected, session: second.session });
-    expect(after.state.story.deciderIndex).toBe(1);
+    // A taken choice keeps the lead; it passes only through an exit (#846).
+    expect(after.state.story.deciderIndex).toBe(0);
     await info.attach('fresh-game-voting-observation', {
       body: Buffer.from(JSON.stringify({ partial, resultBallot, after })),
       contentType: 'application/json',

@@ -22,10 +22,14 @@
  *   below from Slice B's profile-backed records. An absent key reads as
  *   `missing`, so their NpcDefs remain invisible until an authored transition
  *   releases each person.
- * - **Occupation** (before `act1_complete`, including an Act I defeat, which is
- *   a resolver-only state today) changes nobody's place, only the visible
- *   evidence: `variants` on the slots (short stock, a road watched for
+ * - **Occupation** (before `act1_complete`) changes nobody's place, only the
+ *   visible evidence: `variants` on the slots (short stock, a road watched for
  *   returnees, a shared household table).
+ * - **Defeat** (`act1_lost`: a Driller loss, resumable since the owner's
+ *   2026-11-14 decision, story bible C-01 and C-16): occupation continues, and
+ *   Dorin is away driving Bo-shan's cart (saga outline, decision 10), so Hanru
+ *   keeps the gate by day as well as by night; the relief watch still covers
+ *   midday.
  * - **Return** (`act1_complete` before every homecoming is heard, the first
  *   safe night): the `mission` holds keep each owner of a homecoming
  *   at a public anchor in every phase until it is visited, and the evening
@@ -63,7 +67,7 @@ const any = (...of: Condition[]): Condition => ({ kind: 'any', of });
 const VICTORY = flag('act1_complete');
 /** §05.2 "Missing, rescue unresolved": the quarry still holds the five. */
 const OCCUPIED = not(VICTORY);
-/** §05.2 "Act I defeat, occupation continues". Resolver-only: the loss is terminal today. */
+/** §05.2 "Act I defeat, occupation continues": a Driller loss, carried on from (C-01). */
 const DEFEATED = flag('act1_lost');
 /** §05.2 "First safe night": the workers are home and not every homecoming is heard. */
 const HOMECOMING = all(VICTORY, not(VILLAGE_HOMECOMINGS_COMPLETE));
@@ -72,6 +76,13 @@ const HOMECOMING = all(VICTORY, not(VILLAGE_HOMECOMINGS_COMPLETE));
 const MIRA_HELD = any(not(visited('mira_intro')), all(VICTORY, not(visited('mira_epilogue'))));
 const GAO_HELD = all(VICTORY, not(any(visited('gao_home'), visited('gao_home_cold'))));
 const PELLA_HELD = all(VICTORY, not(visited('pella_home')));
+/**
+ * Pella sits at Mira's table for the first talk there (DLG-01). Opening
+ * `mira_intro` visits it at once, but a conversation freezes resident motion
+ * until it ends (`residentMotion.ts`), so she stays beside Mira for the whole
+ * talk and walks back to her own day afterwards.
+ */
+const PELLA_AT_TABLE = not(visited('mira_intro'));
 const DORIN_HELD = all(VICTORY, not(visited('dorin_home')));
 
 /* ------------------------------------------------------------------ */
@@ -94,6 +105,9 @@ export const BA_DAN_ANCHORS: readonly WorldAnchor[] = [
   // Mira's Table: the square's paving beside the canal, next to the bench
   // rest spot (10,5). No table or awning art yet.
   tile('bd01.table', 'BD01', VILLAGE, 11, 5),
+  // Pella's seat at Mira's table for the first talk (DLG-01): the paving on
+  // Mira's east side, clear of the party's rest spot (10,5) to her west.
+  tile('bd01.bench', 'BD01', VILLAGE, 12, 5),
   // Gao's shopfront: the lane in front of his display, below the shop steps.
   tile('bd02.shopfront', 'BD02', VILLAGE, 9, 4),
   // The rear room: the merchant house's front door, its step at (7,4).
@@ -160,7 +174,10 @@ const MIRA: ResidentDef = {
         { when: OCCUPIED, activity: 'concerns_about_the_missing' },
       ],
     }),
-    midday: talk('bd01.table', 'elder_mira', 'shared_meal'),
+    midday: talk('bd01.table', 'elder_mira', 'shared_meal', {
+      // Canon's return table: after a loss, a mutual-aid meal.
+      variants: [{ when: DEFEATED, activity: 'mutual_aid_meal' }],
+    }),
     afternoon: talk('bd06.bank', 'riverside_mira', 'river_walk'),
     evening: talk('bd01.table', 'elder_mira', 'table_company', {
       variants: [{ when: HOMECOMING, activity: 'returnee_supper' }],
@@ -241,6 +258,15 @@ const PELLA: ResidentDef = {
   },
   overrides: [
     {
+      // Mira's table (DLG-01): Pella waits beside Mira for the first talk,
+      // which she is part of, then goes back to her own day.
+      id: 'pella_at_table',
+      tier: 'mission',
+      when: PELLA_AT_TABLE,
+      slots: {},
+      all: talk('bd01.bench', 'kid_pella', 'waiting_at_table'),
+    },
+    {
       id: 'pella_homecoming',
       tier: 'mission',
       when: PELLA_HELD,
@@ -294,10 +320,24 @@ const DORIN: ResidentDef = {
       },
       all: talk('bd03.handover', 'guard_dorin', 'waiting_to_talk'),
     },
+    {
+      // After a Driller loss he drives Bo-shan's cart until MQ-11 (decision 10).
+      id: 'dorin_driving',
+      tier: 'presence',
+      when: DEFEATED,
+      slots: {},
+      all: 'absent',
+    },
   ],
 };
 
-/** Bounded (ADR 0047 §8): the evening and night watch, and the dawn handover. Never in daylight. */
+/** Hanru's post by day while Dorin is away with the cart. */
+const HANRU_DAY = talk('bd03.post', 'guard_hanru', 'day_watch', WATCH);
+
+/**
+ * Bounded (ADR 0047 §8): the evening and night watch, and the dawn handover. Never in daylight,
+ * except after a Driller loss, when Dorin is away (`hanru_day_watch`).
+ */
 const HANRU: ResidentDef = {
   id: 'lw.npc.hanru',
   name: 'Hanru',
@@ -312,6 +352,16 @@ const HANRU: ResidentDef = {
     evening: talk('bd03.post', 'guard_hanru', 'take_watch', WATCH),
     night: talk('bd03.post', 'guard_hanru', 'night_watch', WATCH),
   },
+  overrides: [
+    {
+      // Dorin is away after a Driller loss: Hanru takes his watches. The relief
+      // watch keeps midday, so Hanru still gets home once a day.
+      id: 'hanru_day_watch',
+      tier: 'presence',
+      when: DEFEATED,
+      slots: { dawn: HANRU_DAY, morning: HANRU_DAY, afternoon: HANRU_DAY },
+    },
+  ],
 };
 
 /** Declaration order breaks ties within a tier (§2). */

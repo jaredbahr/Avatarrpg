@@ -105,7 +105,8 @@ function fixture(combo: ComboRule, producer: Technique, applicator: Technique) {
   const initial = createGame(CONTENT, {
     seed: `content-combo-${combo.id}`,
     startNode: '',
-    party: [producer.slot, applicator.slot],
+    // Three players, the baseline: two would drop one of the road's two enemies (#846).
+    party: [producer.slot, applicator.slot, { characterId: 'kaya' }],
     flags: { [DISCIPLINE_FLAGS.engineering]: true },
   });
   const rng = new RngCursor(initial.rng);

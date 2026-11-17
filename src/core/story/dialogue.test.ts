@@ -145,6 +145,17 @@ describe('gated choices', () => {
     expect(result.state.story.deciderIndex).toBe(state.story.deciderIndex);
   });
 
+  it('keeps the player in charge when a choice is taken: the lead passes at exits only (#846)', () => {
+    const content = withNodes(GATE);
+    const base = game(['kaya']);
+    const state: GameState = { ...base, story: { ...base.story, nodeId: 'test_gate' } };
+
+    const result = chooseOption(content, state, 0);
+    expect(result.state.story.nodeId).not.toBe('test_gate');
+    expect(result.state.story.deciderIndex).toBe(state.story.deciderIndex);
+    expect(result.events.some((e) => e.type === 'leaderPassed')).toBe(false);
+  });
+
   it('applies nation standing when an option is taken', () => {
     const content = withNodes(GATE);
     const base = game(['kaya']);

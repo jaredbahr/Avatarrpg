@@ -23,6 +23,13 @@ uncommitted files and current checks before continuing. Compaction alone is not
 a reason to duplicate an active assignment. Session workflow and documentation
 ownership are detailed in the coordination entry point.
 
+**Story, dialogue and scene planning have one owner (Jared, 2026-11-14).** The writing pass, one session at a
+time, writes every scene, line and scene plan, in story PRs that carry a theme card and wait for Jared's yes. Any
+other session builds from what is on `main` and does not draft story text. If your work needs words that do not
+exist yet, leave a clearly marked placeholder, say so in your PR, and stop there. Story decisions are recorded in
+[docs/story-bible.md](docs/story-bible.md); read its owner-decision sections before touching anything a player
+reads.
+
 ## Model routing and usage
 
 Jared's standing routing policy:

@@ -304,6 +304,52 @@ html:is([data-large-text='on'], [data-large-text='huge']) .combat-bar .title-pla
   display: none;
 }
 
+/* The fight's objective under the round (ADR 0116's 2026-11-15 amendment): a flag, the goal in
+ * bold and the rounds left on a chip, sized for a child to read from across the table. The board
+ * marks the same cells in the objective's mint; the chip turns to the warning tone on the last
+ * round. The label ellipses before the chip does, so the count is never cut. */
+.combat-objective {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-width: 0;
+  max-width: min(32rem, 60vw);
+  font-size: var(--fs-sm);
+  line-height: 1.2;
+  color: var(--c-ink);
+}
+
+.combat-objective-mark {
+  width: 1.15rem;
+  height: 1.15rem;
+  color: var(--c-ok);
+}
+
+.combat-objective-label {
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.combat-objective-rounds {
+  flex: 0 0 auto;
+  padding: 0.05rem var(--sp-1);
+  border: var(--hairline) solid var(--c-ok);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--c-ok) 22%, transparent);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.combat-objective.urgent .combat-objective-rounds {
+  border-color: var(--c-warn-line);
+  background: var(--c-warn-bg);
+  color: var(--c-warn-ink);
+}
+
 /*
  * Marks: the inline line drawings from app/ui/marks.ts. Drawn in the
  * current colour, so a button's element tints them and High contrast inks
@@ -350,9 +396,9 @@ html:is([data-large-text='on'], [data-large-text='huge']) .combat-bar .title-pla
   align-items: center;
   gap: var(--sp-1);
   padding: 0.15rem var(--sp-2);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: var(--hairline) solid var(--c-line);
-  background: rgb(0 0 0 / 30%);
+  background: color-mix(in srgb, var(--c-black) 30%, transparent);
   font-size: var(--fs-sm);
   white-space: nowrap;
 }
@@ -385,6 +431,13 @@ html:is([data-large-text='on'], [data-large-text='huge']) .combat-bar .title-pla
 .chip-warn {
   border-color: var(--c-warn);
   color: var(--c-warn);
+}
+/* A guest ally's tag (ADR 0116): it fights with the party for one battle. */
+.chip-guest {
+  border-color: var(--c-ok);
+  background: color-mix(in srgb, var(--c-ok) 30%, transparent);
+  font-size: var(--fs-xs);
+  font-weight: 700;
 }
 
 /* ------------------------------------------------------------------ */
@@ -525,6 +578,29 @@ html:is([data-large-text='on'], [data-large-text='huge']) .combat-bar .title-pla
   margin: 0;
 }
 
+/* The one line a child may have to read aloud to a parent: body size, not fine print. */
+.storage-note {
+  font-size: var(--fs-md);
+}
+
+/* The storage check (#772): label over answer, sized to be read off the iPad. */
+.storage-check {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: 0;
+}
+
+.storage-check dt {
+  color: var(--c-ink-faint);
+  font-size: var(--fs-sm);
+}
+
+.storage-check dd {
+  margin: 0;
+  font-size: var(--fs-lg);
+}
+
 /* ------------------------------------------------------------------ */
 /* Title                                                               */
 /* ------------------------------------------------------------------ */
@@ -628,7 +704,7 @@ html:is([data-large-text='on'], [data-large-text='huge']) .combat-bar .title-pla
     color-mix(in srgb, var(--c-gold) 28%, transparent),
     transparent
   );
-  z-index: -1;
+  z-index: var(--z-title-glow);
 }
 
 .title-mark svg {
@@ -665,8 +741,8 @@ html:is([data-large-text='on'], [data-large-text='huge']) .combat-bar .title-pla
 
 /* Over the dark plate the page's brown ring has nothing to stand on. */
 .title-card button:focus-visible {
-  outline: 3px solid var(--c-gold-hi);
-  outline-offset: 3px;
+  outline: var(--stroke-focus) solid var(--c-gold-hi);
+  outline-offset: var(--stroke-focus);
 }
 
 .title-card .muted {
@@ -702,7 +778,7 @@ html:is([data-large-text='on'], [data-large-text='huge']) .combat-bar .title-pla
 html[data-contrast='high'] .title-card {
   background: var(--c-ink);
   backdrop-filter: none;
-  border-width: 2px;
+  border-width: var(--stroke-bold);
 }
 
 html[data-contrast='high'] .title-card .muted,
@@ -886,7 +962,7 @@ html[data-contrast='high'] .title-card .tagline {
   padding: var(--sp-3);
   min-height: 8rem;
   border-radius: var(--radius-lg);
-  border: 2px solid var(--c-ink-line);
+  border: var(--stroke-bold) solid var(--c-ink-line);
   background-color: var(--surface-1);
   box-shadow: var(--inset-edge), var(--shadow-1);
 }
@@ -909,7 +985,7 @@ html[data-contrast='high'] .title-card .tagline {
   border-color: color-mix(in srgb, var(--el, var(--c-gold)) 65%, var(--c-ink));
   box-shadow:
     var(--inset-edge),
-    0 0 0 2px color-mix(in srgb, var(--c-gold) 45%, transparent),
+    0 0 0 var(--stroke-bold) color-mix(in srgb, var(--c-gold) 45%, transparent),
     var(--shadow-1);
 }
 
@@ -1112,7 +1188,7 @@ html[data-contrast='high'] .title-card .tagline {
 .stage-head {
   flex: 0 0 auto;
   position: relative;
-  z-index: 1;
+  z-index: var(--z-stage-head);
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -1159,8 +1235,8 @@ html[data-contrast='high'] .title-card .tagline {
   max-height: var(--conversation-portrait);
   border-radius: var(--radius);
   box-shadow:
-    0 0 0 1px var(--c-ink-line),
-    0 0 0 3px color-mix(in srgb, var(--el) 70%, transparent),
+    0 0 0 var(--stroke-pixel) var(--c-ink-line),
+    0 0 0 var(--stroke-focus) color-mix(in srgb, var(--el) 70%, transparent),
     var(--shadow-2);
 }
 
@@ -1257,7 +1333,7 @@ html[data-contrast='high'] .title-card .tagline {
   text-transform: uppercase;
   color: var(--c-gold-deep);
   border: var(--hairline) solid currentColor;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   padding: 0.1rem var(--sp-2);
 }
 
@@ -1578,8 +1654,8 @@ html[data-contrast='high'] .map-wrap {
   position: absolute;
   top: 0;
   left: 0;
-  transform: translate(-50%, calc(-100% - 6px));
-  padding: 2px 6px;
+  transform: translate(-50%, calc(-100% - var(--npc-label-gap)));
+  padding: var(--stroke-bold) var(--npc-label-gap);
   border: var(--hairline) solid var(--c-ink-line);
   border-radius: var(--radius);
   color: var(--c-ink);
@@ -1693,8 +1769,8 @@ html[data-contrast='high'] .map-wrap {
   height: var(--conversation-portrait);
   border-radius: var(--radius);
   box-shadow:
-    0 0 0 1px var(--c-ink-line),
-    0 0 0 2px color-mix(in srgb, var(--el) 60%, transparent);
+    0 0 0 var(--stroke-pixel) var(--c-ink-line),
+    0 0 0 var(--stroke-bold) color-mix(in srgb, var(--el) 60%, transparent);
 }
 
 .conversation-compact-speaker {
@@ -1887,7 +1963,7 @@ html[data-contrast='high'] .explore-conversation::before {
   gap: 0.1rem;
   padding: var(--sp-1);
   border-radius: var(--radius);
-  border: 2px solid transparent;
+  border: var(--stroke-bold) solid transparent;
   min-width: 3.5rem;
   min-height: var(--tap);
   flex-shrink: 0;
@@ -1908,16 +1984,28 @@ html[data-contrast='high'] .explore-conversation::before {
 }
 
 .turn-chip.faction-enemy .painter {
-  box-shadow: 0 0 0 2px var(--c-danger);
+  box-shadow: 0 0 0 var(--stroke-bold) var(--c-danger);
 }
 
 /* A party member's ring is their element (the chip's .element-* sets --el). */
 .turn-chip.faction-party .painter {
-  box-shadow: 0 0 0 2px var(--el);
+  box-shadow: 0 0 0 var(--stroke-bold) var(--el);
 }
 
 .turn-chip.faction-ally .painter {
-  box-shadow: 0 0 0 2px var(--c-ok);
+  box-shadow: 0 0 0 var(--stroke-bold) var(--c-ok);
+}
+
+/* A guest's chip carries a small "Guest" tag under its face, kept visible
+ * even where a phone strip hides the waiting chips' names. */
+.turn-chip .guest-tag {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.1rem var(--sp-1);
+  border-radius: var(--radius);
+  border: var(--hairline) solid var(--c-ok);
+  background: color-mix(in srgb, var(--c-ok) 30%, transparent);
 }
 
 .turn-chip span {
@@ -2002,7 +2090,7 @@ html[data-contrast='high'] .hud-panel::after {
   flex: 0 0 auto;
   border-radius: 50%;
   background: color-mix(in srgb, var(--el) 18%, transparent);
-  box-shadow: 0 0 0 2px var(--el);
+  box-shadow: 0 0 0 var(--stroke-bold) var(--el);
 }
 
 /* Square in the unit panel, framed in ink with the element outside it. */
@@ -2014,8 +2102,8 @@ html[data-contrast='high'] .hud-panel::after {
 .unit-portrait.square {
   border-radius: var(--radius);
   box-shadow:
-    0 0 0 2px var(--c-ink-line),
-    0 0 0 4px color-mix(in srgb, var(--el) 55%, transparent);
+    0 0 0 var(--stroke-bold) var(--c-ink-line),
+    0 0 0 var(--stroke-emphasis) color-mix(in srgb, var(--el) 55%, transparent);
 }
 
 /* The element's glyph as a badge on the portrait's corner. */
@@ -2042,8 +2130,8 @@ html[data-contrast='high'] .hud-panel::after {
 .bar {
   position: relative;
   height: 1.1rem;
-  border-radius: 999px;
-  background: rgb(0 0 0 / 55%);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--c-black) 55%, transparent);
   overflow: hidden;
   border: var(--hairline) solid var(--c-line);
 }
@@ -2059,7 +2147,8 @@ html[data-contrast='high'] .hud-panel::after {
   display: grid;
   place-items: center;
   font-size: var(--fs-xs);
-  text-shadow: 0 1px 2px rgb(0 0 0 / 90%);
+  text-shadow: 0 var(--stroke-pixel) var(--stroke-bold)
+    color-mix(in srgb, var(--c-black) 90%, transparent);
 }
 
 .pips {
@@ -2074,7 +2163,7 @@ html[data-contrast='high'] .hud-panel::after {
   border-radius: 50%;
   border: var(--hairline) solid var(--c-gold);
   background: transparent;
-  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 40%);
+  box-shadow: inset 0 0 0 var(--stroke-pixel) color-mix(in srgb, var(--c-black) 40%, transparent);
 }
 
 .pip-on {
@@ -2173,7 +2262,8 @@ html[data-contrast='high'] .hud-panel::after {
     min-width: 5rem;
   }
 
-  html[data-large-text='off'] .combat-scene .action-bar:not(:has(.confirm-dialog)) > .aim-hint {
+  html[data-large-text='off'] .combat-scene .action-bar:not(:has(.confirm-dialog)) > .aim-hint,
+  html[data-large-text='off'] .combat-scene .action-bar:not(:has(.confirm-dialog)) > .defend-hint {
     grid-column: 2;
     grid-row: 2;
     align-self: stretch;
@@ -2217,10 +2307,34 @@ html[data-contrast='high'] .hud-panel::after {
   color: var(--el, var(--c-ink));
 }
 
+/*
+ * The chosen action (Move or an ability) is never told by colour alone: a heavy inset frame in
+ * the deep gold, a lit gold body, bold type and a check badge in the corner. Nothing here moves
+ * or animates, so reduce motion and Large text change nothing but the badge's size, in rem.
+ */
 .action-button.selected {
-  border-color: var(--c-gold);
-  background-color: color-mix(in srgb, var(--c-gold) 20%, transparent);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--c-gold) 40%, transparent);
+  border-color: var(--c-gold-deep);
+  background-color: color-mix(in srgb, var(--c-gold-hi) 55%, var(--c-panel-raised));
+  font-weight: 700;
+  box-shadow:
+    inset 0 0 0 var(--stroke-emphasis) var(--c-gold-deep),
+    0 0 0 var(--stroke-bold) var(--c-gold-hi);
+}
+
+.action-button.selected::before {
+  content: '\2713';
+  position: absolute;
+  top: var(--stroke-emphasis);
+  left: var(--stroke-emphasis);
+  display: grid;
+  place-items: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background-color: var(--c-gold-deep);
+  color: var(--c-panel-raised);
+  font-size: var(--fs-xs);
+  line-height: 1;
 }
 
 .action-sub {
@@ -2242,8 +2356,8 @@ html[data-contrast='high'] .hud-panel::after {
   margin-left: auto;
   border-color: var(--c-ink-line);
   box-shadow:
-    inset 0 0 0 1px var(--c-ink-line),
-    inset 0 1px 0 var(--paper-hair);
+    inset 0 0 0 var(--stroke-pixel) var(--c-ink-line),
+    inset 0 var(--stroke-pixel) 0 var(--paper-hair);
 }
 
 .end-turn .mark {
@@ -2324,6 +2438,28 @@ html[data-contrast='high'] .hud-panel::after {
 .aim-hint {
   border-color: var(--c-line);
   background: color-mix(in srgb, var(--c-bg) 92%, transparent);
+}
+
+/* The "stay safe" hint (#846): one quiet line and a dismiss, in the same dock slot. */
+.defend-hint {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  border-color: var(--c-line);
+  background: color-mix(in srgb, var(--c-bg) 92%, transparent);
+  font-size: var(--fs-sm);
+}
+
+.defend-hint > .defend-hint-text {
+  min-width: 0;
+}
+
+.defend-hint > button {
+  min-height: var(--tap);
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .preview-chips {
@@ -2469,7 +2605,7 @@ html[data-contrast='high'] .hud-panel::after {
 }
 
 .victory-row .painter {
-  box-shadow: 0 0 0 2px var(--el);
+  box-shadow: 0 0 0 var(--stroke-bold) var(--el);
 }
 
 .victory-row-body {
@@ -2499,7 +2635,7 @@ html[data-contrast='high'] .hud-panel::after {
 
 .victory-level {
   padding: 0 var(--sp-2);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: linear-gradient(180deg, var(--c-gold-soft), var(--c-gold));
   color: var(--c-ink-on-gold);
   font-weight: 700;
@@ -2589,8 +2725,8 @@ html[data-contrast='high'] .hud-panel::after {
   overflow-y: auto;
   /* Room for a flush control's focus ring (3px outline + 2px offset, base.css),
      cancelled by the margin so the body keeps its Normal-text layout. */
-  padding: 5px;
-  margin: -5px;
+  padding: var(--focus-ring-space);
+  margin: calc(-1 * var(--focus-ring-space));
   /* A control focused from the keyboard scrolls clear of the faded band. */
   scroll-padding-block: var(--sheet-fade);
 }
@@ -2630,8 +2766,8 @@ html[data-contrast='high'] .hud-panel::after {
   mask-image: linear-gradient(
     to bottom,
     transparent,
-    black var(--fade-above),
-    black calc(100% - var(--fade-below)),
+    var(--c-black) var(--fade-above),
+    var(--c-black) calc(100% - var(--fade-below)),
     transparent
   );
 }
@@ -2755,7 +2891,7 @@ html[data-contrast='high'] .hud-panel::after {
 
 .discipline-card.is-locked {
   border-color: var(--c-line);
-  background: rgb(0 0 0 / 34%);
+  background: color-mix(in srgb, var(--c-black) 34%, transparent);
 }
 
 .discipline-card.is-locked > *:not(.locked-hint) {
@@ -2818,7 +2954,7 @@ html[data-contrast='high'] .hud-panel::after {
   gap: 0.1rem;
   padding: var(--sp-2);
   border-left: var(--accent-bar) solid var(--c-line);
-  background: rgb(0 0 0 / 20%);
+  background: color-mix(in srgb, var(--c-black) 20%, transparent);
 }
 
 .status-debuff {
@@ -2879,7 +3015,7 @@ html[data-contrast='high'] .hud-panel::after {
   transform: translateY(-50%);
   padding: 0.1rem 0.4rem;
   border-radius: var(--radius);
-  background: rgb(0 0 0 / 65%);
+  background: color-mix(in srgb, var(--c-black) 65%, transparent);
   color: var(--c-gold-deep);
   font-family: ui-monospace, Menlo, Consolas, monospace;
   font-size: var(--fs-sm);
@@ -2976,7 +3112,7 @@ html[data-contrast='high'] .hud-panel::after {
    over a dark forest or a bright quarry reads the same (#630). */
 .toast {
   padding: var(--sp-2) var(--sp-4);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--surface-1);
   border: var(--hairline) solid var(--c-ink-line);
   box-shadow: var(--inset-edge), var(--shadow-2);
@@ -3271,8 +3407,8 @@ html[data-contrast='high'] .hud-panel::after {
 }
 
 .roster-row:focus-visible {
-  outline: 2px solid var(--c-gold-deep);
-  outline-offset: 2px;
+  outline: var(--stroke-bold) solid var(--c-gold-deep);
+  outline-offset: var(--stroke-bold);
 }
 
 /* The leader's row sits on the same gold plate as the acting turn chip. */
@@ -3898,6 +4034,11 @@ html[data-contrast='high'] .hud-panel::after {
   align-items: center;
   gap: var(--sp-4);
 }
+.explore-context .in-charge {
+  color: var(--c-gold-deep);
+  font-weight: 700;
+}
+
 .explore-context {
   display: flex;
   flex: 1 1 10rem;
@@ -4323,9 +4464,9 @@ html[data-contrast='high'] .hud-panel::after {
 
   html:not([data-large-text='off']) .combat-scene .combat-pause-label {
     position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
+    width: var(--stroke-pixel);
+    height: var(--stroke-pixel);
+    margin: calc(-1 * var(--stroke-pixel));
     overflow: hidden;
     clip: rect(0 0 0 0);
     white-space: nowrap;

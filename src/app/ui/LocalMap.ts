@@ -99,8 +99,10 @@ export class LocalMap {
     this.party.forEach((dot, index) => {
       const pos = positions[index];
       if (!pos) return;
-      dot.setAttribute('cx', String(pos.x + 0.5));
-      dot.setAttribute('cy', String(pos.y + 0.5));
+      const cx = String(pos.x + 0.5);
+      const cy = String(pos.y + 0.5);
+      if (dot.getAttribute('cx') !== cx) dot.setAttribute('cx', cx);
+      if (dot.getAttribute('cy') !== cy) dot.setAttribute('cy', cy);
     });
   }
 }

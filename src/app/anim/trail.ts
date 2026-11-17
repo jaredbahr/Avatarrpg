@@ -129,8 +129,20 @@ function nearestFree(grid: Grid, tail: Vec2, taken: ReadonlySet<string>): Vec2 |
  * place: through the very tiles the line held between the two, so followers
  * walk the leader's footsteps and stay one tile apart while everyone moves.
  */
+/**
+ * How far from the leader a settled member may stand, in tiles. Two is room for a small party;
+ * the seats within it (one to a column, a row apart) run out for four to six members, and the
+ * one left without a seat was walked clean across the party to the only free one (#846), so
+ * the reach grows with the line.
+ */
+function settleReach(members: number): number {
+  return Math.max(2, Math.ceil(Math.sqrt(members)));
+}
+
 /** The furthest a follower walks (movement cost, about tiles) to stand beside the leader. */
-const BESIDE_MAX_COST = 3;
+function besideMaxCost(members: number): number {
+  return settleReach(members) + 1;
+}
 
 export class PartyTrail {
   private line: Vec2[];
@@ -202,6 +214,9 @@ export class PartyTrail {
     const head = this.head;
     if (!head || this.line.length < 2) return [];
     const seats = [...this.line];
+    // The legacy gather keeps its two tiles; only the top-down cluster grows with the line.
+    const reach = options.beside ? settleReach(seats.length) : 2;
+    const maxCost = besideMaxCost(seats.length);
     const routes: FollowerRoute[] = [];
     for (let index = 1; index < seats.length; index++) {
       const from = seats[index];
@@ -210,7 +225,7 @@ export class PartyTrail {
       // A seat stacked under or over a member already placed (the leader included), one row apart.
       const stacked = (pos: Vec2) =>
         seats.slice(0, index).some((s) => s.x === pos.x && Math.abs(s.y - pos.y) === 1);
-      if (options.beside && !stacked(from) && distance(from, head) <= 2) continue;
+      if (options.beside && !stacked(from) && distance(from, head) <= reach) continue;
       const choices = [
         ...reachable(
           { grid, blocked, surfaces: new Map(), size: 1, climbCost: this.climbCost },
@@ -220,11 +235,11 @@ export class PartyTrail {
       ]
         .filter(
           ({ pos, cost }) =>
-            distance(pos, head) <= 2 &&
+            distance(pos, head) <= reach &&
             !blocked.has(posKey(pos)) &&
             drySeat(grid, pos) &&
             // beside the leader, a short step: never a walk round a house to get there
-            !(options.beside && (stacked(pos) || cost > BESIDE_MAX_COST)),
+            !(options.beside && (stacked(pos) || cost > maxCost)),
         )
         .sort((a, b) => a.cost - b.cost || distance(a.pos, head) - distance(b.pos, head));
       const choice = choices[0];

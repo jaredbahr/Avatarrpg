@@ -1,6 +1,13 @@
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
-import { enterNode, resetStorage, settleDialog, settleLayout, startGame } from './helpers';
+import {
+  enterNode,
+  resetStorage,
+  settleDialog,
+  settleLayout,
+  startGame,
+  wheelOver,
+} from './helpers';
 
 const profiles = [
   { name: 'tablet', viewport: { width: 1194, height: 834 } },
@@ -43,18 +50,12 @@ async function exposeByWheel(page: Page, dialog: Locator, target: Locator) {
     const port = await body.boundingBox();
     if (!port) throw new Error('Missing map scrollport');
     const previous = await body.evaluate((node) => node.scrollTop);
-    // Mobile WebKit has no Playwright wheel input: there the scrollport moves by
-    // the same step (as setup-footer-overlap does), and the checks above still
-    // require the control to be fully visible and hit-testable.
-    const mobileWebkit =
-      page.context().browser()?.browserType().name() === 'webkit' &&
-      test.info().project.use.isMobile;
-    if (mobileWebkit) {
-      await body.evaluate((node, dy) => node.scrollBy(0, dy), port.height * 0.65);
-    } else {
-      await page.mouse.move(port.x + port.width / 2, port.y + Math.min(port.height / 2, 100));
-      await page.mouse.wheel(0, port.height * 0.65);
-    }
+    // The checks above still require the control to be fully visible and
+    // hit-testable after each step, on every engine.
+    await wheelOver(page, body, port.height * 0.65, {
+      x: port.x + port.width / 2,
+      y: port.y + Math.min(port.height / 2, 100),
+    });
     await expect.poll(() => body.evaluate((node) => node.scrollTop)).toBeGreaterThan(previous);
   }
   throw new Error('Actual wheel input did not expose the complete map control');
@@ -234,10 +235,10 @@ test('the unchanged objective route remains usable after reading the map', async
   await expect
     .poll(() => page.evaluate(() => window.fnt!.app.state?.story.nodeId))
     .toBe('mira_intro');
-  await expect(page.locator('.line-count')).toHaveText('1 of 4');
+  await expect(page.locator('.line-count')).toHaveText('1 of 2');
   await page.locator('[data-conversation-control="next"]').focus();
   await page.keyboard.press('Enter');
-  await expect(page.locator('.line-count')).toHaveText('2 of 4');
+  await expect(page.locator('.line-count')).toHaveText('2 of 2');
   await info.attach('actual-route-positive-control', {
     body: JSON.stringify({ before, after: await game(page) }),
     contentType: 'application/json',

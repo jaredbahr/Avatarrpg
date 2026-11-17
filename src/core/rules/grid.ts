@@ -35,17 +35,8 @@ export const DIRECTIONS: readonly Vec2[] = [
 
 export const ORTHOGONAL: readonly Vec2[] = DIRECTIONS.slice(0, 4);
 
-export function vec(x: number, y: number): Vec2 {
-  return { x, y };
-}
-
 export function posKey(p: Vec2): string {
   return `${p.x},${p.y}`;
-}
-
-export function keyToPos(key: string): Vec2 {
-  const [x, y] = key.split(',');
-  return { x: Number(x), y: Number(y) };
 }
 
 export function samePos(a: Vec2, b: Vec2): boolean {
@@ -95,7 +86,12 @@ export function occupiedCells(
 /** Whether a unit-targeted ability may resolve against its own caster. */
 export function allowsCasterTarget(ability: Pick<Ability, 'targeting'>): boolean {
   if (ability.targeting.shape === 'self') return true;
-  return ability.targeting.shape === 'unit' && ability.targeting.allow !== 'enemy';
+  return (
+    ability.targeting.shape === 'unit' &&
+    ability.targeting.allow !== 'enemy' &&
+    // A downed friend is somebody else, never the caster.
+    ability.targeting.allow !== 'downed'
+  );
 }
 
 /** Chebyshev distance from a point to the nearest cell of a possibly-large unit. */

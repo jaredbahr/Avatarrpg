@@ -22,8 +22,8 @@ Ba Dan, the small village the party sets out from: a clearing in the woods.
 - Still water (12 tiles): a 9×1 block at columns 0–8, row 6 (middle left); a 3×1 block at columns 10–12, row 6 (the centre).
 - Trees (46 tiles): 13 tiles (top right), row 0: columns 18–23; row 1: columns 22–23; rows 2–6: column 23; 11 tiles (bottom left), rows 9–13: column 0; row 14: columns 0–1; row 15: columns 0–3; 10 tiles (top left), row 0: columns 0–3; row 1: columns 0–1; rows 2–5: column 0; 10 tiles (bottom right), rows 9–13: column 23; row 14: columns 22–23; row 15: columns 21–23; one tile at column 21, row 2 (top right); one tile at column 5, row 5 (middle left).
 - Timber walls (58 tiles): 18 tiles (bottom centre), rows 10–11: columns 13–17; rows 12–13: columns 13–16; a 4×4 block at columns 6–9, rows 10–13 (bottom centre); a 4×3 block at columns 6–9, rows 1–3 (top centre); a 4×3 block at columns 12–15, rows 1–3 (top centre).
-- Stone walls (40 tiles): 10 tiles (middle left), rows 9–10: columns 2–4; row 11: columns 2–5; a 5×1 block at columns 17–21, row 4 (top right); a 4×1 block at columns 1–4, row 5 (middle left); 4 tiles (middle right), row 9: column 20; row 10: columns 18–20; 3 tiles (the centre), row 5: columns 14–15; row 6: column 14; a 2×1 block at columns 10–11, row 2 (top centre); a 2×1 block at columns 17–18, row 2 (top right); a 2×1 block at columns 6–7, row 5 (middle left); a 1×2 block at column 0, rows 7–8 (middle left); a 2×1 block at columns 11–12, row 10 (the centre); one tile at column 18, row 6 (middle right); one tile at column 20, row 6 (middle right); one tile at column 16, row 9 (middle right); one tile at column 12, row 13 (bottom centre).
-- Open ground everywhere else: grass (165 tiles), bare earth (7 tiles).
+- Stone walls (28 tiles): a 3×3 block at columns 2–4, rows 9–11 (middle left); 4 tiles (middle right), row 9: column 20; row 10: columns 19–21; a 2×1 block at columns 10–11, row 2 (top centre); a 2×1 block at columns 17–18, row 2 (top right); a 2×1 block at columns 1–2, row 5 (middle left); a 2×1 block at columns 6–7, row 5 (middle left); a 1×2 block at column 0, rows 7–8 (middle left); one tile at column 19, row 5 (middle right); one tile at column 18, row 6 (middle right); one tile at column 20, row 6 (middle right); one tile at column 18, row 9 (middle right); one tile at column 12, row 13 (bottom centre).
+- Open ground everywhere else: grass (177 tiles), bare earth (7 tiles).
 - The party enters from the left, standing at (3, 7); enemies come from the right. The exit is at (23, 7). Paint nothing there that would read as an object to walk round.
 
 The rows as the rules read them:
@@ -33,14 +33,14 @@ TTTT,,,,,,,,,,,,,,TTTTTT
 TT,,,,BBBB,,BBBB,,,,,,TT
 T,,,,,BBBBllBBBB,ll,,T,T
 T,,,,,BBBB,,BBBB,,,,,,,T
-T,,,,,,,,=,,=,,,,lllll,T
-TllllTll,=====ll,,,,,,,T
-~~~~~~~~~=~~~=l,,,l,l,,T
+T,,,,,,,,=,,=,,,,,,,,,,T
+Tll,,Tll,=====,,,,,l,,,T
+~~~~~~~~~=~~~=,,,,l,l,,T
 W=====================..
 W=====================..
-T,lll,,,,=====,,l,,,l,,T
-T,lll,BBBB,llBBBBBlll,,T
-T,llllBBBB,,,BBBBB,,,,,T
+T,lll,,,,=====,,,,l,l,,T
+T,lll,BBBB,,,BBBBB,lll,T
+T,lll,BBBB,,,BBBBB,,,,,T
 T,,,,,BBBB,,,BBBB,,,,,,T
 T,,,,,BBBB,,lBBBB,,,,,,T
 TT,,,,,,,,,,,,,,,,,,,,TT

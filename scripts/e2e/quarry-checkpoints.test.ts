@@ -11,12 +11,16 @@ import {
   quarryRouteBoundary,
 } from './quarry-checkpoints';
 
+// Re-pinned for #846: the Forest Road and the quarry gate lost a body each, so the scripted fights play
+// out differently (trade). Re-pinned again for ADR 0118: the scripted party AI now stands a fallen hero
+// up, so the legal transcripts differ. Re-pinned for Ruon's answer to the trade (#789): the trade
+// route plays `ruon_traded`, three more dialogue advances and one more visited node; escort is unchanged.
 const PINS = {
   trade: {
     gate: {
-      save: '71951c7d743bd08e1ab4417c87f9ce3ea5fce6e2c052914e94defc3ef2ce3b43',
-      commands: '2986b8bd2cb798c780d0bdd23a0c9f3384f6a3898ec27c228d1ac97b27416e98',
-      count: 62,
+      save: '365284869b0087c380c3e2951b690baab86c89fc18c95e1a72152290a56ba20f',
+      commands: 'ae9a106d6f5c5f38b8c60e98ba8b6926eaa91d360b1e429f71fb58a1c696daac',
+      count: 67,
       node: 'gate_trade_explore',
       map: 'quarry_gate',
       level: 3,
@@ -24,9 +28,9 @@ const PINS = {
       cleared: ['enc_forest_road'],
     },
     afterDriller: {
-      save: 'd50551c30bd72440b911383a45c09cc2d05590a0a112f638d5fcdc2666708a49',
-      commands: '359fa02033cdb4fe950aa2b02a45b781fa9927e6bcf4a77e4a281ee9817c39b6',
-      count: 148,
+      save: 'e8bc43f0eefa595302dcb88856ec1b3ccd0bab33eec14f215d2a50c95c36696a',
+      commands: 'd2ab33df286f0fea67249b00ab7ed9a2d480e74015b2dbe68aa1698a850f2e23',
+      count: 169,
       node: 'quarry_after_explore',
       map: 'quarry_floor',
       level: 4,
@@ -36,9 +40,9 @@ const PINS = {
   },
   escort: {
     gate: {
-      save: 'd86e46aa535b080b46ee97a6fe015cc11314729a98f7c37d61d023d4477da307',
-      commands: '80f2dc38ba8abea391d05855e3375b02c7a090d429457235fd4ddce689d62b1b',
-      count: 88,
+      save: 'e548d2234da9cdb3f787a9394bf73cc09b0a8b43fbdab9975be1fd5af8536d37',
+      commands: 'a3532850c95dcf0861215d90ec70491513f90f23e83319b04fb3166ed237d84b',
+      count: 99,
       node: 'gate_escort_explore',
       map: 'quarry_gate',
       level: 3,
@@ -46,9 +50,9 @@ const PINS = {
       cleared: ['enc_forest_road'],
     },
     afterDriller: {
-      save: '0735c2591ce375c04e7b2cfcde4ff8322c2a260f8b26de28f87bf89c300cc94e',
-      commands: 'e6725e73fcb6dc7b686e6fcc221d454cdc4439b25843d4af6a1265738ecfdc09',
-      count: 385,
+      save: '32141ec1261ba5c0c184f1212793e32930310ea5f8676ea68c2a1ac962982115',
+      commands: '229324095442c06395baf3b9a7dc6e1573a8914064c24c94ab4a7279f19553eb',
+      count: 400,
       node: 'quarry_after_explore',
       map: 'quarry_floor',
       level: 4,

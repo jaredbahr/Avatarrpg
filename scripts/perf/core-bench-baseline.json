@@ -74,5 +74,12 @@
       "calibrationDriverSha256": "c1edb713399ff59cb5f7b3cc7938a3481cb8ed5dc201f15e8bb1a1562c253889",
       "originalBaselineSha256": "780fe27936856fa5461d79b26ba16cd3fbd673a32e5fb5653911c40d33d4b22a"
     }
+  ],
+  "harnessRevisions": [
+    {
+      "source": "c1df7417c87b583cb1a4f92e10c6acb5f05521ff",
+      "calibrationHarnessSha256": "fdd85f0fe80c3ba5d2a0a9d2b298a54f6dc9acaf0846ab3326c23c051c76e5b8",
+      "reason": "tied largest boards benchmark one map; no new measurement"
+    }
   ]
 }

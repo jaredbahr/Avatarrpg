@@ -18,7 +18,7 @@ import {
 import { loadLastTitleArt, saveLastTitleArt } from '../storage/localSaves';
 
 /** How long the title sits on one painting before fading to the next. */
-export const TITLE_ART_HOLD_MS = 12000;
+const TITLE_ART_HOLD_MS = 12000;
 const FADE_FALLBACK_MS = 1500;
 
 export interface TitleArtOptions {

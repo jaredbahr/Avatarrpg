@@ -159,3 +159,27 @@ describe('walking the village', () => {
     );
   });
 });
+
+describe('who is in charge (#846)', () => {
+  it('passes to the next person when the party walks to another explore map', () => {
+    const state = inVillage();
+    const exit = CONTENT.maps.get('ba_dan_village')?.exit;
+    if (!exit) throw new Error('Missing village exit');
+    const before = state.story.deciderIndex;
+    const { state: after, events } = apply(CONTENT, state, { type: 'walkTo', pos: exit.pos });
+    expect(after.location.mapId).toBe('forest_road');
+    expect(after.story.deciderIndex).toBe(before + 1);
+    expect(events.filter((e) => e.type === 'leaderPassed')).toEqual([
+      { type: 'leaderPassed', deciderIndex: before + 1 },
+    ]);
+  });
+
+  it('stays put for a walk that does not leave the map', () => {
+    const state = inVillage();
+    const start = state.location.pos;
+    const target = { x: start.x + 1, y: start.y };
+    const { state: after, events } = apply(CONTENT, state, { type: 'walkTo', pos: target });
+    expect(after.story.deciderIndex).toBe(state.story.deciderIndex);
+    expect(events.some((e) => e.type === 'leaderPassed')).toBe(false);
+  });
+});

@@ -79,7 +79,7 @@ function isDousingDamage(type: DamageType): type is DousingType {
 }
 
 /** A contact status described without choosing a chance branch. */
-export interface SurfaceContactStatusRecord {
+interface SurfaceContactStatusRecord {
   readonly requestedStatus: StatusId;
   readonly appliedStatus: StatusId | null;
   readonly chance: number;
@@ -105,6 +105,8 @@ export class BattleDraft {
   temporaryWalls: TemporaryWall[];
   props: PropInstance[];
   nextUnitSerial: number;
+  /** Units already helped up this fight (ADR 0118); each gets one stand-up. */
+  helpedUp: string[];
   readonly encounterId: string;
   readonly variantId: string | null;
   readonly mapId: string;
@@ -148,6 +150,7 @@ export class BattleDraft {
     this.temporaryWalls = [...battle.temporaryWalls];
     this.props = [...battle.props];
     this.nextUnitSerial = battle.nextUnitSerial;
+    this.helpedUp = [...(battle.helpedUp ?? [])];
     this.encounterId = battle.encounterId;
     this.variantId = battle.variantId;
     this.mapId = battle.mapId;
@@ -171,6 +174,9 @@ export class BattleDraft {
       props: this.props,
       nextUnitSerial: this.nextUnitSerial,
       openingRng: this.openingRng,
+      // Only once somebody has been helped, so a fight where no one fell, and an
+      // older save, round-trip without a key they never had.
+      ...(this.helpedUp.length > 0 ? { helpedUp: this.helpedUp } : {}),
     };
   }
 
@@ -274,6 +280,29 @@ export class BattleDraft {
     });
 
     if (hp <= 0) this.emit({ type: 'unitDied', unitId });
+  }
+
+  /**
+   * Stands a downed unit back up (ADR 0118): `hp` health, no AP this turn and no
+   * statuses, so a Burning hero is not felled again the moment they rise. Their
+   * place in the turn order never left, so they act when it next comes round.
+   * Each unit can be helped once a fight; the draft remembers it.
+   */
+  revive(unitId: string, hp: number, helperId: string): void {
+    const unit = this.unit(unitId);
+    if (!unit || isAlive(unit) || hp <= 0) return;
+    const risen = clampHp(hp, unit.base.maxHp);
+    this.replace({
+      ...unit,
+      hp: risen,
+      ap: 0,
+      move: 0,
+      bankedAp: 0,
+      pendingAp: 0,
+      statuses: [],
+    });
+    if (!this.helpedUp.includes(unitId)) this.helpedUp.push(unitId);
+    this.emit({ type: 'unitRevived', unitId, helperId, hp: risen });
   }
 
   heal(unitId: string, amount: number): void {
