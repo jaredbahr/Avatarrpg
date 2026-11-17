@@ -172,7 +172,7 @@ const DRESSING: readonly TopDownObject[] = [
   put('south-stall', 'stall', 'prop', 160, 394, cells([3, 9], [4, 9])),
   // Under the south-east house's roof: a lamp there stood on the roof line.
   put('lamp-east', 'lamp', 'prop', 820, 394, cells([20, 9])),
-  // The wayside shrine at the east gate, facing the quarry road the missing went up (moved from the
+  // The wayside shrine at the east gate, beside the quarry road the missing went up (moved from the
   // canal's end, where it crowded Mira's table out of the square's one focal place).
   put('shrine', 'shrine', 'prop', 740, 394, cells([18, 9])),
   // Rows 10-11: the garden plot, the planter between the south houses, the pole and the trough.

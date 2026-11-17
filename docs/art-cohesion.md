@@ -60,7 +60,7 @@ against its side wall; the household's beds, pots and harvest crate by its stall
 
 **Mira's table.** It is where the story keeps returning, so it is where the eye should land first: a table and the
 crews' bench on a floor of their own (worn flagstones), with Mira and Pella standing at it. The gate has its own focus
-one screen east (the wayside shrine, facing the road the missing went up), and the well court one screen south (the
+one screen east (the wayside shrine, beside the road the missing went up), and the well court one screen south (the
 well and its wet stones).
 
 ### The plan

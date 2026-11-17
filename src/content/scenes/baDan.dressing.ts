@@ -68,7 +68,7 @@ const SET_PIECES: readonly SetPiece[] = [
   {
     id: 'wayside-shrine',
     purpose:
-      'A wayside shrine at the gate, facing the road the missing went up: people stop at it on the way out and on the way home.',
+      'A wayside shrine at the gate, beside the road the missing went up: people stop at it on the way out and on the way home.',
     anchor: 'shrine',
     satellites: [],
     focal: true,
