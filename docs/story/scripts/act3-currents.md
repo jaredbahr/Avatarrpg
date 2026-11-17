@@ -149,13 +149,19 @@ hurrying. Everyone else on the platform follows her.
 - **Yard hand:** "Mind the crates! That's a week's picking!"
 
 > **If Bo is in the party —**
-> **Bo:** Crates first, then the points. Which end do you two want?
+> **Bo:** Crates first, then the points. You two, pick an end of that handcart.
 >
-> **Narrator:** They take the far end. Bo takes the one that is left.
+> **Narrator:** The yard hands pick the light end. Bo had already started for the other one.
 
 > **If Riko is in the party —**
 > **Riko:** I'll take the brake wheel. Somebody watch the grade above it. If a second one's coming I want to
 > hear about it before I see it.
+
+> **If Kaya is in the party —**
+> **Narrator:** Kaya is already on the wagon. She got on while the conductor was still explaining where the
+> brake was.
+>
+> **Kaya:** Found the stove! ...That's not the brake. Where's the brake?
 
 **After a win:**
 
@@ -220,8 +226,10 @@ stops, nothing ever breaks and nobody ever gets on. Then they wrote that number 
 **Narrator:** His eyebrows come down. He says it to the table, not to anyone.
 
 **Hesh:** The guild ran this line for sixty years. To get a card you needed two members to speak for you. They
-spoke for their sons. I spoke for mine. There were people in this yard who could bend a rail true by eye and
-never got a card, because nobody's father knew their father.
+spoke for their sons. I spoke for mine.
+
+**Hesh:** There were people in this yard who could bend a rail true by eye and never got a card, because nobody's
+father knew their father.
 
 **Hesh:** Commonworks threw that rule out in a week. I hated them for it. It was the right thing to throw out.
 
@@ -283,7 +291,10 @@ hours of stone a day and it'll shout.
 
 **Yard foreman:** Two. The council writes the stop back into the contract and pays for it. Commonworks runs
 it, to the timetable, with a crew inspector the company doesn't choose. It'll be there every Thursday, rain or
-not. But the Halt won't have a say in it past signing, and if the council's short next year, we're back here.
+not.
+
+**Yard foreman:** But the Halt won't have a say in it past signing, and if the council's short next year, we're
+back here.
 
 **Grandmother Ansa:** I don't care who drives it. I care if it comes. But I'd like to be asked next time,
 before I'm a category.
@@ -523,8 +534,8 @@ width in my lifetime. A whole hand. You should have seen it before. Gritty. No b
 brick. The new brick hums.
 
 **Auntie Silt:** It was a good neighbour. Before. It let things go by. Now it holds on to every ripple like a
-child with a pocket full of frogs. I've told it. Mud knows. You can keep a thing or you can keep it alive.
-You'll want to write that down.
+child with a pocket full of frogs. I've told it what you get when you keep a frog in a pocket. You don't get
+a frog.
 
 **Latch:** She says that about everything.
 
@@ -853,8 +864,8 @@ flag. Three ways to bring the passengers off.)
 - **Carter (from the car):** "We can't hear you! We can hear the goose!"
 
 > **If Nima is in the party —**
-> **Nima:** I could just bring the wind down flat for a minute. I could. But then I'm the only one who knows
-> how it was done. Give me a rope. I'll be on the rope like everyone else, and I'll call the gusts.
+> **Nima:** I can flatten one gust. Not the one after it, and I'd never know which one I'd missed. Give me a
+> rope. I'll be on it like everyone else, and I'll call them as they come. That I can do all day.
 
 > **If Jinu is in the party —**
 > **Jinu:** The warden on the left has his slip in his top pocket. I can see the corner. "Empty." I'm going
@@ -867,6 +878,12 @@ shoes. The line wardens have put down their spanners and are looking at their sl
 
 **Line warden:** It said empty. I'd have dropped seven people in a valley on a piece of paper. Who writes
 these?
+
+> **If Nilak is in the party —** (after a win, or in the wind shelter after CARRY ON)
+> **Nilak:** Everyone who came off that car, sit where I can see you. I'm going to ask each of you the same
+> three questions. They're dull. Answer them anyway.
+>
+> **Narrator:** The smallest one answers all three before he has finished asking the first.
 
 **CARRY ON (the encounter is lost):**
 
@@ -1111,7 +1128,7 @@ Grumbler's sums.
 > > 1. No more notes have come down. One note is not very many.
 > > 2. Aunt Nala's knee is bad. She carries the water now. I do Wednesdays. Bo-shan used to do all of it. I'm
 > >    telling you so somebody knows.
-> > 3. Hanru says you have been to see a train, or a marsh, or a mountain. I asked if he was on it, or in it,
+> > 3. Hanru says you have been to see a train, or a marsh, or a mountain. I asked if Bo-shan was on it, or in it,
 > >    or up it. Hanru said no.
 > > 4. You are all very busy over there.
 > > 5. I have stopped asking Mira when. She gets a look.
@@ -1213,9 +1230,11 @@ another, and squares the corners.
 **Narrator:** The three marks make a line. It runs from a spring under the heights, down past the culvert at
 Pear Halt, through the Slow Channel, to the sea.
 
-**Edda:** That's an old water road. It moves with the season. Where it runs under the rail, they closed the
-culvert, and a stop that needed the culvert stopped being a stop. Where it runs through the marsh, they shut
-it with vanes. Where it starts, they hold the pressure, and the wind comes off it wrong.
+**Edda:** That's an old water road. It moves with the season.
+
+**Edda:** Where it runs under the rail, they closed the culvert, and a stop that needed the culvert stopped being
+a stop. Where it runs through the marsh, they shut it with vanes. Where it starts, they hold the pressure, and
+the wind comes off it wrong.
 
 **Edda:** It isn't three problems. Somebody drew one line through a map with a ruler, and everything that
 wasn't straight came off.
@@ -1307,9 +1326,9 @@ month."
 
 **Narrator:** The second page is typed. Two words have been corrected in ink, neatly, in a hurry.
 
-**The reply:** "Postponement declined. Six weeks becomes six months, and six months becomes the old way. If
-the readings are steady we do not need to know this month why they are steady. We commission on the spring
-tide. V. Sen. Dated the ninth day of the first month."
+**The reply:** "Postponement declined. Six weeks becomes six months, and six months becomes the old way. The
+readings are steady. We will find out why they are steady after the spring tide, with the low landing dry. We
+commission on the tide. V. Sen. Dated the ninth day of the first month."
 
 **Narrator:** Five days. She had it for five days, and then she wrote that.
 
@@ -1326,8 +1345,8 @@ Staff holding copies are to be reassigned. O. Rusk."
 > made-out document. I have never been so sorry to see one.
 
 > **If Wen is in the party —**
-> **Wen:** "We do not need to know why." You always need to know why. That's the first thing. That's on the
-> wall of every shop I ever worked in.
+> **Wen:** "After." You find out why first. That's on the wall of every shop I ever worked in. In most of them
+> it's the only thing on the wall.
 >
 > **Narrator:** She puts the page down very gently, as if it were hot.
 
@@ -1422,7 +1441,9 @@ someone else. Rusk's collection order is only in hand if `jin_archive_passed`._
 districts go dark for a day or two. People will be frightened and they'll be right.
 
 **Edda:** If it isn't read out tomorrow, he has time. He'll move staff, lock rooms, and say the page is
-forged. But we could use those days. Get every crew a paper saying they can't be sacked for stopping work
+forged.
+
+**Edda:** But we could use those days. Get every crew a paper saying they can't be sacked for stopping work
 that's unsafe. Get the low landing an evacuation plan with a boat in it.
 
 **Yenna:** I was told for a month that my mother's stop was being "looked at". I don't like "first we
@@ -1632,16 +1653,16 @@ C.1, after the first spoke, with a loss-branch version. It arrives with Grumbler
 
 | Hero    | Where                                                                                |
 | ------- | ------------------------------------------------------------------------------------ |
-| Kaya    | None scripted in the main line here; her PQ-01 runs at Saltstep (see Open, item 12)  |
+| Kaya    | 6.3 on the wagon before the brake is found; her PQ-01 runs at Saltstep               |
 | Tenzo   | C.1, DLG-02 and his grandmother                                                      |
-| Nilak   | 7.2 the fever tally                                                                  |
+| Nilak   | 7.2 the fever tally; 8.1 three dull questions                                        |
 | Sura    | 7.2 Vessa (PQ-04 opens); 7.5 at the pool's edge                                      |
 | Bo      | 6.3 the end that is left; 6.4 Renn (PQ-05 opens)                                     |
 | Lin Mei | 6.4 the chess table; 7.2 Fenn's notice (PQ-06 opens); 9.1 her survey under all three |
 | Nima    | 8.1 on the rope like everyone else; 8.2 Sena (PQ-07 opens, with the bible's line)    |
 | Jinu    | 8.1 the warden's slip; 8.2 the mail shelter (PQ-08 opens); 9.5 folding in three      |
 | Riko    | 6.3 the brake wheel; 6.4 Seli (PQ-09 opens); 9.3 "Both of those are her"             |
-| Wen     | 7.5 the gauge; 9.1 her regulator; 9.3 "you always need to know why"; C.1 the stove   |
+| Wen     | 7.5 the gauge; 9.1 her regulator; 9.3 "you find out why first"; C.1 the stove        |
 
 ## Decided (owner, 2026-11-15)
 

@@ -71,6 +71,10 @@ where you said you'd go.
 **Latch:** I will be on the edge. If something is dropped tonight, I will know whose it is. I have been
 practising.
 
+> **If Lin Mei is in the party —** _Narrator:_ On the shed door, Lin Mei's map has a second hand all down its
+> margin now. Tanner's Stair is drawn one pace wide, with a pump housing in it. Runners are reading their
+> streets off it and going.
+
 ### Scene 13.2 — The low landing
 
 #### Full (if `first_front` is the low landing)
@@ -86,6 +90,14 @@ file, carrying children, clocks, a cat in a pillowcase.
 stop, because checking's making them worse.
 
 **Dr. Iset:** Anyone cold and quiet comes to me first. The loud ones are fine. The loud ones are always fine.
+
+> **If Nilak is in the party —**
+> **Dr. Iset:** Nilak. Cold and quiet, second boat.
+>
+> **Nilak:** Going.
+>
+> **Narrator:** Some time after midnight she looks at him across a row of blankets. He sits down on an
+> upturned crate and shuts his eyes for a count of one hundred, and gets up again at ninety.
 
 **Narrator:** Along the landing wall, a line of people is setting stone and timber braces by lamplight. A
 woman is walking the line with a chalk.
@@ -386,7 +398,7 @@ first time you have seen her without a desk.
 **Jin:** Your warning has to reach every landing downstream before the surge does. You have flags, a deaf
 carpenter, a bell tuner, and four children in boats. It's a good system. It's slow.
 
-**Jin:** I have forty freight riders who know every back stair on this river, because I've delivered to
+**Jin:** I have thirty freight riders who know every back stair on this river, because I've delivered to
 every one of them. They can have it done in two hours.
 
 **Jin:** Terms. One. A written guarantee, signed by a name off that courtyard gate, that I leave the Reach on
@@ -487,6 +499,10 @@ moves. He does not gloat.)
 - **Sergeant:** "Sir, the residents aren't dispersing." **Rusk:** "No. They have nowhere indoors to go. I do
   know that."
 - **Still Keeper (once):** "That one wants it shut. I wanted it shut. I know that wanting."
+
+> **If Riko is in the party and the sergeant's objective is open —**
+> **Riko:** Sergeant. Nobody's asking you to hit him. Take your hand off the wheel and walk to the rail.
+> That's all of it.
 
 **How it ends (one of three):**
 
@@ -640,6 +656,13 @@ the door barred behind them.
 
 > **If Riko is in the party —**
 > **Riko:** Nine at the desk. I only need them to sit down. Nobody here has to stay down.
+
+> **If Kaya is in the party —**
+> **Kaya:** Gate two, on three! ...Whose three? Mine or hers?
+>
+> **Veyra (from above):** MINE!
+>
+> **Kaya:** Hers. On hers. I'm waiting. Look at me waiting.
 
 **After phase 1 (win):**
 
@@ -892,6 +915,9 @@ that kind of animal.
 **Narrator:** First light comes through the green door. There are wet people sitting on every bench in the
 locker room. Someone has found the tea tap. The tin cup is going round.
 
+> **If Tenzo is in the party —** _Narrator:_ Tenzo has found half an onion in an open lunch tin. He has asked
+> the whole room whose it is. Nobody is sure. He is holding the knife and waiting to be told.
+
 **Bera:** It's safe till the next tide. That's twelve hours. Somebody has to say what it is after that, and
 I'd sooner it was said now, with everyone too tired to make speeches.
 
@@ -899,8 +925,10 @@ I'd sooner it was said now, with everyone too tired to make speeches.
 none of them is wrong.
 
 **Neri:** One network, turned down. Everything stays joined. It runs at about six parts in ten. Every
-district has a stop wheel and somebody trained to use it. The records are on the wall. The old water road
-stays open and somebody keeps it. It only works if people turn up, every week, for good.
+district has a stop wheel and somebody trained to use it. The records are on the wall.
+
+**Neri:** The old water road stays open and somebody keeps it. It only works if people turn up, every week, for
+good.
 
 **Fenn:** One network, at full, for one winter. The people who know it run it. The stop key stays outside
 the Works, the records stay public, and there's a date on the gate when it all gets decided again. Lights
@@ -1016,7 +1044,7 @@ they are asked.
 
 - **`jin_guarantee_signed`:** _Narrator:_ Jin left on the first ferry after the tide, with one trunk. Her
   riders reached every landing that was written on her list. A hamlet below the Low Bell that nobody thought
-  to write got its warning from Nel's flag instead, forty minutes later. Jin's guarantee is pinned to the
+  to write got its warning from Nel's flag instead, half an hour later. Jin's guarantee is pinned to the
   wall with everything else. It was kept, to the letter, by both sides.
 - **`jin_guarantee_refused`:** _Narrator:_ Jin is called. She comes, with her tin box, and answers exactly
   what she is asked and nothing beside it. When the clerk reaches the end of his questions she asks if she is
@@ -1123,7 +1151,7 @@ are flown.
 
 - _All fronts held:_ In the tram shed, the cots have been stacked. Somebody has chalked on the door: "Not
   needed. Keep anyway."
-- _One front lost, or `final_carried_on`:_ In the tram shed, forty cots are still made up. The date on the
+- _One front lost, or `final_carried_on`:_ In the tram shed, sixty cots are still made up. The date on the
   gate is the date they are promised houses by.
 - _Two or more lost:_ The tram shed is still full. The date on the gate matters most in here. A child has
   copied it onto the wall above her cot, with the wrong number of days, and nobody has corrected her.
@@ -1485,18 +1513,18 @@ lamp (MQ-15).
 
 ## Hero moments in this act
 
-| Hero    | Where                                                                 |
-| ------- | --------------------------------------------------------------------- |
-| Kaya    | 13.3 Luli's first lesson; 15.4 Thursday                               |
-| Tenzo   | 13.3 Luli's first lesson; 15.4 the long table                         |
-| Nilak   | 15.4 handing over a shift                                             |
-| Sura    | 13.2 the gap; 13.4 the banks; 14.3 counting ten; 14.4 her DLG-10 line |
-| Bo      | 13.2 not counting; 13.3 Renn's count; 15.4 the far jack               |
-| Lin Mei | 13.4 the school path; 15.4 the margin                                 |
-| Nima    | 14.4 his DLG-10 line; 15.4 the quiet watch                            |
-| Jinu    | 14.3 Pella's third letter; 15.4 the half-door                         |
-| Riko    | 14.2 "nobody has to stay down"; 15.4 eight people on a platform       |
-| Wen     | 14.2 her regulator on gate two; 15.4 Min's lever                      |
+| Hero    | Where                                                                       |
+| ------- | --------------------------------------------------------------------------- |
+| Kaya    | 13.3 Luli's first lesson; 14.2 waiting for the count; 15.4 Thursday         |
+| Tenzo   | 13.3 Luli's first lesson; 14.7 the onion; 15.4 the long table               |
+| Nilak   | 13.2 a count of one hundred; 15.4 handing over a shift                      |
+| Sura    | 13.2 the gap; 13.4 the banks; 14.3 counting ten; 14.4 her DLG-10 line       |
+| Bo      | 13.2 not counting; 13.3 Renn's count; 15.4 the far jack                     |
+| Lin Mei | 13.1 the map on the shed door; 13.4 the school path; 15.4 the margin        |
+| Nima    | 14.4 his DLG-10 line; 15.4 the quiet watch                                  |
+| Jinu    | 14.3 Pella's third letter; 15.4 the half-door                               |
+| Riko    | 13.6 the sergeant's hand; 14.2 "nobody has to stay down"; 15.4 eight people |
+| Wen     | 14.2 her regulator on gate two; 15.4 Min's lever                            |
 
 ## Decided (owner, 2026-11-15)
 

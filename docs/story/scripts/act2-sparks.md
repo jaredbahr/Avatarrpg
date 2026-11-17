@@ -620,6 +620,13 @@ went to Saltstep's low end this week. The tally is long.
 **Supply clerk:** Take a look. It's all real. People think because it comes off a company boat there must be a
 trick in it. There isn't a trick in soap.
 
+> **If Nilak is in the party —**
+> **Nilak:** Fever bark cut to one length, and kept off the floor. Whoever stocks this has nursed.
+>
+> **Supply clerk:** Eleven years on a ward. Then my knees went.
+>
+> **Nilak:** Then I'll stop inspecting your shelves.
+
 ### Scene 3.2 — The count is wrong
 
 **Shown:** played.
@@ -820,8 +827,10 @@ stopped filling it in.
 **Tavi:** I can take eleven tonight. No tokens. I'll say the ferry was light and I wanted ballast.
 
 **Tavi:** Or. The lantern keeper and I sit in that dispatch room at dawn with the Compact's seal. Every one of
-them walks onto the morning ferry with their name written down and why they were held. Slower. One more
-night in here. But then it's on paper that it happened, and paper's what a council reads.
+them walks onto the morning ferry with their name written down and why they were held.
+
+**Tavi:** It's slower. One more night in here. But then it's on paper that it happened, and paper's what a
+council reads.
 
 **Kesi's brother:** One more night's nothing. We've done thirty. But ask us, don't tell us.
 
@@ -1012,13 +1021,19 @@ shut.
 
 **Old bather:** Sixty-eight years I've washed in a bucket. Don't talk to me. I'm busy.
 
+> **If Nima is in the party —**
+> **Nima:** Four flights, every time? Lend me that rope. And the laundry basket. And ten minutes.
+>
+> **Narrator:** It takes him longer to rig the basket on the stair rail than it would have taken to carry the
+> towels. The second load goes down in one go. The attendant keeps the rope.
+
 **Task two — the lift.**
 
 **Narrator:** A small goods lift runs between the water stairs and the market. It has a handwheel on a post,
 low down. A girl of about eight has both hands on it. A supervisor stands close, with her arms folded so they
 will not help.
 
-**Supervisor:** Slow. Slower. There. You've got forty pounds of turnips coming up, and you're doing it.
+**Supervisor:** Slow. Slower. There. You've got thirty pounds of turnips coming up, and you're doing it.
 
 **Girl:** I know I'm doing it.
 
@@ -1137,7 +1152,11 @@ counterweight; move the crowd back from the canal edge.
 - **A gate fitter (Bera), from the bank:** "The seal! It's the lower seal, it's swelled, I told them!"
 
 > **If Kaya is in the party —** (on entering the water)
-> **Kaya:** I'm going in. Who's on the chain with me? You, with the grease on your arms? Good. Count me in.
+> **Kaya:** I've got the chain! I've got it! ...Which way does it unhook?
+>
+> **Gate crew:** Toward you!
+>
+> **Kaya:** Toward me. That's what I thought.
 
 > **If Bo is in the party —**
 > **Bo:** Crowd first. Twenty back from the edge, then twenty more. You, in the red, you're counting for me.
@@ -1485,8 +1504,10 @@ wall.
 > **Yenna:** Pear Halt was stop fourteen. It's painted on my lamp.
 >
 > **Driver (Dorin):** Then crates that went through that quarry went on to three places that are not on this
-> wall. Bo-shan's cart was at the quarry when they did. I would like to see where. I am going to write it in
-> the watch book, with the date, so he can read where his cart was sent without him.
+> wall. Bo-shan's cart was at the quarry when they did. I would like to see where.
+>
+> **Driver (Dorin):** I am going to write it in the watch book, with the date, so he can read where his cart was
+> sent without him.
 
 > **If Lin Mei is in the party —**
 > **Narrator:** Lin Mei has turned the painted map's corner over. On the back, in pencil, is the survey it was
@@ -1816,13 +1837,13 @@ Scene 5.6, with a loss-branch version addressed to Dorin.
 
 | Hero    | Where                                                                           |
 | ------- | ------------------------------------------------------------------------------- |
-| Kaya    | 2.2 Miri's crates (PQ-01 planted; opens at Saltstep after MQ-03); 4.3 the canal |
+| Kaya    | 2.2 Miri's crates (PQ-01 planted; opens at Saltstep after MQ-03); 4.3 the chain |
 | Tenzo   | 2.2 the bowl-seller; 4.1 Dema (PQ-02 opens); 5.6 the second sauce               |
-| Nilak   | 5.5 Aru's table (PQ-03 opens, with the bible's line)                            |
+| Nilak   | 3.1 the supply room; 5.5 Aru's table (PQ-03 opens, with the bible's line)       |
 | Sura    | 2.4, 3.3, 5.6: she is the one counting the echoes                               |
 | Bo      | 4.3 moving the crowd                                                            |
 | Lin Mei | 3.5 the careful order; 5.3 her own phrase on the back of the map                |
-| Nima    | 4.1 Oru's offer                                                                 |
+| Nima    | 4.1 the towel basket; 4.1 Oru's offer                                           |
 | Jinu    | 2.1 the courier-office copy (loss branch); 5.6 she carries Pella's letter       |
 | Riko    | 2.6 the packet and the stamp; 3.5 "suspended"; 4.5 "Who gets the key?" (DLG-04) |
 | Wen     | 2.4 the pump; 3.1 her regulator (PQ-10 opens); 4.2 "napkins"                    |
