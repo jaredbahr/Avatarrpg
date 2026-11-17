@@ -71,7 +71,8 @@ export const BA_DAN_COURTYARD_FOOTPRINTS: readonly Vec2[] = BA_DAN_COURTYARD_PRO
  * bank edges; the main road rows, the paved square and the bridge approach stay open.
  *
  * The square was designed before it was dressed (`docs/art-cohesion.md`, the cohesion pilot,
- * 2026-11-17): every piece answers what it is for. The crews' bench stands behind Mira's table,
+ * 2026-11-17): every piece answers what it is for. The crews' bench stands behind Mira's table
+ * (a seat, like the table, so it closes no cell: the party gathers round it),
  * the wayside shrine moved from the canal's end to the east gate, where people leave on the
  * quarry road, and the pieces that answered nothing (the north and south planters, the second
  * market display, the south banner, a lone lamp and crate, the stone lantern) went.
@@ -87,7 +88,6 @@ export const BA_DAN_DRESSING = [
   ['notice-board', 18, 6],
   ['handcart', 19, 5],
   ['haystack', 21, 10],
-  ['bench-2x1', 11, 4],
   ['fence-2x1', 1, 5],
   ['garden-plot-3x2', 2, 10],
   ['wayside-shrine', 18, 9],

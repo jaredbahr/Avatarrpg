@@ -161,7 +161,8 @@ const DRESSING: readonly TopDownObject[] = [
   put('mira-table', 'mira_table', 'prop', 420, 220, cells([10, 5]), { solid: false }),
   // The bench the crews built from offcuts, behind her table (the cohesion pilot: it stood alone
   // on the west bank, three cells from anything it served).
-  put('crew-bench', 'bench', 'prop', 480, 194, cells([11, 4], [12, 4])),
+  // A seat, like the table: it never stops feet, so the party can gather round the table.
+  put('crew-bench', 'bench', 'prop', 480, 194, cells([11, 4], [12, 4]), { solid: false }),
   // Row 6: the shrine at the dry crossing, the watch post's notice board and lamp.
   put('notice-board', 'notice_board', 'prop', 740, 274, cells([18, 6])),
   put('lamp-post', 'lamp', 'prop', 820, 274, cells([20, 6])),
