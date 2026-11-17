@@ -650,3 +650,50 @@ describe('a follower joining and leaving the line (#696)', () => {
     expect(last && follower && distance(last, follower)).toBe(1);
   });
 });
+
+describe('a large party settling between commands (#846)', () => {
+  const field = buildGrid({
+    ...BA_DAN_VILLAGE,
+    width: 24,
+    height: 24,
+    rows: Array.from({ length: 24 }, () => ','.repeat(24)),
+    npcs: [],
+  });
+  const steps: [number, number][] = [
+    [1, 0],
+    [1, 0],
+    [0, 1],
+    [-1, 0],
+    [2, 0],
+    [0, -2],
+    [0, 1],
+    [-1, 0],
+    [0, 1],
+    [1, 0],
+  ];
+
+  for (const size of [3, 4, 5, 6]) {
+    it(`a party of ${size} never walks a follower across the party to reseat after a short move`, () => {
+      const trail = new PartyTrail(placeParty(field, { x: 12, y: 12 }, size));
+      trail.settle(field, [], { beside: true });
+      let head = { x: 12, y: 12 };
+      for (const [dx, dy] of steps) {
+        const dest = { x: head.x + dx, y: head.y + dy };
+        const route = findPath(
+          { grid: field, blocked: new Set(), surfaces: new Map(), size: 1 },
+          head,
+          dest,
+          600,
+        );
+        expect(route).toBeDefined();
+        const plan = trail.planWalk(route?.path ?? [], size, field, []);
+        expect(plan).not.toBeNull();
+        head = dest;
+        const reseat = trail.settle(field, [], { beside: true });
+        // A short command moves the leader a tile or two; nobody reseats further than that.
+        for (const r of reseat) expect(r.path.length).toBeLessThanOrEqual(2);
+        for (const p of trail.positions(size)) expect(distance(p, head)).toBeLessThanOrEqual(3);
+      }
+    });
+  }
+});
