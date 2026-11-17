@@ -78,22 +78,22 @@ export function connectAct1(map: MapDef): MapDef {
         ],
         exits: [
           route(
-            { x: 23, y: 7 },
+            { x: 31, y: 9 },
             'forest_road',
             { x: 1, y: 4 },
             'East road → Forest Road',
             'east',
-            mouth(23, [7, 8]),
+            mouth(31, [9, 10]),
           ),
           route(
-            { x: 19, y: 15 },
+            { x: 18, y: 19 },
             'ba_dan_riverside',
             { x: 10, y: 19 },
             'River path → Riverside',
             'south',
-            // The path's mouth on the rim, between the canal's end and the
-            // small trees on both shoulders: the walkable border cells are the exit.
-            [18, 19, 20].map((x) => ({ x, y: 15 })),
+            // The path's mouth on the south rim, between the trees on both shoulders: the walkable
+            // border cells are the exit.
+            [18, 19].map((x) => ({ x, y: 19 })),
           ),
         ],
         /*
@@ -110,7 +110,7 @@ export function connectAct1(map: MapDef): MapDef {
           {
             id: 'coast_road_sign',
             name: 'Coast road',
-            pos: { x: 16, y: 15 },
+            pos: { x: 13, y: 18 },
             sprite: 'world.route_sign',
             interaction: 'route-sign',
             when: ACT1_OVER,
@@ -136,8 +136,8 @@ export function connectAct1(map: MapDef): MapDef {
         triggers: [
           crossing(
             map,
-            20,
-            7,
+            28,
+            9,
             'welcome_home_mira',
             'Ba Dan comes out to meet you',
             'npc.household',
@@ -169,7 +169,7 @@ export function connectAct1(map: MapDef): MapDef {
             { x: 10, y: 20 },
             'ba_dan_village',
             // One step inside the village's river-path mouth, never on it.
-            { x: 19, y: 14 },
+            { x: 18, y: 18 },
             'South path → Ba Dan Village',
             'south',
             // The south path from row 20 to the rim: it leaves with no tile to miss.
@@ -208,7 +208,7 @@ export function connectAct1(map: MapDef): MapDef {
           route(
             { x: 0, y: 4 },
             'ba_dan_village',
-            { x: 22, y: 7 },
+            { x: 30, y: 9 },
             'West → Ba Dan Village',
             'west',
             // Preserve the road's five-cell mouth; these walkable rim cells are
