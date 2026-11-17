@@ -293,6 +293,11 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   budget gets an ADR in `docs/adr/`. The phase plan is `docs/roadmap.md`; art
   is generated against `docs/art-bible.md`; a new device is checked against
   `docs/device-matrix.md`.
+- **Size budgets scale as needed without the owner's OK** (owner, 2026-11-17: "Budget for size don't need my
+  okay. Scale as needed."). When a JS, art, audio or precache budget blocks real work, raise it in the same PR or a
+  small one of its own, with an ADR amendment saying the new number and why, and move on. Prefer a sensible step
+  with headroom over raising it a few KB at a time. Credit budgets (PixelLab, Suno) are not size budgets and still
+  go to the owner.
 - Backends: board-correctness parity is mandatory, fidelity parity is not
   (`src/render/backends/backend.ts`). Draw anything the rules care about on
   both backends; particles and shader effects are WebGL-only by design, with one

@@ -147,17 +147,17 @@ what the core ships and one per region. **For the demo's one region every cap ad
 total**, so nothing grows today; each new region then brings its own caps
 instead of a raise. Measured on this branch:
 
-| Gate                 | Before (rule, number)                      | Now (rule, number)                                            | Demo now             |
-| -------------------- | ------------------------------------------ | ------------------------------------------------------------- | -------------------- |
-| JS per session       | all shipped JS ≤ 410 KB gz                 | boot JS + the largest region chunk ≤ **410 KB gz**            | 362.8 + 21.9 = 384.7 |
-| JS per region        | (none)                                     | each region chunk ≤ **40 KB gz**                              | 21.9                 |
-| Top-down art, shared | `topdown` family (boards included) ≤ 6 MiB | `topdown` family without region boards ≤ **4.5 MiB**          | 3.27 MB              |
-| Top-down art, region | (in the family)                            | each region's boards (its scenes' folders) ≤ **1.5 MiB**      | 1.39 MB              |
-| Audio, sound effects | `audio` family (all sound) ≤ 4 MiB         | sound effects ≤ **0.5 MiB**                                   | 0.16 MB              |
-| Audio, shared music  | (in the family)                            | music no region plays (the title) ≤ **0.75 MiB**              | 0.53 MB              |
-| Audio, region music  | (in the family)                            | each region's area music ≤ **2.75 MiB**                       | 2.66 MB              |
-| Precache             | ≤ 25 MB                                    | unchanged, ≤ **25 MB** (core plus every precached region, §3) | 10.43 MB             |
-| Other art families   | 4 MiB each; units 8.5; maps 6              | unchanged                                                     | unchanged            |
+| Gate                 | Before (rule, number)                      | Now (rule, number)                                                                      | Demo now             |
+| -------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------- | -------------------- |
+| JS per session       | all shipped JS ≤ 410 KB gz                 | boot JS + the largest region chunk ≤ **450 KB gz** (410 until the 2026-11-17 amendment) | 362.8 + 21.9 = 384.7 |
+| JS per region        | (none)                                     | each region chunk ≤ **40 KB gz**                                                        | 21.9                 |
+| Top-down art, shared | `topdown` family (boards included) ≤ 6 MiB | `topdown` family without region boards ≤ **4.5 MiB**                                    | 3.27 MB              |
+| Top-down art, region | (in the family)                            | each region's boards (its scenes' folders) ≤ **1.5 MiB**                                | 1.39 MB              |
+| Audio, sound effects | `audio` family (all sound) ≤ 4 MiB         | sound effects ≤ **0.5 MiB**                                                             | 0.16 MB              |
+| Audio, shared music  | (in the family)                            | music no region plays (the title) ≤ **0.75 MiB**                                        | 0.53 MB              |
+| Audio, region music  | (in the family)                            | each region's area music ≤ **2.75 MiB**                                                 | 2.66 MB              |
+| Precache             | ≤ 25 MB                                    | unchanged, ≤ **25 MB** (core plus every precached region, §3)                           | 10.43 MB             |
+| Other art families   | 4 MiB each; units 8.5; maps 6              | unchanged                                                                               | unchanged            |
 
 (The caps are MiB, as the scripts have always measured; the report prints them as "MB".)
 
@@ -188,3 +188,14 @@ trial a smaller format (below). Music is not cached for offline play today (ADR 
   region's records to register them.
 - The rule that a region names only itself and its neighbours constrains authoring: a story link
   two regions away needs a node in between, or the regions declared as neighbours.
+
+## Amendment: the per-session budget rises to 450 KB gz (owner, 2026-11-17)
+
+Main reached the 410 KB gz session budget (boot JS plus the largest region chunk) after #852, #855 and #856, so
+every PR's verify job failed at `scripts/check-bundle-size.mjs`, docs-only PRs included, and the deploy gate
+stopped. The five remaining playtest fixes from #846 add about 4 KB more. Asked whether to raise to 425, raise to
+450 or hold at 410 and split code out first, the owner chose **450 KB gz**: headroom for the next regions'
+features, so the limit does not stall work again soon. Each region chunk keeps its own 40 KB cap, and nothing else
+in this ADR changes. About 0.45 MB of script, cached offline by the service worker, is still small for the tablet.
+Trimming the boot bundle (loading dialogue, party setup and other one-off screens on demand) stays worth doing and
+is tracked as follow-up work, not a condition of this amendment.
