@@ -1372,8 +1372,8 @@ without a word.
 **Sura, with Tavi** _(at the landing model: a tray of wet sand with sticks for streets)_
 
 _This plays for every Sura: the tray is where she gets to the gap, so MQ-13 never depends on her quest. After
-`pq04_joint_ice` or `pq04_boat_plan` she has cut a gap in her own ice once already, and the variant below
-plays instead (the bible's "after PQ-04, she can suggest a barrier with an intentional release")._
+`pq04_joint_ice` she has cut a gap in her own ice once already, and the variant below plays instead (the bible's
+"after PQ-04, she can suggest a barrier with an intentional release")._
 
 **Sura:** I can wall the low landing. Ice, shoulder high, the whole front. It'd hold for a night.
 
@@ -1392,7 +1392,7 @@ Tavi pours a cup of water in behind it. It rises. It goes over the top all at on
 
 **Sura:** I don't know. You've poled this landing for twenty years. You tell me how wide.
 
-> **After `pq04_joint_ice` or `pq04_boat_plan` —** replace the exchange above:
+> **After `pq04_joint_ice` —** replace the exchange above:
 >
 > **Sura:** Ice across the front, shoulder high. With a gap in it.
 >
@@ -1401,8 +1401,8 @@ Tavi pours a cup of water in behind it. It rises. It goes over the top all at on
 >
 > **Tavi:** You've done this before.
 >
-> **Sura:** Once. At Reedglass. Vessa made me cut the hole myself. How wide, here? You've poled this landing
-> for twenty years.
+> **Sura:** Once. At Reedglass. Vessa knocked, and I cut a hole in my own ice. How wide, here? You've poled
+> this landing for twenty years.
 >
 > **Tavi:** Two boats. And you'll want somebody standing at it who can shout.
 
@@ -1830,10 +1830,10 @@ What changed in this file; the reasons and the proposals not applied are in the 
 4. **Counts:** eleven volunteers add up; the notice board has "names", not eleven, before the vote; Daiyu's
    lines work when five came; Bo's and the second bowl's lines work with no Ba Dan crew. On the loss branch Hesra
    walks out with both feet in sacking; the right boot is on her step that night.
-5. **Cross-script:** Lin Mei's dated promise has its line in 10.4 (`pq06_negotiated`), with Fenn reading it
-   if she is absent. Wen recognises the knife work, not a rule she never saw. Sura's gap plays for every
-   Sura, with a variant after PQ-04 where she cuts it unprompted (the bible's gate, kept as a difference in
-   who thinks of it).
+5. **Cross-script:** Lin Mei's dated promise has its line in 10.4 (`pq06_negotiated`), with Fenn reading it if
+   she is absent. Wen recognises the knife work, not a rule she never saw. Sura's gap plays for every Sura, with
+   a variant after `pq04_joint_ice` where she cuts it unprompted (the bible's gate, kept as a difference in who
+   thinks of it).
 6. **Set-ups paid later:** residents write their own names under the gate's names (10.7), which 13.6's
    sergeant reads. Veyra's note is shown in 12.5 if it was not found, because the promise names its door.
 7. **Lines:** Kaya and Hua at the lanterns; four long turns split; "forty" thinned.
