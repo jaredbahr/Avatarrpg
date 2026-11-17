@@ -326,7 +326,7 @@ export const EMBERWATCH_POWER_YARD: MapDef = {
    * walk through it). The rain cistern (`W`) has overflowed across the yard: the standing water
    * (`~`) beside the line is SF-2.1's wet ground. The dead copper spur hangs at the back (east),
    * on its own poles. The gate west (rows 5-6) goes back to the parade ground.
-   * The workshop bench (`d`) stands in the south-west corner.
+   * The workshop bench (`d`) stands by the south-west corner.
    *
    * PLACEHOLDER RULE: a live line that shocks the wet ground beside it needs engine work (the
    * script's build list: "wet ground beside a live line as a surface"). Until then the puddles
@@ -342,8 +342,8 @@ export const EMBERWATCH_POWER_YARD: MapDef = {
     '=................F#',
     '#........~~~.....F#',
     '#.......~~~~~....F#',
-    '#................##',
-    '#d................#',
+    '#d...............##',
+    '#.................#',
     '###################',
   ],
   partySpawns: COMBAT_PARTY_SPAWNS,

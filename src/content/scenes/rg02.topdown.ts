@@ -318,8 +318,8 @@ export const EMBERWATCH_POWER_YARD_OBJECTS: readonly TopDownObject[] = [
   ),
   // The overflowing rain cistern (`W`), and the dead copper spur on its own poles at the back (east).
   piece('cistern', 'cistern', 'prop', block(15, 17, 1, 2), true),
-  // The public workshop bench in the south-west corner.
-  piece('bench', 'workshop_bench', 'prop', [[1, 10]], true),
+  // The public workshop bench by the south-west corner, a row up so its shadow falls on the yard.
+  piece('bench', 'workshop_bench', 'prop', [[1, 9]], true),
   piece('spur_north', 'copper_spur', 'prop', block(17, 17, 4, 6), true),
   // the south spur stands back from the yard's corner, so its shadow falls on the yard and not into the rim
   piece('spur_south', 'copper_spur', 'prop', block(17, 17, 7, 8), true, { x: -8, base: -16 }),
