@@ -28,6 +28,9 @@ Whether Veyra will put the key down. Nothing else is held back. No franchise mys
 2. **The last stop** (MQ-15): the cart at a settlement that is on no map, and a chair being moved at Mira's
    table.
 
+Shot lists for both are in [cutscenes.md](cutscenes.md) (CS-5A, CS-5B), a proposal pending the trial
+cutscene (#810).
+
 ---
 
 ## MQ-13 — Three Ways to Hold a Night
@@ -71,6 +74,10 @@ where you said you'd go.
 **Latch:** I will be on the edge. If something is dropped tonight, I will know whose it is. I have been
 practising.
 
+> **If Lin Mei is in the party —** _Narrator:_ On the shed door, Lin Mei's map has a second hand all down its
+> margin now. Tanner's Stair is drawn one pace wide, with a pump housing in it. Runners are reading their
+> streets off it and going.
+
 ### Scene 13.2 — The low landing
 
 #### Full (if `first_front` is the low landing)
@@ -87,12 +94,20 @@ stop, because checking's making them worse.
 
 **Dr. Iset:** Anyone cold and quiet comes to me first. The loud ones are fine. The loud ones are always fine.
 
+> **If Nilak is in the party —**
+> **Dr. Iset:** Nilak. Cold and quiet, second boat.
+>
+> **Nilak:** Going.
+>
+> **Narrator:** Some time after midnight she looks at him across a row of blankets. He sits down on an
+> upturned crate and shuts his eyes for a count of one hundred, and gets up again at ninety.
+
 **Narrator:** Along the landing wall, a line of people is setting stone and timber braces by lamplight. A
 woman is walking the line with a chalk.
 
 > **If `ba_dan_crew_sent` —**
-> **Daiyu:** Eleven of mine on the wall and it's holding. Far end's the worst. It's on made ground. I've put
-> him there.
+> **Daiyu:** Mine are on the wall and it's holding. Far end's the worst. It's on made ground. I've put him
+> there.
 >
 > **Narrator:** At the far end, six people are working under one voice. It is giving short orders, the kind
 > that have been given before.
@@ -100,7 +115,9 @@ woman is walking the line with a chalk.
 > **Daiyu:** He's run men. So he runs those six. And he answers to me. He asked me which six. I said the six
 > I'd miss least. He said, "Then I'll bring all six back." We'll see.
 >
-> _(If Ruon is not free to work, the far-end gang is run by Little Bai, who talks the whole time.)_
+> _(If Ruon is not working, drop Daiyu's "I've put him there" and her second line; the far-end gang is run by
+> Little Bai, who talks the whole time. If only five came from Ba Dan, Ruon's six are from the city's public
+> gang, and "the six I'd miss least" still stands.)_
 
 > **Otherwise —**
 > **Wall ganger:** Public works gang. Nine of us. We've not got anyone who knows old drains, so we're bracing
@@ -126,6 +143,7 @@ woman is walking the line with a chalk.
 > **If Bo is in the party —**
 > **Narrator:** Bo is third from the left on the brace line, next to Little Bai. She has not stopped talking.
 > He has not once looked along the line to count it.
+> _(With no Ba Dan crew: "next to the yard foreman's nephew. He has not stopped talking.")_
 
 **The far end (plays once, mid-encounter, if Ruon is present):**
 
@@ -158,6 +176,10 @@ two streets that might have stayed dry do not.
 her knee. The ribbon is still in it.
 
 **Hua:** It was only a house. I'd read everything in it.
+
+> **If `strategy_reduced` —** replace the first paragraph: _Narrator:_ The third walkway goes under with nobody
+> on it. The bottom streets were walked out hours ago, in the dark, on purpose. What the water takes is the
+> far end of the landing wall, and two streets of houses with their doors left open.
 
 _Sets `front_landing` lost. Two more streets are flooded in every ending; the low landing's repair is the first
 item on the public list in MQ-15._
@@ -252,8 +274,12 @@ handles Veyra had fitted for exactly that. The water gains a street on them.
 
 **Luli:** Hand cranks. She put hand cranks on every one. I used to think that was showing off.
 
-_Sets `front_relay` lost. The pumps are hand-worked for an hour; one more street floods; the relay house is a
-shell in MQ-15 in every ending._
+> **If `strategy_reduced` —** replace the second paragraph: _Narrator:_ The pumps were already at half and the
+> streets below them already empty. People work the long handles Veyra had fitted, and for an hour the hand
+> cranks keep the water where it is.
+
+_Sets `front_relay` lost. The pumps are hand-worked for an hour; one more street floods (none after
+`strategy_reduced`); the relay house is a shell in MQ-15 in every ending._
 
 #### Short
 
@@ -316,9 +342,19 @@ piece at a time, and it has to let us.
 > **Sura:** I'm not walling this. I'm putting ice on the banks, so the banks don't go, and leaving the middle
 > alone. The middle's not mine.
 
-> **If Lin Mei is in the party —**
+> **The school path** _(one version plays; the gate is moved in all of them)_ **—**
+>
+> **If Lin Mei is in the party and walked the path (`pq06_open`), but it is on no map (`pq06_technical`, or
+> the quest left open) —**
 > **Lin Mei:** The path to the school is under the second gate's wash. It isn't on any map. I walked it. Move
 > the second gate four paces left.
+>
+> **If Lin Mei is in the party, after `pq06_published` or `pq06_negotiated` —**
+> **Lin Mei:** The path to the school is under the second gate's wash. It's on one map. Mine. Fenn drew the
+> line. Move the second gate four paces left.
+>
+> **Otherwise** _(Lin Mei absent, or she never walked it)_ **—**
+> **Fenn:** Not there! The children's path runs under that wash! Second gate, four paces left!
 
 **After a win:**
 
@@ -373,7 +409,7 @@ first time you have seen her without a desk.
 **Jin:** Your warning has to reach every landing downstream before the surge does. You have flags, a deaf
 carpenter, a bell tuner, and four children in boats. It's a good system. It's slow.
 
-**Jin:** I have forty freight riders who know every back stair on this river, because I've delivered to
+**Jin:** I have thirty freight riders who know every back stair on this river, because I've delivered to
 every one of them. They can have it done in two hours.
 
 **Jin:** Terms. One. A written guarantee, signed by a name off that courtyard gate, that I leave the Reach on
@@ -474,6 +510,10 @@ moves. He does not gloat.)
 - **Sergeant:** "Sir, the residents aren't dispersing." **Rusk:** "No. They have nowhere indoors to go. I do
   know that."
 - **Still Keeper (once):** "That one wants it shut. I wanted it shut. I know that wanting."
+
+> **If Riko is in the party and the sergeant's objective is open —**
+> **Riko:** Sergeant. Nobody's asking you to hit him. Take your hand off the wheel and walk to the rail.
+> That's all of it.
 
 **How it ends (one of three):**
 
@@ -628,6 +668,13 @@ the door barred behind them.
 > **If Riko is in the party —**
 > **Riko:** Nine at the desk. I only need them to sit down. Nobody here has to stay down.
 
+> **If Kaya is in the party —**
+> **Kaya:** Gate two, on three! ...Whose three? Mine or hers?
+>
+> **Veyra (from above):** MINE!
+>
+> **Kaya:** Hers. On hers. I'm waiting. Look at me waiting.
+
 **After phase 1 (win):**
 
 **Narrator:** The last of them sits down against the desk with his hands open. Bera has both arms inside the
@@ -676,7 +723,7 @@ heard are used)_**:**
 has not happened yet.
 
 > **If Sura is in the party —**
-> **Sura:** I've counted every one since the quarry. It kept them all. It never lost a single one.
+> **Sura:** I've counted every one since the first. It kept them all. It never lost a single one.
 >
 > **Narrator:** She wipes rain off her face with her wrist.
 >
@@ -708,8 +755,8 @@ word for word.** `Player` is `Party`.
 
 > **If `front_spillway` is lost —** first: _Narrator:_ The Keeper does not turn its head when you speak. It has
 > its wings out over a piece of water that went down the channel hours ago. Fenn's voice comes up the
-> speaking-tube from Reedglass: "It's open! Tell it it's open! It won't look!" You have to say it three
-> times.
+> speaking-tube from the spillway gatehouse: "It's open! Tell it it's open! It won't look!" You have to say it
+> three times.
 
 **Still Keeper:** You said the water would stop changing.
 
@@ -763,7 +810,8 @@ choice stays tied to how the fights went). In Resistance she is removed from com
 
 #### Surrender — DLG-11, Veyra lets go
 
-**Cutscene candidate 1.** **Bible DLG-11, word for word.** `Player` is `Party`. The local operator is Bera.
+**Cutscene candidate 1.** Shot list: [cutscenes.md](cutscenes.md), CS-5A, part one (a proposal, pending the
+trial). **Bible DLG-11, word for word.** `Player` is `Party`. The local operator is Bera.
 
 **Narrator:** Veyra has come down from the control gallery. She is soaked, and she has the central control
 key on its cord in her fist.
@@ -854,7 +902,8 @@ without a guest. Sets `veyra_removed`. Do not use the key-on-the-ledge image in 
 
 ### Scene 14.6 — The valve
 
-**Shown:** played (both versions join here).
+**Shown:** played (both versions join here). Shot list: [cutscenes.md](cutscenes.md), CS-5A, part two (a
+proposal, pending the trial).
 
 **Narrator:** The last quarter-turn. A hand on a valve wheel, and water coming over the gallery floor, and a
 turbine, somewhere below, winding down from a scream to a hum.
@@ -879,6 +928,9 @@ that kind of animal.
 **Narrator:** First light comes through the green door. There are wet people sitting on every bench in the
 locker room. Someone has found the tea tap. The tin cup is going round.
 
+> **If Tenzo is in the party —** _Narrator:_ Tenzo has found half an onion in an open lunch tin. He has asked
+> the whole room whose it is. Nobody is sure. He is holding the knife and waiting to be told.
+
 **Bera:** It's safe till the next tide. That's twelve hours. Somebody has to say what it is after that, and
 I'd sooner it was said now, with everyone too tired to make speeches.
 
@@ -886,8 +938,10 @@ I'd sooner it was said now, with everyone too tired to make speeches.
 none of them is wrong.
 
 **Neri:** One network, turned down. Everything stays joined. It runs at about six parts in ten. Every
-district has a stop wheel and somebody trained to use it. The records are on the wall. The old water road
-stays open and somebody keeps it. It only works if people turn up, every week, for good.
+district has a stop wheel and somebody trained to use it. The records are on the wall.
+
+**Neri:** The old water road stays open and somebody keeps it. It only works if people turn up, every week, for
+good.
 
 **Fenn:** One network, at full, for one winter. The people who know it run it. The stop key stays outside
 the Works, the records stay public, and there's a date on the gate when it all gets decided again. Lights
@@ -945,6 +999,12 @@ the list. A ledger reaches nothing. A cart stops where no map says to. Someone m
 **Narrator:** The courtyard has dried out. The ramp is still there. Somebody has replaced the benches and
 the office door with planed boards and put a rail on it. Nobody has put up a plaque.
 
+> **If `strategy_staged` —** _Narrator:_ Every lamp that was lit that night is lit now. The crews who kept them
+> lit look as if they have not sat down since.
+
+> **If `strategy_reduced` —** _Narrator:_ Half the lamp posts round the courtyard are still dark. A chalk board
+> by the gate gives the day each street comes back. The last one is three weeks off.
+
 **Narrator:** People are speaking from the platform in turn. A clerk is writing all of it down, and a second
 clerk is writing it down again, for the wall.
 
@@ -956,6 +1016,9 @@ clerk is writing it down again, for the wall.
 mended again.
 
 **Fenn:** Did you know the readings were unsafe?
+
+> **After `demand_removal` —** Fenn's question is instead: "In this courtyard we asked you to leave command.
+> You stayed. Did you know the readings were unsafe?"
 
 **Veyra:** I was told on the fourth day of the first month. I decided on the ninth. For five days I knew and
 had not decided. After the ninth I knew and had.
@@ -1003,7 +1066,7 @@ they are asked.
 
 - **`jin_guarantee_signed`:** _Narrator:_ Jin left on the first ferry after the tide, with one trunk. Her
   riders reached every landing that was written on her list. A hamlet below the Low Bell that nobody thought
-  to write got its warning from Nel's flag instead, forty minutes later. Jin's guarantee is pinned to the
+  to write got its warning from Nel's flag instead, half an hour later. Jin's guarantee is pinned to the
   wall with everything else. It was kept, to the letter, by both sides.
 - **`jin_guarantee_refused`:** _Narrator:_ Jin is called. She comes, with her tin box, and answers exactly
   what she is asked and nothing beside it. When the clerk reaches the end of his questions she asks if she is
@@ -1110,7 +1173,7 @@ are flown.
 
 - _All fronts held:_ In the tram shed, the cots have been stacked. Somebody has chalked on the door: "Not
   needed. Keep anyway."
-- _One front lost, or `final_carried_on`:_ In the tram shed, forty cots are still made up. The date on the
+- _One front lost, or `final_carried_on`:_ In the tram shed, sixty cots are still made up. The date on the
   gate is the date they are promised houses by.
 - _Two or more lost:_ The tram shed is still full. The date on the gate matters most in here. A child has
   copied it onto the wall above her cot, with the wrong number of days, and nobody has corrected her.
@@ -1187,8 +1250,10 @@ not a sudden change). An absent hero has none.
 
 **Tenzo** _(the Six-Ladle Kitchen)_
 
-- _Resolved:_ **Narrator:** The kitchen is run by its cooks now. Tenzo is at the long table with a bowl in
-  front of him. Somebody is doing the rice differently from how he would. He eats it. He does not get up.
+- _Resolved:_ **Narrator:** The kitchen is run by its cooks now. _(After `pq02_posted_terms`, where Ketu still
+  holds the contract, this sentence is instead: "The terms are still on the wall beside the late shelf, with
+  a season of initials down the margin.")_ Tenzo is at the long table with a bowl in front of him. Somebody is
+  doing the rice differently from how he would. He eats it. He does not get up.
 - _Open:_ **Dema:** There's a place. Sit. Before you say anything about the stock, I'm going to tell you how
   the wages went this month, and you're going to listen to all of it. **Tenzo:** ...I'm listening.
 
@@ -1213,8 +1278,8 @@ not a sudden change). An absent hero has none.
 - _Resolved:_ **Renn:** Bo, far jack. Wait for my count. **Narrator:** Bo takes the far jack. He waits for
   the count. His hands, between counts, stay at his sides.
 - _Open:_ **Narrator:** Bo has a small job: one cracked sleeper. He looks at the crew. **Bo:** Who wants to
-  run this one? **Narrator:** Nobody answers straight away. They are not used to the question. Then Little
-  Bai puts her hand up, already talking.
+  run this one? **Narrator:** Nobody answers straight away. They are not used to the question. Then Feng
+  puts his hand up, already talking.
 
 **Lin Mei** _(the dispatch office)_
 
@@ -1290,17 +1355,31 @@ time. His hands, for once, are not doing anything.
 **Narrator:** She shuts the book. Grumbler tightens the last bolt on the lamp arm, tests it, and goes to
 find Daiyu, to ask what he should do tomorrow.
 
+> **Loss branch.** His ledger opened at ninety days in MQ-11, so it is nowhere near its last page. Replace
+> from "That's the last one":
+>
+> **Pella:** The lamp is three days. That's sixty-nine.
+>
+> **Grumbler:** A lamp is four. There is glass in a lamp.
+>
+> **Pella:** You didn't make the glass. Sixty-nine.
+>
+> **Narrator:** He does not argue it further. He tightens the last bolt, tests it, and goes to find Daiyu, to
+> ask what he should do tomorrow. Pella rules a line under the column and writes tomorrow's date at the top
+> of a clean page.
+
 **Ruon** _(by the guard hut; found)_**:**
 
-- **If he took supervised repair** (`ruon_offered_repair`, or he led the far-end gang): _Narrator:_ Ruon is
-  sitting on the guard hut step with an awl, a pile of boots, and the six people from the far end of the
-  wall. He is fitting each of them in turn. **Ruon:** Stand. Walk to the gate and back. ...You're rolling
-  out on the left. Give it here. _Narrator:_ He has no sabre and no rank, and a room in the guard hut that
-  Hanru locks at night. Mira passes with a tray. She puts a bowl down on the step without stopping. She does
+- **Supervised repair** (every game but the one below; it is Mira's ruling in 11.6, whether or not the table
+  asked him what he could offer): _Narrator:_ Ruon is sitting on the guard hut step with an awl, a pile of boots,
+  and the six people from the far end of the wall. _(If no crew went to Causeway, or only five: "and a line of
+  quarry hands".)_ He is fitting each of them in turn. **Ruon:** Stand. Walk to the gate and back. ...You're
+  rolling out on the left. Give it here. _Narrator:_ He has no sabre and no rank, and a room in the guard hut
+  that Hanru locks at night. Mira passes with a tray. She puts a bowl down on the step without stopping. She does
   not look at him. She has put it where he can reach.
-- **If he contests part of the hearing** (`ruon_traded`, no repair offered): _Narrator:_ Ruon is mending the
-  east road wall, alone, under Hanru's eye. He has written his own account, eleven pages, and asked that it
-  be pinned beside the village's. It has been. He still fits boots, in the evenings, for anyone who asks.
+- **He contests part of the hearing** (`ruon_traded`, and `ruon_offered_repair` not set): _Narrator:_ Ruon is
+  mending the east road wall, alone, under Hanru's eye. He has written his own account, eleven pages, and asked
+  that it be pinned beside the village's. It has been. He still fits boots, in the evenings, for anyone who asks.
   Two people have asked.
 
 **Latch** _(on the tailgate; found)_**:**
@@ -1349,7 +1428,8 @@ _The party can join the repair, keep eating while another resident helps, or qui
 
 ### Scene 15.7 — The last stop
 
-**Shown:** cutscene candidate 2 (also works played). The final image.
+**Shown:** cutscene candidate 2 (also works played). The final image. Shot list: [cutscenes.md](cutscenes.md),
+CS-5B (a proposal, pending the trial).
 
 **Narrator:** A road none of you has driven. The cart has a canopy that is not square, a ramp that is too
 wide, a barrel with the tap on the left, and a lamp with a chip in the glass.
@@ -1446,7 +1526,8 @@ it kept.
 
 ## Cart upgrade for this act
 
-The lamp (Scene 15.5). It is Grumbler's last line in Pella's ledger.
+The lamp (Scene 15.5). It is Grumbler's last line in Pella's ledger (after an Act I loss the ledger still has
+sixty-nine days to run, and she starts a clean page).
 
 ## Latch across Acts III to V
 
@@ -1455,25 +1536,26 @@ lamp (MQ-15).
 
 ## Hero moments in this act
 
-| Hero    | Where                                                                 |
-| ------- | --------------------------------------------------------------------- |
-| Kaya    | 13.3 Luli's first lesson; 15.4 Thursday                               |
-| Tenzo   | 13.3 Luli's first lesson; 15.4 the long table                         |
-| Nilak   | 15.4 handing over a shift                                             |
-| Sura    | 13.2 the gap; 13.4 the banks; 14.3 counting ten; 14.4 her DLG-10 line |
-| Bo      | 13.2 not counting; 13.3 Renn's count; 15.4 the far jack               |
-| Lin Mei | 13.4 the school path; 15.4 the margin                                 |
-| Nima    | 14.4 his DLG-10 line; 15.4 the quiet watch                            |
-| Jinu    | 14.3 Pella's third letter; 15.4 the half-door                         |
-| Riko    | 14.2 "nobody has to stay down"; 15.4 eight people on a platform       |
-| Wen     | 14.2 her regulator on gate two; 15.4 Min's lever                      |
+| Hero    | Where                                                                       |
+| ------- | --------------------------------------------------------------------------- |
+| Kaya    | 13.3 Luli's first lesson; 14.2 waiting for the count; 15.4 Thursday         |
+| Tenzo   | 13.3 Luli's first lesson; 14.7 the onion; 15.4 the long table               |
+| Nilak   | 13.2 a count of one hundred; 15.4 handing over a shift                      |
+| Sura    | 13.2 the gap; 13.4 the banks; 14.3 counting ten; 14.4 her DLG-10 line       |
+| Bo      | 13.2 not counting; 13.3 Renn's count; 15.4 the far jack                     |
+| Lin Mei | 13.1 the map on the shed door; 13.4 the school path; 15.4 the margin        |
+| Nima    | 14.4 his DLG-10 line; 15.4 the quiet watch                                  |
+| Jinu    | 14.3 Pella's third letter; 15.4 the half-door                               |
+| Riko    | 13.6 the sergeant's hand; 14.2 "nobody has to stay down"; 15.4 eight people |
+| Wen     | 14.2 her regulator on gate two; 15.4 Min's lever                            |
 
 ## Decided (owner, 2026-11-15)
 
 The owner accepted every item below on 2026-11-15, as recommended. Each item keeps its first wording, as the
 record of what was accepted ("Recommend" lines are now decisions). Later corrections are marked.
 
-1. **The final mission follows the story bible's proposed item 1** (_approved 2026-11-15_), which was marked "awaiting owner":
+1. **The final mission follows the story bible's proposed item 1** (_approved 2026-11-15_), which was marked
+   "awaiting owner":
    the title is "The Engine in Revolt"; a lost final battle offers "Try again" or "Carry on"; "Carry on" plays
    the three-way vote with the lost fronts counted against it. I wrote it that way and did **not** write the
    bible's older rule (defeat forces E-03). Recommend: approve item 1 so this stands.
@@ -1541,3 +1623,22 @@ record of what was accepted ("Recommend" lines are now decisions). Later correct
 2. **The side fights** (SF-5.1 and SF-5.2) open only in the aftermath, because travel closes at the final
    commitment. If you want an XP fight before the finale, it belongs in Act IV's list.
 3. **The trust table** here only feeds the three community lines per ending.
+
+## Edit pass, 2026-11-17 (awaiting the owner)
+
+What changed in this file; the reasons and the proposals not applied are in the pass's report.
+
+1. **Cross-script:** Feng, not Little Bai, puts his hand up in Bo's open ending (15.4). Tenzo's resolved
+   ending has a sentence for the posted-terms route. The school path in 13.4 has three versions (on no map;
+   on Lin Mei's map; Fenn's shout when Lin Mei is absent or never walked it).
+2. **Ruon:** supervised repair is every game but one (it is Mira's ruling, not a prize for one dialogue
+   choice); the far-end gang and the boots have a version for a small crew or none.
+3. **The ledger:** after an Act I loss Grumbler's ninety days cannot be paid by MQ-15, so Pella rules a line
+   and starts a clean page at sixty-nine.
+4. **Votes:** staged or reduced now changes what a lost landing or relay costs and how the courtyard looks
+   in 15.1; `demand_removal` changes Fenn's question to Veyra.
+5. **Hero moments added:** Lin Mei's map (13.1), Nilak's count of one hundred (13.2), Riko and the sergeant
+   (13.6), Kaya waiting for the count (14.2), Tenzo's onion (14.7).
+6. **Small:** Sura counts "since the first"; Fenn's voice comes from the spillway gatehouse; "forty"
+   thinned.
+7. **Cutscenes:** pointers to [cutscenes.md](cutscenes.md) at 14.5, 14.6 and 15.7.
