@@ -41,7 +41,7 @@ for arg in sys.argv[1:]:
     body = {'description': desc, 'view': 'low top-down', 'n_directions': 1, 'image_size': {'width': W, 'height': H}, 'style_image': REF,
             'target_palette': {'colors': S['palette'], 'name': 'village'}, 'seed': seed}
     if used() + 14 > CAP: raise SystemExit(f'v16 cap: {used()} spent')
-    e, r = pl.run('/create-object-pro-flash', body, f'v16_{k}_{seed}_{W}x{H}', estimate=12, region='ba_dan_ek_houses')
+    e, r = pl.run('/create-object-pro-flash', body, f'v16_{k}_{seed}_{W}x{H}', estimate=12, region='ba_dan_valley')
     fin = r['final']; lr = fin.get('last_response') or fin; ims = [pl.fetch(u) for u in (lr.get('storage_urls') or {}).values()]
     if not ims: print(k, 'no image', list(lr.keys())[:10]); continue
     os.makedirs('v16/raw', exist_ok=True); ims[0].save(f'v16/raw/{k}_{seed}_{W}x{H}.png'); print(k, seed, ims[0].size, e['credits'], 'v16 total', used())

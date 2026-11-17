@@ -292,7 +292,7 @@ Each piece's door is on its sprite's centre, so `put()` keeps every door cell, r
 | `shrine`, `lamp`, `well`             |  5 each | A green-roofed wayside shrine, a wooden post with a paper lantern, a round stone well with a tiled roof.                 |
 
 - **Credits: 87 of the 100 cap** (11 jobs: 5 first takes, 3 retakes, 3 props; the houses cost 9, the small props 5). The
-  balance read 5,065 before; the ledger (`prototypes/topdown/ledger.json`, tag `ba_dan_ek_houses`) is the count, since the
+  balance read 5,065 before; the ledger (`prototypes/topdown/ledger.json`, tag `ba_dan_valley`) is the count, since the
   key is shared with other sessions. About an hour end to end, most of it waiting for the shared CI lock.
 - **Re-bake:** `pack-ground.ts --map ba_dan_village` (the new props are in `assets/objects_t3/`, which the board loader
   prefers over `objects12`; the houses replace `objects_bd13/`). Layout, footprints, blocked cells and base lines are unchanged.
