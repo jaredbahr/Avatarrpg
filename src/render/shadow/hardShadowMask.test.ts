@@ -242,10 +242,12 @@ const SHAPES: Record<string, RgbaImage> = {
     44,
     64,
     (x, y) =>
-      (((x - 22) ** 2 / 400 + (y - 16) ** 2 / 169 <= 1 && y < 30 && !(x % 5 === 0 && y >= 14 && y < 16)) ||
-        (x >= 19 && x < 25 && y >= 30 && y < 58) ||
-        (x >= 14 && x < 30 && y >= 58 && y < 61 && (x < 18 || x >= 21)) ||
-        (x >= 40 && x < 44 && y >= 0 && y < 4)),
+      ((x - 22) ** 2 / 400 + (y - 16) ** 2 / 169 <= 1 &&
+        y < 30 &&
+        !(x % 5 === 0 && y >= 14 && y < 16)) ||
+      (x >= 19 && x < 25 && y >= 30 && y < 58) ||
+      (x >= 14 && x < 30 && y >= 58 && y < 61 && (x < 18 || x >= 21)) ||
+      (x >= 40 && x < 44 && y >= 0 && y < 4),
   ),
   // a thin pole and a handle: lone specks the cleanup pass should drop
   thin: shape(16, 40, (x, y) => (x === 5 && y >= 4 && y < 38) || (x >= 9 && x < 12 && y === 20)),
@@ -505,7 +507,8 @@ describe('a swept (tree) shadow, as Imagination ecfcea1 draws it', () => {
     expect(px(m, m.pad + 8, m.base + 12)).toBe(0);
     // the crown's outline lands further along the light, up to its top's cast point
     let farthest = 0;
-    for (let i = 0; i < m.alpha.length; i++) if (m.alpha[i]) farthest = Math.max(farthest, i % m.width);
+    for (let i = 0; i < m.alpha.length; i++)
+      if (m.alpha[i]) farthest = Math.max(farthest, i % m.width);
     expect(farthest).toBeGreaterThan(m.pad + 30);
   });
 
@@ -514,7 +517,9 @@ describe('a swept (tree) shadow, as Imagination ecfcea1 draws it', () => {
     // down the light from the trunk's right foot column, every cast row has shade from the seam to
     // the far end: a trunk pixel is solid to the floor, so nothing is lit in between
     for (let k = 0; k <= 15; k++)
-      expect(px(m, m.pad + 24 + Math.round(0.42 * k), m.base + 1 + Math.round(0.3 * k))).toBeGreaterThan(0);
+      expect(
+        px(m, m.pad + 24 + Math.round(0.42 * k), m.base + 1 + Math.round(0.3 * k)),
+      ).toBeGreaterThan(0);
   });
 
   it('a ragged crown leaves no dark island floating: every shaded pixel joins the seam', () => {
