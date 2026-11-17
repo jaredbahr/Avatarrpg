@@ -85,11 +85,21 @@ async function prepareKaya(
     const battle = app?.state?.battle;
     const hero = battle?.units.find((unit) => unit.id === battle.order[battle.turnIndex]);
     if (!app || !hero) throw new Error('No acting Kaya.');
-    return [...hero.abilities, ...app.content.universalAbilities].map((id) => {
-      const ability = app.content.abilities.get(id);
-      if (!ability) throw new Error(`Unknown ability: ${id}`);
-      return { name: ability.name, id };
-    });
+    return (
+      [...hero.abilities, ...app.content.universalAbilities]
+        .map((id) => {
+          const ability = app.content.abilities.get(id);
+          if (!ability) throw new Error(`Unknown ability: ${id}`);
+          return {
+            name: ability.name,
+            id,
+            downed: ability.targeting.shape === 'unit' && ability.targeting.allow === 'downed',
+          };
+        })
+        // Help up (ADR 0118) is on the bar only while a friend is down; nobody is here.
+        .filter((ability) => !ability.downed)
+        .map(({ name, id }) => ({ name, id }))
+    );
   });
   expect(abilities.map((ability) => ability.id)).toEqual([
     'fire_jab',
