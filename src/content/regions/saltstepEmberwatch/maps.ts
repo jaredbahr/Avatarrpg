@@ -17,6 +17,22 @@
 import type { MapDef, Vec2 } from '../../../core/types';
 import { LEGEND } from '../../maps/legend';
 
+/**
+ * The region's legend: the shared one plus three blocked grounds the dressing stands on, each seen over (a net pile, a
+ * dummy, a bench): `n` on the quay's sand, `u` on the parade's grass, `d` on the power yard's dirt, `k` the
+ * freight quay's timber.
+ */
+const RG02_LEGEND: typeof LEGEND = {
+  ...LEGEND,
+  n: { terrain: 'sand', blocked: true, blocksSight: false },
+  u: { terrain: 'grass', blocked: true, blocksSight: false },
+  d: { terrain: 'dirt', blocked: true, blocksSight: false },
+  // the freight quay's timber edge behind the pontoon: blocked and seen over, as the water it replaces
+  k: { terrain: 'wood', blocked: true, blocksSight: false },
+  // the headland's rock, which hides what is behind it
+  q: { terrain: 'stone', blocked: true, blocksSight: true },
+};
+
 /** A road mouth: the walkable cells of an exit's cross-section at the map edge. */
 const mouth = (x: number, ys: readonly number[]): readonly Vec2[] => ys.map((y) => ({ x, y }));
 
@@ -31,14 +47,14 @@ const COMBAT_PARTY_SPAWNS: readonly Vec2[] = [
 ];
 
 /**
- * The region's sprites (`docs/pipeline-trial-log.md`, "Art production"): its own people since the art batches; Miri's
- * crates still borrow the barrel until the objects batch.
+ * The region's sprites (`docs/pipeline-trial-log.md`, "Art production"): its own people and pieces since the art
+ * batches.
  */
 const SPRITE = {
   bowlSeller: 'npc.bowlseller',
   tavi: 'npc.tavi',
   freightClerk: 'npc.freightclerk',
-  crates: 'prop.barrel',
+  crates: 'world.lantern_crates',
   customsClerk: 'npc.customsclerk',
   veyra: 'unit.ally.veyra',
   cook: 'npc.cook',
@@ -72,30 +88,37 @@ export const SALTSTEP_MARKET: MapDef = {
   width: 24,
   height: 16,
   ambience: 'village',
-  legend: LEGEND,
+  legend: RG02_LEGEND,
   /*
-   * The quay runs west to east on rows 4-7; the coast road comes in on its west end (rows 5-6).
-   * The platforms (`w`) stand in the water south of it: the bowl stall's, the customs stall's on
-   * its mooring, and the ferry landing's to the east. Jin's freight office and the warehouses
-   * are the blocks on the north side. Every walkable rim cell is the coast road's mouth.
+   * A fish quay curving along the bay, an outer Earth Kingdom harbour town (the story bible's
+   * Tidemark Reach). The town spills off the top edge (`U`: houses, trees, a well, a shrine), with
+   * Jin's freight office and the warehouse on the lane behind the quay (`B`); the sand quay runs
+   * west to east on rows 4-7, the coast road coming in on its west end (rows 5-6), and the water
+   * bites into it at an inlet (row 7). The jetties reach out at different lengths: the broth
+   * stall's, the customs pier (the longest), a crooked landing stage and the ferry landing to the
+   * east. Stalls (`G`), bollards and the tide pole (`F`) and the quay's scatter (`n`, `u`) are
+   * blocked cells their pieces stand on; the quay's middle is dressed with stalls, carts and crates staggered between
+   * rows 5 and 6 so one row of the lane is always open (each island has a gap of both rows beside it), column 3 stays
+   * open, and the rim walkable
+   * only at the coast road's mouth.
    */
   rows: [
-    'TTTTTTTTTTTTTTTTTTTTTTTT',
-    'TT,,,BBBB,,,,,BBBBB,,,TT',
-    'T,,,,BBBB,,,,,BBBBB,,,,T',
-    'T,,,,,,,,,,,,,,,,,,,,,,T',
-    'T::::::::::::::::::::::T',
-    '==::::::::::::::::::::wT',
-    '==::::::::::::::::::::wT',
-    'T:::::::::::::::::::::wT',
-    'TWWwwwwWWWwwwwWWWwwwwwWT',
-    'TWWwwwwWWWwwwwWWWwwwwwWT',
-    'TWWWwwWWWWWwwWWWWWwwwWWT',
-    'TWWWWWWWWWWwwWWWWWWWWWWT',
-    'TWWWWWWWWWWwwWWWWWWWWWWT',
-    'TWWWWWWWWWWWWWWWWWWWWWWT',
-    'TWWWWWWWWWWWWWWWWWWWWWWT',
-    'TTTTTTTTTTTTTTTTTTTTTTTT',
+    'UUUUUUUUUUUUUUUUUUUUUUUU',
+    'U,,,uBBBBu,UUuBBBBBu,UUU',
+    'U,u,,BBBBu,,u,BBBBB,,u,U',
+    'U,,,,,,,,,,,,,,,,,,,,,,U',
+    'U:::::nnn:nnnnn:::nnnnUU',
+    '==::::::n:nn:::nn:n:::wU',
+    '==::::n:::::::::::::::wU',
+    'U:n:n:nWWn::nnn:n:nnn:wU',
+    'WWWwwwwWWWwwGwWwWwwGGwwW',
+    'WWWwwGGWWWwwwwWwwWwwwwWW',
+    'WWWWwFWWWWWwwWWWwWFwwWWW',
+    'WWWWWWWWWWWwwWWWwWWWWWWW',
+    'WWWWWWWWWWWwwWWWWWWWWWWW',
+    'WWWWWWWWWWWwFWWWWWWWWWWW',
+    'WWWWWWWWWWWWWWWWWWWWWWWW',
+    'WWWWWWWWWWWWWWWWWWWWWWWW',
   ],
   // West of the coast-road crossing (column 3), so a fresh arrival still walks through it.
   partySpawns: [
@@ -200,16 +223,18 @@ export const SALTSTEP_PONTOON: MapDef = {
   width: 19,
   height: 12,
   ambience: 'village',
-  legend: LEGEND,
+  legend: RG02_LEGEND,
   /*
    * The pontoon deck (`w`) with the harbour all round it. The cast-iron pump crate (`c`, cover)
    * stands near the party's end. A two-wide gangway (11-12, rows 4-5) joins the deck to the winch
    * platform; the winch brake is on the gangway itself, (12, 4), where the handlers stand, so
    * stopping the winch means getting through them. The winch (`B`) is on the platform and the
-   * barge is the open water off the east edge, where the sling is heading.
+   * barge is the open water off the east edge, where the sling is heading. The freight quay's
+   * timber edge (`k`, row 0) runs behind the deck's north side: blocked and seen over, as the
+   * water was, so the fight is the same.
    */
   rows: [
-    'WWWWWWWWWWWWWWWWWWW',
+    'kkkkkkkkkkkWWWWWWWW',
     'WWwwwwwwwwwWWWWWWWW',
     'WwwwwwcwwwwWWWwwwWW',
     'WwwwwwcwwwwWWwwBBww',
@@ -245,29 +270,33 @@ export const EMBERWATCH_PARADE: MapDef = {
   width: 24,
   height: 16,
   ambience: 'village',
-  legend: LEGEND,
+  legend: RG02_LEGEND,
   /*
-   * The ferry lands at the jetty in the south-west. North is the barracks wall (`#`) with its
-   * painted-over slogans; the parade ground (`:`) fills the middle, under the beans on canvas
-   * and the spear-rack trellis. The power yard is through the east gap (rows 7-8).
+   * The old Fire Nation outpost, decommissioned and reused (the Common Current bible). North is
+   * the barracks wall (`#`), the ground falling away past it, with the old signal tower standing
+   * tall at its east corner. The parade ground (`:`) fills the middle under the beans on canvas
+   * and the spear-rack trellis, braziers at its corners, and stays clear for a fight. A rock spur
+   * (`q`) runs down the west side and another breaks up the south-east corner; the south half has
+   * the sparring ring, tents, targets and the lantern shrine by the jetty, where the ferry lands
+   * from the bay. The power yard is through the east gap (rows 7-8). Props stand on `u`.
    */
   rows: [
     'TTTTTTTTTTTTTTTTTTTTTTTT',
     'T######################T',
-    'T,,,,,,,,,,,,,,,,,,,,,,T',
-    'T,,::::::::::::::::::,,T',
-    'T,,::::::::::::::::::,,T',
-    'T,,::::::::::::::::::,,T',
-    'T,,::::::::::::::::::,,T',
+    'T,,,u,,u,,,,,,,,u,,u,,,T',
+    'Tqu::::::::::::::::::u,T',
+    'Tq,::::::::::::::::::,uT',
+    'Tq,::::::::::::::::::,uT',
+    'Tq,::::::::::::::::::,uT',
+    'Tu,::::::::::::::::::===',
     'T,,::::::::::::::::::===',
-    'T,,::::::::::::::::::===',
-    'T,,::::::::::::::::::,,T',
-    'T,,,,,,,,,,,,,,,,,,,,,,T',
-    'T,,,,,,,,,,,,,,,,,,,,,,T',
-    'Twwwwww,,,,,,,,,,,,,,,,T',
-    'Twwwwww,,,,,,,,,,,,,,,,T',
-    'TWWWWWW,,,,,,,,,,,,,,,,T',
-    'TTTTTTTTTTTTTTTTTTTTTTTT',
+    'T,u::::::::::::::::::u,T',
+    'T,u,,,u,,u,,,,u,,u,,,uuT',
+    'T,u,,,,,,,,,,,,,,,,u,,,T',
+    'WWwwww,,,,,,,,uuuu,,,qqT',
+    'WWWwwwww,,,,,,,,,,u,qqqT',
+    'WWWWWww,u,uuu,,,u,,qqqqT',
+    'WWWWWWWTTTTTTTTTTTTTTTTT',
   ],
   partySpawns: [
     { x: 3, y: 12 },
@@ -316,30 +345,34 @@ export const EMBERWATCH_POWER_YARD: MapDef = {
   width: 19,
   height: 12,
   ambience: 'quarry',
-  legend: LEGEND,
+  legend: RG02_LEGEND,
   /*
-   * The live line runs along the north side on its poles (`F`: you can see and shoot over it, not
-   * walk through it). The rain cistern (`W`) has overflowed across the yard: the standing water
-   * (`~`) beside the line is SF-2.1's wet ground. The dead copper spur hangs at the back (east),
-   * on its own poles. The gate west (rows 5-6) goes back to the parade ground.
+   * A Korra-era power yard in the old outpost, pinched between Luli's generator shed (`U`, the
+   * north-west corner, where the live line starts), a low rocky rise on the south side and the
+   * line poles. The live line runs east from the shed along the north side on its poles (`F`: you
+   * can see and shoot over it, not walk through it). The rain cistern (`W`) has overflowed across
+   * the yard: the standing water (`~`) beside the line is SF-2.1's wet ground. The dead copper spur
+   * hangs at the back (east), on its own poles. The gate west (rows 5-6) goes back to the parade
+   * ground. The yard's clutter (`d` and `u`: coils, transformer drums, cable reels, warning signs)
+   * lines its edges, and the workshop bench stands by the south-west corner.
    *
    * PLACEHOLDER RULE: a live line that shocks the wet ground beside it needs engine work (the
    * script's build list: "wet ground beside a live line as a surface"). Until then the puddles
    * are ordinary water, so lightning on them shocks as it does on the Forest Road.
    */
   rows: [
-    '###################',
-    '#FFFFFFFFFFFFFFWWW#',
-    '#....~~~~~~....WWW#',
+    '#UUUUdddddddddd####',
+    '#UUUUFFFFFFFFFFWWW#',
+    '#UUUU~~~~~~....WWW#',
     '#...~~~~~~~~~...~~#',
-    '#....~~~~~~~.....F#',
+    'd....~~~~~~~.....F#',
     '=.........~~.....F#',
     '=................F#',
-    '#........~~~.....F#',
-    '#.......~~~~~....F#',
-    '#................##',
-    '#.................#',
-    '###################',
+    'd........~~~.....F#',
+    'd.......~~~~~....F#',
+    'dd...............dd',
+    'd......dddd.......#',
+    '###########uddddd##',
   ],
   partySpawns: COMBAT_PARTY_SPAWNS,
   objective: 'Talk to Luli in the power yard, or go west to the parade ground.',
