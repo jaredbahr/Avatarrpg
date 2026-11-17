@@ -1376,7 +1376,7 @@ export interface EndRecap {
 
 interface StoryState {
   readonly nodeId: string | null;
-  /** Index into the app's player list; rotated after every choice. */
+  /** Index into the app's player list; rotated after every choice and at each map change. */
   readonly deciderIndex: number;
   readonly visited: readonly string[];
   /** Cursor into a dialogue node's lines. */
@@ -1695,6 +1695,11 @@ export type GameEvent =
       readonly unlocked: readonly string[];
     }
   | { readonly type: 'battleEnded'; readonly outcome: 'victory' | 'defeat' }
+  /**
+   * The party crossed from one explore map to another, and the player in charge
+   * moved on to the next person at the table (#846). `deciderIndex` is the new one.
+   */
+  | { readonly type: 'leaderPassed'; readonly deciderIndex: number }
   /** A combo rule fired for the first time in this save (#622). */
   | { readonly type: 'comboDiscovered'; readonly comboId: string }
   | { readonly type: 'screenChanged'; readonly screen: Screen }

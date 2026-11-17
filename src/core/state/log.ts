@@ -163,6 +163,7 @@ export function describeEvent(
     case 'storyNodeEntered':
     case 'dialogueAdvanced':
     case 'screenChanged':
+    case 'leaderPassed': // the app names who is in charge; the core has no names
     case 'battleStarted':
     case 'comboDiscovered': // its surfaceChanged already printed the rule's sentence
       return null;

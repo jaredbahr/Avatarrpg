@@ -121,7 +121,7 @@ for (const view of VIEWPORTS) {
   test.describe(() => {
     test.use({ viewport: view.size });
     for (const size of ['off', 'on', 'huge'] as const satisfies readonly LargeText[]) {
-      for (const kind of ['gate', 'chair', 'custody'] as const) {
+      for (const kind of ['gate', 'sled', 'custody'] as const) {
         test(`${kind} table vote fits every step at ${size} text${view.name}`, async ({ page }) => {
           await resetStorage(page, '?renderer=canvas');
           const names = kind === 'custody' ? ['Ava', 'Ben'] : ['Ava', 'Ben', 'Cleo'];
@@ -130,9 +130,9 @@ for (const view of VIEWPORTS) {
           });
           await setLargeText(page, size);
           expect(await page.evaluate(() => window.fnt!.app.settings.largeText)).toBe(size);
-          await enterNode(page, kind === 'chair' ? 'village_explore' : 'gate_escort_explore');
+          await enterNode(page, kind === 'sled' ? 'forest_explore' : 'gate_escort_explore');
           const node =
-            kind === 'gate' ? 'gate_parley' : kind === 'chair' ? 'plant_chair_talk' : 'ruon_choice';
+            kind === 'gate' ? 'gate_parley' : kind === 'sled' ? 'sq01_choice' : 'ruon_choice';
           await enterNode(page, node);
           const panel = page.locator('.choice-panel');
           await expect(panel).toHaveClass(
@@ -145,7 +145,7 @@ for (const view of VIEWPORTS) {
           );
           const before = await page.evaluate(() => window.fnt!.app.state!);
           const sessionBefore = await page.evaluate(() => window.fnt!.app.session.toMeta());
-          const picks = kind === 'gate' ? [0, 1, 0] : kind === 'chair' ? [0, 1, 2] : [0, 1];
+          const picks = kind === 'gate' ? [0, 1, 0] : kind === 'sled' ? [0, 1, 2] : [0, 1];
           for (let voter = 0; voter < names.length; voter++) {
             await expect(panel).toHaveAttribute('data-vote', 'pick');
             await expect(panel.locator('.choice-option')).toHaveCount(kind === 'custody' ? 2 : 3);
