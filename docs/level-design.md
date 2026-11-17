@@ -18,13 +18,16 @@ Also required before map work: `docs/art-lessons.md`, `docs/player-view-target.m
   statement of what the place is.
 - **Rows are drawn as rectangles for gameplay, then decorated.** Ba Dan is two rows of 4x3 and 4x4 house blocks,
   a straight canal and a straight two-cell road across a 24x16 box.
-- **Dressing has started to change the rules.** The RG-02 boards in pull request #844 add blocked cells (`n`, `u`)
+- **Dressing has started to change the rules.** The RG-02 boards (merged in #844) add blocked cells (`n`, `u`)
   across the market so scatter has somewhere to stand, because a solid piece must stand on a blocked cell. That is
   the backwards order written into collision. Core rule: blocked cells are decided at the blockout.
 - **"Ba Dan-level density" was read as a count.** The market went from 19 to about 77 standing pieces over six
   density passes. The owner's complaint that day was object placement. Density here now means: detail at edges and
   around work, with resting ground between (core section 7).
-- **Every object is generated alone,** so palette, detail and scale differ piece to piece.
+- **Scale and detail drift between pieces; colour does not.** Measured on the Saltstep kit (2026-11-17): clay jars
+  and a drying rack stand 0.9 of a person while a whole cottage is 1.24, and stalls are busy where the warehouse is
+  plain. The handoff's worry about palettes was wrong for this art: the generator already passes one palette, and
+  all 100 RG-02 objects use 34 colours from it.
 - **The ground reacts to houses only.** The baker gives a house an apron, a doorstep and a skirt, and gives objects
   a foot kit of tufts and pebbles. Nothing else changes the ground: no path to a well, no wear at a stall, no wet
   at a trough. Aprons and wear are code inside each board script, not data.
@@ -38,7 +41,7 @@ apron and the foot kit; residents and routines; the measured art rules; the cred
 motion.
 
 **Missing entirely:** a place brief; desire lines as data; set pieces as data; a ground-change (apron) layer as
-data; a top-down scale chart; a way to see a region's whole kit together; a documented view size; a general
+data; an agreed top-down scale chart; a way to see a region's whole kit together; a documented view size; a general
 answer for later states on a baked board.
 
 ## 2. This game's numbers
@@ -152,18 +155,23 @@ These add to core section 7.
   sources a map; choose them in the brief.
 - **Moving things.** Check every routine leg, flock and animal path against the finished layout
   (`routines.test` covers residents; the others are by eye).
-- **Scale** (proposed until measured against the approved Ba Dan houses and Kaya):
+- **Scale.** Measured on the Saltstep kit against Kaya (45 px of figure, standing), with the proposed range. The
+  ranges are proposals for the owner; the measurements are facts.
 
-| Kind of object                              | Height against a standing adult |
-| ------------------------------------------- | ------------------------------- |
-| Carried things: basket, bucket, sack, pot   | knee to hip (up to about half)  |
-| Barrel, crate stack, handcart, trough       | hip to chest (up to two thirds) |
-| Stall, rack, well with its frame, lamp post | head height to one and a half   |
-| Door                                        | about one and a fifth           |
-| Single-storey eave                          | at least one and a half         |
+| Kind of object                         | Measured today | Proposed range                           |
+| -------------------------------------- | -------------- | ---------------------------------------- |
+| Carried things: basket, rope coil, net | 0.58 to 0.67   | up to 0.5                                |
+| Barrel, table                          | 0.76           | up to 0.67                               |
+| Crate, pot, jar, handcart, drying rack | 0.80 to 0.91   | up to 0.75                               |
+| Well, crate stack                      | 1.09 to 1.11   | 0.9 to 1.1                               |
+| Stall                                  | 1.13 to 1.27   | 1.2 to 1.5                               |
+| Lamp post, tide pole                   | 1.47 to 1.53   | 1.5 to 1.8                               |
+| House (one storey to two)              | 1.24 to 1.98   | at least 1.6 for one storey, 2.4 for two |
+| Landmark tower                         | 2.51           | at least 3                               |
 
-State every object's size in px in its prompt and check it beside Kaya. Barrels and crates have been coming back
-too large.
+The pattern is that small things are too big and buildings too small, so everything crowds toward person height.
+A cottage at 1.24 beside jars at 0.91 is the clearest case. State every object's size in px in its prompt and
+check it in the kit picture beside Kaya.
 
 ## 7. Cohesion and art production for this game
 
@@ -186,12 +194,13 @@ These add to core section 8.
   reference. Order: tilesets, then anchors (buildings, the landmark), then set-piece members, then people.
 - **The kit picture** (core C9): every object of the region on the region's ground beside Kaya, at 3x, before any
   of it is placed. Remake what looks borrowed. It stays out of the repository, like all evidence.
-- **Palette: an open question, not a rule yet.** The handoff proposed remapping every object and tile to one
-  region palette of 40 to 48 colours at bake time. ADR 0104 dropped the single game palette, and `art-lessons.md`
-  records palette locks on generated animation frames as a failure. A remap of static objects at bake time is a
-  different thing and may work, but it is unproven here. Try it on one region's kit picture, remapped and not, and
-  let the owner choose by eye. Until then: build the region's ramps from its tilesets, measure how far each object
-  strays, and remake the worst.
+- **Palette is already solved; keep it that way.** Every object and tileset is generated with the game palette
+  (`prototypes/topdown/assets/palette.png`) as its target. A trial on the Saltstep kit (2026-11-17) found all 100
+  RG-02 objects use 34 colours, all in that palette, so a bake-time remap changed no pixel. No region palette lock
+  is needed. The rule is only: never generate a piece without the palette target. Ba Dan's newest houses carry 49
+  to 137 near-duplicate shades each; that is worth a clean-up, not a new system.
+- **A region's identity comes from which part of the palette it uses** (core C10): its ground, its materials and
+  one signature colour, chosen in the brief.
 - **Cost.** An object is about 5 credits, a house about 9, a tileset 15, an NPC with idle and walk about 50, an
   enemy with five clips about 122, a portrait about 18. RG-02's four boards were about 1,520 credits, of which
   about 340 went on six density passes after the fact. Working from a kit list should remove most of that. Every
