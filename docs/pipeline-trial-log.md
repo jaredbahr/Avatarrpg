@@ -296,6 +296,8 @@ Each piece's door is on its sprite's centre, so `put()` keeps every door cell, r
   key is shared with other sessions. About an hour end to end, most of it waiting for the shared CI lock.
 - **Re-bake:** `pack-ground.ts --map ba_dan_village` (the new props are in `assets/objects_t3/`, which the board loader
   prefers over `objects12`; the houses replace `objects_bd13/`). Layout, footprints, blocked cells and base lines are unchanged.
+- **Smoke:** the village's chimney wisps were found by detecting each drawn chimney. The new houses have none, so each house
+  now has one wisp from a roof-ridge vent (`VENT` in `boards/baDan.ts`), five as before, which `topdownAmbience.test.ts` holds.
 - **Left as they were, on purpose:** `house_ne` (unplaced, listed in `LEFT_OUT`); the red `banner_pole` (red reads Fire
   Nation; `pack-ground.test.ts` measures its baked disc from `objects12/banner_pole.png`, so it needs its own change); the
   striped market awning, which is a market's, not a nation's.
