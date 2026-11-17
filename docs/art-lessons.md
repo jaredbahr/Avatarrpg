@@ -115,7 +115,11 @@ animation or presentation work. Add to it when something fails.
   - The palette lock first turned the plinths' cool greys into the water's blue: a ramp the area needs was missing.
     Compare 3x crops before and after a lock, and add the ramp rather than nudging colours.
   - Lowering the cobble's contrast to 0.55 still read busy in game at 3x, though it looked calm in a 1x composite.
-    Judge the ground in the game at the explore zoom; 0.42 held.
+    Judge the ground in the game at the explore zoom.
+  - Pulled to its mean at 0.42, the cobble went a flat, cold grey: "lifeless" beside the old warm cobble. Calm needs
+    warmth and a little of the stones' shape: warm the mean, keep the joints at more contrast than the faces.
+  - A worn-path tint first came back as thin, ruled pale lines (road markings), and before that a faint tint
+    vanished in the palette lock. Lift the paving a whole ramp step, in a broad band that wanders and thins.
 
 ### Characters and objects
 

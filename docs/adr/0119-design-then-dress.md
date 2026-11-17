@@ -53,17 +53,20 @@ no RNG draws, so the rest of the bake's sequence is unchanged).
 ### 3. Calm ground
 
 A board option: the paving keeps only its quiet variants, the grass fewer and softer ones, and after the terrain each
-soft ground's colours are drawn toward its own mean (paving 0.42, grass 0.72, earth 0.75). Houses' aprons, doorsteps
-and every shadow are drawn after, at full strength. Ba Dan's terrain also fills lone grass vertices inside the paving
+soft ground's colours are drawn toward its own mean (paving faces 0.38 and its dark joints 0.62, grass 0.72, earth
+0.75), and the paving's mean is warmed toward the art bible's limestone and packed-earth family, so calm is never a
+cold grey fill. A faint, broad wear along the plan's paths lifts the paving one ramp step and treads the grass toward
+earth. Houses' aprons, doorsteps and every shadow are drawn after, at full strength. Ba Dan's terrain also fills lone grass vertices inside the paving
 and makes the canal head one court.
 
 ### 4. The region palette lock
 
 A board option, applied last: every plate and upright pixel is remapped to the nearest colour of the area's palette in
 OKLab, no dithering, alpha untouched (`scripts/art/topdown/lib/look.ts`). Characters are never part of a bake and are
-never remapped. Ba Dan's palette (`scripts/art/topdown/palettes/baDan.ts`) is 50 colours in eight ramps, derived by
-k-means from the village's own calm bake and tidied by hand; it holds `#322125`. The composite goes from 2,839
-colours to 49 (one palette colour goes unused).
+never remapped. Ba Dan's palette (`scripts/art/topdown/palettes/baDan.ts`) is 52 colours in eight ramps, derived by
+k-means from the village's own calm bake and tidied by hand (the paving's stone ramp then warmed toward limestone
+and earth, with the neutral greys kept in the slate ramp for plinths, the well and the shrine); it holds `#322125`.
+The composite goes from 2,839 colours to 52.
 
 This does not reverse ADR 0104's answer for characters: the lock is for static, single-frame art only.
 

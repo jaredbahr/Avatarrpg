@@ -140,8 +140,15 @@ returns none. Apron kinds: `earth`, `flags`, `wet`, `hay`, `weeds`.
 ### Calm ground, detailed objects
 
 - The floor is low-contrast and calm; the objects carry the detail. On a paved square keep only the quiet tile
-  variants (no rubble stones, cracks or puddles) and draw the paving's contrast in toward its mean (Ba Dan: 0.42 of
-  its own, grass 0.72, earth 0.75). Keep grass variants few and soft, and leave open grass plain.
+  variants (no rubble stones, cracks or puddles) and draw the paving's contrast in toward its mean (Ba Dan: the
+  stone faces keep 0.38 of their own, the dark joints 0.62 so it still reads as cobble; grass 0.72, earth 0.75). Keep
+  grass variants few and soft, and leave open grass plain.
+- **Calm is not cold.** Pulling everything to its mean turned Ba Dan's cobble a flat, cold grey that read lifeless
+  beside the old one (owner, 2026-11-17). Warm the paving's mean toward the art bible's limestone (`#d8cbb0`) and
+  packed earth (`#b39064`) family, and keep the cool slate ramp for genuinely cool dressed stone.
+- **Wear the paths.** Along the plan's desire lines the paving goes one ramp step lighter (dust and polish) and grass is
+  trodden toward earth, in a broad band that wanders off the cell centres and thins to nothing at its edges. A narrow
+  band reads as ruled road markings; it has to be most of a cell wide and sparse.
 - No pinhole islands: a lone grass vertex inside paving becomes paving, as a lone cobble vertex in grass already
   became grass. Where paths meet, make one court rather than leaving the scraps between them.
 
