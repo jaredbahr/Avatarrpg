@@ -1357,6 +1357,14 @@ written "Thursday" again.
 **Kaya:** You don't know me, so you'll do. When this is over I'm coming back here to take these down and pack
 them in straw. There. Somebody's heard it.
 
+> **After `pq01_whole_story` or `pq01_quiet_help` —** (in place of Kaya's two lines above)
+>
+> **Kaya:** Not now. It was. I was good up to where the fire went out. After that I used to go. There was
+> always a ferry.
+>
+> **Kaya:** You don't know me, so you'll do. When this is over I'm coming back here to take these down and
+> pack them in straw. There. That's two people I've said it to.
+
 **Hua:** I'll hold the ladder. I'm seventy-three. I shan't hold it well.
 
 **Tenzo, with Dema** _(at the soup line)_
@@ -1867,3 +1875,7 @@ What changed in this file; the reasons and the proposals not applied are in the 
     DLG-08 ends: Ruon signed for two crates under the healing-house label and never lifted a lid, and Daiyu
     puts the second label on the table. The count from PQ-03 comes down by one (to seven after 9.2's ledger,
     `labels_ledger_read`; to thirty-eight without it). No line of DLG-08 is changed.
+12. **Kaya in 12.2 (owner, 2026-11-17).** After `pq01_whole_story` or `pq01_quiet_help` her leaving is in the
+    past tense ("After that I used to go. There was always a ferry."). Her commitment about the lanterns is
+    word for word the same, and ends "That's two people I've said it to." After `pq01_left`, or with the
+    quest unopened, the scene plays as it did.

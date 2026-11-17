@@ -202,12 +202,12 @@ and under them a boy is counting red beans out loud.
 >
 > **Kaya:** So how do you stop?
 >
-> **Luli:** Badly. Ask the board.
+> **Luli:** Badly. I stopped counting my days at nine. Counting was making it worse. Ask the board.
 
 > **If Tenzo is the student —**
 > **Tenzo:** When was your last day off?
 >
-> **Luli:** I've stopped counting. The board counts.
+> **Luli:** I stopped counting at nine. Counting was making it worse.
 >
 > **Tenzo:** Who tells you when to stop?
 >
@@ -1134,8 +1134,10 @@ Everything below is written into the scripts as recommended, per the standing in
       The approved name is Air Projection. The script uses the approved name and never calls it
       soundbending in dialogue; the rename is row C-20's work, not this file's.
     - **Luli's days.** Act II has her say "my ninth day without a day off"; the lesson is a day or more later,
-      and at the Causeway sheds it may be weeks later. She now says "I've stopped counting. The board
-      counts.", which holds whenever the table arrives.
+      and at the Causeway sheds it may be weeks later. _Decided (owner, 2026-11-17):_ she says "I stopped
+      counting at nine. Counting was making it worse." It is said to either student (Tenzo asks about her
+      day off; Kaya asks how she stops), it remembers the shipped ninth day, and it holds whenever the table
+      arrives.
     - **The level-five hints in `disciplines.ts`.** "Ask at the northern water tribes" (healing) and "Very few
       are" (lightning) contradict the bible's rule that teachers are reachable in the Reach and that these are
       not forgotten arts. Rows C-17 and C-19 already list them. When those rows are done, the hints should

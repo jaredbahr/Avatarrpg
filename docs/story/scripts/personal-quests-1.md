@@ -814,8 +814,9 @@ it, quickly and well.
   fall with `pq01_left`. Winning K.4 raises it a little; the collectors remember being offered Friday.
 - **Keepsake:** Oko's sleeping turtle duck (not after `pq01_left`).
 - **MQ-12, Scene 12.2:** Miri's forty lanterns arrive at the shed with "Thursday, if you're alive. M." That
-  scene plays for every Kaya and already works with all three outcomes: after `pq01_left`, "She's written
-  'Thursday' again" means Miri asked a second time after all.
+  scene plays for every Kaya. After `pq01_whole_story` or `pq01_quiet_help` her answer to Hua is in the past
+  tense ("After that I used to go"); after `pq01_left`, or with the quest unopened, it is the present, and
+  "She's written 'Thursday' again" means Miri asked a second time after all.
 - **MQ-15, Scene 15.4:** the "resolved" version (Kaya on the ladder, Miri holding it) plays after
   `pq01_whole_story` or `pq01_quiet_help`; the "open" version (the date on the crate lid) after `pq01_left` or
   if the quest was never opened.
