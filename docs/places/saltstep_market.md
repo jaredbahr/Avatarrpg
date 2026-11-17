@@ -6,7 +6,7 @@ rows, people and exits are moved; there is no ground art or dressing yet, so the
 **Owner (2026-11-17):** the open questions are delegated; plan 2, 32 by 18, rise and fall told not shown, no new
 track for now.
 
-`blockout: 3937a652ac8fb71f5ad9f1e1baf8a10983ecc3e7aace8d3c84e7d27d670a3b36` (sha256 of the rows joined by newlines)
+`blockout: 07c50f3b5b6a9c284b7ce18328ae32471aaf66f988032fc5fc542c68bfc51790` (sha256 of the rows joined by newlines)
 
 **One line:** a market that floats: you walk out over the water on planks to buy your lunch, and the shops move
 with the tide.
@@ -126,7 +126,8 @@ happen across the basin instead of something you are told.
   arrival view down the pole walk, and from every platform.
 - **Entry view:** the coast road levels out; the bowl stall and the cart stop are in front; past them the pole
   walk runs out to the bright poles and the flag. One living thing: the bowl-seller.
-- **Views** (10 by 7 cells each) and their one idea:
+- **Views** (about 10 by 5 cells each on an iPad; six named ideas across about eleven screens, the rest being
+  open water kept quiet on purpose) and their one idea:
   1. _Arrival:_ the road becomes a town.
   2. _The bowl stall:_ sit down, here is the custom.
   3. _The shore lane:_ the half-shut office with the brass plate.
@@ -146,8 +147,9 @@ happen across the basin instead of something you are told.
   an uneven ring, not a grid of squares.
 - **Exits:** the coast road mouth (west) keeps all three cues. The ferry is a story exit at the landing: the ramp
   and the post make it read as a way out before the story opens it.
-- **Size:** six views, about **32 by 18** cells, up from 24 by 16. That would make it the largest top-down board,
-  so the perf bench needs a new measurement (ADR 0106) and the region's board budget needs checking.
+- **Size:** **32 by 18** cells, up from 24 by 16: about eleven screens at the real view size, six of them named
+  views. When its board is baked it will be the largest top-down board alone, so the perf bench needs new frozen
+  limits (ADR 0106) and the region's board budget needs checking.
 
 ## Look and sound
 
@@ -196,6 +198,17 @@ Pieces marked _have_ are in the art merged with #844; the rest are for the kit l
 - **Walkable water.** Platforms and planks are wood cells; the basin is deep water. Boats are scenery on water.
 - **Blocked cells come from this plan only:** buildings, stall bodies, racks, posts, boats. No scatter cells. The
   `n` and `u` cells on today's quay go.
+
+## Blockout v1 findings (2026-11-17)
+
+- **The entry view missed the pole walk.** It showed the bowl stall and a house; the walk started at row 8, off the
+  bottom of the screen.
+- **The quay was too deep.** Four rows of sand across the whole width still read as the main place.
+- **The real view is about 10 by 4.7 cells,** not 10 by 7: the header, objective box and dock take about a third of
+  the screen height.
+
+Blockout v2 thins the quay to two rows, roots the pole walk at row 7, moves everything below up one row, and adds
+an arrival shot that frames the first view lower. The board stays 32 by 18; the two bottom rows are open water.
 
 ## What the blockout review should ask
 

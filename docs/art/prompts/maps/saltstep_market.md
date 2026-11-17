@@ -19,12 +19,12 @@ Saltstep, a market town built out over a grey bay.
 32 columns by 18 rows, counted from 0 at the top-left corner. The painting is the ground and what stands on it, nothing else: the game draws its own grid, movement contours, units, props and effects over it, so every edge in the painting that matters to the rules sits exactly on a tile edge.
 
 - Road (4 tiles): a 2×2 block at columns 0–1, rows 5–6 (middle left).
-- Trees (58 tiles): 57 tiles (top centre), row 0: columns 0–31; row 1: columns 0–1, 11–13 and 28–31; row 2: columns 0, 12 and 29–31; rows 3–4: columns 0 and 30–31; rows 5–6: columns 30–31; row 7: column 31; one tile at column 0, row 7 (middle left).
-- Timber walls (35 tiles): a 5×3 block at columns 15–19, rows 1–3 (top centre); 10 tiles (top left), rows 1–2: columns 4–7; row 3: columns 5–6; a 3×2 block at columns 23–25, rows 1–2 (top right); one tile at column 12, row 12 (bottom centre); one tile at column 23, row 13 (bottom right); one tile at column 7, row 14 (bottom left); one tile at column 10, row 16 (bottom left).
-- Stone walls (215 tiles): 132 tiles (bottom centre), row 8: columns 0–1 and 30–31; row 9: columns 0–3 and 28–31; rows 10–11: columns 0–6 and 29–31; row 12: columns 0–5 and 29–31; row 13: columns 0–4 and 27–31; row 14: columns 0–4 and 25–31; row 15: columns 0–5 and 24–31; row 16: columns 0–7, 13–15 and 20–31; row 17: columns 0–31; 82 tiles (the centre), row 7: columns 11–12; row 8: columns 10–14 and 20–22; rows 9–10: columns 9–25; row 11: columns 9–24; rows 12–13: columns 13–20; row 14: columns 14–19; one tile at column 5, row 6 (middle left).
-- Sand (89 tiles): 89 tiles (the centre), row 5: columns 2–13 and 20–25; row 6: columns 2–4 and 6–27; row 7: columns 1–10 and 13–29; row 8: columns 2–6, 9, 15–19, 23–25 and 28–29; row 9: columns 4–6.
-- Plank floors (85 tiles): 85 tiles (bottom centre), rows 8–9: columns 7–8 and 26–27; row 10: columns 7–8 and 26–28; row 11: columns 7–8 and 25–28; row 12: columns 6–11 and 21–28; row 13: columns 5–12, 21–22 and 24–26; row 14: columns 5–6, 8–13 and 20–24; row 15: columns 6–23; row 16: columns 8–9, 11–12 and 16–19.
-- Open ground everywhere else: grass (67 tiles), bare earth (23 tiles).
+- Trees (59 tiles): 58 tiles (top centre), row 0: columns 0–31; row 1: columns 0–1, 11–13 and 28–31; row 2: columns 0, 12 and 29–31; rows 3–4: columns 0 and 30–31; rows 5–7: columns 30–31; one tile at column 0, row 7 (middle left).
+- Timber walls (35 tiles): a 5×3 block at columns 15–19, rows 1–3 (top centre); 10 tiles (top left), rows 1–2: columns 4–7; row 3: columns 5–6; a 3×2 block at columns 23–25, rows 1–2 (top right); one tile at column 12, row 11 (the centre); one tile at column 23, row 12 (bottom right); one tile at column 7, row 13 (bottom left); one tile at column 10, row 15 (bottom left).
+- Stone walls (242 tiles): 161 tiles (bottom centre), row 7: column 1; row 8: columns 0–3 and 28–31; rows 9–10: columns 0–6 and 29–31; row 11: columns 0–5 and 29–31; row 12: columns 0–4 and 27–31; row 13: columns 0–4 and 25–31; row 14: columns 0–5 and 24–31; row 15: columns 0–7, 13–15 and 20–31; rows 16–17: columns 0–31; 80 tiles (the centre), row 7: columns 9–12 and 19–22; rows 8–9: columns 9–25; row 10: columns 9–24; rows 11–12: columns 13–20; row 13: columns 14–19; one tile at column 5, row 6 (middle left).
+- Sand (60 tiles): 59 tiles (the centre), row 5: columns 2–13 and 20–25; row 6: columns 2–4 and 6–26; row 7: columns 2–6, 13–18 and 23–25; row 8: columns 4–6; one tile at column 28, row 7 (middle right).
+- Plank floors (85 tiles): 85 tiles (the centre), rows 7–8: columns 7–8 and 26–27; row 9: columns 7–8 and 26–28; row 10: columns 7–8 and 25–28; row 11: columns 6–11 and 21–28; row 12: columns 5–12, 21–22 and 24–26; row 13: columns 5–6, 8–13 and 20–24; row 14: columns 6–23; row 15: columns 8–9, 11–12 and 16–19.
+- Open ground everywhere else: grass (68 tiles), bare earth (23 tiles).
 - The party enters from the left, standing at (1, 5), (1, 6), (2, 5), (2, 6), (1, 4), (2, 4); enemies come from the right. Paint nothing there that would read as an object to walk round.
 
 The rows as the rules read them:
@@ -36,9 +36,8 @@ U,,,BBBB,,,,U,,BBBBB,,,BBB,,,UUU
 U,,,,BB,,,,,,,,BBBBB,,,,,,,,,,UU
 U,..........,,,.......,,,,,,,,UU
 ==::::::::::::......::::::,,,,UU
-==:::n::::::::::::::::::::::,,UU
-U::::::::::WW:::::::::::::::::,U
-WW:::::ww:WWWWW:::::WWW:::ww::WW
+==:::n:::::::::::::::::::::,,,UU
+UW:::::wwWWWW::::::WWWW:::ww:,UU
 WWWW:::wwWWWWWWWWWWWWWWWWWwwWWWW
 WWWWWWWwwWWWWWWWWWWWWWWWWWwwwWWW
 WWWWWWWwwWWWWWWWWWWWWWWWWwwwwWWW
@@ -47,6 +46,7 @@ WWWWWwwwwwwwwWWWWWWWWwwkwwwWWWWW
 WWWWWwwkwwwwwwWWWWWWwwwwwWWWWWWW
 WWWWWWwwwwwwwwwwwwwwwwwwWWWWWWWW
 WWWWWWWWwwkwwWWWwwwwWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
 ```
 
