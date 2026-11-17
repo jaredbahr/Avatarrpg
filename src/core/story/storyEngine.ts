@@ -187,9 +187,6 @@ export function enterStoryNode(
       }
 
       case 'explore': {
-        const passed = passLeadership(content, current, node.mapId);
-        current = passed.state;
-        events.push(...passed.events);
         events.push({ type: 'screenChanged', screen: 'explore' });
         const map = content.maps.get(node.mapId);
         const remembered = current.world.returnPos[node.mapId];
@@ -272,9 +269,9 @@ export function advanceDialogue(content: ContentIndex, state: GameState): StepRe
 }
 
 /**
- * The player in charge passes to the next person when the party walks from one
- * explore map into another (#846). A fight's map is not one: coming back from a
- * battle stays with whoever was in charge. The rotation is the same counter the
+ * The player in charge passes to the next person when the party walks out of one
+ * explore map into another (#846). Only a walk through an exit counts: a story
+ * beat that lands the party somewhere, or a fight's map, does not move it. The rotation is the same counter the
  * story choices turn, so it saves and loads with nothing new in the blob.
  */
 export function passLeadership(
