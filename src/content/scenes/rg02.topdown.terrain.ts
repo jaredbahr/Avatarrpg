@@ -34,6 +34,8 @@ export interface Rg02TerrainConfig {
   readonly chars: Readonly<Record<string, RgClass>>;
   /** What lies past the grid where the rows do not carry on (the harbour, or the void). */
   readonly beyond: RgClass;
+  /** Row characters that carry on only one cell past the grid, not to the plate's edge (a yard's clutter on its rim). */
+  readonly ends?: string;
   readonly mouths: readonly RimMouth[];
 }
 
@@ -72,6 +74,8 @@ export class Rg02Terrain {
     const k = this.config.chars[c] ?? RG.earth;
     // the rows carry on past the grid only where they lead somewhere: the rim and the void end there
     if ((cx !== x || cy !== y) && k === RG.void) return this.config.beyond;
+    if (Math.max(Math.abs(cx - x), Math.abs(cy - y)) > 1 && this.config.ends?.includes(c))
+      return this.config.beyond;
     return k;
   }
 
