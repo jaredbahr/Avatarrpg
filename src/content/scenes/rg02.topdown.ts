@@ -175,6 +175,26 @@ export const SALTSTEP_MARKET_OBJECTS: readonly TopDownObject[] = [
   piece('nets', 'net_pile', 'prop', [[14, 7]], true, { base: -14 }),
   piece('lamp_east', 'dock_lamp', 'prop', [[16, 7]], true, { base: -14 }),
   piece('quay_table', 'fish_table', 'prop', [[20, 7]], true, { base: -14 }),
+  // The quay's middle (the market's second density pass): a frontage of stalls, jars and crates along row 4, and stall
+  // islands staggered through the lane, a row of the lane always open beside each, with mats of fish, a lantern post
+  // and a cart between. Earth Kingdom pieces throughout.
+  flip(piece('mid_parasol_w', 'ek_stall_parasol', 'prop', block(6, 7, 4, 4), true)),
+  piece('mid_jars', 'clay_jars', 'prop', [[12, 4]], true),
+  flip(piece('mid_crates_n', 'fish_crates', 'prop', [[15, 4]], true)),
+  piece('mid_baskets_ne', 'basket_tower', 'prop', [[20, 4]], true),
+  piece('mid_cart', 'ek_cart', 'prop', [[6, 6]], true),
+  piece('mid_tower_w', 'basket_tower', 'prop', [[8, 5]], true),
+  piece('mid_stall_green', 'ek_stall_green', 'prop', block(10, 11, 5, 5), true),
+  piece('mid_lantern', 'lantern_post', 'prop', [[13, 6]], true),
+  flip(piece('mid_stall_green_e', 'ek_stall_green', 'prop', block(15, 16, 5, 5), true)),
+  piece('mid_hang', 'fish_hang', 'prop', [[18, 5]], true),
+  piece('mid_jars_sw', 'clay_jars', 'prop', [[2, 7]], true, { base: -14 }),
+  flip(piece('mid_baskets_se', 'fish_baskets', 'prop', [[18, 7]], true, { base: -14 })),
+  piece('mid_crates_se', 'fish_crates', 'prop', [[19, 7]], true, { base: -14 }),
+  piece('mat_a', 'fish_mat', 'flat', [[9, 6]], false, { base: -4 }),
+  flip(piece('mat_b', 'fish_mat', 'flat', [[13, 5]], false, { base: -4 })),
+  piece('mat_c', 'fish_mat', 'flat', [[17, 6]], false, { base: -2 }),
+  flip(piece('mat_d', 'fish_mat', 'flat', [[5, 6]], false, { x: 6, base: -2 })),
   // The jetties: the broth stall's, the customs stall behind its clerk, the fish stall by the ferry landing, bollards
   // and the tide pole at the end of the customs pier.
   piece('broth_stall', 'stall_broth', 'prop', block(5, 6, 9, 9), true),

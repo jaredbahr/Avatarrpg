@@ -97,7 +97,9 @@ export const SALTSTEP_MARKET: MapDef = {
    * bites into it at an inlet (row 7). The jetties reach out at different lengths: the broth
    * stall's, the customs pier (the longest), a crooked landing stage and the ferry landing to the
    * east. Stalls (`G`), bollards and the tide pole (`F`) and the quay's scatter (`n`, `u`) are
-   * blocked cells their pieces stand on; rows 5-6 and column 3 stay open, and the rim walkable
+   * blocked cells their pieces stand on; the quay's middle is dressed with stalls, carts and crates staggered between
+   * rows 5 and 6 so one row of the lane is always open (each island has a gap of both rows beside it), column 3 stays
+   * open, and the rim walkable
    * only at the coast road's mouth.
    */
   rows: [
@@ -105,10 +107,10 @@ export const SALTSTEP_MARKET: MapDef = {
     'U,,,uBBBBu,UUuBBBBBu,UUU',
     'U,u,,BBBBu,,u,BBBBB,,u,U',
     'U,,,,,,,,,,,,,,,,,,,,,,U',
-    'U:::::::n:nn:n::::nn:nUU',
-    '==::::::::::::::::::::wU',
-    '==::::::::::::::::::::wU',
-    'U:::n:nWWn::n:n:n:::n:wU',
+    'U:::::nnn:nnnn:n::nnnnUU',
+    '==::::::n:nn:::nn:n:::wU',
+    '==::::n::::::n::::::::wU',
+    'U:n:n:nWWn::n:n:n:nnn:wU',
     'WWWwwwwWWWwwGwWwWwwGGwwW',
     'WWWwwGGWWWwwwwWwwWwwwwWW',
     'WWWWwFWWWWWwwWWWwWFwwWWW',
