@@ -131,6 +131,7 @@ import {
   unseenCombatTips,
   type CombatTipFeature,
 } from './combatGuidance';
+import { defendHintFlag, defendHintFor, type DefendHint } from './defendHint';
 
 /** What the HUD says while the AI acts; a guest is named as one (ADR 0116). */
 export function actingTurnCopy(unit: Pick<Unit, 'faction' | 'name'>): string {
@@ -284,6 +285,12 @@ export class CombatScene implements Scene {
   private lobs = new Map<string, number | null>();
   private inspector: UnitInspector | PropInspector | null = null;
   private readonly movementThreatQuery: ReturnType<typeof createMovementThreatQuery>;
+  /** The last "stay safe" hint, so a redraw of the same board does not ask the rules again. */
+  private defendHintCache: {
+    battle: BattleState;
+    unitId: string;
+    hint: DefendHint | null;
+  } | null = null;
 
   /** The participant who last acknowledged the hand-off banner. */
   private handedOffTo: string | null = null;
@@ -2045,9 +2052,53 @@ export class CombatScene implements Scene {
     if (this.pending) {
       actions.appendChild(this.confirmBar(unit));
     } else {
-      const hint = this.aimHint(unit);
+      const hint = this.aimHint(unit) ?? this.defendHintBar(unit);
       if (hint) actions.appendChild(hint);
     }
+  }
+
+  /**
+   * The "stay safe" line (#846): one short hint when the hero is low or could be
+   * hit hard, naming a heal, Guard or a safe step they really have. It speaks
+   * only while the hero is idle (never over a pending decision or an aim),
+   * only with guidance on, and never in the guided first fight, which already
+   * has a coach. "Got it" hides that kind of hint for good, in a
+   * `guidance.tip.*` flag like the one-time tips.
+   */
+  private defendHintBar(unit: Unit): HTMLElement | null {
+    const battle = this.battle();
+    const state = this.app.state;
+    if (
+      !battle ||
+      !state ||
+      this.mode.kind !== 'idle' ||
+      this.battleOpening ||
+      !this.app.settings?.combatGuidance ||
+      isGuidedFight(battle, this.app.content.encounters)
+    )
+      return null;
+    const cached = this.defendHintCache;
+    let hint: DefendHint | null;
+    if (cached && cached.battle === battle && cached.unitId === unit.id) hint = cached.hint;
+    else {
+      hint = defendHintFor(this.app.content, battle, unit, this.movementThreatQuery);
+      this.defendHintCache = { battle, unitId: unit.id, hint };
+    }
+    if (!hint || state.flags[defendHintFlag(hint.kind)] === true) return null;
+    const kind = hint.kind;
+    return el(
+      'div',
+      { class: 'confirm-bar defend-hint', attrs: { role: 'status', 'aria-live': 'polite' } },
+      el('span', { class: 'defend-hint-text', text: hint.text }),
+      button(
+        'Got it',
+        () => {
+          this.saveGuidanceFlags({ [defendHintFlag(kind)]: true });
+          this.renderHud();
+        },
+        { class: 'btn-ghost' },
+      ),
+    );
   }
 
   /**

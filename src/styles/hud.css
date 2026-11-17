@@ -2262,7 +2262,8 @@ html[data-contrast='high'] .hud-panel::after {
     min-width: 5rem;
   }
 
-  html[data-large-text='off'] .combat-scene .action-bar:not(:has(.confirm-dialog)) > .aim-hint {
+  html[data-large-text='off'] .combat-scene .action-bar:not(:has(.confirm-dialog)) > .aim-hint,
+  html[data-large-text='off'] .combat-scene .action-bar:not(:has(.confirm-dialog)) > .defend-hint {
     grid-column: 2;
     grid-row: 2;
     align-self: stretch;
@@ -2413,6 +2414,28 @@ html[data-contrast='high'] .hud-panel::after {
 .aim-hint {
   border-color: var(--c-line);
   background: color-mix(in srgb, var(--c-bg) 92%, transparent);
+}
+
+/* The "stay safe" hint (#846): one quiet line and a dismiss, in the same dock slot. */
+.defend-hint {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  border-color: var(--c-line);
+  background: color-mix(in srgb, var(--c-bg) 92%, transparent);
+  font-size: var(--fs-sm);
+}
+
+.defend-hint > .defend-hint-text {
+  min-width: 0;
+}
+
+.defend-hint > button {
+  min-height: var(--tap);
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .preview-chips {
