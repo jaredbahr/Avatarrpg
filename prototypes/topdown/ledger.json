@@ -33081,6 +33081,480 @@
     "object_id": "e6914fd5-e3f6-4d6b-847e-ded2efebfd59"
    },
    "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_net_pile_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "d106b165-36a3-49cc-bed9-c64900fc589f",
+   "status": "completed",
+   "settings": {
+    "description": "a heap of brown fishing net piled on the ground with a few cork floats and a coi...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 5391.0654640625,
+   "balance_after": 5386.0654640625,
+   "secs": 25,
+   "notes": "",
+   "ids": {
+    "background_job_id": "d106b165-36a3-49cc-bed9-c64900fc589f",
+    "object_id": "f1bab538-2287-47df-9980-7398e7dea191"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_fish_baskets_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "db63192d-975c-49ef-a7ee-20ffa14bc82a",
+   "status": "completed",
+   "settings": {
+    "description": "two round woven wicker baskets side by side, one holding silver fish, one empty,...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 5386.0654640625,
+   "balance_after": 5381.0654640625,
+   "secs": 30,
+   "notes": "",
+   "ids": {
+    "background_job_id": "db63192d-975c-49ef-a7ee-20ffa14bc82a",
+    "object_id": "deb72d7c-e06a-4a10-ad25-257dfa558032"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rope_coil_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "2709c573-de9e-4991-b98b-40ae2454e20c",
+   "status": "completed",
+   "settings": {
+    "description": "a big neat coil of thick hemp rope lying flat on the ground beside a small woode...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 5381.0654640625,
+   "balance_after": 5376.0654640625,
+   "secs": 19,
+   "notes": "",
+   "ids": {
+    "background_job_id": "2709c573-de9e-4991-b98b-40ae2454e20c",
+    "object_id": "7ba3c8ad-2c01-4774-ac21-104c4a5e435d"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_training_dummy_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "dcf04e87-4223-4d3b-99af-37d5913b626d",
+   "status": "completed",
+   "settings": {
+    "description": "a wooden training dummy: a straw-stuffed sacking body tied to an upright post wi...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 56
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 5376.0654640625,
+   "balance_after": 5371.0654640625,
+   "secs": 30,
+   "notes": "",
+   "ids": {
+    "background_job_id": "dcf04e87-4223-4d3b-99af-37d5913b626d",
+    "object_id": "720587c2-2b8f-4181-bec3-0eb5520bd790"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_water_trough_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "9d8b387b-3dbb-49c9-ae49-7f65c147799a",
+   "status": "completed",
+   "settings": {
+    "description": "a long low wooden water trough on short legs, full of water, an iron band round ...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 64,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 5371.0654640625,
+   "balance_after": 5366.0654640625,
+   "secs": 25,
+   "notes": "",
+   "ids": {
+    "background_job_id": "9d8b387b-3dbb-49c9-ae49-7f65c147799a",
+    "object_id": "d82d3c94-fa16-49db-974e-ea964542b4d0"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_weapon_rack_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "a68309fd-899e-45b6-abdf-320790123691",
+   "status": "completed",
+   "settings": {
+    "description": "an upright wooden rack of wooden practice staffs and blunt wooden training spear...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 56
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 5366.0654640625,
+   "balance_after": 5361.0654640625,
+   "secs": 19,
+   "notes": "",
+   "ids": {
+    "background_job_id": "a68309fd-899e-45b6-abdf-320790123691",
+    "object_id": "440b11c7-4739-4525-ad5e-e24461a96dde"
+   },
+   "region": "saltstep_emberwatch"
   }
  ],
  "end_balance": 16728.0,

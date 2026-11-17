@@ -48,6 +48,13 @@ IT = {
     'parade_wall': ('a straight section of old outpost wall: weathered red-ochre plaster with a few cream painted patches, a low grey stone foundation, a dark tiled coping along the top; straight front view, horizontal base, plain cut ends left and right so sections join, no door, no window, no side wall; it fills the canvas, no empty margin', 120, 64, 120, 72),
     'yard_fence': ('a straight section of rough wooden yard fence: three horizontal weathered planks nailed to square posts at each end; straight front view, horizontal base; it fills the canvas width, no empty margin', 80, 36, 80, 48),
     'yard_fence_side': ('a straight section of the same rough wooden yard fence running straight away from the viewer: seen end-on, a narrow upright strip of square posts one behind the other with the plank ends between them', 16, 56, 48, 64),
+    # Dressing for the market's quay and the parade ground (owner, 2026-11-15): small scatter on blocked cells.
+    'net_pile': ('a heap of brown fishing net piled on the ground with a few cork floats and a coil of its rope', 36, 22, 48, 48),
+    'fish_baskets': ('two round woven wicker baskets side by side, one holding silver fish, one empty', 36, 24, 48, 48),
+    'rope_coil': ('a big neat coil of thick hemp rope lying flat on the ground beside a small wooden barrel', 32, 26, 48, 48),
+    'training_dummy': ('a wooden training dummy: a straw-stuffed sacking body tied to an upright post with a cross-bar for arms, standing on a small wooden base', 24, 44, 48, 56),
+    'water_trough': ('a long low wooden water trough on short legs, full of water, an iron band round each end', 60, 24, 64, 48),
+    'weapon_rack': ('an upright wooden rack of wooden practice staffs and blunt wooden training spears leaning in a row', 40, 44, 48, 56),
     'tool_crates': ('two stacked plain wooden supply crates with rope handles and a small sack beside them', 36, 32, 48, 48),
     # Bo-shan's delivery cart (Act I's ending; the story bible: Parcel is an ostrich horse), seen from the side so
     # the bird and the cart both read.
