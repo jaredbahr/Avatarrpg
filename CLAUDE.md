@@ -14,6 +14,10 @@ For camera, interface, environment and character presentation work, also read
 `docs/player-view-target.md`: it records Jared's approved long-term player views,
 their interpretation and the staged delivery plan.
 
+For designing, building or dressing a map (explore or combat), read `docs/level-design-core.md` and then
+`docs/level-design.md`: the place brief comes first, then the blockout, then the ground, then set pieces, and
+art last. A map with no brief gets one before anything is added to it.
+
 ## Current goal: an internal technical demo, Ba Dan to the quarry and back (owner, 2026-11-11; reframed 2026-11-14)
 
 The game is meant to be an **epic, long saga with beautiful storytelling** (think Final Fantasy) that the owner plays
