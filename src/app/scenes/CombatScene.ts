@@ -2332,6 +2332,7 @@ export class CombatScene implements Scene {
             : 'No move points left this turn',
     });
     moveButton.prepend(mark(UI_MARKS.move));
+    moveButton.setAttribute('aria-pressed', String(moveActive));
     moveButton.appendChild(el('span', { class: 'action-sub', text: `${unit.move} left` }));
     row.appendChild(moveButton);
 
@@ -2409,6 +2410,8 @@ export class CombatScene implements Scene {
     });
 
     // The ability's own mark above its name, in its element's colour; the
+    node.setAttribute('aria-pressed', String(selected));
+
     // cost as words under it.
     node.prepend(mark(iconMarkup(markKindFor(ability))));
     node.appendChild(el('span', { class: 'action-sub', text: `${ability.apCost} AP` }));
