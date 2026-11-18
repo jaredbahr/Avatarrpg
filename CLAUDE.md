@@ -123,6 +123,8 @@ F]` (`--help` for the rest), briefed like an issue: the files, the rules, what d
   player-facing words, feel or design, or judgment calls, and never send it secrets. In cloud sessions the proxy adds
   the key; elsewhere set `DEEPSEEK_API_KEY`. Prefer it over a Sonnet or Haiku subagent for anything it can do from
   the files you send it.
+- **DeepSeek is Claude's tool, not Codex's** (Jared, 2026-11-15). Only Claude calls DeepSeek. Codex has no DeepSeek
+  access: it works its own Codex issues by itself, so never write a Codex issue that assumes DeepSeek.
 
 Rule of thumb: needs taste, the story or deep reasoning, Claude. Fully specified and needs a real PR, a Codex issue.
 Fits in a paragraph and can be checked by running something, DeepSeek.
