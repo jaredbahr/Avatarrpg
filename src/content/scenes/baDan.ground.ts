@@ -25,16 +25,19 @@ import {
 /** The brief's desire lines (`docs/places/ba_dan_village.md`, "Daily life"), in cells (a cell's centre is +0.5). */
 export const BA_DAN_TRACKS: readonly GroundTrack[] = [
   // the carts from the quarry: the old paving under it, rutted and worn pale
+  // the stone carts' road in from the quarry: packed earth, two wheel ruts and a worn middle, narrowing through the gate
   {
     id: 'east_road',
     line: [
-      [32, 9.6],
-      [26, 9.6],
+      [32, 9.55],
+      [29.5, 9.6],
+      [27.5, 9.6],
       [23.5, 9.5],
       [21, 8.7],
       [17.5, 8.6],
     ],
     width: 2,
+    widths: [1.5, 1.4, 1.9, 2, 2, 1.8],
     wear: 3,
     ruts: true,
   },
@@ -169,7 +172,7 @@ export const BA_DAN_TRACKS: readonly GroundTrack[] = [
       [27, 8.5],
     ],
     width: 1,
-    wear: 2,
+    wear: 1,
   },
   {
     id: 'coast_sign',
@@ -218,20 +221,25 @@ export const BA_DAN_APRONS: readonly GroundApron[] = [
   { id: 'trough', anchor: 'trough', kind: 'wet', at: [21.5, 7.6], r: 1.2 },
   door('shop_door', 'bd02.shopfront', 20, 7, 1),
   door('mira_door', 'home.mira', 13, 7, 0.8),
-  door('hut_door', 'bd03.post', 27, 8, 1),
-  { id: 'shrine', anchor: 'shrine', kind: 'packed', at: [25.5, 8.15], r: 0.9 },
+  door('hut_door', 'bd03.post', 27, 8, 0.55),
+  { id: 'shrine', anchor: 'shrine', kind: 'packed', at: [25.5, 8.1], r: 0.5 },
   // the mason's yard: the one place pale chips lie
   { id: 'mason_yard', anchor: 'home.hesra', kind: 'chips', rect: [5, 6, 8, 8] },
   // the vegetable gardens: common strips, one per household, rows east-west
   { id: 'gardens', anchor: 'gardens', kind: 'tilled', rect: [26, 2, 28, 4] },
   // the wash steps: the kerb darker and damp at the water
   { id: 'wash_steps', anchor: 'wash_steps', kind: 'damp', rect: [8, 11, 11, 11] },
+  // grass surviving in the square's corners nobody walks, so the square reads as a place with edges
+  { id: 'square_ne', anchor: 'square', kind: 'sward', rect: [15, 7, 17, 7] },
+  { id: 'square_se', anchor: 'square', kind: 'sward', rect: [15, 11, 17, 11] },
+  // the wash steps: treads cut down the north bank into the canal
+  { id: 'wash_treads', anchor: 'wash_steps', kind: 'treads', rect: [9, 12, 10, 12] },
   // the ford: wet mud where the old road goes under
   { id: 'ford', anchor: 'ford', kind: 'mud', at: [1.2, 10], r: 1.4 },
   door('gao_back', 'home.gao', 22, 3),
   door('pella_door', 'home.pella', 9, 14),
   door('school_door', 'bd05.school', 6, 15),
-  door('dorin_door', 'home.dorin', 26, 7),
+  door('dorin_door', 'home.dorin', 26, 7, 0.5),
   door('hanru_door', 'home.hanru', 26, 15),
   door('amri_door', 'home.amri', 16, 15),
   door('leto_door', 'home.leto', 4, 15),
@@ -315,8 +323,21 @@ export const BA_DAN_GROUND_SPEC: GroundSpec = {
       terrain: 'D',
       calm: 0.36,
       grade: [0.98, 0.97, 0.95],
+      // packed darker where feet go, loose and pale at its fringes and against walls
+      wears: 'packs',
+      drifts: true,
     },
-    // the east road's old paving: the village's approved cobble, calmed and warmed toward limestone
+    // the east road: the stone carts' packed earth, calm, darker than the square's dust
+    {
+      id: 'road',
+      tile: { set: 'q_floor32b', key: 'LLLL' },
+      reads: 'ground',
+      terrain: 'D',
+      calm: 0.22,
+      grade: [0.86, 0.82, 0.76],
+      wears: 'packs',
+    },
+    // the bridge's paving, the only paving on the board: the village's approved cobble, calmed and warmed
     {
       id: 'cobble',
       tile: { set: 'gc32', key: 'c1111' },
@@ -334,14 +355,14 @@ export const BA_DAN_GROUND_SPEC: GroundSpec = {
       calm: 0.55,
       grade: [0.66, 0.72, 0.74],
     },
-    // the quarry hillside above the north rim
+    // the quarry hillside above the north rim: pale stone scree, darker and calmer than the lawn
     {
       id: 'hill',
-      tile: { set: 'gc32', key: 'c0000' },
+      tile: { set: 'q_floor32b', key: 'LLLL' },
       reads: 'face',
       terrain: 'G',
-      calm: 0.6,
-      grade: [0.8, 0.86, 0.84],
+      calm: 0.3,
+      grade: [0.63, 0.63, 0.61],
     },
     { id: 'water', tile: { set: 'canal32', key: 'c0000' }, reads: 'water', terrain: 'W' },
     // the tea terrace's flags
@@ -366,7 +387,7 @@ export const BA_DAN_GROUND_SPEC: GroundSpec = {
   chars: {
     ',': 'grass',
     '.': 'dust',
-    '=': 'cobble',
+    '=': 'road',
     T: 'shade',
     X: 'hill',
     W: 'water',
@@ -400,9 +421,10 @@ export const BA_DAN_GROUND_SPEC: GroundSpec = {
     },
   ],
   beyond: 'void',
-  ends: 'T',
+  // the tree line and the canal run one cell past the grid, then the rim falls into the void
+  ends: 'T~',
   margin: { left: 2, right: 2, top: 3, bottom: 2 },
-  hill: { class: 'hill', height: 24 },
+  hill: { class: 'hill', height: 24, outcrops: 12 },
   tracks: BA_DAN_TRACKS,
   aprons: BA_DAN_APRONS,
   growth: BA_DAN_GROWTH,
