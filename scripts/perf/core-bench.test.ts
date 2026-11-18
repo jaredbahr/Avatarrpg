@@ -113,10 +113,6 @@ describe('core benchmark coverage and frozen calibration', () => {
       if (!map) throw new Error(`Missing registered map ${id}`);
       return { id, width: map.width, height: map.height };
     });
-    // Ba Dan is a 32 x 20 blockout with no scene, so it is not registered; its frozen cases keep measuring the
-    // 24 x 16 board it was calibrated on (`oldVillage.fixture.ts`) until the new board has its own calibration (ADR 0106).
-    if (!registered.some((map) => map.id === 'ba_dan_village'))
-      registered.unshift({ id: 'ba_dan_village', width: 24, height: 16 });
     const maximum = Math.max(...registered.map((map) => map.width * map.height));
     expect(suite.coverage.topDown.included).toBe(true);
     expect(suite.coverage.topDown.registeredMaps).toEqual(registered);
@@ -126,11 +122,9 @@ describe('core benchmark coverage and frozen calibration', () => {
         .filter((map) => map.width * map.height === maximum)
         .sort((a, b) => a.id.localeCompare(b.id)),
     );
-    // the Saltstep market and Emberwatch's parade ground tie with Ba Dan; only Ba Dan, which has frozen limits, is measured
+    // Ba Dan's 32 x 20 board is the largest registered on its own (ADR 0120); its cases carry their own calibration
     expect(suite.coverage.topDown.largestMaps).toEqual([
-      { id: 'ba_dan_village', width: 24, height: 16 },
-      { id: 'emberwatch_parade', width: 24, height: 16 },
-      { id: 'saltstep_market', width: 24, height: 16 },
+      { id: 'ba_dan_village', width: 32, height: 20 },
     ]);
     expect(suite.coverage.topDown.benchmarkedMap).toBe('ba_dan_village');
     const supplemental = createTopDownBenchSuite();
@@ -146,8 +140,8 @@ describe('core benchmark coverage and frozen calibration', () => {
     );
     for (const entry of supplemental.cases) {
       expect(entry.detail).toMatchObject({
-        width: 24,
-        height: 16,
+        width: 32,
+        height: 20,
         reachableBudget: 6,
         props: 0,
         footprintSize: 1,
@@ -200,6 +194,28 @@ describe('core benchmark coverage and frozen calibration', () => {
         calibrationDriverSha256: 'c1edb713399ff59cb5f7b3cc7938a3481cb8ed5dc201f15e8bb1a1562c253889',
         originalBaselineSha256: '780fe27936856fa5461d79b26ba16cd3fbd673a32e5fb5653911c40d33d4b22a',
       },
+      // the 32 x 20 board, calibrated once it was registered again (ADR 0106's 2026-11-18 amendment)
+      {
+        source: '385b57cb18a7b5f88d50d434b5e5650940036a82',
+        tree: '68ab7e8f29fd21cdc10185e6803efc0b57d88b96',
+        caseIds: ['reachable/topdown/ba_dan_village', 'findPath/topdown/ba_dan_village'],
+        calibrationReportSha256: '20a610cc4e03d0caabc243ef8b356487907f05db875c735da036ad33267d0c18',
+        calibrationHarnessSha256:
+          '56646a856f515dcca111ea9611e22cf96f9a2d0d05e2f7e25d3e13191dfd5180',
+        calibrationDriverSha256: '6d9c1700eb0bd1082fb2abca5271bc85d64f549cae03540727100af1fcb59e7b',
+        originalBaselineSha256: '4d38ea9d451f2b65f50c3641f66cef1e4120c0d2574604d849344bf393076992',
+        board: '32 x 20',
+        replaces: {
+          'reachable/topdown/ba_dan_village': {
+            normalizedMedian: 9.956649267866029,
+            ceiling: 39.826597071464114,
+          },
+          'findPath/topdown/ba_dan_village': {
+            normalizedMedian: 32.41192900675779,
+            ceiling: 129.64771602703115,
+          },
+        },
+      },
     ]);
     expect(
       createHash('sha256')
@@ -220,14 +236,20 @@ describe('core benchmark coverage and frozen calibration', () => {
         reason:
           "Ba Dan's frozen cases keep measuring the 24 x 16 board while the village is a 32 x 20 blockout; no new measurement",
       },
+      {
+        source: expect.stringMatching(/^[0-9a-f]{40}$/),
+        calibrationHarnessSha256: expect.stringMatching(/^[0-9a-f]{64}$/),
+        reason:
+          "Ba Dan's cases measure its registered 32 x 20 board, freshly calibrated (ADR 0106 amendment, 2026-11-18)",
+      },
     ]);
     expect(BASELINE.cases['reachable/topdown/ba_dan_village']).toEqual({
-      normalizedMedian: 9.956649267866029,
-      ceiling: 39.826597071464114,
+      normalizedMedian: 38.43956295574626,
+      ceiling: 153.75825182298505,
     });
     expect(BASELINE.cases['findPath/topdown/ba_dan_village']).toEqual({
-      normalizedMedian: 32.41192900675779,
-      ceiling: 129.64771602703115,
+      normalizedMedian: 31.67944456962326,
+      ceiling: 126.71777827849304,
     });
   });
 
