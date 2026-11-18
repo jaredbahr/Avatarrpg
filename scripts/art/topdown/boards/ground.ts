@@ -1087,8 +1087,8 @@ export interface GroundLayout {
   readonly sprites: Readonly<Record<string, string>>;
 }
 
-/** The shadow's strength on Ba Dan's grass (the ground is calm and light, so the plain 1). */
-const GRASS_SCALE = 1;
+/** The shadow's strength on Ba Dan's grass: stronger than the plain 1, so a cast on the pale kerb and dust still reads 25 % darker (as the quarry's 1.45). */
+const GRASS_SCALE = 1.4;
 
 function mirror(img: RgbaImage): RgbaImage {
   const out = blank(img.width, img.height);
