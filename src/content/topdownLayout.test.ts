@@ -34,8 +34,12 @@ describe("Ba Dan's top-down layout", () => {
     expect(problems, `\n${problems.join('\n')}\n`).toEqual([]);
   });
 
-  it('is unregistered while the village is a grey blockout, and agrees with the frozen old board', () => {
-    expect(TOPDOWN_LAYOUTS.some((layout) => layout.mapId === 'ba_dan_village')).toBe(false);
+  it('registers the village drawn from the set-piece plan, and the frozen old layout still agrees with the old board', () => {
+    const live = TOPDOWN_LAYOUTS.find((layout) => layout.mapId === 'ba_dan_village');
+    expect(live?.objects.length).toBeGreaterThan(100);
+    expect(live?.objects.some((o) => o.sprite === 'tree' || o.sprite === 'tree_blossom')).toBe(
+      false,
+    );
     expect(validateTopDownLayout(village(), BA_DAN_TOPDOWN_LAYOUT)).toEqual([]);
   });
 
