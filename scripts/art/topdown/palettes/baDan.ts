@@ -27,6 +27,7 @@ export const BA_DAN_RAMPS = {
     '#7c6c5c',
     '#8d7c69',
     '#9f8d77',
+    '#a59886',
     '#b3a289',
     '#cbbda2',
   ],
@@ -64,6 +65,13 @@ export const BA_DAN_RAMPS = {
     '#779759',
     '#a3bd6a',
   ],
+  /**
+   * The square's and the lanes' pale limestone dust, worn nearly white by noon (ADR 0120, the ground stage): the
+   * calm bake of the 32 x 20 village fell between the stone ramp's top and the plaster, and locked to a peach.
+   */
+  dust: ['#cfc09c', '#d6c7a2', '#decea6', '#e1d3b3', '#e8dfc9'],
+  /** The calm grass's own mid-tones, which the old ramp skipped (the lock blotched the lawn between them). */
+  lawn: ['#507242', '#5a7f47', '#61894b', '#6f9853', '#7da55d'],
   /** The canal, the ford, wet stones. */
   water: ['#2e414e', '#375d69', '#587376', '#558d93', '#a9c6c4'],
 } as const;
