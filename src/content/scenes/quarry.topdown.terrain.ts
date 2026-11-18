@@ -86,13 +86,39 @@ const legend = (c: string): Partial<TileTemplate> => LEGEND[c] ?? LEGEND['.'] ??
 const elevation = (c: string): number => legend(c).elevation ?? 0;
 const blocked = (c: string): boolean => legend(c).blocked === true;
 
+/** How far past the board `QuarryRows` keeps `qcell` worked out: the plate and its noise read up to 3 cells out. */
+const QCELL_PAD = 4;
+const QCELL_W = GW + 2 * QCELL_PAD;
+const QCELL_H = GH + 2 * QCELL_PAD;
+
 /** The pieces of the bake that read the rows, for one board. */
 export class QuarryRows {
   readonly rows: readonly string[];
   private readonly stubs: readonly Stub[];
 
+  /**
+   * `cellAt` over the board and `QCELL_PAD` cells round it, worked out once: the bake reads it
+   * about thirty times a plate pixel, and it depends on nothing but the rows and the cell.
+   */
+  private readonly qcells: readonly string[];
+  /** Each `field` indicator over the same cells as `qcells`, made the first time it is read. */
+  private readonly fieldTables = new Map<(c: string) => number, Float64Array>();
+
+  private fieldTable(fn: (c: string) => number): Float64Array {
+    let t = this.fieldTables.get(fn);
+    if (!t) {
+      t = Float64Array.from(this.qcells, fn);
+      this.fieldTables.set(fn, t);
+    }
+    return t;
+  }
+
   constructor(readonly config: QuarryTerrainConfig) {
     this.rows = config.rows;
+    const qcells: string[] = [];
+    for (let y = -QCELL_PAD; y < GH + QCELL_PAD; y++)
+      for (let x = -QCELL_PAD; x < GW + QCELL_PAD; x++) qcells.push(this.cellAt(x, y));
+    this.qcells = qcells;
     this.stubs = roadStubs(this);
   }
 
@@ -108,6 +134,17 @@ export class QuarryRows {
    * The prototype's `qcell`.
    */
   qcell(x: number, y: number): string {
+    const px = x + QCELL_PAD,
+      py = y + QCELL_PAD;
+    if (px >= 0 && py >= 0 && px < QCELL_W && py < QCELL_H) {
+      const c = this.qcells[py * QCELL_W + px];
+      if (c !== undefined) return c;
+    }
+    return this.cellAt(x, y);
+  }
+
+  /** `qcell`, worked out from the rows. */
+  private cellAt(x: number, y: number): string {
     const cx = Math.max(0, Math.min(GW - 1, x)),
       cy = Math.max(0, Math.min(GH - 1, y)),
       c = this.ch(cx, cy);
@@ -135,6 +172,19 @@ export class QuarryRows {
       sy0 = fy - iy;
     const sx = sx0 * sx0 * (3 - 2 * sx0),
       sy = sy0 * sy0 * (3 - 2 * sy0);
+    // `fn` of each corner cell from its table, where all four are in it
+    const px = ix + QCELL_PAD,
+      py = iy + QCELL_PAD;
+    if (px >= 0 && py >= 0 && px + 1 < QCELL_W && py + 1 < QCELL_H) {
+      const t = this.fieldTable(fn),
+        i = py * QCELL_W + px;
+      return (
+        (t[i] ?? 0) * (1 - sx) * (1 - sy) +
+        (t[i + 1] ?? 0) * sx * (1 - sy) +
+        (t[i + QCELL_W] ?? 0) * (1 - sx) * sy +
+        (t[i + QCELL_W + 1] ?? 0) * sx * sy
+      );
+    }
     return (
       fn(this.qcell(ix, iy)) * (1 - sx) * (1 - sy) +
       fn(this.qcell(ix + 1, iy)) * sx * (1 - sy) +
@@ -366,8 +416,16 @@ export function quarryGround(config: QuarryTerrainConfig, guard = true): QuarryG
   const isGrass = (c: string): number => (c === ',' || c === 'T' ? 1 : 0);
   const isFloor = (c: string): number =>
     c !== '=' && c !== ',' && c !== 'T' && c !== '~' && c !== 'W' && !elevation(c) ? 1 : 0;
+  // The pool's and the road's wander: each offset reads only the row or only the column, so it is
+  // worked out once a row or a column rather than once a pixel.
+  const poolDy = Int32Array.from({ length: PW }, (_, x) => Math.round(vnoise(x, 4, 225, 17) * 8));
+  const roadDy = Int32Array.from({ length: PW }, (_, x) =>
+    Math.round(vnoise(x, 7, 227, 36) * 14 + vnoise(x, 8, 226, 13) * 5),
+  );
   // 1. levels and classes
-  for (let y = 0; y < PH; y++)
+  for (let y = 0; y < PH; y++) {
+    const poolDx = Math.round(vnoise(y, 3, 224, 17) * 10),
+      roadDx = Math.round(vnoise(y, 5, 228, 26) * 13 + vnoise(y, 6, 230, 8) * 4);
     for (let x = 0; x < PW; x++) {
       const i = y * PW + x;
       if (!q.inMass(x, y)) {
@@ -397,30 +455,20 @@ export function quarryGround(config: QuarryTerrainConfig, guard = true): QuarryG
       const m =
         vnoise(x, y, 221, 19) * 0.26 + vnoise(x, y, 222, 8) * 0.16 + vnoise(x, y, 223, 3) * 0.07;
       const fp = q.field(isPit, x, y),
-        fw = q.field(
-          isPool,
-          x + Math.round(vnoise(y, 3, 224, 17) * 10),
-          y + Math.round(vnoise(x, 4, 225, 17) * 8),
-        );
+        fw = q.field(isPool, x + poolDx, y + (poolDy[x] ?? 0));
       // only near a pit or a pool: the noise alone never opens a speck of either
       if (fp > 0.08 && fp + m * 1.4 > 0.62) cls[i] = QUARRY.pit;
       else if (fw > 0.08 && fw + m * 1.7 > 0.55) cls[i] = QUARRY.water;
       else {
         // the strongest of road, grass and floor wins (no band of a third ground between two others)
-        const fr =
-          q.field(
-            isRoad,
-            x + Math.round(vnoise(y, 5, 228, 26) * 13 + vnoise(y, 6, 230, 8) * 4),
-            y + Math.round(vnoise(x, 7, 227, 36) * 14 + vnoise(x, 8, 226, 13) * 5),
-          ) +
-          m * 1.7 -
-          q.stubTip(x, y);
+        const fr = q.field(isRoad, x + roadDx, y + (roadDy[x] ?? 0)) + m * 1.7 - q.stubTip(x, y);
         const gf = q.field(isGrass, x, y);
         const fg = gf > 0.03 || q.field(isPool, x, y) > 0.03 ? gf - m : -9;
         const ff = q.field(isFloor, x, y) + vnoise(x, y, 229, 13) * 0.2;
         cls[i] = fr >= fg && fr >= ff ? QUARRY.road : fg >= ff ? QUARRY.grass : QUARRY.floor;
       }
     }
+  }
   // 2. the cut faces: below a higher shelf, Q_FACE px a tier (the face belongs to the shelf above it)
   const face = new Uint8Array(PW * PH),
     faceH = new Uint8Array(PW * PH);
