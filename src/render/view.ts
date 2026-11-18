@@ -84,7 +84,12 @@ export function unitMarkerGroundPoint(base: Vec2, tileSize: number, contactOffse
   };
 }
 
-export type OverlayKind = 'move' | 'target' | 'area' | 'rangeBonus' | 'hover';
+/**
+ * `objective`: the encounter's objective cells (ADR 0116's 2026-11-15 amendment), shown all fight
+ * long under every other overlay. A rule the board must show, so both backends draw it.
+ */
+export type OverlayKind =
+  'move' | 'reach' | 'target' | 'area' | 'rangeBonus' | 'hover' | 'objective';
 
 export interface OverlayLayer {
   readonly kind: OverlayKind;
@@ -324,6 +329,8 @@ export interface NpcMarker {
   readonly lean?: number;
   /** No talk pip: a background role, or someone walking off the map. */
   readonly quiet?: boolean;
+  /** False draws no foot blob: art that stands on the plate's own baked shadow (the hung side gate). */
+  readonly footShadow?: false;
 }
 
 /** The sheet clip a marker draws: its heading clip, else the plain walk or idle. */

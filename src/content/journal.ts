@@ -39,6 +39,16 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
     when: { kind: 'flag', key: 'riverside_tea', op: 'set' },
   },
   {
+    id: 'hesra_boot',
+    mapId: 'ba_dan_village',
+    title: 'A shell in a boot',
+    hint: 'Something has been left by the door of the mason’s yard.',
+    found:
+      'A hobnailed boot by the door and a river shell on the sill. Somebody carried it down from the galleries and did not wait to be thanked.',
+    when: { kind: 'visited', nodeId: 'look_hesra_boot' },
+    hintWhile: { kind: 'visited', nodeId: 'welcome_home_supper' },
+  },
+  {
     id: 'ducks',
     mapId: 'forest_road',
     title: 'Lanfen’s unexpected tenants',
@@ -92,6 +102,15 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
     when: { kind: 'flag', key: 'world.discovered.tea_station', op: 'set' },
   },
   {
+    id: 'mira_table',
+    mapId: 'ba_dan_village',
+    title: 'Five bowls',
+    hint: 'Elder Mira is waiting at her table in the square.',
+    found:
+      'Mira sent four people to the quarry: Leto, Amri, Hesra and Senn. Pella’s brother, Bo-shan, went before them. His bowl stays on the table, covered.',
+    when: { kind: 'visited', nodeId: 'mira_intro' },
+  },
+  {
     id: 'bo_shan_cart',
     mapId: 'ba_dan_village',
     title: 'Five missing, not four',
@@ -117,12 +136,23 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
     },
   },
   {
+    // A Driller loss (C-02): how the party got out, and what the note said.
+    id: 'storm_drain',
+    mapId: 'quarry_floor',
+    title: 'Out through the storm drain',
+    hint: 'Someone behind the gallery doors knows a way out.',
+    found:
+      'Crawled out through a storm drain the crews cut by hand, after someone behind the gallery doors shouted where the grate was. A note under Bo-shan’s seat says he, the four messengers and the crews are alive.',
+    when: { kind: 'flag', key: 'act1_lost', op: 'set' },
+    hintWhile: { kind: 'flag', key: 'act1_lost', op: 'set' },
+  },
+  {
     id: 'galleries',
     mapId: 'quarry_floor',
     title: 'Out of the galleries',
     hint: 'Below the stone ledges, the gallery entrances have been barred with timber.',
     found:
-      'Pulled the bars from the gallery doors. Mira’s four messengers came out, then Bo-shan, asking where Pella was.',
+      'Pulled the bars from the gallery doors. Leto, Amri, Hesra and Senn came out, then Bo-shan, asking where Pella was.',
     when: { kind: 'flag', key: 'act1_complete', op: 'set' },
   },
   {
@@ -130,7 +160,8 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
     mapId: 'quarry_floor',
     title: 'The maker’s plate',
     hint: 'Look the driller over once it stops moving.',
-    found: 'The driller carries a maker’s plate. Took a rubbing for Mira’s report to the province.',
+    found:
+      'The driller carries a Republic City maker’s plate. The crates beside it bore a stencil none of the workers knew. Took a rubbing of the plate for Mira.',
     when: { kind: 'flag', key: 'act1_complete', op: 'set' },
   },
 ];

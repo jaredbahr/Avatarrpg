@@ -30,7 +30,7 @@ const UNBOUND = {
       {
         ...map,
         npcs: map.npcs.map((n) =>
-          n.id === 'elder_mira' ? { ...n, resident: undefined, pos: { x: 11, y: 5 } } : n,
+          n.id === 'elder_mira' ? { ...n, resident: undefined, pos: { x: 12, y: 9 } } : n,
         ),
       },
     ]),
@@ -58,7 +58,7 @@ function exploring(overrides: Partial<GameState> = {}): GameState {
   return {
     ...base,
     screen: 'explore',
-    location: { mapId: 'ba_dan_village', pos: { x: 3, y: 7 } },
+    location: { mapId: 'ba_dan_village', pos: { x: 11, y: 10 } },
     story: { ...base.story, nodeId: 'village_explore' },
     ...overrides,
   };
@@ -190,18 +190,18 @@ suite('reconcileWorld: the conversation pin (clear half)', () => {
 suite('reconcileWorld: the leader step (move half)', () => {
   it('moves the leader off a visible NPC tile in explore, without events', () => {
     // Elder Mira's real anchor, `bd01.table`: held there before `mira_intro`.
-    const state = exploring({ location: { mapId: 'ba_dan_village', pos: { x: 11, y: 5 } } });
+    const state = exploring({ location: { mapId: 'ba_dan_village', pos: { x: 12, y: 9 } } });
 
     // `reconcileWorld` returns a `GameState`, not a `StepResult`: there is
     // nothing to animate on a load, so only the position is asserted.
-    expect(reconcileWorld(CONTENT, state).location.pos).not.toEqual({ x: 11, y: 5 });
+    expect(reconcileWorld(CONTENT, state).location.pos).not.toEqual({ x: 12, y: 9 });
   });
 });
 
 suite('reconcileWorld: idempotence and the round trip', () => {
   it('is idempotent for a pin-bearing state and a leader-on-NPC-tile state', () => {
     const pinned = withTalk(exploring({ screen: 'dialogue' }), MIRA);
-    const onNpc = exploring({ location: { mapId: 'ba_dan_village', pos: { x: 11, y: 5 } } });
+    const onNpc = exploring({ location: { mapId: 'ba_dan_village', pos: { x: 12, y: 9 } } });
 
     for (const state of [pinned, onNpc]) {
       const once = reconcileWorld(BOUND, state);
@@ -401,12 +401,12 @@ suite('reconcileWorld: the explore snap (M9)', () => {
   });
 });
 
-suite('reconcileWorld: the Ba Dan edge rebuild (A5)', () => {
+suite('reconcileWorld: the Ba Dan blockout (32 x 20)', () => {
   const map = CONTENT.maps.get('ba_dan_village');
   if (!map) throw new Error('Missing Ba Dan village');
   const grid = buildGrid(map);
 
-  /** A save written before the rebuild, loaded through the app's real path. */
+  /** A save written on the old 24 x 16 board, loaded through the app's real path. */
   function loadOldVillageSave(pos: Vec2): GameState {
     const saved = exploring({ location: { mapId: 'ba_dan_village', pos } });
     const result = deserialize(serialize(saved, META));
@@ -414,66 +414,33 @@ suite('reconcileWorld: the Ba Dan edge rebuild (A5)', () => {
     return reconcileWorld(CONTENT, stateFromBlob(result.blob));
   }
 
-  it('moves a party saved on the old west road end off the flooded ford', () => {
-    // (0,7) was the road's last cell and is the ford now. The expanded canal
-    // makes (0,6) and (1,6) permanent water, so the first safe cell in the
-    // first ring is the road at (1,7).
-    expect(tileAt(grid, { x: 0, y: 7 })?.blocked).toBe(true);
-    const reconciled = loadOldVillageSave({ x: 0, y: 7 });
-
-    expect(reconciled.location).toEqual({ mapId: 'ba_dan_village', pos: { x: 1, y: 7 } });
-    expect(tileAt(grid, reconciled.location.pos)?.blocked).toBe(false);
-    expect(reconcileWorld(CONTENT, reconciled).location).toEqual(reconciled.location);
-  });
-
-  it('moves a party saved on a house floor out to open ground', () => {
-    // (7,11) was the south-west dwelling's plank floor.
-    const reconciled = loadOldVillageSave({ x: 7, y: 11 });
-
-    expect(reconciled.location.pos).not.toEqual({ x: 7, y: 11 });
-    expect(tileAt(grid, reconciled.location.pos)?.blocked).toBe(false);
-  });
-});
-
-suite('reconcileWorld: a save standing where a house plinth now is', () => {
-  // Ba Dan's four footprints were once open at these tiles (under the plinth, the steps and the yard).
-  // A save made there loads onto the nearest open tile, by the same snap as any other buried position.
-  const buried: readonly [Vec2, Vec2][] = [
-    [
-      { x: 9, y: 3 },
-      { x: 10, y: 3 },
-    ],
-    [
-      { x: 12, y: 3 },
-      { x: 11, y: 3 },
-    ],
-    [
-      { x: 9, y: 10 },
-      { x: 8, y: 9 },
-    ],
-    [
-      { x: 9, y: 11 },
-      { x: 10, y: 10 },
-    ],
-    [
-      { x: 13, y: 10 },
-      { x: 12, y: 9 },
-    ],
-    [
-      { x: 13, y: 11 },
-      { x: 12, y: 11 },
-    ],
+  // Cells an old save can hold that the new rows block: the old new-game spawn (now the mason's house), the old
+  // ford end (now the rim), the old table (now Mira's house) and the old door of Mira's house. Each loads onto the nearest
+  // open cell, by the same snap as any other buried position.
+  const buried: readonly [string, Vec2, Vec2][] = [
+    ['the old spawn', { x: 3, y: 7 }, { x: 2, y: 8 }],
+    ['the old ford end', { x: 0, y: 7 }, { x: 1, y: 6 }],
+    ['the old table', { x: 11, y: 5 }, { x: 10, y: 4 }],
+    ['the old Mira door', { x: 13, y: 4 }, { x: 12, y: 3 }],
   ];
-  for (const [saved, loaded] of buried)
-    it(`moves a save at (${saved.x},${saved.y}) to (${loaded.x},${loaded.y})`, () => {
-      const result = deserialize(
-        serialize(exploring({ location: { mapId: 'ba_dan_village', pos: saved } }), META),
-      );
-      if (!result.ok) throw new Error(result.error);
-      const reconciled = reconcileWorld(CONTENT, stateFromBlob(result.blob));
-      expect(reconciled.location.pos).toEqual(loaded);
-      const map = CONTENT.maps.get('ba_dan_village');
-      if (!map) throw new Error('no village');
-      expect(tileAt(buildGrid(map), reconciled.location.pos)?.blocked).toBe(false);
+  for (const [name, saved, loaded] of buried)
+    it(`moves a party saved on ${name} (${saved.x},${saved.y}) to (${loaded.x},${loaded.y})`, () => {
+      expect(tileAt(grid, saved)?.blocked).toBe(true);
+      const reconciled = loadOldVillageSave(saved);
+
+      expect(reconciled.location).toEqual({ mapId: 'ba_dan_village', pos: loaded });
+      expect(tileAt(grid, reconciled.location.pos)?.blocked).toBe(false);
+      expect(reconcileWorld(CONTENT, reconciled).location).toEqual(reconciled.location);
     });
+
+  it('leaves an old save on a cell that is still open exactly where it was', () => {
+    // The old post (17,6) and the old river mouth (19,15) are open ground on the new board.
+    for (const pos of [
+      { x: 17, y: 6 },
+      { x: 19, y: 15 },
+    ]) {
+      expect(tileAt(grid, pos)?.blocked).toBe(false);
+      expect(loadOldVillageSave(pos).location.pos).toEqual(pos);
+    }
+  });
 });

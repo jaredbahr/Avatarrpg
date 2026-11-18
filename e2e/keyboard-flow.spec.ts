@@ -115,7 +115,15 @@ test('the opening route uses the keyboard from title to a conversation on the Fo
   await pressControl(page, button(page, 'Walk to Elder Mira'));
   await expectNode(page, 'mira_intro');
   const next = page.locator('[data-conversation-control="next"]');
-  await advanceLines(page, next, 4);
+  await advanceLines(page, next, linesOf('mira_intro'));
+  // The rest of Mira's table (DLG-01) by keyboard: each turn, then one question.
+  for (let step = 0; step < 40; step++) {
+    const nodeId = await page.evaluate(() => window.fnt?.app.state?.story.nodeId ?? '');
+    if (nodeId === 'village_explore') break;
+    if (CONTENT.story.get(nodeId)?.kind === 'choice')
+      await pressControl(page, page.locator('.choice-option:not([disabled])').first());
+    else await pressControl(page, next);
+  }
   await expectNode(page, 'village_explore');
 
   await pressControl(page, button(page, /^Wait/));

@@ -10,7 +10,7 @@ import type { BattleState, ContentIndex, DayPhase, GameEvent, Unit } from '../ty
 import { obscurementMissLine } from '../rules/obscurementPresentation';
 import { NATION_WORD } from '../story/conditions';
 
-export const MAX_LOG_LINES = 120;
+const MAX_LOG_LINES = 120;
 
 function nameOf(units: readonly Unit[] | undefined, id: string | null): string {
   if (!id) return 'Something';
@@ -86,6 +86,9 @@ export function describeEvent(
 
     case 'unitDied':
       return `${nameOf(units, event.unitId)} is down!`;
+
+    case 'unitRevived':
+      return `${nameOf(units, event.helperId)} helps ${nameOf(units, event.unitId)} up! (${event.hp} HP)`;
 
     /*
      * Props get their own cases rather than borrowing the unit ones, because
@@ -163,6 +166,7 @@ export function describeEvent(
     case 'storyNodeEntered':
     case 'dialogueAdvanced':
     case 'screenChanged':
+    case 'leaderPassed': // the app names who is in charge; the core has no names
     case 'battleStarted':
     case 'comboDiscovered': // its surfaceChanged already printed the rule's sentence
       return null;

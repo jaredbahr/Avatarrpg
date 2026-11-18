@@ -44,6 +44,26 @@ export const VILLAGE_HOMECOMINGS_COMPLETE: Condition = {
   ],
 };
 
+const NARRATOR = 'portrait.narrator';
+const TABLE = 'Mira’s Table';
+const PELLA = 'Pella';
+const BO_SHAN = 'Bo-shan';
+const BO_SHAN_PORTRAIT = 'portrait.bo_shan';
+
+type Turn = readonly [id: string, speaker: string, portrait: string, lines: readonly string[]];
+
+/** A staged exchange, one speaker per node, each turn leading to the next. */
+function reunion(turns: readonly Turn[], then: string): StoryNode[] {
+  return turns.map(([id, speaker, portrait, lines], index) => ({
+    id,
+    kind: 'dialogue',
+    speaker,
+    portrait,
+    lines,
+    next: turns[index + 1]?.[0] ?? then,
+  }));
+}
+
 /** Victory frees the route for a walk home; custody and optional visits still matter. */
 export const RETURN_STORY: readonly StoryNode[] = [
   {
@@ -108,21 +128,58 @@ export const RETURN_STORY: readonly StoryNode[] = [
     portrait: 'portrait.mira',
     lines: [
       'There you are! Dorin rang the gate bell so hard that half the street came out still holding their spoons.',
-      'Every one of them asked for soup before they would sit down. I set out bowls for a month and took them in clean. Tonight I have run out.',
+      'I set out bowls for a month and took them in clean. Tonight I have run out of bowls.',
       'Sit down, all of you. Nobody carries anything else tonight.',
     ],
-    next: 'welcome_home_gao',
-    variants: [
-      {
-        when: { kind: 'flag', key: 'pella_asked', op: 'set' },
-        lines: [
-          'There you are! Dorin rang the gate bell so hard that half the street came out still holding their spoons.',
-          'Pella reached Bo-shan before I did. She told him about his chores first. Then she held on to him and would not let go.',
-          'Sit down, all of you. Nobody carries anything else tonight.',
-        ],
-      },
-    ],
+    next: 'reunion_run',
   },
+  /*
+   * The reunion (canon DLG-07; story bible C-14), staged rather than told:
+   * Pella and Bo-shan at Mira's table, his covered bowl from `mira_table_bowl`,
+   * and it ends on sitting down. Bo-shan speaks with his own portrait (#806);
+   * the actions stay narration. Nothing interrupts it: no reveal, no tally.
+   */
+  ...reunion(
+    [
+      [
+        'reunion_run',
+        TABLE,
+        NARRATOR,
+        [
+          'Pella comes down the lane at a run. She reaches Bo-shan and tries to say something, and nothing comes out.',
+          'She hugs him hard enough that he winces. She notices, and loosens her grip.',
+        ],
+      ],
+      ['reunion_all_right', BO_SHAN, BO_SHAN_PORTRAIT, ['I’m all right.']],
+      ['reunion_shaking', PELLA, 'portrait.pella', ['You’re shaking.']],
+      ['reunion_sit', BO_SHAN, BO_SHAN_PORTRAIT, ['I know. Let me sit down a minute.']],
+      [
+        'reunion_sleeve',
+        TABLE,
+        NARRATOR,
+        ['She keeps hold of his sleeve all the way to the table.'],
+      ],
+      ['reunion_tuesday', PELLA, 'portrait.pella', ['You said Tuesday.']],
+      ['reunion_i_did', BO_SHAN, BO_SHAN_PORTRAIT, ['I did.']],
+      ['reunion_waited', PELLA, 'portrait.pella', ['I waited by the road.']],
+      ['reunion_sorry', BO_SHAN, BO_SHAN_PORTRAIT, ['I’m sorry.']],
+      [
+        'reunion_bowl',
+        TABLE,
+        NARRATOR,
+        ['Mira sets his covered bowl in front of him and lifts the cloth.'],
+      ],
+      ['reunion_hot', 'Elder Mira', 'portrait.mira', ['Careful. It’s hot.']],
+      ['reunion_thanks', BO_SHAN, BO_SHAN_PORTRAIT, ['Thank you.']],
+      [
+        'reunion_kept',
+        PELLA,
+        'portrait.pella',
+        ['She kept making it. In case you came back hungry.'],
+      ],
+    ],
+    'welcome_home_gao',
+  ),
   {
     id: 'welcome_home_gao',
     kind: 'dialogue',
@@ -367,9 +424,11 @@ export const RETURN_STORY: readonly StoryNode[] = [
     kind: 'dialogue',
     speaker: 'Pella',
     portrait: 'portrait.pella',
+    // After the card: Bo-shan took the cart down to the coast road that morning.
     lines: [
-      'My brother is home. Bo-shan. He came through the gate and I ran so fast I lost a shoe.',
+      'My brother came home. Bo-shan. He came through the gate and I ran so fast I lost a shoe.',
       'He went back for it. I told him he was not allowed to go anywhere else.',
+      'Then he took the cart down to the coast road anyway.',
       'Thank you for finding him.',
     ],
     variants: [
@@ -379,22 +438,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
         lines: [
           'You found him. I hugged him so hard his hat came off. Then I told him about the sled.',
           'He says the cabbages were only a little bit high. You saw them. They were not a little bit high.',
-          'He is asleep now. I am making a list while he cannot argue.',
-        ],
-      },
-      {
-        // The return lands in the evening (D2); this hold lasts until she is heard.
-        when: {
-          kind: 'all',
-          of: [
-            { kind: 'flag', key: 'pella_asked', op: 'set' },
-            { kind: 'phase', in: ['dawn', 'morning', 'midday', 'afternoon'] },
-          ],
-        },
-        lines: [
-          'You found him. He came through the gate and I ran so fast I lost a shoe.',
-          'I told him about the chores. He said he would do them. All of them.',
-          'He said he would start straight away. He is still asleep.',
+          'When he left, he stacked the cart low. Then he put a cabbage on top. I am making a list while he cannot argue.',
         ],
       },
       {
@@ -402,7 +446,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
         lines: [
           'You found him. He came through the gate and I ran so fast I lost a shoe.',
           'I told him about the chores. He said he would do them. All of them.',
-          'He can start tomorrow. He is asleep now.',
+          'Then he took the cart down to the coast road. So I am doing them again.',
         ],
       },
     ],

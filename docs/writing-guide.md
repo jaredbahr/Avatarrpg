@@ -144,8 +144,12 @@ an appropriate narrator. Do not put unmarked actions into a character's speech.
 Keep node IDs, destinations, conditions, rewards, and interlude shot counts intact
 unless the task explicitly requires a behavior change.
 
-Reading the past from a later region means declaring how old saves answer: a save
-already past a flag's setter never gets it, so add its answer to `flagBackfills.ts`.
+Before a scene reads the past, read `docs/save-history.md`: it lists what each part of
+the story reads from the others and what is remembered but not yet read. A save already
+past a flag's setter never gets the flag, so a flag that gains a write in a region
+already released says how that release's saves answer (`oldSaves` in `flags.ts`; a
+`visited`-read scene in `LATE_SCENES`): a backfill rule, still open, or stays unset.
+The test names the flag and prints the line to add (ADR 0112).
 
 ## Let the themes stay unspoken
 

@@ -14,11 +14,13 @@ function shapeLabel(ability: Ability): string {
     case 'self':
       return 'Yourself';
     case 'unit':
-      return ability.targeting.allow === 'ally'
-        ? 'One friend'
-        : ability.targeting.allow === 'enemy'
-          ? 'One enemy'
-          : 'Anyone';
+      return ability.targeting.allow === 'downed'
+        ? 'A friend who is down'
+        : ability.targeting.allow === 'ally'
+          ? 'One friend'
+          : ability.targeting.allow === 'enemy'
+            ? 'One enemy'
+            : 'Anyone';
     case 'tile':
       return 'One tile';
     case 'blast':
@@ -31,7 +33,7 @@ function shapeLabel(ability: Ability): string {
 }
 
 /** One short phrase per effect, in resolution order. */
-export function effectLines(content: ContentIndex, effects: readonly AbilityEffect[]): string[] {
+function effectLines(content: ContentIndex, effects: readonly AbilityEffect[]): string[] {
   const out: string[] = [];
   for (const effect of effects) {
     switch (effect.kind) {
@@ -43,6 +45,9 @@ export function effectLines(content: ContentIndex, effects: readonly AbilityEffe
         break;
       case 'heal':
         out.push(`Heals ${effect.base} + ${effect.scale}x Power`);
+        break;
+      case 'revive':
+        out.push(`Stands them up with ${Math.round(effect.fraction * 100)}% health, once a fight`);
         break;
       case 'status': {
         const name = content.statuses.get(effect.status)?.name ?? effect.status;

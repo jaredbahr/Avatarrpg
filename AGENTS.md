@@ -32,6 +32,9 @@ reads.
 
 ## Model routing and usage
 
+**DeepSeek is Claude's tool only** (Jared, 2026-11-15). Codex has no DeepSeek access and works only the
+issues assigned to it (`codex-ready`), by itself. See `CLAUDE.md`, "Work routing".
+
 Jared's standing routing policy:
 
 - Orchestrator and final visual judgment: GPT-6 Astra Low normally; Medium for

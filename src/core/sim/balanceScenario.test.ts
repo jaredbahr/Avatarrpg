@@ -243,7 +243,7 @@ describe('balance scenario tooling', () => {
       { enemyId: 'bandit_slinger', pos: { x: 16, y: 2 } },
     ]);
     expect(CONTENT.encounters.get('enc_forest_road')).toBe(original);
-    expect(original.enemies).toHaveLength(3);
+    expect(original.enemies).toHaveLength(2);
   });
 
   it('adds lifecycle and per-side fire counters from a deterministic event log', () => {

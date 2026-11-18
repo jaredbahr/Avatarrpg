@@ -20,9 +20,51 @@ export interface PersistenceProbe {
   persist(): Promise<boolean>;
 }
 
-/** The line the title and the Save menu show while saves may be cleared. */
+/**
+ * The line the title and the Save menu show while saves may be cleared, on a
+ * browser that is not an iPad's or iPhone's. Chrome and Edge clear a site only
+ * when the disk runs out, so the advice is a copy, not an install.
+ */
 export const EVICTION_WARNING =
-  'This browser may clear saves it has not been asked to keep. Add the game to the Home Screen to keep them, or export a copy.';
+  'This browser may clear saves if it runs out of room. Save a copy to a file to be safe.';
+
+/**
+ * The same line in a browser tab on an iPad or iPhone, where the rule is known
+ * (`docs/device-matrix.md`, "Where the saves live"): WebKit deletes a site's
+ * script-written storage after seven days of browser use without a tap on the
+ * site, and exempts a Home Screen web app. The Home Screen app has storage of
+ * its own, so the saves have to be carried over as a file: the line says so.
+ */
+export const TAB_EVICTION_WARNING =
+  'Saves made in a browser tab can be cleared after a week without play. Save a copy, then add the game to the Home Screen and load it there.';
+
+/**
+ * True on an iPad or iPhone, in Safari and in every other browser there (all
+ * of them are WebKit). Two signs, both needed: the platform's own
+ * `navigator.standalone` flag is a boolean, and the device has a touch screen.
+ * The flag alone is Apple's documented sign of iOS, but no source read for
+ * #772 says a Mac's Safari never defines it, so the touch test keeps a Mac
+ * (no touch points) on the general wording whatever its Safari does. A wrong
+ * no here costs only the mention of the Home Screen, never the warning.
+ */
+export function onAppleMobile(win: Window | undefined = globalThis.window): boolean {
+  const nav = win?.navigator as { standalone?: unknown; maxTouchPoints?: unknown } | undefined;
+  return (
+    typeof nav?.standalone === 'boolean' &&
+    typeof nav.maxTouchPoints === 'number' &&
+    nav.maxTouchPoints > 0
+  );
+}
+
+/** The line to show for what the browser answered and how the game was opened, or null. */
+export function evictionWarning(
+  persisted: boolean | null,
+  standalone: boolean,
+  appleMobile: boolean,
+): string | null {
+  if (!shouldWarnAboutEviction(persisted, standalone)) return null;
+  return appleMobile ? TAB_EVICTION_WARNING : EVICTION_WARNING;
+}
 
 /** `navigator.storage`, when it has both calls; null where it does not exist. */
 export function storageProbe(
@@ -62,17 +104,30 @@ export class SavePersistence {
   /** The browser's last answer; null until it has given one, or where it cannot. */
   private persisted: boolean | null = null;
   private asked = false;
+  private answer: boolean | null = null;
 
   constructor(
     private readonly probe: PersistenceProbe | null,
     private readonly standalone: () => boolean,
     /** Called when the warning appears or goes away. */
     private readonly onChange: () => void = () => {},
+    /** Whether this is an iPad or iPhone, which picks the wording. */
+    private readonly appleMobile: () => boolean = () => false,
   ) {}
 
   /** The line to show, or null. */
   get warning(): string | null {
-    return shouldWarnAboutEviction(this.persisted, this.standalone()) ? EVICTION_WARNING : null;
+    return evictionWarning(this.persisted, this.standalone(), this.appleMobile());
+  }
+
+  /** Whether the browser keeps the storage, as it last said; null where it has not or cannot. */
+  get kept(): boolean | null {
+    return this.persisted;
+  }
+
+  /** What `persist()` answered this run; null until the game has asked and been answered. */
+  get askAnswer(): boolean | null {
+    return this.answer;
   }
 
   /** Reads whether storage is already persistent, without asking for it. */
@@ -92,6 +147,7 @@ export class SavePersistence {
     if (!probe || this.asked || this.persisted === true) return;
     this.asked = true;
     await this.settle(() => probe.persist());
+    this.answer = this.persisted;
   }
 
   private async settle(read: () => Promise<boolean>): Promise<void> {

@@ -34,7 +34,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     expectedLevel: 1,
     // The first fight a new table plays: the guide teaches Move, an attack and End turn here.
     guidance: 'firstFight',
-    enemies: [at(17, 5, 'bandit_thug'), at(17, 7, 'bandit_thug'), at(18, 3, 'bandit_slinger')],
+    enemies: [at(17, 5, 'bandit_thug'), at(18, 3, 'bandit_slinger')],
     allies: [],
     conditionalEnemies: [],
     baselinePartySize: 3,
@@ -43,9 +43,13 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
      * argument for XP-as-budget in one encounter: the same cost buys three
      * completely different lessons.
      *
-     *   thugs     100 + 100 + 100  two in your face, one throwing rocks
-     *   slingers  100 + 100 + 100  nothing melee at all; you have to close
+     *   thugs     150 + 150        one in your face, one throwing rocks
+     *   slingers  150 + 150        nothing melee at all; you have to close
      *   bruisers  150 + 150        two heavies; you have to focus fire
+     *
+     * Two bodies, not three (#846: the first fights felt slow, partly from the
+     * number of attacks). The worker and the slinger pay 150 XP each, so the
+     * fight still pays 300 and the party reaches the gate on level.
      *
      * Because `xpRoster` always scores the *authored* roster whatever spawned,
      * all three pay exactly the same and progression.test.ts never notices.
@@ -60,11 +64,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
       {
         id: 'slingers',
         weight: 1,
-        enemies: [
-          at(17, 5, 'bandit_slinger'),
-          at(18, 3, 'bandit_slinger'),
-          at(18, 7, 'bandit_slinger'),
-        ],
+        enemies: [at(17, 5, 'bandit_slinger'), at(18, 3, 'bandit_slinger')],
         intro:
           'Stones whip out of the pines before anyone shows a face. Whoever is throwing them means to stay out of reach.',
         tip: 'Nobody up there wants to come close. Get among them — a slinger with somebody in its face is not much use.',
@@ -90,7 +90,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     name: 'The Quarry Gate',
     mapId: 'quarry_gate',
     expectedLevel: 2,
-    enemies: [at(16, 3, 'fire_deserter'), at(17, 6, 'bandit_thug'), at(16, 8, 'bandit_bruiser')],
+    enemies: [at(16, 3, 'fire_deserter'), at(17, 6, 'bandit_thug')],
     allies: [],
     conditionalEnemies: [],
     baselinePartySize: 3,
@@ -101,9 +101,17 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
      * for that, and the quarry crew comes forward in his place, angrier for
      * having been left to it.
      *
-     * Same 450-XP cost as the authored roster (150 x 3 against 200 + 100 + 150),
-     * and a very different fight: no firebender on the field means the oil only
-     * lights if *you* light it.
+     * Same 450-XP cost as the authored roster (150 x 3 against 300 + 150), and a
+     * very different fight: no firebender on the field means the oil only lights
+     * if *you* light it.
+     *
+     * The authored roster went from three bodies to two (#846: the first fights
+     * felt slow, partly from the number of attacks): the quarry hauler left, and
+     * the deserter pays 300 XP, so the gate still pays 450 and the party still
+     * reaches the Cutting on level 3 (progression.test.ts needs exactly 750 XP
+     * from the first two fights). This variant stays at three: no two quarry
+     * bodies cost 450 XP within the 10% budget rule, and XP is paid per enemy
+     * kind, shared with the other fights.
      */
     variants: [
       {
@@ -259,7 +267,3 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     tip: 'Keep more than two tiles from the driller: its slam hits a cone and knocks people back, once a turn. It sprays oil and churns mud. Light its oil when your party is clear.',
   },
 ];
-
-export const ENCOUNTER_BY_ID: ReadonlyMap<string, EncounterDef> = new Map(
-  ENCOUNTERS.map((e) => [e.id, e]),
-);

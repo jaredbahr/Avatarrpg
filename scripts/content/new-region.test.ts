@@ -4,6 +4,8 @@ import { join, relative, resolve } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { CONTENT_BUNDLE } from '../../src/content';
 import { validateContent } from '../../src/content/schemas';
+import { levelBandProblems } from '../../src/content/regions/bands';
+import { MAX_LEVEL } from '../../src/core/rules/leveling';
 import type { RegionContent, RegionManifest } from '../../src/content/regions';
 import { regionFiles, regionIdProblem, regionIdentifiers, registerRegion } from './new-region-lib';
 
@@ -52,6 +54,8 @@ describe('new-region template', () => {
     );
     const problems = validateContent(withRegion(content));
     expect(problems, problems.join('\n')).toEqual([]);
+    expect(levelBandProblems([manifest], [content], MAX_LEVEL)).toEqual([]);
+    expect(manifest.levelBand.placeholder).toBe(true);
   });
 
   it('quotes a name with an apostrophe safely', async () => {
@@ -74,11 +78,15 @@ describe('new-region template', () => {
     );
     expect(lists.index).toContain("import { SALT_STEP } from './saltStep/manifest';");
     expect(lists.index).toMatch(
-      /REGIONS: readonly RegionManifest\[\] = \[BA_DAN_VALLEY, SALT_STEP\];/,
+      /REGIONS: readonly RegionManifest\[\] = \[BA_DAN_VALLEY, SALTSTEP_EMBERWATCH, SALT_STEP\];/,
     );
     expect(lists.content).toContain("import { SALT_STEP_CONTENT } from './saltStep/content';");
-    expect(lists.content).toMatch(/= \[BA_DAN_VALLEY_CONTENT, SALT_STEP_CONTENT\];/);
+    expect(lists.content).toMatch(
+      /= \[\s*BA_DAN_VALLEY_CONTENT,\s*SALTSTEP_EMBERWATCH_CONTENT, SALT_STEP_CONTENT\];/,
+    );
     expect(lists.layouts).toContain("import { SALT_STEP_LAYOUTS } from './saltStep/layouts';");
-    expect(lists.layouts).toMatch(/= \[BA_DAN_VALLEY_LAYOUTS, SALT_STEP_LAYOUTS\];/);
+    expect(lists.layouts).toMatch(
+      /= \[\s*BA_DAN_VALLEY_LAYOUTS,\s*SALTSTEP_EMBERWATCH_LAYOUTS, SALT_STEP_LAYOUTS\];/,
+    );
   });
 });

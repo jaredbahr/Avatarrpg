@@ -43,7 +43,9 @@ export function applyStatus(
   const def = content.statuses.get(finalId);
   if (!def) return { unit, applied: null, cleared: [] };
 
-  const finalDuration = duration ?? def.defaultDuration;
+  // The resulting status sets an upgrade's lifetime. Repeated Chilled
+  // therefore freezes the target for its authored single turn.
+  const finalDuration = upgraded ? def.defaultDuration : (duration ?? def.defaultDuration);
 
   // An upgrade consumes the status it grew out of.
   const consumed: StatusId[] = upgraded ? [id] : [];
@@ -79,11 +81,6 @@ export function applyStatus(
     applied: finalId,
     cleared: actuallyCleared,
   };
-}
-
-export function removeStatus(unit: Unit, id: StatusId): Unit {
-  if (!unit.statuses.some((s) => s.id === id)) return unit;
-  return { ...unit, statuses: unit.statuses.filter((s) => s.id !== id) };
 }
 
 export function removeStatuses(
@@ -127,11 +124,6 @@ export function tickStatuses(content: ContentIndex, unit: Unit): StatusTick {
   }
 
   return { unit: { ...unit, statuses: kept }, expired, tickDamage };
-}
-
-/** Damage type a status ticks for, so incoming multipliers still apply. */
-export function tickDamageType(content: ContentIndex, id: StatusId) {
-  return content.statuses.get(id)?.tickDamageType ?? 'pure';
 }
 
 export function describeStatus(content: ContentIndex, id: StatusId): string {

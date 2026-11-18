@@ -54,6 +54,8 @@ function effectText(effect: AbilityEffect): string {
       return `${effect.damageType} damage ${effect.base} + ${effect.scale}× power${effect.ignoreDefense ? ' (ignores defense)' : ''}`;
     case 'heal':
       return `healing ${effect.base} + ${effect.scale}× focus`;
+    case 'revive':
+      return `stand a downed friend up with ${Math.round(effect.fraction * 100)}% health`;
     case 'status':
       return `${effect.status} for ${effect.duration} round${effect.duration === 1 ? '' : 's'} (${Math.round(effect.chance * 100)}%, to ${effect.to})`;
     case 'surface':

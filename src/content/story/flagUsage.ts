@@ -28,7 +28,7 @@ import type { FlagValue } from '../../core/types';
 import { SCENE_PREFIX, SCENE_VALUES, STANDING_PREFIX } from '../../core/story/conditions';
 import type { FlagDef, FlagType } from './flags';
 
-export type FlagRole = 'read' | 'write';
+type FlagRole = 'read' | 'write';
 
 export interface FlagUse {
   readonly key: string;
@@ -168,7 +168,7 @@ export function keyMatches(registered: string, key: string): boolean {
 }
 
 /** Edit distance, for the near-duplicate check. Small keys only; quadratic is fine. */
-export function editDistance(a: string, b: string): number {
+function editDistance(a: string, b: string): number {
   let previous = Array.from({ length: b.length + 1 }, (_, index) => index);
   for (let i = 1; i <= a.length; i++) {
     const current = [i];
@@ -186,7 +186,7 @@ export function editDistance(a: string, b: string): number {
 }
 
 /** Folds case and separators, so `ruonSpared`, `ruon_spared` and `ruon.spared` collide. */
-export function foldKey(key: string): string {
+function foldKey(key: string): string {
   return key.toLowerCase().replace(/[^a-z0-9*]/g, '');
 }
 

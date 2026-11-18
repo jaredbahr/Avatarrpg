@@ -27,31 +27,31 @@ flowchart TD
   n19["cutting_tea<br/>Kuan: Cup? Mind the handle on the blue one. It comes off."]:::entry
   n20["cutting_tea_again<br/>Kuan: Back already? I've put fresh water on."]:::entry
   n21["cutting_tea_shared<br/>Set flags"]
-  n34["forest_after_explore<br/>Explore forest_road: The road is open. Continue east to the qua…"]:::entry
-  n35["forest_dema<br/>Lanfen: Mind your feet. There are ducklings under that fern. Ye…"]:::entry
-  n36["forest_dema_again<br/>Lanfen: She has brought the ducklings over. I suppose the washi…"]:::entry
-  n37["forest_ducks_seen<br/>Set flags"]
-  n38["forest_explore<br/>Explore forest_road: Follow the road east to the quarry gate, p…"]:::entry
-  n48["gate_escort_explore<br/>Explore quarry_gate: Ruon walks with you. Explore the east path…"]:::entry
-  n54["gate_trade_explore<br/>Explore quarry_gate: The gate is open. Explore the cutting east…"]:::entry
+  n40["forest_after_explore<br/>Explore forest_road: The road is open. Continue east to the qua…"]:::entry
+  n41["forest_dema<br/>Lanfen: Mind your feet. There are ducklings under that fern. Ye…"]:::entry
+  n42["forest_dema_again<br/>Lanfen: She has brought the ducklings over. I suppose the washi…"]:::entry
+  n43["forest_ducks_seen<br/>Set flags"]
+  n44["forest_explore<br/>Explore forest_road: Follow the road east to the quarry gate, p…"]:::entry
+  n55["gate_escort_explore<br/>Explore quarry_gate: Ruon walks with you. Explore the east path…"]:::entry
+  n61["gate_trade_explore<br/>Explore quarry_gate: The gate is open. Explore the cutting east…"]:::entry
   n9["battle_ambush — exit to act1 / part 1"]:::external
   n10["battle_forest_road — exit to act1 / part 1"]:::external
-  n50["gate_parley — exit to act1 / part 1"]:::external
-  n89["quarry_descent — exit to act1 / part 1"]:::external
-  n14 -->|"Legacy/audit exit (live map exits differ)"| n89
+  n57["gate_parley — exit to act1 / part 1"]:::external
+  n269["quarry_descent — exit to act1 / part 1"]:::external
+  n14 -->|"Legacy/audit exit (live map exits differ)"| n269
   n15 -->|"Next"| n16
   n16 -->|"Next"| n14
   n17 -->|"Legacy/audit exit (live map exits differ)"| n9
   n19 -->|"Next"| n21
   n20 -->|"Next"| n14
   n21 -->|"set: world.tea_shared=true"| n14
-  n34 -->|"Legacy/audit exit (live map exits differ)"| n50
-  n35 -->|"Next"| n37
-  n36 -->|"Next"| n38
-  n37 -->|"set: world.ducks_seen=true"| n38
-  n38 -->|"Legacy/audit exit (live map exits differ)"| n10
-  n48 -->|"Legacy/audit exit (live map exits differ)"| n17
-  n54 -->|"Legacy/audit exit (live map exits differ)"| n14
+  n40 -->|"Legacy/audit exit (live map exits differ)"| n57
+  n41 -->|"Next"| n43
+  n42 -->|"Next"| n44
+  n43 -->|"set: world.ducks_seen=true"| n44
+  n44 -->|"Legacy/audit exit (live map exits differ)"| n10
+  n55 -->|"Legacy/audit exit (live map exits differ)"| n17
+  n61 -->|"Legacy/audit exit (live map exits differ)"| n14
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

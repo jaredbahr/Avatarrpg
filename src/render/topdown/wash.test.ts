@@ -17,7 +17,9 @@ import { CS, hash2, vnoise } from './organic';
 import {
   AREA_RGB,
   ENEMY_RGB,
+  OBJECTIVE_RGB,
   PARTY_RGB,
+  RANGE_RGB,
   REACH_RGB,
   TARGET_RGB,
   cachedWashMasks,
@@ -183,6 +185,37 @@ describe('targets, area, path and the cover pip', () => {
     expect(spec.washes).toEqual([{ cells: [{ x: 3, y: 3 }], color: TARGET_RGB }]);
   });
 
+  it('washes the whole range under the rings and the area when an ability is armed (#846)', () => {
+    const range = [
+      { x: 1, y: 0 },
+      { x: 2, y: 0 },
+      { x: 3, y: 1 },
+      { x: 4, y: 2 },
+    ];
+    const spec = washSpec({
+      ...base,
+      overlays: [
+        { kind: 'reach', tiles: range },
+        { kind: 'target', tiles: [{ x: 4, y: 2 }] },
+        { kind: 'area', tiles: [{ x: 4, y: 2 }] },
+      ],
+    });
+    // Range first, the area over it; no second target wash, and the enemy in the area is ringed.
+    expect(spec.washes.map((w) => w.color)).toEqual([RANGE_RGB, AREA_RGB]);
+    expect(spec.washes[0]?.cells).toEqual(range);
+    expect(spec.rings.map((r) => r.color)).toEqual([ENEMY_RGB]);
+    // A target in range but not under the aim keeps its target ring.
+    const aimless = washSpec({
+      ...base,
+      overlays: [
+        { kind: 'reach', tiles: range },
+        { kind: 'target', tiles: [{ x: 4, y: 2 }] },
+      ],
+    });
+    expect(aimless.washes.map((w) => w.color)).toEqual([RANGE_RGB]);
+    expect(aimless.rings.map((r) => r.color)).toEqual([TARGET_RGB]);
+  });
+
   it('washes the area and rings everyone in it by side', () => {
     const spec = washSpec({
       ...base,
@@ -238,6 +271,48 @@ describe('targets, area, path and the cover pip', () => {
   });
 });
 
+describe('the objective (ADR 0116, 2026-11-15)', () => {
+  const grid = buildGrid(map(['......', '......', '......', '......']));
+  const base = {
+    grid,
+    units: [unit('kaya', { x: 0, y: 0 }, 'party')],
+    path: [],
+    pathFrom: null,
+    hoverTile: null,
+  } as unknown as MapView;
+  const objective = { kind: 'objective', tiles: [{ x: 3, y: 2 }] } as const;
+
+  it('washes the cells in mint under whatever else is shown, with a ring and a pennant', () => {
+    const spec = washSpec({
+      ...base,
+      overlays: [objective, { kind: 'move', tiles: [{ x: 1, y: 0 }] }],
+    });
+    expect(spec.washes.map((w) => w.color)).toEqual([OBJECTIVE_RGB, REACH_RGB]);
+    expect(spec.rings).toEqual([
+      { x: 3 * CS + 20, y: 2 * CS + 31, color: OBJECTIVE_RGB, w: 12, h: 5 },
+    ]);
+    expect(spec.pennants).toEqual([{ x: 3 * CS + CS - 9, y: 2 * CS + 2 }]);
+  });
+
+  it('is shown on its own, with nothing armed, and paints mint into the layer', () => {
+    const spec = washSpec({ ...base, overlays: [objective] });
+    const image = washImage(spec);
+    const W = image.width;
+    const at = (x: number, y: number) => [
+      ...image.data.slice((y * W + x) * 4, (y * W + x) * 4 + 3),
+    ];
+    // the pennant's fill, one row down and one in from its corner
+    const flag = spec.pennants?.[0];
+    expect(flag && at(flag.x + 1, flag.y + 1)).toEqual([...OBJECTIVE_RGB]);
+    // and nothing outside the cell is touched
+    expect(at(0, 0)).toEqual([0, 0, 0]);
+  });
+
+  it('adds no pennants without an objective', () => {
+    expect(washSpec({ ...base, overlays: [] }).pennants).toBeUndefined();
+  });
+});
+
 describe('the cover cue is hasCover', () => {
   // A barrel-like cover cell at (3, 1) screens a shot from (0, 1) at (4, 1); a figure screens too.
   const grid = buildGrid(map(['......', '...c..', '......', '......']));
@@ -290,7 +365,8 @@ vi.mock('../painters/tiles', () => ({
 }));
 vi.mock('../fx/canvasFx', () => ({ CanvasFxLayer: class {} }));
 
-const { Canvas2DBackend } = await import('../backends/canvas2d');
+const { Canvas2DBackend, overlayColors } = await import('../backends/canvas2d');
+const { OVERLAY } = await import('../palettes');
 const { PixiBackend } = await import('../backends/pixi');
 
 function fakeDocument(): void {
@@ -463,5 +539,31 @@ describe('Pixi lays the same layer', () => {
     expect(sprite.visible).toBe(false);
     sync(fixtureView({ overlays: [] }), camera('topdown'));
     expect(sprite.visible).toBe(false);
+    // An objective alone keeps the layer up on everyone's turn (ADR 0116, 2026-11-15).
+    resetWashCache();
+    sync(
+      fixtureView({ overlays: [{ kind: 'objective', tiles: [{ x: 4, y: 3 }] }] }),
+      camera('topdown'),
+    );
+    expect(sprite.visible).toBe(true);
+  });
+});
+
+describe('both backends draw the objective off the top-down wash too', () => {
+  it('as a cell overlay on the orthographic board and under High contrast', () => {
+    fakeDocument();
+    const view = (extra: Partial<MapView> = {}) =>
+      fixtureView({ overlays: [{ kind: 'objective', tiles: [{ x: 4, y: 3 }] }], ...extra });
+    const ids = (frame: ReturnType<typeof canvasFrame>) =>
+      frame.marks.mock.calls.flatMap((call) =>
+        (call[0] as unknown as { id: string }[]).map((c) => c.id),
+      );
+    expect(ids(canvasFrame('orthographic', view()))).toContain('overlay:objective:fill');
+    resetWashCache();
+    expect(ids(canvasFrame('topdown', view({ crispOverlays: true })))).toContain(
+      'overlay:objective:edge',
+    );
+    // Pixi reads the same palette, so the colours are the same on both.
+    expect(overlayColors('objective')).toEqual([OVERLAY.objective, OVERLAY.objectiveEdge]);
   });
 });

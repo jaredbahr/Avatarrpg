@@ -64,7 +64,7 @@ export const MAX_SCALE = 3;
  * Only tables *above* the baseline feel this: at the baseline the ratio is 1,
  * and below it the result clamps to MIN_SCALE at either exponent.
  */
-export const BOSS_SCALE_EXPONENT = 1.3;
+const BOSS_SCALE_EXPONENT = 1.3;
 
 export interface ScaleContext {
   readonly baselinePartySize: number;
@@ -178,7 +178,7 @@ const profileFor = (ctx: ScaleContext): DifficultyProfile =>
     : DIFFICULTY_PROFILES.story;
 
 /** Max AP for an enemy at this table and difficulty: a boss loses some below the baseline. */
-export function enemyApFor(maxAp: number, ctx: ScaleContext): number {
+function enemyApFor(maxAp: number, ctx: ScaleContext): number {
   const profile = profileFor(ctx);
   const authored = maxAp + profile.ap;
   if (!ctx.isBoss) return authored;

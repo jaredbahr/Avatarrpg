@@ -31,6 +31,8 @@ import {
   knownAbilities,
   previewAbility,
   resolveAim,
+  sameSide,
+  aimReachTiles,
   targetableTiles,
   affectedTiles,
 } from '../../core/rules/abilities';
@@ -51,6 +53,7 @@ import { canMove, effectiveStats, isAlive, statusDefs } from '../../core/rules/s
 import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
 import { coverCue } from './coverCue';
 import { activeUnit, upcomingOrder } from '../../core/rules/turnOrder';
+import { isGuest, isTableControlled } from '../../core/rules/guests';
 import { encounterText } from '../../core/story/encounterText';
 import { Renderer } from '../../render/renderer';
 import { usesIntegerZoom } from '../../render/projection';
@@ -89,6 +92,7 @@ import { assetCanvas } from '../ui/assetCanvas';
 import { portraitKeyFor } from '../ui/PartyRoster';
 import { victoryNote, victoryResults, type VictoryRow } from '../ui/victoryResults';
 import { UI_MARKS, markKindFor } from '../ui/marks';
+import { objectiveLine, objectiveOverlay } from './combatObjective';
 import { iconMarkup } from '../ui/icons';
 import { paletteFor } from '../../render/palettes';
 import { paintElementGlyph } from '../../render/painters/glyphs';
@@ -111,7 +115,7 @@ import { createMovementThreatQuery } from '../ui/movementThreats';
 import { partyWalkPhase } from '../animator';
 import type { Animator } from '../animator';
 import type { SoundCue } from '../anim/choreography';
-import { TOPDOWN_PRESENTATION_TIMING } from '../anim/choreography';
+import { ENEMY_PHASE_BEAT_MS, TOPDOWN_PRESENTATION_TIMING } from '../anim/choreography';
 import { PresentationClock, type CombatSpeed } from './presentationClock';
 import { flushTime } from './flockFlush';
 import { resolveCombatBodyPick } from './combatBodyPick';
@@ -145,13 +149,24 @@ import {
   unseenCombatTips,
   type CombatTipFeature,
 } from './combatGuidance';
+import { defendHintFlag, defendHintFor, type DefendHint } from './defendHint';
 
-export function actingTurnCopy(unit: Pick<Unit, 'faction' | 'name'>): string {
-  return unit.faction === 'ally' ? `Ally turn · ${unit.name} is acting` : `${unit.name} is acting`;
+/** An ability that stands a downed friend up (ADR 0118): aimed at the fallen, not the living. */
+function isDownedAbility(ability: Ability): boolean {
+  return ability.targeting.shape === 'unit' && ability.targeting.allow === 'downed';
 }
 
 /** How fast a held look-around pans, in CSS px a second. */
 const LOOK_SPEED = 720;
+
+/** What the HUD says while the AI acts; a guest is named as one (ADR 0116). */
+export function actingTurnCopy(unit: Pick<Unit, 'faction' | 'name'>): string {
+  return isGuest(unit) ? `Guest turn · ${unit.name} is acting` : `${unit.name} is acting`;
+}
+
+/** The visible tag a guest carries in the turn strip and the HUD (ADR 0116). */
+export const GUEST_TAG = 'Guest';
+
 const COMBAT_OPENING_HOLD_MS = 700;
 const COMBAT_OPENING_FOCUS_MS = 320;
 const VICTORY_BEAT_HOLD_MS = 1000;
@@ -311,8 +326,14 @@ export class CombatScene implements Scene {
   private lobs = new Map<string, number | null>();
   private inspector: UnitInspector | PropInspector | null = null;
   private readonly movementThreatQuery: ReturnType<typeof createMovementThreatQuery>;
+  /** The last "stay safe" hint, so a redraw of the same board does not ask the rules again. */
+  private defendHintCache: {
+    battle: BattleState;
+    unitId: string;
+    hint: DefendHint | null;
+  } | null = null;
 
-  /** Party unit whose owner last acknowledged the hand-off banner. */
+  /** The participant who last acknowledged the hand-off banner. */
   private handedOffTo: string | null = null;
   /** When the current hand-off card first showed, for its hold-off (ADR 0115 §5). */
   private handoffShownAt = 0;
@@ -373,6 +394,10 @@ export class CombatScene implements Scene {
   /** Surface cells are immutable with the battle grid, so do not rescan them every frame. */
   private obscurementMemo: { grid: BattleState['grid']; tiles: readonly Vec2[] } | null = null;
   private aiScheduled = false;
+  /** An enemy action was dispatched since the table last had the board (see `coverHeld`). */
+  private enemyActed = false;
+  /** When the last enemy action finished playing; the beat counts from here. */
+  private coverIdleSince: number | null = null;
   private aiDueUnitId: string | null = null;
   private resultShown = false;
   private victoryPending = false;
@@ -1143,7 +1168,16 @@ export class CombatScene implements Scene {
 
   private isPlayerTurn(): boolean {
     const unit = this.active();
-    return !!unit && unit.faction === 'party' && isAlive(unit);
+    return !!unit && isTableControlled(unit) && isAlive(unit);
+  }
+
+  /** "Nilak (Ava)", or "Veyra, guest (Ava)" for a table guest: who is acting, and who is playing. */
+  private turnLabel(unit: Unit): string {
+    if (!isGuest(unit)) return this.app.session.labelFor(unit);
+    const person = this.app.session.solo
+      ? undefined
+      : this.app.session.controllerFor(this.app.state, unit.id);
+    return person ? `${unit.name}, guest (${person.name})` : `${unit.name}, guest`;
   }
 
   private reachableCells() {
@@ -1805,11 +1839,39 @@ export class CombatScene implements Scene {
     }
   }
 
+  /**
+   * Whether the hand-off card or the defeat panel must wait: the enemy phase just acted, and its
+   * last action is still playing (impact, hit-stop, damage number, knockdown) or has not yet had
+   * its readable beat. The board shows alone meanwhile. A player's own turn never waits here.
+   */
+  private coverHeld(): boolean {
+    if (!this.enemyActed) return false;
+    const now = this.presentationNow();
+    if (this.animatorForBoard.busy(now)) {
+      this.coverIdleSince = null;
+      return true;
+    }
+    this.coverIdleSince ??= now;
+    if (now - this.coverIdleSince < ENEMY_PHASE_BEAT_MS) return true;
+    this.enemyActed = false;
+    this.coverIdleSince = null;
+    return false;
+  }
+
+  /** Per frame: lay the held card down once the last enemy action has been seen. */
+  private releaseCover(): void {
+    if (!this.enemyActed) return;
+    const battle = this.battle();
+    if (!battle || battle.phase === 'victory') return;
+    const waiting = battle.phase !== 'active' || this.needsHandoff();
+    if (waiting && !this.coverHeld()) this.renderHud();
+  }
+
   private needsHandoff(): boolean {
     const unit = this.active();
-    if (!unit || unit.faction !== 'party') return false;
+    if (!unit || !isTableControlled(unit)) return false;
     if (this.app.session.solo) return false;
-    return this.app.session.needsHandoff(this.handedOffTo, unit.id);
+    return this.app.session.needsHandoffTo(this.handedOffTo, this.app.state, unit.id);
   }
 
   sync(): void {
@@ -1859,9 +1921,7 @@ export class CombatScene implements Scene {
       // change of human ownership needs another hand-off card.
       if (unit) {
         announce(
-          unit.faction === 'party'
-            ? `${this.app.session.labelFor(unit)}'s turn.`
-            : actingTurnCopy(unit),
+          isTableControlled(unit) ? `${this.turnLabel(unit)}'s turn.` : actingTurnCopy(unit),
         );
       }
       // The More list was opened for the last turn; the next player at the
@@ -1928,7 +1988,7 @@ export class CombatScene implements Scene {
     const unit = this.active();
     if (!battle || battle.phase !== 'active' || !unit) return;
     if (this.suspended || this.aiHeld || this.battleOpening) return;
-    if (unit.faction === 'party') return;
+    if (isTableControlled(unit)) return;
 
     if (this.presentationClock) {
       if (this.aiDueAt === null) {
@@ -1963,6 +2023,7 @@ export class CombatScene implements Scene {
           schedule(Math.max(COMBAT_AI_GLIDE_RETRY_MS, remaining));
           return;
         }
+        this.enemyActed = true;
         this.app.dispatch({ type: 'runAiTurn' });
       }, wait);
       this.aiTimer = timer;
@@ -1989,7 +2050,7 @@ export class CombatScene implements Scene {
     if (this.cameraGlide) return;
     const battle = this.battle();
     const unit = this.active();
-    if (!battle || battle.phase !== 'active' || !unit || unit.faction === 'party') {
+    if (!battle || battle.phase !== 'active' || !unit || isTableControlled(unit)) {
       this.stopAiTimer();
       return;
     }
@@ -2002,12 +2063,34 @@ export class CombatScene implements Scene {
     this.aiDueAt = null;
     this.aiDueUnitId = null;
     this.aiScheduled = false;
+    this.enemyActed = true;
     this.app.dispatch({ type: 'runAiTurn' });
   }
 
   /* ---------------------------------------------------------------- */
   /* Rendering: chrome                                                 */
   /* ---------------------------------------------------------------- */
+
+  /**
+   * The objective line under the round (ADR 0116's 2026-11-15 amendment): a flag, the goal and
+   * the rounds left, read out whole as one status line so a screen reader hears the change.
+   */
+  private objectiveLineElement(goal: NonNullable<ReturnType<typeof objectiveLine>>): HTMLElement {
+    const line = el(
+      'div',
+      {
+        class: `combat-objective${goal.urgent ? ' urgent' : ''}`,
+        attrs: { role: 'status', 'aria-label': goal.spoken },
+      },
+      mark(UI_MARKS.flag, 'mark-inline combat-objective-mark'),
+      el('span', { class: 'visually-hidden', text: 'Goal: ' }),
+      el('span', { class: 'combat-objective-label', text: goal.label, title: goal.label }),
+    );
+    if (goal.rounds) {
+      line.appendChild(el('span', { class: 'combat-objective-rounds', text: goal.rounds }));
+    }
+    return line;
+  }
 
   private renderTopBar(): void {
     const bar = this.host?.querySelector<HTMLElement>('.combat-bar');
@@ -2032,6 +2115,7 @@ export class CombatScene implements Scene {
     clear(bar);
 
     const encounter = this.app.content.encounters.get(battle.encounterId);
+    const goal = battle.phase === 'active' ? objectiveLine(encounter, battle.round) : null;
     // The encounter's name on a plate, in the display face, with the round under it.
     bar.appendChild(
       el(
@@ -2060,6 +2144,7 @@ export class CombatScene implements Scene {
               ]
             : []),
         ),
+        ...(goal ? [this.objectiveLineElement(goal)] : []),
       ),
     );
     bar.appendChild(el('div', { class: 'spacer' }));
@@ -2271,25 +2356,32 @@ export class CombatScene implements Scene {
           ? this.app.content.characters.get(unit.characterId)
           : undefined;
       const chipName = definition?.shortName ?? unit.name;
+      // A guest is tagged on its chip, and its name says so to a screen reader
+      // (ADR 0116): it fights with the party but is not one of the heroes.
+      const guest = isGuest(unit);
+      const named = guest ? `${unit.name} (guest)` : unit.name;
 
       // The element class puts the unit's colour in --el, for the party's ring.
       const chip = el(
         'button',
         {
-          class: `turn-chip faction-${unit.faction} element-${unit.element}${isActive ? ' active' : ''}`,
+          class: `turn-chip faction-${unit.faction} element-${unit.element}${guest ? ' guest' : ''}${isActive ? ' active' : ''}`,
           attrs: {
             type: 'button',
-            'aria-label': `Focus ${unit.name}`,
+            'aria-label': `Focus ${named}`,
             ...(this.victoryPending || this.victoryBeat ? { disabled: '' } : {}),
           },
           onClick: () => this.focusUnit(unit.id),
         },
         assetCanvas(portraitKeyFor(this.app.content, unit), 2.4),
         el('span', { class: 'tiny', text: chipName }),
+        guest
+          ? el('small', { class: 'guest-tag', text: GUEST_TAG, attrs: { 'aria-hidden': 'true' } })
+          : null,
       );
       // A phone shows the waiting chips as faces alone and a long name
       // ellipses anywhere, so the full name always rides on the chip itself.
-      const who = player && player.name !== unit.name ? `${unit.name} (${player.name})` : unit.name;
+      const who = player && player.name !== unit.name ? `${unit.name} (${player.name})` : named;
       chip.title = `${who}: ${unit.hp}/${unit.base.maxHp} HP. Focus on the battlefield.`;
       strip.appendChild(chip);
     }
@@ -2316,6 +2408,7 @@ export class CombatScene implements Scene {
 
     if (battle.phase !== 'active') {
       if (battle.phase === 'victory' && this.victoryPending) return;
+      if (battle.phase !== 'victory' && this.coverHeld()) return;
       if (battle.phase === 'victory' && this.victoryBeat) {
         overlays.appendChild(
           el(
@@ -2340,9 +2433,14 @@ export class CombatScene implements Scene {
     if (this.battleOpening) return;
 
     if (this.needsHandoff()) {
+      // The last enemy blow plays out, and is read, before the card covers it.
+      if (this.coverHeld()) return;
       overlays.appendChild(this.handoffBanner());
       return;
     }
+    // The table has the board again: the next enemy phase starts its own beat.
+    this.enemyActed = false;
+    this.coverIdleSince = null;
 
     const unit = this.active();
     if (!unit) return;
@@ -2354,11 +2452,14 @@ export class CombatScene implements Scene {
     // Nothing chosen and nobody looking round: input is the action bar's again.
     if (this.mode.kind === 'idle' && !this.browsing) this.cursor = null;
 
-    if (unit.faction !== 'party') {
+    if (!isTableControlled(unit)) {
       hud.appendChild(
         el(
           'div',
-          { class: `enemy-turn-card element-${unit.element}`, attrs: { 'aria-hidden': 'true' } },
+          {
+            class: `enemy-turn-card element-${unit.element}${isGuest(unit) ? ' guest' : ''}`,
+            attrs: { 'aria-hidden': 'true' },
+          },
           assetCanvas(
             portraitKeyFor(this.app.content, unit),
             3,
@@ -2383,9 +2484,53 @@ export class CombatScene implements Scene {
     if (this.pending) {
       actions.appendChild(this.confirmBar(unit));
     } else {
-      const hint = this.aimHint(unit);
+      const hint = this.aimHint(unit) ?? this.defendHintBar(unit);
       if (hint) actions.appendChild(hint);
     }
+  }
+
+  /**
+   * The "stay safe" line (#846): one short hint when the hero is low or could be
+   * hit hard, naming a heal, Guard or a safe step they really have. It speaks
+   * only while the hero is idle (never over a pending decision or an aim),
+   * only with guidance on, and never in the guided first fight, which already
+   * has a coach. "Got it" hides that kind of hint for good, in a
+   * `guidance.tip.*` flag like the one-time tips.
+   */
+  private defendHintBar(unit: Unit): HTMLElement | null {
+    const battle = this.battle();
+    const state = this.app.state;
+    if (
+      !battle ||
+      !state ||
+      this.mode.kind !== 'idle' ||
+      this.battleOpening ||
+      !this.app.settings?.combatGuidance ||
+      isGuidedFight(battle, this.app.content.encounters)
+    )
+      return null;
+    const cached = this.defendHintCache;
+    let hint: DefendHint | null;
+    if (cached && cached.battle === battle && cached.unitId === unit.id) hint = cached.hint;
+    else {
+      hint = defendHintFor(this.app.content, battle, unit, this.movementThreatQuery);
+      this.defendHintCache = { battle, unitId: unit.id, hint };
+    }
+    if (!hint || state.flags[defendHintFlag(hint.kind)] === true) return null;
+    const kind = hint.kind;
+    return el(
+      'div',
+      { class: 'confirm-bar defend-hint', attrs: { role: 'status', 'aria-live': 'polite' } },
+      el('span', { class: 'defend-hint-text', text: hint.text }),
+      button(
+        'Got it',
+        () => {
+          this.saveGuidanceFlags({ [defendHintFlag(kind)]: true });
+          this.renderHud();
+        },
+        { class: 'btn-ghost' },
+      ),
+    );
   }
 
   /**
@@ -2401,7 +2546,8 @@ export class CombatScene implements Scene {
     const unit = stage === 1 ? this.active() : undefined;
     const battle = this.battle();
     const content = this.app.content;
-    return unit?.faction === 'party' &&
+    return unit &&
+      isTableControlled(unit) &&
       battle &&
       !knownAbilities(content, unit).some(
         (ability) =>
@@ -2556,7 +2702,8 @@ export class CombatScene implements Scene {
 
   private unitPanel(unit: Unit): HTMLElement {
     const stats = effectiveStats(this.app.content, unit);
-    const player = this.app.session.participantForUnit(unit.id);
+    const player = this.app.session.controllerFor(this.app.state, unit.id);
+    const guest = isGuest(unit);
 
     const apPips = el('div', {
       class: 'pips',
@@ -2600,7 +2747,19 @@ export class CombatScene implements Scene {
             el(
               'div',
               { class: 'stack tight' },
-              el('strong', { class: 'unit-name', text: unit.name }),
+              // A hero's name stands alone; a guest's carries its tag beside it.
+              guest
+                ? el(
+                    'div',
+                    { class: 'row tight' },
+                    el('strong', { class: 'unit-name', text: unit.name }),
+                    el('span', {
+                      class: 'chip chip-guest',
+                      text: GUEST_TAG,
+                      attrs: { title: 'Fights with you for this battle only' },
+                    }),
+                  )
+                : el('strong', { class: 'unit-name', text: unit.name }),
               player && player.name !== unit.name
                 ? el('span', { class: 'tiny muted', text: player.name })
                 : null,
@@ -2638,7 +2797,7 @@ export class CombatScene implements Scene {
     const bar = el('div', { class: 'hud-panel action-bar', attrs: { role: 'toolbar' } });
     bar.appendChild(this.abilityHeader(unit));
     const row = el('div', { class: 'action-row' });
-    const interactive = unit.faction === 'party' && this.isPlayerTurn();
+    const interactive = isTableControlled(unit) && this.isPlayerTurn();
     const cue = this.guideStage();
 
     const moveActive = this.mode.kind === 'move';
@@ -2655,12 +2814,14 @@ export class CombatScene implements Scene {
             ? 'Walk to a highlighted tile'
             : 'No move points left this turn',
     });
+    moveButton.setAttribute('aria-pressed', String(moveActive));
     moveButton.prepend(mark(UI_MARKS.move));
     moveButton.appendChild(el('span', { class: 'action-sub', text: `${unit.move} left` }));
     moveButton.dataset.slot = 'move';
     row.appendChild(moveButton);
 
     for (const ability of knownAbilities(this.app.content, unit)) {
+      if (!this.worthListing(unit, ability)) continue;
       row.appendChild(this.abilityButton(unit, ability, interactive));
     }
 
@@ -2719,8 +2880,33 @@ export class CombatScene implements Scene {
     return header;
   }
 
+  /**
+   * "Help up" (ADR 0118) is on everyone's bar, but a button for it is noise until
+   * someone is down: it appears while a friend lies on the board who has not been
+   * helped up this fight, and goes live once the hero stands next to them.
+   */
+  private worthListing(unit: Unit, ability: Ability): boolean {
+    if (!isDownedAbility(ability)) return true;
+    const battle = this.battle();
+    return (
+      !!battle &&
+      battle.units.some(
+        (other) => !isAlive(other) && sameSide(unit, other) && !battle.helpedUp?.includes(other.id),
+      )
+    );
+  }
+
   private abilityButton(unit: Unit, ability: Ability, interactive = true): HTMLElement {
-    const check = canUseAbility(this.app.content, unit, ability);
+    const battle = this.battle();
+    const baseCheck = canUseAbility(this.app.content, unit, ability);
+    // A friend is down but not within reach: say where to go rather than open an empty aim.
+    const check =
+      baseCheck.ok &&
+      battle &&
+      isDownedAbility(ability) &&
+      targetableTiles(this.app.content, battle, unit, ability).length === 0
+        ? { ok: false, reason: 'Stand next to a friend who is down to help them up.' }
+        : baseCheck;
     const selected = this.mode.kind === 'aim' && this.mode.abilityId === ability.id;
     const cooldown = unit.cooldowns[ability.id] ?? 0;
 
@@ -2735,6 +2921,8 @@ export class CombatScene implements Scene {
     });
 
     node.dataset.slot = `ability:${ability.id}`;
+    node.setAttribute('aria-pressed', String(selected));
+
     // The ability's own mark above its name, in its element's colour; the
     // cost as words under it.
     node.prepend(mark(iconMarkup(markKindFor(ability))));
@@ -3229,11 +3417,16 @@ export class CombatScene implements Scene {
     if (!unit) return el('div');
     // The one place the optional names from setup appear; without one this is
     // the player name the card has always shown.
-    const who = this.app.session.handoffNameFor(unit.id) ?? unit.name;
+    const state = this.app.state;
+    const who = this.app.session.controllerHandoffName(state, unit.id) ?? unit.name;
+    const person = this.app.session.controllerFor(state, unit.id);
+    const playing = isGuest(unit) ? `Playing ${unit.name}, our guest` : `Playing ${unit.name}`;
 
     const pass = handoffCopy(this.app.input?.device ?? 'touch', navigator.maxTouchPoints > 0);
-    if (this.bannerShownFor !== unit.id) {
-      this.bannerShownFor = unit.id;
+    // A table guest changes hands each round, so the card is keyed on both.
+    const shownFor = `${unit.id}|${person?.id ?? ''}`;
+    if (this.bannerShownFor !== shownFor) {
+      this.bannerShownFor = shownFor;
       this.handoffShownAt = performance.now();
       announce(`${pass} ${who}.`);
     }
@@ -3243,7 +3436,7 @@ export class CombatScene implements Scene {
         button(
           "I'm ready",
           () => {
-            this.handedOffTo = unit.id;
+            this.handedOffTo = person?.id ?? null;
             this.renderHud();
           },
           { class: 'btn-primary btn-large' },
@@ -3260,7 +3453,7 @@ export class CombatScene implements Scene {
         { class: 'panel center' },
         el('p', { class: 'muted', text: pass }),
         el('h1', { text: who }),
-        el('p', { class: 'muted', text: `Playing ${unit.name}` }),
+        el('p', { class: 'muted', text: playing }),
         ready,
       ),
     );
@@ -3544,7 +3737,7 @@ export class CombatScene implements Scene {
         const rise = this.animatorForBoard.wallRise(now, pos);
         return rise === undefined ? pos : { ...pos, rise };
       }),
-      overlays,
+      overlays: this.withObjective(battle, overlays),
       obscuringTiles: this.obscuringTilesFor(battle),
       weatherIntensity: weatherAt(this.app.content, battle.encounterId, battle.round),
       climbMarkers,
@@ -3583,6 +3776,7 @@ export class CombatScene implements Scene {
     renderer.draw(view);
     this.deliverTopdownSounds(now, wallNow);
     this.advanceTopdownAi(now);
+    this.releaseCover();
   };
 
   /** The held look-around (Shift + arrows, the right stick) and the triggers' zoom, per frame. */
@@ -3605,6 +3799,19 @@ export class CombatScene implements Scene {
   }
 
   private lastLookAt: number | null = null;
+
+  /**
+   * The encounter's objective cells under every other overlay while the fight is on (ADR 0116's
+   * 2026-11-15 amendment): a rule the board must show, on either backend and on everyone's turn.
+   */
+  private withObjective(
+    battle: BattleState,
+    overlays: readonly OverlayLayer[],
+  ): readonly OverlayLayer[] {
+    if (battle.phase !== 'active') return overlays;
+    const layer = objectiveOverlay(this.app.content.encounters.get(battle.encounterId));
+    return layer ? [layer, ...overlays] : overlays;
+  }
 
   /**
    * Automatic combat framing follows only an enlarged animated body. Manual
@@ -3946,14 +4153,26 @@ export class CombatScene implements Scene {
       const ability = this.app.content.abilities.get(this.mode.abilityId);
       if (ability) {
         const targets = targetableTiles(this.app.content, battle, unit, ability);
+        // The whole range first (issue #846), then the legal targets in it, then the area under
+        // the aim: the tapped tile, or with a mouse the hovered one, once it is a legal aim.
+        const inRange = aimReachTiles(this.app.content, battle, unit, ability);
+        // A big target's far cells are targets through its near one: the range covers them too.
+        const known = new Set(inRange.map(posKey));
+        const reach = [...inRange, ...targets.filter((tile) => !known.has(posKey(tile)))];
+        if (reach.length > 0) overlays.push({ kind: 'reach', tiles: reach });
         overlays.push({
           kind: 'target',
           tiles: targets,
         });
-        if (this.pending) {
+        const aim =
+          this.pending ??
+          (this.hover && targets.some((target) => samePos(target, this.hover as Vec2))
+            ? this.hover
+            : null);
+        if (aim) {
           overlays.push({
             kind: 'area',
-            tiles: affectedTiles(this.app.content, battle.grid, unit, ability, this.pending),
+            tiles: affectedTiles(this.app.content, battle.grid, unit, ability, aim),
           });
         }
         const originTile = tileAt(battle.grid, unit.pos);

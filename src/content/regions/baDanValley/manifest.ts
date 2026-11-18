@@ -19,7 +19,11 @@ export const BA_DAN_VALLEY: RegionManifest = {
     'ambush_road',
     'quarry_floor',
   ],
-  neighbours: [],
+  // The coast road from Ba Dan's south lawn to Saltstep, open once Act I is over (`maps/world.ts`).
+  neighbours: ['saltstep_emberwatch'],
+  // Approved by the owner on #784 (2026-11-18): 1-3, matching the demo's fights (levels 1, 2, 3, 3).
+  // Ba Dan's Act IV return (MQ-11) is a separate region, "Ba Dan, later", on the same maps (8-9).
+  levelBand: { minLevel: 1, maxLevel: 3, placeholder: false },
   // Ba Dan and its riverside share the village theme, so the welcome-home ending plays it too; the
   // Forest Road plays the road theme both ways; the quarry gate, the Cutting and the Driller's floor
   // play the quarry theme, out and on the walk home, until the Forest Road takes over.
@@ -32,8 +36,8 @@ export const BA_DAN_VALLEY: RegionManifest = {
     quarry_floor: 'quarry',
   },
   scenes: {
-    // The oblique margin (-0.61) was fitted to one diamond at either side; the top-down plate runs
-    // three tiles past the grid into the rim, and `paintExtent` keeps the view inside it.
+    // Ba Dan's ground alone (stage 4 of `docs/places/ba_dan_village.md`, ADR 0120): the plate runs two cells past the
+    // grid either side, three above and two below; its set pieces stand on it at stage 5.
     ba_dan_village: { url: 'art/topdown/ba-dan/scene.json', cameraCentreMargin: 1 },
     // The forest plate runs two cells past the grid either side and three above (the pine margin).
     forest_road: { url: 'art/topdown/forest-road/scene.json', cameraCentreMargin: 1 },

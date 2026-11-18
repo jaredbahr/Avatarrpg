@@ -14,6 +14,7 @@
 import type { Condition, StoryNode } from '../../core/types';
 
 const victory: Condition = { kind: 'flag', key: 'act1_complete', op: 'set' };
+const lost: Condition = { kind: 'flag', key: 'act1_lost', op: 'set' };
 const atDawn: Condition = { kind: 'phase', in: ['dawn'] };
 const both = (...of: Condition[]): Condition => ({ kind: 'all', of });
 
@@ -29,6 +30,7 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
   {
     id: 'plant_chair',
     kind: 'choice',
+    routine: true,
     speaker: GAO,
     portrait: 'portrait.gao',
     prompt: 'Come in out of the sun. Sit down a minute.',
@@ -51,6 +53,14 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
     kind: 'branch',
     flag: 'act1_complete',
     ifSet: 'plant_chair_decline_home',
+    ifUnset: 'plant_chair_decline_lost',
+  },
+  // After a Driller loss (C-16), his word on the occupied valley (lost.ts).
+  {
+    id: 'plant_chair_decline_lost',
+    kind: 'branch',
+    flag: 'act1_lost',
+    ifSet: 'gao_lost',
     ifUnset: 'plant_chair_decline_road',
   },
   {
@@ -225,6 +235,8 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
 
   /* ------------------------------------------------------------ Hanru's watch */
   // Evening and night on the post; at dawn, off watch on the handover verge.
+  // After a Driller loss, Dorin is away with the cart and Hanru keeps the gate
+  // by day as well (`residents/baDan.ts`).
   {
     id: 'hanru_watch',
     kind: 'dialogue',
@@ -236,6 +248,22 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
       'Dorin once wanted my fish prints on the notice board. They stay inside the hut.',
     ],
     variants: [
+      {
+        when: both(lost, { kind: 'flag', key: 'ruon_spared', op: 'set' }),
+        lines: [
+          'Dorin left me the gate, and a list. Most of the list is about the float.',
+          'Ruon asked me to lock him in the hut at night. I told him the door sticks. He hasn’t tried it.',
+          'The lamp by the east road stays lit now. Day and night.',
+        ],
+      },
+      {
+        when: lost,
+        lines: [
+          'Dorin left me the gate, and a list. Most of the list is about the float.',
+          'I only ask where people are going when they look lost. Most people look lost today.',
+          'The lamp by the east road stays lit now. Day and night.',
+        ],
+      },
       {
         when: atDawn,
         lines: [
@@ -287,9 +315,42 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
         when: victory,
         lines: [
           '“School this morning. Pupils home at midday.”',
-          'Underneath, in careful chalk: “PELLA IS AT SCHOOL. BO-SHAN, DO NOT MOVE MY STONES.”',
+          'Underneath, in careful chalk: “PELLA IS AT SCHOOL. NOBODY MOVE BO-SHAN’S STONE. IT IS HIS TURN.”',
         ],
       },
+    ],
+    next: 'village_leave',
+  },
+
+  /* ------------------------------------------------- Later-state look-ats */
+  // One look-at each for the props the village shows once a story condition holds (`maps/village.ts`).
+  {
+    id: 'look_side_gate_hung',
+    kind: 'dialogue',
+    speaker: 'Side gate',
+    portrait: 'portrait.narrator',
+    lines: [
+      'The side gate hangs the right way round now, and it is shut. A brown hen sits on its roof. She has not been entered in the register.',
+    ],
+    next: 'village_leave',
+  },
+  {
+    id: 'look_gao_jar',
+    kind: 'dialogue',
+    speaker: 'The jar by the counter',
+    portrait: 'portrait.narrator',
+    lines: [
+      'A big glazed jar with a paper tag on a string: “For whoever needs it; no speeches.” The lid is not on straight. Somebody has been at it today. You cannot tell which way.',
+    ],
+    next: 'village_leave',
+  },
+  {
+    id: 'look_hesra_boot',
+    kind: 'dialogue',
+    speaker: 'Boot by the door',
+    portrait: 'portrait.narrator',
+    lines: [
+      'A hobnailed boot stands by the door, stuffed with straw to dry. On the windowsill above it sits a river shell. Nobody in Ba Dan has said who carried it home.',
     ],
     next: 'village_leave',
   },

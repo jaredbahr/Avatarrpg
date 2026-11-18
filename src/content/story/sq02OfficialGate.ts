@@ -56,6 +56,7 @@ export const SQ02_STORY: readonly StoryNode[] = [
   {
     id: 'sq02_ask',
     kind: 'choice',
+    routine: true,
     speaker: DORIN,
     portrait: DORIN_FACE,
     prompt: 'I could show you the register. If you’re not busy.',

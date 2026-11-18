@@ -95,6 +95,13 @@ export type PresentationTimingProfile = {
 };
 
 /** Shared behavior remains the default; top-down timing is opt-in per Animator. */
+/**
+ * The readable beat (ms) after the last enemy action has finished playing, before the hand-off card
+ * or the defeat panel takes the board: long enough to see the hit and read the damage number.
+ * Reduced motion keeps it and only drops the motion.
+ */
+export const ENEMY_PHASE_BEAT_MS = 500;
+
 export const DEFAULT_PRESENTATION_TIMING: PresentationTimingProfile = {
   ...TIMING,
   tail: 0,
@@ -1119,6 +1126,28 @@ export function choreograph(input: ChoreographyInput): Choreography {
           const centre = unitEffectCentre(event.unitId, pos);
           emit(recipe.impact, at, centre, centre, palette, eventIndex, 4);
           floater(unitFloaterPos(event.unitId, pos), `+${event.amount}`, '#8fe39b', at + 30 * rate);
+        }
+        cursor = Math.max(cursor, at) + timing.gap * rate;
+        break;
+      }
+
+      case 'unitRevived': {
+        // Helped up (ADR 0118): the same green pulse as a heal, from lying down to standing.
+        tailRequired = true;
+        const pos = positions.get(event.unitId);
+        const at = Math.max(cursor, landing().at);
+        readyBy(at + landing().hitStop);
+        const before = unitHealth.get(event.unitId);
+        if (before) {
+          unitHealth.set(event.unitId, { ...before, hp: event.hp, fallen: false });
+          health.push({ unitId: event.unitId, hp: event.hp, fallen: false, at });
+        }
+        cue('heal', at, 6, eventIndex);
+        if (pos) {
+          const { recipe, palette } = effect('fx.heal.pulse');
+          const centre = unitEffectCentre(event.unitId, pos);
+          emit(recipe.impact, at, centre, centre, palette, eventIndex, 4);
+          floater(unitFloaterPos(event.unitId, pos), `+${event.hp}`, '#8fe39b', at + 30 * rate);
         }
         cursor = Math.max(cursor, at) + timing.gap * rate;
         break;

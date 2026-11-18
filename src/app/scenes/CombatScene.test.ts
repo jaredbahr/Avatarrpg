@@ -77,9 +77,9 @@ afterEach(() => {
 });
 
 describe('acting-turn card copy', () => {
-  it('names the actor and distinctly labels an allied turn', () => {
+  it('names the actor and labels a guest turn', () => {
     expect(actingTurnCopy({ faction: 'enemy', name: 'Bandit' })).toBe('Bandit is acting');
-    expect(actingTurnCopy({ faction: 'ally', name: 'Sura' })).toBe('Ally turn · Sura is acting');
+    expect(actingTurnCopy({ faction: 'ally', name: 'Sura' })).toBe('Guest turn · Sura is acting');
   });
 
   it('cancels and dismisses an AP confirmation handle without clearing other messages', () => {

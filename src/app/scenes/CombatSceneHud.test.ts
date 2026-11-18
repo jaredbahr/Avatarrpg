@@ -96,7 +96,9 @@ function actor(faction: Unit['faction'], name: string): Unit {
     abilities: [],
     cooldowns: {},
     statuses: [],
-    ai: 'none',
+    // People take a party member's turns; the AI takes everyone else's here (a
+    // guest with `none` would be a table guest, ADR 0116).
+    ai: faction === 'party' ? 'none' : 'aggressive',
     temporary: false,
     sprite: 'unit.bandit',
   };
@@ -190,13 +192,13 @@ it('announces one matching actor message per active turn change', () => {
   battleModel.turnIndex = 1;
   scene.sync();
   scene.sync();
-  expect(messages).toEqual(['Bandit is acting', 'Ally turn · Riko is acting']);
+  expect(messages).toEqual(['Bandit is acting', 'Guest turn · Riko is acting']);
 });
 
 describe('non-party combat acting card', () => {
   it.each([
     ['enemy', 'Bandit', 'Bandit is acting'],
-    ['ally', 'Riko', 'Ally turn · Riko is acting'],
+    ['ally', 'Riko', 'Guest turn · Riko is acting'],
   ] as const)('shows %s as %s without player controls', (faction, name, label) => {
     const hud = new FakeElement();
     const overlays = new FakeElement();
@@ -290,7 +292,8 @@ describe('combat hand-off ownership', () => {
     scene.handedOffTo = null;
 
     expect(scene.needsHandoff()).toBe(true);
-    scene.handedOffTo = 'kaya';
+    // The scene remembers the person who took the tablet, not the hero.
+    scene.handedOffTo = 'person-1';
     active = actor('party', 'bo');
     expect(scene.needsHandoff()).toBe(false);
     active = actor('party', 'sura');

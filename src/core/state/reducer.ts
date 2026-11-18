@@ -56,6 +56,7 @@ import {
   enterStoryNode,
   exploreNodeFor,
   npcNode,
+  passLeadership,
 } from '../story/storyEngine';
 
 /** Convenience: state unchanged, one explanatory message. */
@@ -508,17 +509,18 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
     if (!destination || tileAt(buildGrid(destination), exit.toPos)?.blocked !== false)
       return refuse(state, 'This route is unavailable.');
     // Arrive beside the return exit, never on it. Reciprocal routes are explicit.
+    const passed = passLeadership(content, moved, destination.id);
     return {
       state: {
         ...moved,
         location: { mapId: destination.id, pos: exit.toPos },
-        story: { ...moved.story, nodeId: null, lineIndex: 0 },
+        story: { ...passed.state.story, nodeId: null, lineIndex: 0 },
         world: {
           ...moved.world,
           returnPos: { ...moved.world.returnPos, [map.id]: pos, [destination.id]: exit.toPos },
         },
       },
-      events: [...walk, { type: 'screenChanged', screen: 'explore' }],
+      events: [...walk, ...passed.events, { type: 'screenChanged', screen: 'explore' }],
     };
   }
 
@@ -907,20 +909,4 @@ function discoverCombos(
     state: { ...state, discoveredCombos: [...state.discoveredCombos, ...found] },
     events: [...events, ...discovered],
   };
-}
-
-/** Applies a list of commands in order. Used by the simulator and by tests. */
-export function applyAll(
-  content: ContentIndex,
-  state: GameState,
-  commands: readonly Command[],
-): StepResult {
-  let current = state;
-  const events: GameEvent[] = [];
-  for (const command of commands) {
-    const result = apply(content, current, command);
-    current = result.state;
-    events.push(...result.events);
-  }
-  return { state: current, events };
 }

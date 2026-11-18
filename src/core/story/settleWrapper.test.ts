@@ -27,7 +27,7 @@ function exploring(overrides: Partial<GameState> = {}): GameState {
   return {
     ...base,
     screen: 'explore',
-    location: { mapId: 'ba_dan_village', pos: { x: 3, y: 7 } },
+    location: { mapId: 'ba_dan_village', pos: { x: 11, y: 10 } },
     story: { ...base.story, nodeId: 'village_explore' },
     ...overrides,
   };
@@ -43,7 +43,7 @@ suite('settle: the conversation pin (clear half)', () => {
     const state = withTalk(exploring(), {
       npcId: 'elder_mira',
       mapId: 'ba_dan_village',
-      anchor: '11,5',
+      anchor: '12,9',
     });
     expect(state.screen).toBe('explore');
 
@@ -55,9 +55,9 @@ suite('settle: the conversation pin (clear half)', () => {
     const state = withTalk(
       exploring({
         screen: 'dialogue',
-        location: { mapId: 'ba_dan_riverside', pos: { x: 3, y: 7 } },
+        location: { mapId: 'ba_dan_riverside', pos: { x: 11, y: 10 } },
       }),
-      { npcId: 'elder_mira', mapId: 'ba_dan_village', anchor: '11,5' },
+      { npcId: 'elder_mira', mapId: 'ba_dan_village', anchor: '12,9' },
     );
 
     const result = settle(CONTENT, state, state);
@@ -65,7 +65,7 @@ suite('settle: the conversation pin (clear half)', () => {
   });
 
   it('keeps a live pin: dialogue on the pinned map leaves `talk` unchanged', () => {
-    const pin = { npcId: 'elder_mira', mapId: 'ba_dan_village', anchor: '11,5' };
+    const pin = { npcId: 'elder_mira', mapId: 'ba_dan_village', anchor: '12,9' };
     const state = withTalk(exploring({ screen: 'dialogue' }), pin);
 
     const result = settle(CONTENT, state, state);
@@ -76,15 +76,15 @@ suite('settle: the conversation pin (clear half)', () => {
 suite('settle: the leader step (move half)', () => {
   it('moves the leader off a visible NPC tile in explore and emits partyWalked', () => {
     // Elder Mira's real NpcDef tile on ba_dan_village.
-    const state = exploring({ location: { mapId: 'ba_dan_village', pos: { x: 11, y: 5 } } });
+    const state = exploring({ location: { mapId: 'ba_dan_village', pos: { x: 12, y: 9 } } });
 
     const result = settle(CONTENT, state, state);
-    expect(result.state.location.pos).not.toEqual({ x: 11, y: 5 });
+    expect(result.state.location.pos).not.toEqual({ x: 12, y: 9 });
     expect(result.events).toContainEqual(
       expect.objectContaining({
         type: 'partyWalked',
         unitId: state.party[0]?.id,
-        from: { x: 11, y: 5 },
+        from: { x: 12, y: 9 },
       }),
     );
   });
@@ -92,16 +92,16 @@ suite('settle: the leader step (move half)', () => {
   it('does nothing to the leader outside explore, even on an NPC tile', () => {
     const state = exploring({
       screen: 'dialogue',
-      location: { mapId: 'ba_dan_village', pos: { x: 11, y: 5 } },
+      location: { mapId: 'ba_dan_village', pos: { x: 12, y: 9 } },
     });
 
     const result = settle(CONTENT, state, state);
-    expect(result.state.location.pos).toEqual({ x: 11, y: 5 });
+    expect(result.state.location.pos).toEqual({ x: 12, y: 9 });
     expect(result.events.some((event) => event.type === 'partyWalked')).toBe(false);
   });
 
   it('is deterministic: the same inputs give the same result', () => {
-    const state = exploring({ location: { mapId: 'ba_dan_village', pos: { x: 11, y: 5 } } });
+    const state = exploring({ location: { mapId: 'ba_dan_village', pos: { x: 12, y: 9 } } });
     const first = settle(CONTENT, state, state);
     const second = settle(CONTENT, state, state);
     expect(first.state).toEqual(second.state);

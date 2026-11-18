@@ -15,8 +15,8 @@ async function walkAcross(page: Page, x: number, y: number) {
       const walk = events.find((event) => event.type === 'partyWalked');
       if (!walk) throw new Error(`The party did not walk from ${start.x},${start.y} to ${x},${y}`);
 
-      const canal = app.content.maps.get('ba_dan_village')?.rows[6];
-      if (!canal) throw new Error('Ba Dan canal row is missing');
+      const rows = app.content.maps.get('ba_dan_village')?.rows;
+      if (!rows) throw new Error('Ba Dan rows are missing');
       const leader = app.state!.party[0]?.id;
       const sampled = new Set<string>();
       const wetSamples: { id: string; x: number; y: number }[] = [];
@@ -34,9 +34,9 @@ async function walkAcross(page: Page, x: number, y: number) {
           if (!pos) continue;
           sampled.add(member.id);
           const tile = { x: Math.round(pos.x), y: Math.round(pos.y) };
-          if (tile.y === 6 && canal[tile.x] === '~' && wetSamples.length < 8)
+          if (rows[tile.y]?.[tile.x] === '~' && wetSamples.length < 8)
             wetSamples.push({ id: member.id, ...pos });
-          if (member.id === leader && tile.x === x && tile.y === 6) bridgeFrames++;
+          if (member.id === leader && tile.x === x && tile.y === 12) bridgeFrames++;
         }
         idleFrames = app.animator.busy(now) ? 0 : idleFrames + 1;
       }
@@ -56,7 +56,7 @@ async function walkAcross(page: Page, x: number, y: number) {
   );
 }
 
-test('Ba Dan rejects canal taps and walks a party over both crossings in both directions', async ({
+test('Ba Dan rejects canal taps and walks a party over both bridge columns in both directions', async ({
   page,
 }) => {
   test.setTimeout(180_000);
@@ -69,23 +69,25 @@ test('Ba Dan rejects canal taps and walks a party over both crossings in both di
   await settleLayout(page);
   await waitForIdle(page);
 
-  const canal = await page.evaluate(
-    () => window.fnt!.app.content.maps.get('ba_dan_village')?.rows[6] ?? null,
+  const rows = await page.evaluate(
+    () => window.fnt!.app.content.maps.get('ba_dan_village')?.rows ?? null,
   );
-  if (!canal) throw new Error('Ba Dan canal row is missing');
-  expect(canal[5]).toBe('~');
-  for (const x of [9, 13]) expect(canal[x]).toBe('=');
-  const isCanalWater = (cell: Cell) => cell.y === 6 && canal[cell.x] === '~';
+  if (!rows) throw new Error('Ba Dan rows are missing');
+  expect(rows[12]?.[5]).toBe('~');
+  // The bridge: two columns wide, two rows long, over the canal's rows 12 and 13.
+  const bridge = [13, 14];
+  for (const x of bridge) for (const y of [12, 13]) expect(rows[y]?.[x]).toBe('=');
+  const isCanalWater = (cell: Cell) => rows[cell.y]?.[cell.x] === '~';
 
   // This is a canvas tap, not a direct reducer call: a visible water tile must refuse the player.
   const before = await page.evaluate(() => window.fnt!.app.state!.location.pos);
-  const water = await paintedTileCentre(page, { x: 5, y: 6 });
+  const water = await paintedTileCentre(page, { x: 5, y: 12 });
   if (!water) throw new Error('The canvas camera did not project the canal');
   await page.mouse.click(water.x, water.y);
   await expect(page.locator('.toast').filter({ hasText: 'You cannot walk there.' })).toBeVisible();
   expect(await page.evaluate(() => window.fnt!.app.state!.location.pos)).toEqual(before);
 
-  for (const x of [9, 13]) {
+  for (const x of bridge) {
     // Four-tile crossings make the followers travel: a shorter leg can keep
     // companions in their already-dry seats near the leader.
     await page.evaluate((bridge) => {
@@ -94,18 +96,18 @@ test('Ba Dan rejects canal taps and walks a party over both crossings in both di
       app.adoptSave(
         {
           ...state,
-          location: { mapId: 'ba_dan_village', pos: { x: bridge, y: 9 } },
+          location: { mapId: 'ba_dan_village', pos: { x: bridge, y: 11 } },
         },
         undefined,
       );
     }, x);
     await waitForIdle(page);
 
-    for (const y of [5, 9]) {
+    for (const y of [15, 11]) {
       const result = await walkAcross(page, x, y);
       expect(result.path, `${x},${y} did not use its crossing`).toContainEqual({
         x,
-        y: 6,
+        y: 12,
       });
       expect(result.path.filter(isCanalWater), `${x},${y} entered canal water`).toEqual([]);
       expect(result.destination).toEqual({ x, y });
@@ -129,12 +131,12 @@ test('Ba Dan rejects canal taps and walks a party over both crossings in both di
     const app = window.fnt!.app;
     const state = app.state!;
     app.adoptSave(
-      { ...state, location: { mapId: 'ba_dan_village', pos: { x: 5, y: 6 } } },
+      { ...state, location: { mapId: 'ba_dan_village', pos: { x: 5, y: 12 } } },
       undefined,
     );
     const after = app.state!;
     const seats = app.partyPositions();
-    const events = app.dispatch({ type: 'walkTo', pos: { x: 5, y: 7 } });
+    const events = app.dispatch({ type: 'walkTo', pos: { x: 5, y: 11 } });
     return {
       loaded: after.location.pos,
       seats,
@@ -142,10 +144,10 @@ test('Ba Dan rejects canal taps and walks a party over both crossings in both di
       destination: app.state!.location.pos,
     };
   });
-  expect(repaired.loaded).not.toEqual({ x: 5, y: 6 });
+  expect(repaired.loaded).not.toEqual({ x: 5, y: 12 });
   expect(isCanalWater(repaired.loaded)).toBe(false);
   expect(repaired.seats?.filter(isCanalWater)).toEqual([]);
   expect(repaired.path).not.toBeNull();
   expect(repaired.path?.filter(isCanalWater)).toEqual([]);
-  expect(repaired.destination).toEqual({ x: 5, y: 7 });
+  expect(repaired.destination).toEqual({ x: 5, y: 11 });
 });

@@ -10,7 +10,11 @@
  */
 
 import { RIVERSIDE_ID } from '../../content/maps/riversideIds';
-import { npcPresentationScale, triggerPresentationScale } from './exploreMarkerScale';
+import {
+  npcCastsFootShadow,
+  npcPresentationScale,
+  triggerPresentationScale,
+} from './exploreMarkerScale';
 import { evaluate } from '../../core/story/conditions';
 import {
   activeTriggers,
@@ -21,6 +25,7 @@ import {
   worldObjectiveTargetId,
 } from '../../core/story/world';
 import type { PlacedNpc } from '../../core/story/world';
+import type { BoxesOverlay } from './boxesOverlay';
 import { VillageLife } from '../village/VillageLife';
 import type { App, CameraInfo, Scene } from '../App';
 import type { GameEvent, GameState, Grid, MapDef, Unit, Vec2 } from '../../core/types';
@@ -162,6 +167,9 @@ export class ExploreScene implements Scene {
   private objectiveButton: HTMLButtonElement | null = null;
   private objectivePointer: HTMLDivElement | null = null;
   private npcNames: HTMLDivElement | null = null;
+  /** The set-piece review overlay (`?boxes`): a dev build only, so a production build never holds it. */
+  private boxes: BoxesOverlay | null = null;
+  private boxesLoading = false;
   private mapCorner: HTMLDivElement | null = null;
   private pauseButton: HTMLButtonElement | null = null;
 
@@ -289,6 +297,9 @@ export class ExploreScene implements Scene {
     this.objectiveButton = null;
     this.objectivePointer = null;
     this.npcNames = null;
+    this.boxes?.destroy();
+    this.boxes = null;
+    this.boxesLoading = false;
     this.mapCorner = null;
     this.pauseButton = null;
     this.objectivePresentation = createExploreObjectivePresentation();
@@ -1167,6 +1178,16 @@ export class ExploreScene implements Scene {
             : 'Drag to look around · Follow party to recenter'),
       }),
     );
+    // Whose say it is stays on screen, not only in the toast at a map change (#846).
+    const inCharge = this.app.session.solo ? undefined : this.app.session.decider(state);
+    if (inCharge)
+      context.appendChild(
+        el('span', {
+          class: 'tiny in-charge',
+          text: `In charge: ${inCharge.name}`,
+          attrs: { 'data-in-charge': inCharge.id },
+        }),
+      );
     if (moving && !this.practising) clear(context);
     if (this.practising)
       context.replaceChildren(
@@ -1839,6 +1860,7 @@ export class ExploreScene implements Scene {
           sprite: npc.sprite,
           name: npc.name,
           scale: npcPresentationScale(npc.sprite),
+          ...(npcCastsFootShadow(npc.sprite) ? {} : { footShadow: false as const }),
           // Someone at a post on a G sheet faces the camera on its idle loop,
           // or the way its NpcDef says it faces (the gate's watchers, the party).
           ...(sheetLocomotion(npc.sprite)?.headings === 8
@@ -1965,6 +1987,19 @@ export class ExploreScene implements Scene {
     };
 
     renderer.draw(view);
+    // `?boxes` on a dev build: the set pieces as labelled boxes over the board (`boxesOverlay.ts`). The import
+    // stays inside this guard so a production build drops the overlay and its chunk entirely.
+    if (import.meta.env.DEV) {
+      const wrap = this.canvas?.parentElement;
+      if (!this.boxes && !this.boxesLoading && wrap) {
+        this.boxesLoading = true;
+        void import('./boxesOverlay').then((m) => {
+          if (m.boxesRequested() && this.canvas?.parentElement === wrap)
+            this.boxes = new m.BoxesOverlay(wrap, map.width, map.height);
+        });
+      }
+      this.boxes?.draw(renderer.camera, map.id);
+    }
     this.lastLife = { units, now };
     this.life?.draw(units, renderer.camera, now);
     this.drawNpcNames(npcs, !held && live && !this.life ? state.location.pos : null);

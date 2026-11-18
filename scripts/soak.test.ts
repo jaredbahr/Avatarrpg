@@ -86,6 +86,12 @@ function waitingFixture(): ContentIndex {
   };
 }
 
+/**
+ * Encounter, roster and table-size cells in the shipped game: Act I's 48, plus RG-02's two fights
+ * (the winch and SF-2.1, one roster each) at six table sizes.
+ */
+const CELLS = 60;
+
 describe('combat soak report', () => {
   it('defaults to 200 attempts for every pinned roster and size with balance parties and seeds', () => {
     const simulate = vi.fn((_content: ContentIndex, options: SimOptions) =>
@@ -94,12 +100,12 @@ describe('combat soak report', () => {
     const onRow = vi.fn();
     const report = runSoakReport(CONTENT, { onRow }, simulate);
     expect(DEFAULT_SOAK_TRIALS).toBe(200);
-    expect(report.rows).toHaveLength(48);
-    expect(report.summary.attempted).toBe(9600);
-    expect(report.summary.completed).toBe(9600);
+    expect(report.rows).toHaveLength(CELLS);
+    expect(report.summary.attempted).toBe(CELLS * 200);
+    expect(report.summary.completed).toBe(CELLS * 200);
     expect(report.summary.passed).toBe(true);
-    expect(onRow).toHaveBeenCalledTimes(48);
-    expect(simulate).toHaveBeenCalledTimes(9600);
+    expect(onRow).toHaveBeenCalledTimes(CELLS);
+    expect(simulate).toHaveBeenCalledTimes(CELLS * 200);
     for (const row of report.rows) {
       expect(row.attempted).toBe(200);
       expect(row.party).toEqual(partyOfSize(row.partySize).map((slot) => slot.characterId));
@@ -128,6 +134,8 @@ describe('combat soak report', () => {
         ['enc_ambush', null],
         ['enc_grumbler', null],
         ['enc_grumbler', 'jins_people'],
+        ['enc_mq02_winch', null],
+        ['enc_sf21_wet_ground', null],
       ]);
     }
   });
@@ -149,10 +157,10 @@ describe('combat soak report', () => {
       if (attempt === 5) return successfulResult(options, { anomalies: ['non-finite HP witness'] });
       return successfulResult(options);
     });
-    expect(attempt).toBe(48);
+    expect(attempt).toBe(CELLS);
     expect(report.summary).toMatchObject({
-      attempted: 48,
-      completed: 46,
+      attempted: CELLS,
+      completed: CELLS - 2,
       throws: 2,
       failures: 5,
       passed: false,
@@ -209,9 +217,9 @@ describe('combat soak report', () => {
       passed: true,
       maxRoundsRate: 0.01,
       failures: 0,
-      maxRoundsReached: 48,
+      maxRoundsReached: CELLS,
     });
-    expect(atLimit.maxRoundsCases).toHaveLength(48);
+    expect(atLimit.maxRoundsCases).toHaveLength(CELLS);
     expect(atLimit.maxRoundsCases[0]).toMatchObject({
       seed: seedFor('enc_forest_road:thugs', 0),
       commandIndex: 7,
@@ -221,10 +229,10 @@ describe('combat soak report', () => {
     expect(overLimit.summary).toMatchObject({
       passed: false,
       maxRoundsRate: 0.02,
-      maxRoundsReached: 96,
+      maxRoundsReached: CELLS * 2,
     });
     expect(overLimit.rows.every((row) => !row.passed)).toBe(true);
-    expect(overLimit.violations).toHaveLength(48);
+    expect(overLimit.violations).toHaveLength(CELLS);
   });
 
   it.each([
@@ -256,7 +264,7 @@ describe('combat soak report', () => {
         diagnostics: { commandCount: 30, idleTurns, maxRoundsReached: false },
       }),
     );
-    expect(report.summary.idleTurns).toBe(48 * 2 * idleTurns.length);
+    expect(report.summary.idleTurns).toBe(CELLS * 2 * idleTurns.length);
     expect(report.summary.passed).toBe(true);
     for (const row of report.rows) {
       expect(row.idleTurns).toBe(2 * idleTurns.length);
@@ -411,9 +419,9 @@ it('runs two real seeds in every encounter/variant/size cell within its CPU budg
   const report = runSoakReport(CONTENT, { trials: 2 });
   const used = process.cpuUsage(before);
   const cpuMs = (used.user + used.system) / 1000;
-  expect(report.rows).toHaveLength(48);
-  expect(report.summary.attempted).toBe(96);
-  expect(report.summary.completed).toBe(96);
+  expect(report.rows).toHaveLength(CELLS);
+  expect(report.summary.attempted).toBe(CELLS * 2);
+  expect(report.summary.completed).toBe(CELLS * 2);
   expect(report.failures).toEqual([]);
   expect(report.violations).toEqual([]);
   expect(report.summary.passed).toBe(true);

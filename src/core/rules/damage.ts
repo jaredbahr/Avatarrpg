@@ -23,10 +23,10 @@ import { obscurementFor } from './obscurement';
 import type { ObscurementBreakdown } from './obscurement';
 import { accuracyModifier, effectiveStats, incomingMultiplier, isAlive } from './stats';
 
-export const CRIT_MULTIPLIER = 1.5;
-export const VARIANCE_MIN = 0.9;
-export const VARIANCE_MAX = 1.1;
-export const MIN_DAMAGE = 1;
+const CRIT_MULTIPLIER = 1.5;
+const VARIANCE_MIN = 0.9;
+const VARIANCE_MAX = 1.1;
+const MIN_DAMAGE = 1;
 
 /** Elevation of a single cell; off-map counts as ground level. */
 function elevationAt(grid: Grid, pos: Vec2): number {
@@ -306,7 +306,7 @@ export function hitChance(
   return breakdown.chance;
 }
 
-export function critChance(content: ContentIndex, attacker: Unit): number {
+function critChance(content: ContentIndex, attacker: Unit): number {
   return Math.max(0, Math.min(75, effectiveStats(content, attacker).focus));
 }
 
@@ -427,17 +427,6 @@ export function healAmount(
 ): number {
   const power = effectiveStats(content, healer).power;
   return Math.max(1, Math.round(effect.base + effect.scale * power));
-}
-
-/** Damage dealt by standing on a surface. No defense, no variance — terrain is terrain. */
-export function surfaceDamage(
-  content: ContentIndex,
-  unit: Unit,
-  amount: number,
-  type: Extract<AbilityEffect, { kind: 'damage' }>['damageType'],
-): number {
-  const scaled = amount * incomingMultiplier(content, unit, type);
-  return Math.max(0, Math.round(scaled));
 }
 
 /** Convenience for the AI and the preview: does this position give cover? */

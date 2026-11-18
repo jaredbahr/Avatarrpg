@@ -3,6 +3,7 @@ import { CONTENT } from '../../content';
 import type { EncounterDef, GameEvent, GameState, PropDef, Unit } from '../../core/types';
 import {
   FIRST_FIGHT_GUIDANCE,
+  combatTipCopy,
   combatTipEvents,
   combatTipFeatures,
   firstFightStage,
@@ -151,5 +152,29 @@ describe('later combat tips', () => {
     expect(unseenCombatTips(['cover', 'surface.oil'], { 'guidance.tip.cover': true })).toEqual([
       'surface.oil',
     ]);
+  });
+});
+
+describe('the objective tip (ADR 0116, 2026-11-15)', () => {
+  it('comes first in a fight with an objective, and only there', () => {
+    const encounters = new Map<string, Pick<EncounterDef, 'guidance' | 'objective'>>([
+      ...ENCOUNTERS,
+      [
+        'enc_objective',
+        {
+          objective: {
+            kind: 'holdAtRoundEnd',
+            cells: [{ x: 1, y: 1 }],
+            label: 'Placeholder objective',
+          },
+        },
+      ],
+    ]);
+    const fight = state({ battle: { ...state().battle!, encounterId: 'enc_objective' } });
+    expect(combatTipFeatures(fight, new Map(), encounters)[0]).toBe('objective');
+    const plain = state({ battle: { ...state().battle!, encounterId: 'enc_quarry_gate' } });
+    expect(combatTipFeatures(plain, new Map(), encounters)).not.toContain('objective');
+    expect(combatTipCopy('objective')).toContain('flag');
+    expect(unseenCombatTips(['objective'], { 'guidance.tip.objective': true })).toEqual([]);
   });
 });

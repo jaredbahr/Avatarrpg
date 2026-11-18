@@ -31,10 +31,10 @@ import type {
 
 export const MAX_LEVEL = 10;
 
-export const HP_PER_LEVEL = 4;
-export const POWER_PER_LEVEL = 1;
+const HP_PER_LEVEL = 4;
+const POWER_PER_LEVEL = 1;
 /** Levels at which an earthbender picks up another point of Defence. */
-export const EARTH_DEFENSE_EVERY = 2;
+const EARTH_DEFENSE_EVERY = 2;
 
 /** Total XP required to be at `level`. Level 1 is 0. */
 export function xpForLevel(level: number): number {
@@ -131,7 +131,7 @@ export function combinedKit(
   return [...character.kit, ...discipline.kit];
 }
 
-export interface KitUnlocks {
+interface KitUnlocks {
   /** Abilities granted outright at this level. */
   readonly granted: readonly string[];
   /** Technique choices the player must resolve before the next battle. */
@@ -141,7 +141,7 @@ export interface KitUnlocks {
 }
 
 /** What a kit hands over on arriving at exactly `level`. */
-export function unlocksAtLevel(kit: readonly KitEntry[], level: number): KitUnlocks {
+function unlocksAtLevel(kit: readonly KitEntry[], level: number): KitUnlocks {
   const granted: string[] = [];
   const choices: (readonly [string, string])[] = [];
   const specializations: (readonly string[])[] = [];
@@ -334,16 +334,4 @@ export function adoptDiscipline(
     granted,
     pendingChoices,
   };
-}
-
-/**
- * Splits an encounter's XP evenly across everyone who was in the party,
- * including the fallen — nobody gets left a level behind for dying once.
- * Remainder goes to the earliest members so the total always balances.
- */
-export function splitXp(total: number, members: number): number[] {
-  if (members <= 0) return [];
-  const each = Math.floor(total / members);
-  const remainder = total - each * members;
-  return Array.from({ length: members }, (_, i) => each + (i < remainder ? 1 : 0));
 }

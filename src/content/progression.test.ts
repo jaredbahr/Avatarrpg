@@ -4,6 +4,7 @@ import { levelForXp, xpForLevel } from '../core/rules/leveling';
 import { xpRoster } from '../core/state/createGame';
 import { evaluate } from '../core/story/conditions';
 import type { FlagValue, GameState, StoryNode } from '../core/types';
+import { REGIONS } from './regions';
 
 /**
  * Does the party actually arrive at the level each fight is tuned for?
@@ -136,6 +137,12 @@ function walkOnce(decisions: ReadonlyMap<string, number>, party: readonly string
 
       case 'branch':
         nodeId = flags[node.flag] ? node.ifSet : node.ifUnset;
+        break;
+
+      case 'branchWhen':
+        // The condition reads the same flags/party/visited a `choice` does, so a
+        // gated line is one deterministic road per path, never a new decision.
+        nodeId = evaluate(asState(flags, party, visited), node.when) ? node.ifTrue : node.ifFalse;
         break;
 
       case 'choice': {
@@ -419,6 +426,51 @@ describe('progression', () => {
     }
   });
 
+  it('carries on after a Driller loss at the same level as a win (C-01)', () => {
+    /*
+     * A Driller loss used to end the story; it now carries on into Act II
+     * (owner, 2026-11-14), and it is forgiving: the party that loses starts
+     * the next act at the level of the party that won (owner, 2026-11-15).
+     * The boss pays nothing on a loss, so `act1_lost` has to make it up, and
+     * this is the route most likely to drift when the boss's XP changes.
+     */
+    const winLevels = new Set(CLEAN.map((w) => levelForXp(w.finalXp)));
+    expect(winLevels.size, 'every clean route ends the act on one level').toBe(1);
+    const [winLevel] = [...winLevels];
+    const bossLosses = ALL.filter((w) =>
+      w.steps.some((s) => s.lost && s.encounterId === 'enc_grumbler'),
+    );
+    expect(bossLosses.length, 'no route loses to the Driller').toBeGreaterThan(0);
+    for (const walk of bossLosses) {
+      const level = levelForXp(walk.finalXp);
+      expect(walk.endedAt).toBe('act1_epilogue_lost');
+      expect(walk.flags.act1_lost).toBe(true);
+      expect(level, `${walk.finalXp} XP after losing to the Driller`).toBe(winLevel);
+      expect(level).toBeGreaterThanOrEqual(3);
+      expect(level).toBeLessThanOrEqual(5);
+    }
+  });
+
+  it('enters the Act II region inside its level band on every route, won or lost (ADR 0011)', () => {
+    /*
+     * The region graph's first edge: Ba Dan's coast road opens on Saltstep and Emberwatch once
+     * Act I is over either way (`ACT1_OVER` in `maps/world.ts`). A party arrives with whatever
+     * the act paid it, so every route, a lost fight included, must land inside the band that
+     * region's fights are tuned for (`regions/bands.ts` holds the fights to the band).
+     */
+    const next = REGIONS.find((region) => region.id === 'saltstep_emberwatch');
+    expect(next, 'the region Act I opens onto').toBeDefined();
+    const band = next?.levelBand ?? { minLevel: 0, maxLevel: 0 };
+    for (const walk of ALL) {
+      const label = [...walk.decisions].map(([k, v]) => `${k}=${v}`).join(', ') || 'defaults';
+      const level = levelForXp(walk.finalXp);
+      expect(level, `route [${label}] enters on level ${level}`).toBeGreaterThanOrEqual(
+        band.minLevel,
+      );
+      expect(level, `route [${label}] enters on level ${level}`).toBeLessThanOrEqual(band.maxLevel);
+    }
+  });
+
   it('keeps every enemy XP value positive except the story ally', () => {
     for (const enemy of CONTENT_BUNDLE.enemies) {
       if (enemy.id === 'ruon_ally') {
@@ -452,11 +504,13 @@ function reachableFrom(start: string, target: string): boolean {
           ? [node.next, node.onDefeat]
           : node.kind === 'branch'
             ? [node.ifSet, node.ifUnset]
-            : node.kind === 'end'
-              ? node.next
-                ? [node.next]
-                : []
-              : [node.next];
+            : node.kind === 'branchWhen'
+              ? [node.ifTrue, node.ifFalse]
+              : node.kind === 'end'
+                ? node.next
+                  ? [node.next]
+                  : []
+                : [node.next];
     for (const id of next) {
       if (seen.has(id)) continue;
       seen.add(id);

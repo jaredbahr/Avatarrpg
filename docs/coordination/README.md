@@ -32,8 +32,9 @@ link to authoritative documents rather than copying their rules into every task.
 | Session transfer                        | Concise handoff in the PR description or task record | Outgoing owner; incoming owner verifies                            |
 | Playthrough and visual evidence         | Linked CI artifacts / review report tied to a commit | Reviewer; distinguish automated and physical-device checks         |
 
-If work has no PR yet, use `docs/coordination/handoffs/<task-slug>.md` on the task
-branch, using the template. Link it in the eventual PR. Before a session transfer,
+Handoffs live in the PR description, using the template (owner, 2026-11-18, #777: the old
+`docs/coordination/handoffs/` and `evidence/` folders were removed; they are in Git history up to 2c132c59). If work has
+no PR yet, open a draft PR for it so the handoff has a home. Before a session transfer,
 commit and push it when verification allows; otherwise explicitly tell the
 successor where the unpushed files live and preserve that worktree. An ignored
 local file is not a durable cross-machine handoff. Do not commit transcripts,

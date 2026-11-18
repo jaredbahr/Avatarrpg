@@ -75,6 +75,6 @@ describe('wait offers (ADR 0047 §1)', () => {
       new Set(["You can wait only at Mira's table."]),
     );
     expect(seatHere(CONTENT, away)).toBeUndefined();
-    expect(seatHere(CONTENT, at('ba_dan_village', 10, 6))?.label).toBe("Mira's table");
+    expect(seatHere(CONTENT, at('ba_dan_village', 13, 10))?.label).toBe("Mira's table");
   });
 });
