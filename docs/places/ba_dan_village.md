@@ -1,8 +1,10 @@
 # Place brief: `ba_dan_village`
 
-**Status (2026-11-17):** stages 0 to 2 of `docs/level-design.md`, **approved by the owner on 2026-11-17**: plan 2
-(the table at the crossing), about 32 by 20 cells, the awning as the one strong colour, and the quarry hillside along
-the north rim. No rows, layout or art are changed by this brief; the blockout is next. Story facts are the writing
+**Status (2026-11-18):** stages 0 to 8 of `docs/level-design.md` are done (PR #875). The owner approved the brief and
+plan on 2026-11-17: plan 2 (the table at the crossing), 32 by 20 cells, the awning as the one strong colour, and the
+quarry hillside along the north rim. On 2026-11-18 the owner approved the blockout ("looks right, go on"), the ground
+("looks right, go on"), the kit at the scale chart's size (162 credits, then about 18 for trees and 30 for the stage 7
+props; 197 spent of the 210 cap), and the dressed board ("love it, finish it"). Story facts are the writing
 pass's; every gap is a marked placeholder or a question.
 
 **One line:** a quarry village built from its own hill's pale stone, where everyone eats at one table in the square
@@ -331,3 +333,36 @@ draws the plan on top. Changes to the plan: the carved stone pegs and the tea tr
 way later); heights are the drawn sprites' real heights (the houses keep their drawn sizes, no resampling); the ford's
 quiet box ends at row 10 so the rim tree on (0,11) can stand; the garden basket hugs the lean-to. The rim mixes the pine,
 the broadleaf, the bamboo and the bush with a varied rhythm; the old oak and blossom tree are not used in Ba Dan.
+
+## Life (stage 7)
+
+The later states that need a prop now have one, shown by a condition and drawn at its native size as a tappable marker
+(`src/content/maps/village.ts`; `villageLaterProps.test.ts`). The bake does not change.
+
+| State                  | Prop                                                            | Cell   | Condition                     |
+| ---------------------- | --------------------------------------------------------------- | ------ | ----------------------------- |
+| SQ-02 done             | The side gate hung the right way round, shut, a hen on its roof | (25,3) | `SQ02_RESOLVED`               |
+| SQ-03 done             | The jar "for whoever needs it", by Gao's counter                | (18,7) | `SQ03_RESOLVED`               |
+| C-30, after the supper | Hesra's boot with the river shell, by her door                  | (6,8)  | `welcome_home_supper` visited |
+
+- The cells differ from the plan where the plan's cell was taken: (25,2) is the gate's blocked post, (5,7) is Hesra's door
+  anchor and (6,7) her recovery spot, and (19,7) to (21,7) are Gao's restock steps, his shop-front anchor and the trough.
+- The shut gate closes the small pocket east of it (26..28, 3..4), which holds nothing; SQ-02 resolves at the east gate, so
+  nobody is standing in it when it shuts.
+- Each prop has a look-at node (`look_side_gate_hung`, `look_gao_jar`, `look_hesra_boot`) with a marked placeholder line;
+  the writing pass writes them.
+- Not built yet: the canon return's boots at the quarry houses' free doorsteps, and the notice board in more than one
+  hand (the doorsteps are kept free for them).
+- Residents: every anchor, routine stop and slot is on an open cell of the dressed board (`residents/baDan.test.ts`,
+  `ba-dan-day-matrix.spec.ts`).
+
+## Review (stage 8, 2026-11-18)
+
+- **Measured:** the layout validates; set-piece, resident and later-prop tests pass. The ground report still lists what
+  the owner saw at the ground stage: the square's table track crosses the table (13,9)-(14,9) by design, the gate-post
+  track crosses the post (29,8), and seven welcome and recovery spots stand on unchanged ground.
+- **Evening:** the lamps light as the ambience designs them, two warm pixels in each lantern's glass, on both
+  renderers. The board takes no evening tint, so "lamps coming on" on the walk home reads only faintly. That is the
+  existing exploration ambience, not this board; making it stronger is a follow-up.
+- **Known weak spots kept for later:** the old trough, sacks and crew-bench props; the lamps stand about 1.8 figures
+  tall; the gate corner is busy; the houses run a little short of the scale chart; the notice-board decal is not placed.
