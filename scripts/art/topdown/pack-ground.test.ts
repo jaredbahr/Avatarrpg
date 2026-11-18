@@ -3,7 +3,7 @@
  * and every bake holds the measurable rules of `docs/art-lessons.md` (every static shadow at least
  * 25 % darker than the clean ground beside it where that ground allows it, no halo pixel on any
  * object's foot, no terrain edge that looks straight for more than two tiles, and every object
- * seated). Ba Dan has no board while it is a grey blockout, so its own pieces are not checked here.
+ * seated). Ba Dan ships its ground alone (ADR 0120) until its set pieces stand on it, so it has none to seat yet.
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
@@ -100,9 +100,9 @@ describe.each(PACKED.map((p) => [p.board.id, p] as const))('the %s board', (_id,
   });
 });
 
-// Ba Dan's own bake checks (the bridge cap and cast, the ford pool, paved cells, the stripped discs and mounds, the
-// seat of its houses) went with its plates: the village is a grey blockout with no board until its ground and
-// dressing stages (`docs/places/ba_dan_village.md`). They return with the new board; the old baker is in the history.
+// Ba Dan's own object checks (the bridge cap and cast, the ford pool, the stripped discs and mounds, the seat of its
+// houses) went with its old plates; its ground is baked again (ADR 0120, `ground.test.ts`), and they return with its
+// set pieces at stage 5. The old baker is in the history.
 describe('the ground checks', () => {
   it('recolours a pale outline pixel on a foot, and only the outline', () => {
     // A 3x3 dark block with a pale grey pixel on its bottom edge and another in its middle.
