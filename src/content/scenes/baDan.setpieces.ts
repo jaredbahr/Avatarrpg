@@ -99,12 +99,12 @@ const PIECES: readonly PlannedSetPiece[] = [
       mem('mira-table', 'table', 13, 9, 2, 1, 0.67, true, 'prop', { have: 'mira_table' }),
       mem('awning-post-nw', 'awning post NW', 12.5, 8.5, 0.2, 0.2, 1.6, false, 'fades'),
       mem('awning-post-ne', 'awning post NE', 15.3, 8.5, 0.2, 0.2, 1.6, false, 'fades'),
-      mem('awning-post-sw', 'awning post SW', 12.5, 10.3, 0.2, 0.2, 1.6, false, 'fades'),
-      mem('awning-post-se', 'awning post SE', 15.3, 10.3, 0.2, 0.2, 1.6, false, 'fades'),
-      mem('awning-cloth', 'patched awning', 12.5, 8.4, 3, 2, 1.6, false, 'fades', {
+      mem('awning-post-sw', 'awning post SW', 12.5, 9.8, 0.2, 0.2, 1.6, false, 'fades'),
+      mem('awning-post-se', 'awning post SE', 15.3, 9.8, 0.2, 0.2, 1.6, false, 'fades'),
+      mem('awning-cloth', 'patched awning', 12.5, 8.5, 3, 1.5, 1.6, false, 'fades', {
         overhead: true,
       }),
-      mem('crew-bench', 'bench', 13, 8, 2, 1, 0.4, false, 'prop', { have: 'bench' }),
+      mem('crew-bench', 'bench', 13, 10, 2, 1, 0.4, false, 'prop', { have: 'bench' }),
       small('chair-west', 'repaired chair W', 12.2, 9.2, 0.6, 0.5),
       small('chair-east', 'repaired chair E', 15.2, 9.2, 0.6, 0.5),
     ],
@@ -151,13 +151,17 @@ const PIECES: readonly PlannedSetPiece[] = [
       "The gate everyone walks around: a bell post in a low stone wall, the watch's stool, the lamp that guides anyone down from the quarry in the dark. The wall's rhythm breaks once, at a mended section.",
     anchor: 'gate-post',
     focal: true,
+    ownDisk: 'gate_post',
     members: [
       mem('gate-post', 'gate post with the old shift bell', 29, 8, 1, 1, 1.6, true, 'prop'),
       mem('gate-wall-a', 'low wall', 29, 3, 1, 2, 0.7, true, 'prop'),
       mem('gate-wall-mended', 'mended section', 29, 5, 1, 1, 0.55, true, 'prop'),
       mem('gate-wall-b', 'low wall', 29, 6, 1, 2, 0.7, true, 'prop'),
-      mem('gate-wall-south', 'low wall', 29, 11, 1, 8, 0.7, true, 'prop'),
-      small('gate-stool', "the watch's stool", 29.3, 10.3, 0.4, 0.4),
+      mem('gate-wall-south-a', 'low wall', 29, 11, 1, 2, 0.7, true, 'prop'),
+      // the canal passes under the wall line here
+      flat('gate-culvert', 'culvert grate over the canal', 29, 13, 1, 2),
+      mem('gate-wall-south-b', 'low wall', 29, 15, 1, 4, 0.7, true, 'prop'),
+      small('gate-stool', "the watch's stool", 28.3, 8.3, 0.4, 0.4),
       mem('lamp-post', 'gate lamp on the wall', 29, 11, 1, 1, 1.6, true, 'fades', {
         lantern: true,
         have: 'lamp',
@@ -181,7 +185,7 @@ const PIECES: readonly PlannedSetPiece[] = [
     purpose:
       'A wayside shrine at the gate, beside the road the missing went up: people stop at it on the way out and on the way home.',
     anchor: 'shrine',
-    members: [mem('shrine', 'shrine', 25, 7, 1, 1, 1.0, true, 'prop', { have: 'shrine' })],
+    members: [mem('shrine', 'shrine', 25, 7, 1, 1, 1.7, true, 'fades', { have: 'shrine' })],
   },
   {
     id: 'wash_steps',

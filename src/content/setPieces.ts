@@ -246,7 +246,7 @@ export interface PlannedSetPiece {
   /** A thing the brief names as a marker or a landmark, standing alone on purpose: exempt from looseSingles. */
   readonly marker?: boolean;
   /**
-   * A track disk this piece stands on by right (the table on its own disk): its standing members, and the
+   * A track disk or ring this piece stands on by right (the table on its own disk, the gate on its ring): its standing members, and the
    * cells of any other track that lie inside the disk, are not held to "nothing on a track".
    */
   readonly ownDisk?: string;
@@ -275,7 +275,7 @@ export interface PlanContext {
   readonly blocked: (x: number, y: number) => boolean;
   /** Every named track's cells, by track id (`trackCells` of the ground spec). */
   readonly tracks: ReadonlyMap<string, readonly Vec2[]>;
-  /** The disk tracks' centres and radii in cells, by id, for a piece's `ownDisk`. */
+  /** The disk and ring tracks' centres and outer radii in cells, by id, for a piece's `ownDisk`. */
   readonly disks: ReadonlyMap<string, { x: number; y: number; r: number }>;
 }
 

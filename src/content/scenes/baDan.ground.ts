@@ -163,8 +163,8 @@ export const BA_DAN_TRACKS: readonly GroundTrack[] = [
     width: 1,
     wear: 1,
   },
-  // the watch stands at the post: worn round it, the road through the gate less so beside it
-  { id: 'gate_post', ring: [27.5, 8.5], r: 1.2, wear: 2 },
+  // the watch stands at the wall's bell post (29,8): worn round it, the road through the gate less so beside it
+  { id: 'gate_post', ring: [28.6, 8.5], r: 0.5, wear: 2 },
   {
     id: 'hut_yard',
     line: [

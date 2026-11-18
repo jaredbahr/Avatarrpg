@@ -88,7 +88,7 @@ describe("Ba Dan's ground", () => {
   it('pins desireLinesClear (report-only): the worn ground round the table and the post, and the welcome crowd', () => {
     expect(desireLinesClear(village(), BA_DAN_GROUND_SPEC, places())).toEqual([
       'desireLinesClear "ba_dan_village": track "square_table" crosses blocked (13,9) (14,9)',
-      'desireLinesClear "ba_dan_village": track "gate_post" crosses blocked (27,7) (28,7)',
+      'desireLinesClear "ba_dan_village": track "gate_post" crosses blocked (29,8)',
       'desireLinesClear "ba_dan_village": "welcome.leto" at (26,12) is 2 cells from the track network',
     ]);
   });

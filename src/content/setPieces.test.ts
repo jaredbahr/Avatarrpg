@@ -119,9 +119,14 @@ const liveContext = (): PlanContext => {
     tracks: new Map(
       BA_DAN_TRACKS.map((t) => [t.id, trackCells(t, BA_DAN_VILLAGE.width, BA_DAN_VILLAGE.height)]),
     ),
+    // a disk is worn out to its radius, a ring a half cell beyond it
     disks: new Map(
       BA_DAN_TRACKS.flatMap((t) =>
-        'disk' in t ? [[t.id, { x: t.disk[0], y: t.disk[1], r: t.r }] as const] : [],
+        'disk' in t
+          ? [[t.id, { x: t.disk[0], y: t.disk[1], r: t.r }] as const]
+          : 'ring' in t
+            ? [[t.id, { x: t.ring[0], y: t.ring[1], r: t.r + 0.5 }] as const]
+            : [],
       ),
     ),
   };

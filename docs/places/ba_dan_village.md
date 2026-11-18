@@ -267,7 +267,7 @@ tileset 15, `docs/level-design.md` section 7) for a first take, and 0 where exis
 | 10  | Senn's annex, the L's corner                     | `quarry_senn`                                | 40 x 68         | an edit of #9                                                                                              |       5 |
 | 11  | Quarry row house, shutters closed (Hanru's)      | `hanru_house`                                | 80 x 68         | an edit of #7 (shutters)                                                                                   |       5 |
 | 12  | Mira's table, with bowls and the covered bowl    | `mira_table`                                 | 80 x 30         | `mira_table` 73 x 30 (objects7), the old board's table                                                     |       0 |
-| 13  | The patched awning: cloth over four posts        | `mira_table` (cloth and 4 posts)             | 128 x 112       | none; the one strong colour in Ba Dan                                                                      |       5 |
+| 13  | The patched awning: cloth over four posts        | `mira_table` (cloth and 4 posts)             | 128 x 96        | none; the one strong colour in Ba Dan                                                                      |       5 |
 | 14  | Crew bench                                       | `mira_table`                                 | 80 x 18         | `bench` 51 x 37 (objects12), the old crew bench                                                            |       0 |
 | 15  | Repaired chair (flipped for the second)          | `mira_table` x2                              | 24 x 22         | none                                                                                                       |       5 |
 | 16  | Water jar                                        | `mira_house`                                 | 24 x 32         | `rain_barrel` 22 x 28 (props)                                                                              |       0 |
@@ -278,12 +278,12 @@ tileset 15, `docs/level-design.md` section 7) for a first take, and 0 where exis
 | 21  | Trough                                           | `trough`                                     | 40 x 27         | `trough` 44 x 26 (objects12)                                                                               |       0 |
 | 22  | Bucket                                           | `trough`                                     | 16 x 18         | `bucket_broom` 25 x 29 (objects12) has a broom with it, so not as is                                       |       5 |
 | 23  | Gate post with the old shift bell                | `east_gate`                                  | 40 x 72         | none; the gate's landmark                                                                                  |       5 |
-| 24  | Low stone wall, one cell (14 cells in the run)   | `east_gate`                                  | 40 x 32         | `earth_wall` 44 x 34 (props), or bake it into the plate as the ground's `#` link                           |       0 |
+| 24  | Low stone wall, one cell (11 cells in the run)   | `east_gate`                                  | 40 x 32         | `earth_wall` 44 x 34 (props), or bake it into the plate as the ground's `#` link                           |       0 |
 | 25  | The mended wall section                          | `east_gate`                                  | 40 x 25         | an edit of #24                                                                                             |       5 |
 | 26  | Lamp (gate lamp on the wall, three on the canal) | `east_gate`, `canal_lamps` x3                | 40 x 72         | `lamp` 34 x 82 (objects_t3, #865); 4 glows, the map's lantern limit                                        |       0 |
 | 27  | Washing line, hut to shrine                      | `guard_hut`                                  | 40 x 58         | `laundry_line` 79 x 56 (objects12)                                                                         |       0 |
 | 28  | Notice board, a decal on the hut's west wall     | `guard_hut` (not a member)                   | 38 x 47         | `notice_board` 38 x 47 (objects12)                                                                         |       0 |
-| 29  | Wayside shrine, with offering bowl               | `shrine`                                     | 40 x 45         | `shrine` 56 x 76 (objects_t3, #865): 1.7 figures, the plan says 1.0                                        |       0 |
+| 29  | Wayside shrine, with offering bowl               | `shrine`                                     | 40 x 76         | `shrine` 56 x 76 (objects_t3, #865): kept at its real 1.7 figures, a `fades`                               |       0 |
 | 30  | Basket (wash steps, gardens)                     | `wash_steps`, `gardens`                      | 16 x 18         | none                                                                                                       |       5 |
 | 31  | Washboard on the kerb                            | `wash_steps`                                 | 16 x 18         | none                                                                                                       |       5 |
 | 32  | Worked stone block (three, flipped)              | `mason_yard` x3                              | 40 x 36         | `stone_blocks` 28 x 30 (objects13)                                                                         |       0 |
@@ -313,7 +313,11 @@ in `prototypes/topdown/ledger.json` and send the credit total to the owner first
 
 - Mira's water jar (14,7) to (16,7): (14,7) lies on the table's own disk, which only the table piece may use.
 - Gao's plant on the chair (18,7) to (18,6): (18,7) lies on the `shop_front` track.
-- The watch's stool (28,8) to (29,10): every cell beside the gate post is on the `gate_post` ring or the east road.
+- Mira's bench from the table's north side (13-14,8) to its south side (13-14,10), where Pella's `bd01.bench` and the rest spot are, so the `mira_door` track stays clear.
+- The ground's `gate_post` ring is re-centred on the real bell post: (28.6,8.5), r 0.5, so it no longer grazes the hut. The watch's stool stays at (28,8) and `east_gate` stands on that ring as the table stands on its disk. The gate gap stays open.
+- The east wall's south run is split to (29,11-12) and (29,15-18), with a flat culvert grate on (29,13-14), where the canal passes under.
+- The awning is shrunk to the table plus half a cell each side: cloth (12.5-15.5, 8.5-10.0), posts at its corners.
+- The shrine keeps its art at 1.7 figures and becomes a `fades`.
 - The garden's north-west stone peg (26,2) to (27,2), so that it touches the lean-to (anchored rule).
 - The side gate hangs on the fence cell (25,2), against the post, because its gap (25,3) is the `side_gate` track.
 - The east wall's rows 3-8 are rows 3-7 and the bell post on row 8, which the post's own cell already is.
