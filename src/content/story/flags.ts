@@ -166,6 +166,11 @@ export const LATE_SCENES: Readonly<Record<string, OldSavesAnswer>> = {
     answer: 'open',
     why: 'The welcome home waits at the village gate for any save that has walked home and not yet seen it.',
   },
+  welcome_home_supper: {
+    upTo: GOLDEN_V5,
+    answer: 'open',
+    why: 'Read only to show Hesra’s boot on the mason’s yard step afterwards, a keepsake and not a gate. A save that has not had the supper still plays it on the walk home and sees the boot after.',
+  },
   gao_lost: {
     upTo: '2026-11-15-demo',
     answer: 'open',
@@ -212,9 +217,6 @@ const ACT1_COMPLETE_READERS = [
   'story:hanru_watch',
   'story:hanru_watch_leave',
   'story:school_notice',
-  'story:look_side_gate_hung',
-  'story:look_gao_jar',
-  'story:look_hesra_boot',
   'story:village_leave',
   'story:sq01_leave',
   'resident:lw.npc.mira',

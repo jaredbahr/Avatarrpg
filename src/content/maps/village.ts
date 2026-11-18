@@ -322,10 +322,12 @@ export const BA_DAN_VILLAGE: MapDef = {
     // story condition holds. The bake never changes; each is a one-image `TOPDOWN_OBJECTS` marker that is tapped to look at.
     {
       // SQ-02: the side gate hung the right way round, a hen on its roof, standing over the baked open gate
-      // (set piece `side_gate`, cell (25,2)).
+      // (set piece `side_gate`, drawn on the fence cell (25,2), which is blocked). The marker needs an open cell, so it
+      // stands in the gap just south, (25,3), and its art carries transparent rows below the gate (`tools/bd20set.py`)
+      // that put the gate's own base on the baked one; it casts no foot blob (`exploreMarkerScale.ts`).
       id: 'side_gate_hung',
       name: 'Side gate',
-      pos: { x: 25, y: 2 },
+      pos: { x: 25, y: 3 },
       sprite: 'world.side_gate_hung',
       interaction: 'route-sign',
       when: SQ02_RESOLVED,
@@ -335,7 +337,7 @@ export const BA_DAN_VILLAGE: MapDef = {
       // SQ-03: the jar "for whoever needs it", by the west end of Gao's counter (the shop-front cells (19,7) and (20,7)
       // are Gao's own restocking steps).
       id: 'gao_jar',
-      name: "Gao's jar",
+      name: 'Counter jar',
       pos: { x: 18, y: 7 },
       sprite: 'world.gao_jar',
       interaction: 'route-sign',
@@ -343,10 +345,12 @@ export const BA_DAN_VILLAGE: MapDef = {
       node: 'look_gao_jar',
     },
     {
-      // After the welcome-home supper: Hesra's lost boot with a river shell, on the mason's yard step (5,7).
+      // After the welcome-home supper: Hesra's lost boot with a river shell, in the mason's yard by her step. The step
+      // (5,7) is her door anchor `home.hesra` and (6,7) her `recovery.hesra` tile, and no NPC may stand on an anchor
+      // (`residents/baDan.test.ts`), so the boot waits on the yard cell south-east of both.
       id: 'hesra_boot',
-      name: "Hesra's boot",
-      pos: { x: 5, y: 7 },
+      name: 'Boot on the step',
+      pos: { x: 6, y: 8 },
       sprite: 'world.hesra_boot',
       interaction: 'route-sign',
       when: { kind: 'visited', nodeId: 'welcome_home_supper' },

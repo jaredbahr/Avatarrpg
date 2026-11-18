@@ -18,9 +18,9 @@ import { SQ03_FLAG } from '../story/sq03GaosLedger';
 const VILLAGE = 'ba_dan_village';
 
 const PROPS = [
-  { id: 'side_gate_hung', cell: { x: 25, y: 2 }, node: 'look_side_gate_hung', size: [28, 32] },
+  { id: 'side_gate_hung', cell: { x: 25, y: 3 }, node: 'look_side_gate_hung', size: [28, 66] },
   { id: 'gao_jar', cell: { x: 18, y: 7 }, node: 'look_gao_jar', size: [21, 26] },
-  { id: 'hesra_boot', cell: { x: 5, y: 7 }, node: 'look_hesra_boot', size: [12, 20] },
+  { id: 'hesra_boot', cell: { x: 6, y: 8 }, node: 'look_hesra_boot', size: [12, 20] },
 ] as const;
 
 function village(flags: GameState['flags'] = {}, visited: readonly string[] = []): GameState {

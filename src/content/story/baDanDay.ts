@@ -337,7 +337,7 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
   {
     id: 'look_gao_jar',
     kind: 'dialogue',
-    speaker: "Gao's jar",
+    speaker: 'Counter jar',
     portrait: 'portrait.narrator',
     lines: [LOOK_AT_PLACEHOLDER],
     next: 'village_leave',
@@ -345,7 +345,7 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
   {
     id: 'look_hesra_boot',
     kind: 'dialogue',
-    speaker: "Hesra's boot",
+    speaker: 'Boot on the step',
     portrait: 'portrait.narrator',
     lines: [LOOK_AT_PLACEHOLDER],
     next: 'village_leave',
