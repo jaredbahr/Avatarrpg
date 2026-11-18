@@ -153,7 +153,7 @@ const hash = (x: number, y: number, k: number): number => {
 
 /** The rim tree's sprite for a cell: from the mix by hash, and never the same as the one before it on its row. */
 export function rimSprite(x: number, y: number, before: string | undefined): string {
-  let i = Math.floor(hash(x, y, 7) * RIM_MIX.length);
+  const i = Math.floor(hash(x, y, 7) * RIM_MIX.length);
   for (let n = 0; n < RIM_MIX.length; n++) {
     const s = RIM_MIX[(i + n) % RIM_MIX.length] ?? 'bush';
     if (s !== before) return s;
