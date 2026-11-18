@@ -22,6 +22,8 @@ const GAO = 'Gao the Shopkeeper';
 const DORIN = 'Gate Guard Dorin';
 const HANRU = 'Hanru';
 const HANRU_FACE = 'portrait.hanru';
+/** The writing pass owns story text (`CLAUDE.md`); until it writes these look-ats, each is this one marked line. */
+const LOOK_AT_PLACEHOLDER = 'PLACEHOLDER (story): the writing pass writes this look-at line.';
 const FLOAT =
   'A model parade float sits in the cupboard behind the post. Its little roof sticks out past the door.';
 
@@ -319,6 +321,33 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
         ],
       },
     ],
+    next: 'village_leave',
+  },
+
+  /* ------------------------------------------------- Later-state look-ats */
+  // One look-at each for the props the village shows once a story condition holds (`maps/village.ts`).
+  {
+    id: 'look_side_gate_hung',
+    kind: 'dialogue',
+    speaker: 'Side gate',
+    portrait: 'portrait.narrator',
+    lines: [LOOK_AT_PLACEHOLDER],
+    next: 'village_leave',
+  },
+  {
+    id: 'look_gao_jar',
+    kind: 'dialogue',
+    speaker: "Gao's jar",
+    portrait: 'portrait.narrator',
+    lines: [LOOK_AT_PLACEHOLDER],
+    next: 'village_leave',
+  },
+  {
+    id: 'look_hesra_boot',
+    kind: 'dialogue',
+    speaker: "Hesra's boot",
+    portrait: 'portrait.narrator',
+    lines: [LOOK_AT_PLACEHOLDER],
     next: 'village_leave',
   },
 

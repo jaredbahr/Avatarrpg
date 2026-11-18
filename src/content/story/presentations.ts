@@ -97,6 +97,10 @@ const NPC_PRESENTATIONS: readonly (readonly [string, string, WorldStage?])[] = [
   ['handover_float', 'ba_dan_village'],
   ['hanru_watch', 'ba_dan_village'],
   ['school_notice', 'ba_dan_village'],
+  // The later-state props' look-ats (baDanDay.ts).
+  ['look_side_gate_hung', 'ba_dan_village'],
+  ['look_gao_jar', 'ba_dan_village'],
+  ['look_hesra_boot', 'ba_dan_village'],
   // SQ-01 (sq01Cabbages.ts): Pella's packing list, and her corrected list after the rescue.
   ['sq01_packing_list', 'ba_dan_village'],
   ['sq01_pella_list', 'ba_dan_village'],

@@ -318,6 +318,40 @@ export const BA_DAN_VILLAGE: MapDef = {
       when: { kind: 'phase', in: ['morning'] },
       node: 'school_notice',
     },
+    // Later states (`docs/places/ba_dan_village.md`): small standing objects, native size, shown once their
+    // story condition holds. The bake never changes; each is a one-image `TOPDOWN_OBJECTS` marker that is tapped to look at.
+    {
+      // SQ-02: the side gate hung the right way round, a hen on its roof, standing over the baked open gate
+      // (set piece `side_gate`, cell (25,2)).
+      id: 'side_gate_hung',
+      name: 'Side gate',
+      pos: { x: 25, y: 2 },
+      sprite: 'world.side_gate_hung',
+      interaction: 'route-sign',
+      when: SQ02_RESOLVED,
+      node: 'look_side_gate_hung',
+    },
+    {
+      // SQ-03: the jar "for whoever needs it", by the west end of Gao's counter (the shop-front cells (19,7) and (20,7)
+      // are Gao's own restocking steps).
+      id: 'gao_jar',
+      name: "Gao's jar",
+      pos: { x: 18, y: 7 },
+      sprite: 'world.gao_jar',
+      interaction: 'route-sign',
+      when: SQ03_RESOLVED,
+      node: 'look_gao_jar',
+    },
+    {
+      // After the welcome-home supper: Hesra's lost boot with a river shell, on the mason's yard step (5,7).
+      id: 'hesra_boot',
+      name: "Hesra's boot",
+      pos: { x: 5, y: 7 },
+      sprite: 'world.hesra_boot',
+      interaction: 'route-sign',
+      when: { kind: 'visited', nodeId: 'welcome_home_supper' },
+      node: 'look_hesra_boot',
+    },
     {
       id: 'bo_shan',
       name: 'Bo-shan',
