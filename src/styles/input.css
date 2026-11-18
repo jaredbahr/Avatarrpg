@@ -8,16 +8,16 @@
 /* The map is a tab stop. Its ring sits inside the canvas, where the frame cannot clip it. */
 .map-canvas:focus-visible,
 html[data-input='gamepad'] .map-canvas:focus {
-  outline: 3px solid var(--c-gold-hi);
-  outline-offset: -3px;
+  outline: var(--stroke-focus) solid var(--c-gold-hi);
+  outline-offset: calc(-1 * var(--stroke-focus));
 }
 
 /* A browser shows a focus ring after a key press; a pad never presses one, so it is drawn here. */
 html[data-input='gamepad'] button:focus,
 html[data-input='gamepad'] [tabindex]:focus,
 html[data-input='gamepad'] input:focus {
-  outline: 3px solid var(--c-gold-deep);
-  outline-offset: 2px;
+  outline: var(--stroke-focus) solid var(--c-gold-deep);
+  outline-offset: var(--stroke-bold);
 }
 
 /* What the buttons do now, one line over the foot of the map. */
