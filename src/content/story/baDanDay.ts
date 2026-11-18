@@ -22,8 +22,6 @@ const GAO = 'Gao the Shopkeeper';
 const DORIN = 'Gate Guard Dorin';
 const HANRU = 'Hanru';
 const HANRU_FACE = 'portrait.hanru';
-/** The writing pass owns story text (`CLAUDE.md`); until it writes these look-ats, each is this one marked line. */
-const LOOK_AT_PLACEHOLDER = 'PLACEHOLDER (story): the writing pass writes this look-at line.';
 const FLOAT =
   'A model parade float sits in the cupboard behind the post. Its little roof sticks out past the door.';
 
@@ -331,23 +329,29 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
     kind: 'dialogue',
     speaker: 'Side gate',
     portrait: 'portrait.narrator',
-    lines: [LOOK_AT_PLACEHOLDER],
+    lines: [
+      'The side gate hangs the right way round now, and it is shut. A brown hen sits on its roof. She has not been entered in the register.',
+    ],
     next: 'village_leave',
   },
   {
     id: 'look_gao_jar',
     kind: 'dialogue',
-    speaker: 'Counter jar',
+    speaker: 'The jar by the counter',
     portrait: 'portrait.narrator',
-    lines: [LOOK_AT_PLACEHOLDER],
+    lines: [
+      'A big glazed jar with a paper tag on a string: “For whoever needs it; no speeches.” The lid is not on straight. Somebody has been at it today. You cannot tell which way.',
+    ],
     next: 'village_leave',
   },
   {
     id: 'look_hesra_boot',
     kind: 'dialogue',
-    speaker: 'Boot on the step',
+    speaker: 'Boot by the door',
     portrait: 'portrait.narrator',
-    lines: [LOOK_AT_PLACEHOLDER],
+    lines: [
+      'A hobnailed boot stands by the door, stuffed with straw to dry. On the windowsill above it sits a river shell. Nobody in Ba Dan has said who carried it home.',
+    ],
     next: 'village_leave',
   },
 
