@@ -108,7 +108,9 @@ export function apronReport(spec: GroundSpec, places: readonly GroundPlace[]): A
     const cx = p.cell.x + 0.5,
       cy = p.cell.y + 0.5;
     const ground = [
-      ...spec.aprons.filter((a) => apronDepth(a, cx, cy) >= -0.5).map((a) => `apron:${a.id}`),
+      ...spec.aprons
+        .filter((a) => a.kind !== 'sward' && a.kind !== 'treads' && apronDepth(a, cx, cy) >= -0.5)
+        .map((a) => `apron:${a.id}`),
       ...spec.tracks
         .filter((t) => t.wear >= 2 && trackDepth(t, cx, cy) >= -0.25)
         .map((t) => `track:${t.id}`),

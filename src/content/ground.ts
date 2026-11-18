@@ -55,6 +55,14 @@ export interface GroundClassDef {
   readonly calm?: number;
   /** Per-channel factors on its mean, so a tile can be warmed or paled toward the region's ground. */
   readonly grade?: readonly [number, number, number];
+  /**
+   * How wear shows on it: `packs` (loose ground pressed darker and smoother, the loose stuff left at the fringes),
+   * `bares` (grass trodden to bare earth) or `lifts` (paving polished a step lighter). By its terrain when unset:
+   * dirt packs, grass bares, paving lifts.
+   */
+  readonly wears?: 'packs' | 'bares' | 'lifts';
+  /** Loose ground that the wind and feet heap at its edges and against walls, paler than the rest. */
+  readonly drifts?: boolean;
 }
 
 /**
@@ -86,7 +94,12 @@ export interface MadeDef {
 
 /** A track's line: a polyline, a disk worn all over, or a ring worn round a post. Cell coordinates (centres at +0.5). */
 export type TrackShape =
-  | { readonly line: readonly (readonly [number, number])[]; readonly width: number }
+  | {
+      readonly line: readonly (readonly [number, number])[];
+      readonly width: number;
+      /** A width per point, so a track can narrow (a road through a gate); `width` is its widest. */
+      readonly widths?: readonly number[];
+    }
   | { readonly disk: readonly [number, number]; readonly r: number }
   | { readonly ring: readonly [number, number]; readonly r: number };
 
@@ -108,9 +121,11 @@ export type GroundTrack = TrackShape & {
  * - `damp`: a damp kerb, darker stone at the water;
  * - `mud`: a wet mud fringe where a road goes under water;
  * - `chips`: pale stone chips and dust where stone is cut;
- * - `tilled`: soil in east-west strips, one per household, their edges marked.
+ * - `tilled`: soil in east-west strips, one per household, their edges marked;
+ * - `sward`: grass surviving on loose ground in a corner nobody walks;
+ * - `treads`: stone steps cut down a dug bank into the water (drawn over the water's top rows; it stays water).
  */
-export type ApronKind = 'packed' | 'wet' | 'damp' | 'mud' | 'chips' | 'tilled';
+export type ApronKind = 'packed' | 'wet' | 'damp' | 'mud' | 'chips' | 'tilled' | 'sward' | 'treads';
 
 /** Ground changed by what stands there: a disk (centre and radius) or a rectangle of cells, in cell coordinates. */
 export type GroundApron = (
@@ -166,8 +181,11 @@ export interface GroundSpec {
     readonly top: number;
     readonly bottom: number;
   };
-  /** A class whose south edge is a cut face rising out of the ground below (a hillside), `height` px tall. */
-  readonly hill?: { readonly class: string; readonly height: number };
+  /**
+   * A class whose south edge is a cut face rising out of the ground below (a hillside), `height` px tall; above the
+   * face it is scree with sparse dry grass and, `outcrops` to a hundred cells, pale outcrops of its stone.
+   */
+  readonly hill?: { readonly class: string; readonly height: number; readonly outcrops?: number };
   readonly tracks: readonly GroundTrack[];
   readonly aprons: readonly GroundApron[];
   readonly growth: readonly GroundGrowth[];
@@ -213,12 +231,44 @@ export function polylineDistance(
   return d;
 }
 
+/** The nearest point of a polyline: its distance, and how far along the whole line it lies (0 to 1). */
+export function polylineNearest(
+  x: number,
+  y: number,
+  pts: readonly (readonly [number, number])[],
+): { d: number; seg: number; t: number; along: number } {
+  let best = { d: Infinity, seg: 0, t: 0, along: 0 };
+  for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1],
+      b = pts[i];
+    if (!a || !b) continue;
+    const vx = b[0] - a[0],
+      vy = b[1] - a[1];
+    const t = Math.max(
+      0,
+      Math.min(1, ((x - a[0]) * vx + (y - a[1]) * vy) / (vx * vx + vy * vy || 1)),
+    );
+    const d = Math.hypot(x - a[0] - vx * t, y - a[1] - vy * t);
+    if (d < best.d) best = { d, seg: i - 1, t, along: (i - 1 + t) / Math.max(1, pts.length - 1) };
+  }
+  return best;
+}
+
+/** A line track's width where its nearest point to (x, y) lies. */
+export function widthAt(t: Extract<TrackShape, { line: unknown }>, x: number, y: number): number {
+  if (!t.widths) return t.width;
+  const n = polylineNearest(x, y, t.line);
+  const a = t.widths[n.seg] ?? t.width,
+    b = t.widths[n.seg + 1] ?? a;
+  return a + (b - a) * n.t;
+}
+
 /**
  * How far a point (cell units) is inside a track's worn band, as a signed distance from its edge: positive inside,
  * negative outside. A line's band is its half width; a disk's its radius; a ring's a band a cell wide round its radius.
  */
 export function trackDepth(t: TrackShape, x: number, y: number): number {
-  if ('line' in t) return t.width / 2 - polylineDistance(x, y, t.line);
+  if ('line' in t) return widthAt(t, x, y) / 2 - polylineDistance(x, y, t.line);
   if ('disk' in t) return t.r - Math.hypot(x - t.disk[0], y - t.disk[1]);
   return 0.5 - Math.abs(Math.hypot(x - t.ring[0], y - t.ring[1]) - t.r);
 }
