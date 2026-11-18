@@ -9,7 +9,6 @@ import { performance } from 'node:perf_hooks';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { CONTENT } from '../../src/content';
-import { oldVillage } from '../../src/content/maps/oldVillage.fixture';
 import { TOPDOWN_SCENES } from '../../src/content/topdown';
 import { RngCursor } from '../../src/core/rng';
 import { cachedGrid, findPath, pathCost, reachable, tileAt } from '../../src/core/rules/grid';
@@ -337,7 +336,7 @@ export function chooseTopDownBenchMap(
  * Registered top-down maps use the same logical rows/legend as CONTENT: the
  * presentation swap changes no movement inputs. Query the actual explore grid,
  * without loading art, and disclose that moving people are excluded. The
- * 39x31 Wang plate is presentation tessellation, not the 24x16 rules board.
+ * baked plate is presentation, not the rules board.
  * Export this constructor separately so supplemental calibration measures only
  * these new cases, without constructing or remeasuring the original matrix.
  */
@@ -347,12 +346,8 @@ export function createTopDownBenchSuite() {
     ensure(map, `Registered top-down map ${id} is missing`);
     return map;
   });
-  // Ba Dan is a 32 x 20 grey blockout with no scene (`docs/places/ba_dan_village.md`), and its frozen limits were
-  // calibrated on the 24 x 16 board. Until the new board has its own reviewed calibration (ADR 0106), the frozen cases
-  // keep measuring that board, frozen as a fixture, so the unchanged ceilings still bind what they were measured on.
-  const live = CONTENT.maps.get('ba_dan_village');
-  ensure(live, 'Ba Dan village is missing');
-  if (!registered.some((map) => map.id === live.id)) registered.unshift(oldVillage(live));
+  // Ba Dan's 32 x 20 board is registered again with its ground (ADR 0120), and its two cases carry their own
+  // calibration on it (ADR 0106's 2026-11-18 amendment); the 24 x 16 board they measured before is retired.
   ensure(registered.length > 0, 'No registered top-down boards');
   const maximumArea = Math.max(...registered.map((map) => map.width * map.height));
   const largest = registered
