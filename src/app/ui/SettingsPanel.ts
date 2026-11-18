@@ -253,7 +253,7 @@ export class SettingsPanel extends Dialog {
   ): HTMLElement {
     const group = el('div', {
       class: 'row row-wrap',
-      attrs: { role: 'radiogroup', 'aria-label': label },
+      attrs: { role: 'radiogroup', 'aria-label': label, 'aria-orientation': 'horizontal' },
     });
     for (const [index, choice] of choices.entries()) {
       const active = choice.value === value;
@@ -268,6 +268,10 @@ export class SettingsPanel extends Dialog {
       node.setAttribute('role', 'radio');
       node.setAttribute('aria-checked', String(active));
       node.addEventListener('keydown', (event) => {
+        // The choices lie in a row: Left and Right step through them, and Up
+        // and Down are left to move between settings (ADR 0115), so walking
+        // down the sheet with the arrow keys never changes a setting on the way.
+        if (event.key === 'ArrowUp' || event.key === 'ArrowDown') return;
         const next = nextRadioIndex(index, event.key, choices.length);
         if (next === null) return;
         event.preventDefault();

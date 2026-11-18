@@ -11,6 +11,7 @@ import './styles/hud.css';
 import './styles/interludes.css';
 import './styles/objective-pointer.css';
 import './styles/a11y.css';
+import './styles/input.css';
 
 import { STORY_PROLOGUE } from './content/entry';
 import { App } from './app/App';

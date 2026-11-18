@@ -68,11 +68,27 @@ import {
   weatherChipText,
 } from '../../core/rules/obscurementPresentation';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
+import type { ActionEvent, Direction, InputHint } from '../input/actions';
+import { isDirection, slotIndex } from '../input/actions';
+import { cycleCursor, cycleOrder, stepCursor } from '../input/boardCursor';
+import type { TileRank } from '../input/boardCursor';
+import { combatInput } from '../input/combatFocus';
+import { handoffCopy } from '../input/glyphs';
 import { ambienceFx, resolveFx } from '../../content/fx';
 import { ambientEmitters } from '../anim/ambience';
 import { boardLightFor } from '../dayLight';
 import { burningPropEmitters } from '../anim/propFire';
-import { announce, button, clear, el, mark, motionReduced, painterCanvas, tip } from '../ui/dom';
+import {
+  announce,
+  button,
+  clear,
+  el,
+  guardHandoff,
+  mark,
+  motionReduced,
+  painterCanvas,
+  tip,
+} from '../ui/dom';
 import { assetCanvas } from '../ui/assetCanvas';
 import { portraitKeyFor } from '../ui/PartyRoster';
 import { victoryNote, victoryResults, type VictoryRow } from '../ui/victoryResults';
@@ -140,6 +156,9 @@ import { defendHintFlag, defendHintFor, type DefendHint } from './defendHint';
 function isDownedAbility(ability: Ability): boolean {
   return ability.targeting.shape === 'unit' && ability.targeting.allow === 'downed';
 }
+
+/** How fast a held look-around pans, in CSS px a second. */
+const LOOK_SPEED = 720;
 
 /** What the HUD says while the AI acts; a guest is named as one (ADR 0116). */
 export function actingTurnCopy(unit: Pick<Unit, 'faction' | 'name'>): string {
@@ -260,6 +279,12 @@ interface OverlayBuild {
   readonly targetReticle: TargetReticleCue | null;
 }
 
+/** Marks the one control `confirm` presses when nothing has focus (ADR 0115 §1). */
+function defaultControl<T extends HTMLElement>(control: T): T {
+  control.className = `${control.className} input-default`.trim();
+  return control;
+}
+
 /** Sound cues a top-down skip still plays: the ones that tell how a blow or the fight ended. */
 const OUTCOME_CUES: ReadonlySet<string> = new Set(['ko', 'victory', 'defeat']);
 export class CombatScene implements Scene {
@@ -289,6 +314,15 @@ export class CombatScene implements Scene {
   private mode: Mode = { kind: 'idle' };
   private pending: Vec2 | null = null;
   private hover: Vec2 | null = null;
+  /**
+   * The board cursor a keyboard or gamepad moves (ADR 0115 §3): always on a
+   * legal tile, and while moving or aiming it is the pending choice.
+   */
+  private cursor: Vec2 | null = null;
+  /** Looking over the board with the cursor while no action is chosen. */
+  private browsing = false;
+  /** The action-bar button focus goes back to when the board gives it up. */
+  private barSlot: string | null = null;
   /** How high each ability's flight lobs, or null when nothing flies; read once from its recipe. */
   private lobs = new Map<string, number | null>();
   private inspector: UnitInspector | PropInspector | null = null;
@@ -302,6 +336,8 @@ export class CombatScene implements Scene {
 
   /** The participant who last acknowledged the hand-off banner. */
   private handedOffTo: string | null = null;
+  /** When the current hand-off card first showed, for its hold-off (ADR 0115 §5). */
+  private handoffShownAt = 0;
   private bannerShownFor: string | null = null;
   private lastActiveId: string | null = null;
   private recentreButton: HTMLButtonElement | null = null;
@@ -538,13 +574,41 @@ export class CombatScene implements Scene {
     const scene = el('div', { class: 'scene combat-scene' });
     scene.appendChild(el('div', { class: 'top-bar combat-bar' }));
     scene.appendChild(el('div', { class: 'turn-strip' }));
-    const canvas = el('canvas', { class: 'map-canvas', attrs: { 'aria-label': 'Battlefield' } });
+    // A tab stop: with focus here the arrow keys move the board cursor (ADR 0115 §4).
+    const canvas = el('canvas', {
+      class: 'map-canvas',
+      attrs: { 'aria-label': 'Battlefield', role: 'application', tabindex: '0' },
+    });
     this.canvas = canvas;
     scene.appendChild(
       el('div', { class: 'map-wrap' }, canvas, el('div', { class: 'combat-overlays' })),
     );
-    scene.appendChild(el('div', { class: 'hud' }));
+    // Tabbing onto the board on your turn is asking to look around it.
+    canvas.addEventListener('focus', () => {
+      const unit = this.active();
+      if (
+        !this.pointerless ||
+        !unit ||
+        this.zone === 'board' ||
+        this.battleOpening ||
+        this.battle()?.phase !== 'active' ||
+        !this.isPlayerTurn() ||
+        this.needsHandoff()
+      )
+        return;
+      this.browsing = true;
+      this.placeCursor(unit.pos);
+    });
+    const hud = el('div', { class: 'hud' });
+    // Remember which action had focus, so the board can hand focus back to it.
+    hud.addEventListener('focusin', (event) => {
+      const slot = event.target instanceof HTMLElement ? event.target.dataset.slot : undefined;
+      if (slot) this.barSlot = slot;
+    });
+    scene.appendChild(hud);
     host.appendChild(scene);
+    this.cursor = null;
+    this.browsing = false;
 
     this.setupRenderer();
     this.sync();
@@ -1026,6 +1090,10 @@ export class CombatScene implements Scene {
     this.detach = attachPointer(canvas, {
       onTap: (point) => this.onTap(point.x, point.y),
       onLongPress: (point) => this.onLongPress(point.x, point.y),
+      // A right click backs out of a move or an aim, and inspects otherwise.
+      onSecondary: (point) => {
+        if (!this.cancelStep()) this.onLongPress(point.x, point.y);
+      },
       // Panning is a no-op while the whole board fits: the camera clamps it
       // away, so a stray drag at fit scale never moves anything.
       onDrag: (delta) => this.pan(delta.x, delta.y),
@@ -1325,6 +1393,306 @@ export class CombatScene implements Scene {
   }
 
   /* ---------------------------------------------------------------- */
+  /* Keyboard and gamepad (ADR 0115)                                   */
+  /* ---------------------------------------------------------------- */
+
+  /** True while a keyboard or a pad, not a pointer, was the last thing used. */
+  private get pointerless(): boolean {
+    return this.app.input?.pointerless === true;
+  }
+
+  /** Where directions go: the board while moving, aiming or looking round; else the action bar. */
+  private get zone(): 'bar' | 'board' {
+    return this.mode.kind !== 'idle' || this.browsing ? 'board' : 'bar';
+  }
+
+  /** The tiles the cursor may stand on now, in cycle order: the nearest enemy first. */
+  private cursorTiles(battle: BattleState, unit: Unit): Vec2[] {
+    const ability =
+      this.mode.kind === 'aim' ? this.app.content.abilities.get(this.mode.abilityId) : undefined;
+    const tiles =
+      this.mode.kind === 'move'
+        ? [...this.reachableCells().values()]
+            .filter((cell) => cell.cost > 0)
+            .map((cell) => cell.pos)
+        : ability
+          ? targetableTiles(this.app.content, battle, unit, ability)
+          : [
+              ...battle.units.filter(isAlive).map((candidate) => candidate.pos),
+              ...battle.props.map((prop) => prop.pos),
+            ];
+    const rank = (tile: Vec2): TileRank => {
+      const target = inspectTargetAt(battle.units, battle.props, tile, false);
+      if (!target) return 2;
+      return target.kind === 'unit' && target.unit.faction === 'enemy' ? 0 : 1;
+    };
+    return cycleOrder(tiles, unit.pos, rank);
+  }
+
+  /**
+   * A keyboard or pad that picks Move or an ability starts the cursor: on the
+   * hero for a move, on the nearest occupied target for an aim, so "pick, then
+   * confirm" hits the nearest enemy. Pointer play is unchanged.
+   */
+  private startCursor(): void {
+    this.browsing = false;
+    this.cursor = null;
+    const battle = this.battle();
+    const unit = this.active();
+    if (!this.pointerless || !battle || !unit || this.mode.kind === 'idle') return;
+    this.cursor = unit.pos;
+    if (this.mode.kind !== 'aim') return;
+    const first = this.cursorTiles(battle, unit)[0];
+    if (first && inspectTargetAt(battle.units, battle.props, first, false)) this.placeCursor(first);
+  }
+
+  /** Stands the cursor on a tile: it becomes the pending choice, in view and read out. */
+  private placeCursor(tile: Vec2, render = false): void {
+    const battle = this.battle();
+    const unit = this.active();
+    if (!battle || !unit) return;
+    this.cursor = tile;
+    this.hover = tile;
+    if (this.mode.kind !== 'idle') {
+      const ability =
+        this.mode.kind === 'aim' ? this.app.content.abilities.get(this.mode.abilityId) : undefined;
+      this.pending = ability ? resolveAim(this.app.content, battle, unit, ability, tile) : tile;
+    }
+    this.revealTile(tile);
+    if (!render) return;
+    this.renderHud();
+    const target = inspectTargetAt(battle.units, battle.props, tile, false);
+    const name =
+      target?.kind === 'unit'
+        ? `${target.unit.name}, ${target.unit.hp} of ${target.unit.base.maxHp} health`
+        : target
+          ? (this.app.content.props.get(target.prop.propId)?.name ?? 'Something')
+          : 'Open ground';
+    const forecast = this.host?.querySelector('.confirm-dialog .confirm-body')?.textContent ?? '';
+    announce(forecast ? `${name}. ${forecast}` : name);
+  }
+
+  /** Pans the least distance that keeps the cursor's tile clear of the canvas edge. */
+  private revealTile(tile: Vec2): void {
+    const camera = this.renderer?.camera;
+    if (!camera) return;
+    const { width, height } = camera.viewport;
+    const point = camera.project({ x: tile.x + 0.5, y: tile.y + 0.5 });
+    const margin = Math.min(camera.tile * camera.scale, width / 4, height / 4);
+    const x = Math.min(width - margin, Math.max(margin, point.x));
+    const y = Math.min(height - margin, Math.max(margin, point.y));
+    if (x !== point.x || y !== point.y) this.pan(x - point.x, y - point.y);
+  }
+
+  private moveCursor(direction: Direction): void {
+    const battle = this.battle();
+    const unit = this.active();
+    if (!battle || !unit) return;
+    const next = stepCursor(this.cursorTiles(battle, unit), this.cursor ?? unit.pos, direction);
+    if (next) this.placeCursor(next, true);
+  }
+
+  private cycleTarget(step: 1 | -1): void {
+    const battle = this.battle();
+    const unit = this.active();
+    if (!battle || !unit) return;
+    const order = this.cursorTiles(battle, unit);
+    // From the hero's own tile (nothing chosen yet) the cycle starts at its first entry.
+    const current =
+      this.cursor && order.some((tile) => samePos(tile, this.cursor!)) ? this.cursor : null;
+    const next = cycleCursor(order, current, step);
+    if (next) this.placeCursor(next, true);
+  }
+
+  /** Backs out one step: the More list, then a move or an aim, then looking round. */
+  private cancelStep(): boolean {
+    if (this.moreOpen) {
+      this.setMoreOpen(false, true);
+      return true;
+    }
+    if (this.mode.kind === 'idle' && !this.browsing) return false;
+    this.mode = { kind: 'idle' };
+    this.browsing = false;
+    this.clearPending();
+    this.hover = null;
+    this.renderHud();
+    this.focusForInput(true);
+    return true;
+  }
+
+  private actionButtons(): HTMLButtonElement[] {
+    return [...(this.host?.querySelectorAll<HTMLButtonElement>('.hud .action-row > button') ?? [])];
+  }
+
+  /**
+   * Puts keyboard or gamepad focus where input belongs after a rebuild dropped
+   * it (or, forced, at a turn's start): the card that must be answered, the
+   * board while a tile is being chosen, otherwise the action bar. Pointer play
+   * and focus anywhere else that still exists are left alone.
+   */
+  private focusForInput(force = false): void {
+    const scene = this.host?.querySelector<HTMLElement>('.combat-scene');
+    if (!this.pointerless || this.suspended || !scene || scene.closest('[inert]')) return;
+    if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
+    const card = scene.querySelector<HTMLElement>('.combat-overlays .input-default');
+    const buttons = this.actionButtons().filter((candidate) => !candidate.disabled);
+    const bar =
+      this.zone === 'bar' && this.isPlayerTurn()
+        ? (buttons.find((candidate) => candidate.dataset.slot === this.barSlot) ?? buttons[0])
+        : undefined;
+    const target = card ?? bar ?? this.canvas;
+    const active = document.activeElement;
+    // The board held focus while there was nothing else to hold it (an enemy's
+    // turn, the opening view); it gives it up once a card or the bar is there.
+    const parked = active === this.canvas && target !== this.canvas;
+    const lost = !active || active === document.body || !active.isConnected || parked;
+    // Forced (a new turn), focus moves only from the last turn's own controls:
+    // the header (More, Pause) and anything outside the fight keep it.
+    if (!lost && (!force || !active.closest('.hud, .map-wrap'))) return;
+    target?.focus({ preventScroll: true });
+  }
+
+  /** A keyboard or gamepad action; see `combatInput` for what each does where. */
+  handleAction(event: ActionEvent): boolean {
+    const battle = this.battle();
+    const { action } = event;
+    if (!battle || this.suspended) return false;
+    const unit = this.active();
+    const now = this.presentationNow();
+    const effect = combatInput(action, event.repeat, {
+      opening: this.battleOpening !== null,
+      active: battle.phase === 'active' && !this.victoryBeat && !this.victoryPending,
+      busy: this.boardActionBusy(now, unit?.id),
+      playerTurn: this.isPlayerTurn(),
+      handoff: this.needsHandoff(),
+      zone: this.zone,
+      mode: this.mode.kind,
+      moreOpen: this.moreOpen,
+    });
+    const centre = (): { x: number; y: number } => {
+      const viewport = this.renderer?.camera.viewport;
+      return { x: (viewport?.width ?? 0) / 2, y: (viewport?.height ?? 0) / 2 };
+    };
+    switch (effect) {
+      case 'pass':
+        return false;
+      case 'ignore':
+        return true;
+      case 'skipOpening':
+        this.skipBattleOpening();
+        return true;
+      case 'skipPlayback':
+        this.skipPresentation();
+        return true;
+      case 'zoomIn':
+        this.zoomBy(1.25, centre());
+        return true;
+      case 'zoomOut':
+        this.zoomBy(0.8, centre());
+        return true;
+      case 'recentre':
+        this.recentre();
+        return true;
+      case 'cursor':
+        if (isDirection(action)) this.moveCursor(action);
+        return true;
+      case 'cycle':
+        this.cycleTarget(action === 'prev' ? -1 : 1);
+        return true;
+      case 'cancel':
+        return this.cancelStep();
+      case 'commit': {
+        const confirm = this.host?.querySelector<HTMLButtonElement>(
+          '.confirm-dialog .btn-ok:not(:disabled)',
+        );
+        if (confirm) confirm.click();
+        else this.app.toasts.show('Choose a highlighted tile first.');
+        return true;
+      }
+      case 'inspectCursor':
+      case 'inspectActive': {
+        const tile = effect === 'inspectCursor' ? this.cursor : null;
+        const target = tile ? inspectTargetAt(battle.units, battle.props, tile, true) : undefined;
+        if (target?.kind === 'prop') this.openPropInspector(target.prop);
+        else if (target?.kind === 'unit') this.openUnitInspector(target.unit);
+        else if (unit) this.openUnitInspector(unit);
+        return true;
+      }
+      case 'browse': {
+        if (!unit) return true;
+        // Only from the action bar: Up from the header's buttons is ordinary focus movement.
+        const from = document.activeElement;
+        if (from instanceof HTMLElement && from !== document.body && !from.dataset.slot)
+          return false;
+        this.browsing = true;
+        this.placeCursor(unit.pos);
+        this.canvas?.focus({ preventScroll: true });
+        return true;
+      }
+      case 'barStep': {
+        const buttons = this.actionButtons().filter((candidate) => !candidate.disabled);
+        const index = buttons.indexOf(document.activeElement as HTMLButtonElement);
+        const step = action === 'prev' ? -1 : 1;
+        buttons[
+          (Math.max(index, step === 1 ? -1 : 0) + step + buttons.length) % buttons.length
+        ]?.focus();
+        return true;
+      }
+      case 'slot': {
+        const slot = this.actionButtons()[slotIndex(action) ?? -1];
+        if (slot && !slot.disabled) slot.click();
+        return true;
+      }
+      case 'endTurn':
+        if (unit) this.endTurn(unit);
+        return true;
+      case 'focusBar': {
+        const active = document.activeElement;
+        if (active && active !== document.body && active.isConnected) return false;
+        this.focusForInput(true);
+        return true;
+      }
+    }
+  }
+
+  /** What the buttons do now, for the legend (ADR 0115 §6). */
+  inputHints(): readonly InputHint[] {
+    const battle = this.battle();
+    if (!battle || battle.phase !== 'active' || this.battleOpening || this.needsHandoff())
+      return [];
+    if (!this.isPlayerTurn() || this.boardActionBusy(this.presentationNow(), this.active()?.id))
+      return [
+        { key: 'confirm', label: 'Skip ahead' },
+        { key: 'menu', label: 'Pause' },
+      ];
+    if (this.mode.kind === 'move')
+      return [
+        { key: 'move', label: 'Choose a tile' },
+        { key: 'confirm', label: 'Walk there' },
+        { key: 'cancel', label: 'Back' },
+      ];
+    if (this.mode.kind === 'aim')
+      return [
+        { key: 'move', label: 'Choose a target' },
+        { key: 'cycle', label: 'Next target' },
+        { key: 'confirm', label: 'Confirm' },
+        { key: 'cancel', label: 'Back' },
+      ];
+    if (this.browsing)
+      return [
+        { key: 'move', label: 'Look around' },
+        { key: 'confirm', label: 'Inspect' },
+        { key: 'cancel', label: 'Back' },
+      ];
+    return [
+      { key: 'move', label: 'Pick an action' },
+      { key: 'confirm', label: 'Choose' },
+      { key: 'endTurn', label: 'End turn' },
+      { key: 'menu', label: 'Pause' },
+    ];
+  }
+
+  /* ---------------------------------------------------------------- */
   /* Turn flow                                                         */
   /* ---------------------------------------------------------------- */
 
@@ -1535,6 +1903,7 @@ export class CombatScene implements Scene {
 
     const unit = this.active();
     const activeId = unit?.id ?? null;
+    let turnChanged = false;
 
     if (activeId !== this.lastActiveId) {
       this.clearEndTurnConfirmation();
@@ -1543,6 +1912,10 @@ export class CombatScene implements Scene {
       this.lastActiveId = activeId;
       this.mode = { kind: 'idle' };
       this.clearPending();
+      this.cursor = null;
+      this.browsing = false;
+      this.barSlot = null;
+      turnChanged = true;
       this.stopAiTimer();
 
       // Keep the last acknowledged human across unit and enemy turns; only a
@@ -1598,6 +1971,8 @@ export class CombatScene implements Scene {
     // Do not let the first hand-off card cover the establishing view. This
     // rerender happens in the same sync, before the first RAF can paint it.
     if (this.battleOpening) this.renderHud();
+    // A new turn starts on its action bar, whoever's hands the keys are in.
+    if (turnChanged) this.focusForInput(true);
     // A fresh opening owns the first enemy turn too; later turns use the
     // unchanged scheduling path below. This keeps the first formation frame
     // visible instead of letting a 260 ms AI timer cut it short.
@@ -2017,7 +2392,13 @@ export class CombatScene implements Scene {
   /* Rendering: HUD                                                    */
   /* ---------------------------------------------------------------- */
 
+  /** Rebuilds the HUD, then puts keyboard or gamepad focus back where it belongs. */
   private renderHud(): void {
+    this.buildHud();
+    this.focusForInput();
+  }
+
+  private buildHud(): void {
     const hud = this.host?.querySelector<HTMLElement>('.hud');
     const overlays = this.host?.querySelector<HTMLElement>('.combat-overlays');
     const battle = this.battle();
@@ -2034,7 +2415,9 @@ export class CombatScene implements Scene {
           el(
             'div',
             { class: 'victory-beat-overlay', onClick: () => this.skipVictoryBeat() },
-            button('Show result', () => this.skipVictoryBeat(), { class: 'btn-ghost' }),
+            defaultControl(
+              button('Show result', () => this.skipVictoryBeat(), { class: 'btn-ghost' }),
+            ),
           ),
         );
         return;
@@ -2067,6 +2450,8 @@ export class CombatScene implements Scene {
       this.mode = { kind: 'idle' };
       this.clearPending();
     }
+    // Nothing chosen and nobody looking round: input is the action bar's again.
+    if (this.mode.kind === 'idle' && !this.browsing) this.cursor = null;
 
     if (!isTableControlled(unit)) {
       hud.appendChild(
@@ -2433,6 +2818,7 @@ export class CombatScene implements Scene {
     moveButton.setAttribute('aria-pressed', String(moveActive));
     moveButton.prepend(mark(UI_MARKS.move));
     moveButton.appendChild(el('span', { class: 'action-sub', text: `${unit.move} left` }));
+    moveButton.dataset.slot = 'move';
     row.appendChild(moveButton);
 
     for (const ability of knownAbilities(this.app.content, unit)) {
@@ -2446,6 +2832,7 @@ export class CombatScene implements Scene {
       disabled: !interactive,
     });
     endButton.prepend(mark(UI_MARKS.end));
+    endButton.dataset.slot = 'end';
     if (unit.ap > 0)
       endButton.appendChild(el('span', { class: 'action-sub', text: `${unit.ap} AP left` }));
     row.appendChild(endButton);
@@ -2534,6 +2921,7 @@ export class CombatScene implements Scene {
           : check.reason,
     });
 
+    node.dataset.slot = `ability:${ability.id}`;
     node.setAttribute('aria-pressed', String(selected));
 
     // The ability's own mark above its name, in its element's colour; the
@@ -2573,6 +2961,7 @@ export class CombatScene implements Scene {
     }
     this.mode = this.mode.kind === 'move' ? { kind: 'idle' } : { kind: 'move' };
     this.clearPending();
+    this.startCursor();
     this.renderHud();
   }
 
@@ -2582,6 +2971,7 @@ export class CombatScene implements Scene {
         ? { kind: 'idle' }
         : { kind: 'aim', abilityId: ability.id };
     this.clearPending();
+    this.startCursor();
     this.renderHud();
   }
 
@@ -3033,22 +3423,17 @@ export class CombatScene implements Scene {
     const person = this.app.session.controllerFor(state, unit.id);
     const playing = isGuest(unit) ? `Playing ${unit.name}, our guest` : `Playing ${unit.name}`;
 
+    const pass = handoffCopy(this.app.input?.device ?? 'touch', navigator.maxTouchPoints > 0);
     // A table guest changes hands each round, so the card is keyed on both.
     const shownFor = `${unit.id}|${person?.id ?? ''}`;
     if (this.bannerShownFor !== shownFor) {
       this.bannerShownFor = shownFor;
-      announce(`Hand the tablet to ${who}.`);
+      this.handoffShownAt = performance.now();
+      announce(`${pass} ${who}.`);
     }
-
-    return el(
-      'div',
-      { class: 'handoff-banner' },
-      el(
-        'div',
-        { class: 'panel center' },
-        el('p', { class: 'muted', text: 'Hand the tablet to' }),
-        el('h1', { text: who }),
-        el('p', { class: 'muted', text: playing }),
+    // One confirm accepts the card, but never the last player's held or mashed button.
+    const ready = guardHandoff(
+      defaultControl(
         button(
           "I'm ready",
           () => {
@@ -3057,6 +3442,20 @@ export class CombatScene implements Scene {
           },
           { class: 'btn-primary btn-large' },
         ),
+      ),
+      this.handoffShownAt,
+    );
+
+    return el(
+      'div',
+      { class: 'handoff-banner' },
+      el(
+        'div',
+        { class: 'panel center' },
+        el('p', { class: 'muted', text: pass }),
+        el('h1', { text: who }),
+        el('p', { class: 'muted', text: playing }),
+        ready,
       ),
     );
   }
@@ -3096,9 +3495,11 @@ export class CombatScene implements Scene {
                 class: 'btn-primary btn-large',
               })
             : null,
-          button(victory ? 'Continue' : 'Carry on', () => this.app.resolveBattle(), {
-            class: retry ? 'btn-large' : 'btn-primary btn-large',
-          }),
+          ((next) => (victory ? defaultControl(next) : next))(
+            button(victory ? 'Continue' : 'Carry on', () => this.app.resolveBattle(), {
+              class: retry ? 'btn-large' : 'btn-primary btn-large',
+            }),
+          ),
         ),
       ),
     );
@@ -3191,6 +3592,7 @@ export class CombatScene implements Scene {
     this.lastPresentationFrameAt = now;
     this.updateBattleOpening(now);
     this.updateVictoryBeat(now);
+    if (battle.phase === 'active') this.lookAround(wallNow);
     if (battle.phase === 'active') this.keepAnimatedLargeActorInView(now, battle, deltaMs);
 
     const unit = this.active();
@@ -3383,6 +3785,27 @@ export class CombatScene implements Scene {
     this.advanceTopdownAi(now);
     this.releaseCover();
   };
+
+  /** The held look-around (Shift + arrows, the right stick) and the triggers' zoom, per frame. */
+  private lookAround(wallNow: number): void {
+    const seconds = Math.min(0.1, Math.max(0, (wallNow - (this.lastLookAt ?? wallNow)) / 1000));
+    this.lastLookAt = wallNow;
+    const input = this.app.input;
+    const viewport = this.renderer?.camera.viewport;
+    if (!input || !viewport) return;
+    const look = input.panVector();
+    const zoom = input.zoomRate();
+    if (zoom !== 0)
+      this.zoomBy(Math.exp(zoom * seconds * 1.5), {
+        x: viewport.width / 2,
+        y: viewport.height / 2,
+      });
+    // Looking right moves the board left under the view, as a drag to the left does.
+    if (look.x !== 0 || look.y !== 0)
+      this.pan(-look.x * LOOK_SPEED * seconds, -look.y * LOOK_SPEED * seconds);
+  }
+
+  private lastLookAt: number | null = null;
 
   /**
    * The encounter's objective cells under every other overlay while the fight is on (ADR 0116's
