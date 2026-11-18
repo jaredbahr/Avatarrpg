@@ -18,9 +18,8 @@ const FOLDERS: Readonly<Record<string, string>> = {
   ambush_road: 'cutting',
   quarry_gate: 'quarry-gate',
   forest_road: 'forest-road',
+  ba_dan_village: 'ba-dan',
 };
-/** Boards that are grey blockouts: top-down, drawn bare from the legend with no plates (`docs/places/ba_dan_village.md`). */
-const BARE = new Set(['ba_dan_village']);
 
 function collectErrors(page: Page): string[] {
   const errors: string[] = [];
@@ -60,8 +59,7 @@ async function expectTopDown(page: Page, mapId: string): Promise<void> {
     return { map, ground: s?.ground[0]?.url ?? '' };
   });
   expect(scene.map).toBe(mapId);
-  if (BARE.has(mapId)) expect(scene.ground, 'a blockout has no ground plate').toBe('');
-  else expect(scene.ground.startsWith(`art/topdown/${FOLDERS[mapId]}/`), scene.ground).toBe(true);
+  expect(scene.ground.startsWith(`art/topdown/${FOLDERS[mapId]}/`), scene.ground).toBe(true);
 }
 
 /** An open neighbour of the party, off every exit, trigger and placed figure, on the same tier. */

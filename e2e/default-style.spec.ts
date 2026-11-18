@@ -20,7 +20,7 @@ async function board(page: Page, node: string): Promise<{ projection?: string; g
   });
 }
 
-test('a fresh link boots top-down: Ba Dan draws its bare blockout and the Forest Road its baked board', async ({
+test('a fresh link boots top-down: Ba Dan draws its baked ground and set pieces and the Forest Road its baked board', async ({
   page,
 }) => {
   const errors: string[] = [];
@@ -30,8 +30,7 @@ test('a fresh link boots top-down: Ba Dan draws its bare blockout and the Forest
 
   const village = await board(page, 'village_explore');
   expect(village.projection).toBe('topdown');
-  // Ba Dan is a grey blockout with no plates (`docs/places/ba_dan_village.md`).
-  expect(village.ground).toBeUndefined();
+  expect(village.ground).toMatch(/^art\/topdown\/ba-dan\//);
   const forest = await board(page, 'forest_explore');
   expect(forest.projection).toBe('topdown');
   expect(forest.ground).toMatch(/^art\/topdown\/forest-road\//);
@@ -52,7 +51,7 @@ test('an old link that names a style still boots top-down', async ({ page }) => 
     await startGame(page, ['Sam'], ['kaya'], `old-link-${style}`);
     const village = await board(page, 'village_explore');
     expect(village.projection, style).toBe('topdown');
-    expect(village.ground, style).toBeUndefined();
+    expect(village.ground, style).toMatch(/^art\/topdown\/ba-dan\//);
     const forest = await board(page, 'forest_explore');
     expect(forest.projection, style).toBe('topdown');
     expect(forest.ground, style).toMatch(/^art\/topdown\/forest-road\//);
