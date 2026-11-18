@@ -967,19 +967,6 @@ export class ExploreScene implements Scene {
     return true;
   }
 
-  /** `?boxes` on a dev build: the set pieces as labelled boxes over the board (`boxesOverlay.ts`). */
-  private drawBoxes(map: MapDef, camera: Renderer['camera']): void {
-    const wrap = this.canvas?.parentElement;
-    if (!this.boxes && !this.boxesLoading && wrap) {
-      this.boxesLoading = true;
-      void import('./boxesOverlay').then((m) => {
-        if (m.boxesRequested() && this.canvas?.parentElement === wrap)
-          this.boxes = new m.BoxesOverlay(wrap, map.width, map.height);
-      });
-    }
-    this.boxes?.draw(camera, map.id);
-  }
-
   private drawNpcNames(npcs: readonly NpcMarker[], pos: Vec2 | null): void {
     const layer = this.npcNames;
     const camera = this.renderer?.camera;
@@ -1807,7 +1794,19 @@ export class ExploreScene implements Scene {
     };
 
     renderer.draw(view);
-    if (import.meta.env.DEV) this.drawBoxes(map, renderer.camera);
+    // `?boxes` on a dev build: the set pieces as labelled boxes over the board (`boxesOverlay.ts`). The import
+    // stays inside this guard so a production build drops the overlay and its chunk entirely.
+    if (import.meta.env.DEV) {
+      const wrap = this.canvas?.parentElement;
+      if (!this.boxes && !this.boxesLoading && wrap) {
+        this.boxesLoading = true;
+        void import('./boxesOverlay').then((m) => {
+          if (m.boxesRequested() && this.canvas?.parentElement === wrap)
+            this.boxes = new m.BoxesOverlay(wrap, map.width, map.height);
+        });
+      }
+      this.boxes?.draw(renderer.camera, map.id);
+    }
     this.lastLife = { units, now };
     this.life?.draw(units, renderer.camera, now);
     this.drawNpcNames(npcs, !held && live && !this.life ? state.location.pos : null);
