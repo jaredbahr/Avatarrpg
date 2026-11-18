@@ -39,15 +39,27 @@ export const DATA = 'src/content/assets/topdownSheets.ts';
 /**
  * The standing objects packed as plain trimmed PNGs under `objects/`: T3's (`world.route_sign`, `world.school_notice`)
  * and RG-02's cart with Parcel in harness and Miri's lantern crates (`world.parcel_cart`, `world.lantern_crates`,
- * `tools/rg02obj.py`).
+ * `tools/rg02obj.py`), and Ba Dan's three later-state props (`tools/bd20gen.py`).
  */
-export const OBJECTS = ['route_sign', 'school_notice', 'parcel_cart', 'lantern_crates'] as const;
+export const OBJECTS = [
+  'route_sign',
+  'school_notice',
+  'parcel_cart',
+  'lantern_crates',
+  'side_gate_hung',
+  'gao_jar',
+  'hesra_boot',
+] as const;
 /** Each object's source folder under `SOURCE`. */
 const OBJECT_SOURCE: Readonly<Record<(typeof OBJECTS)[number], string>> = {
   route_sign: 'objects_t3',
   school_notice: 'objects_t3',
   parcel_cart: 'objects_rg02',
   lantern_crates: 'objects_rg02',
+  // Ba Dan's later-state props (`tools/bd20gen.py`): shown when a story condition holds.
+  side_gate_hung: 'objects_bd20',
+  gao_jar: 'objects_bd20',
+  hesra_boot: 'objects_bd20',
 };
 export const OBJECTS_OUT = `${OUT}/objects`;
 
