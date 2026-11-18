@@ -21,4 +21,6 @@ const pieces = BA_DAN_SET_PIECE_PLAN.pieces.map((p) => ({
     have: m.have ?? null,
   })),
 }));
-process.stdout.write(`${JSON.stringify({ mapId: BA_DAN_SET_PIECE_PLAN.mapId, pieces }, null, 1)}\n`);
+process.stdout.write(
+  `${JSON.stringify({ mapId: BA_DAN_SET_PIECE_PLAN.mapId, pieces }, null, 1)}\n`,
+);
