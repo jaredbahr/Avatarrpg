@@ -176,6 +176,11 @@ export const LATE_SCENES: Readonly<Record<string, OldSavesAnswer>> = {
     answer: 'open',
     why: 'Read only by its own once-only gate on Gao after a Driller loss. A release save that lost sat on the terminal card, so it has not heard it and hears it first when it carries on.',
   },
+  look_hesra_boot: {
+    upTo: '2026-11-15-demo',
+    answer: 'open',
+    why: 'Read only by the journal note for the boot by the mason’s yard door. The boot stays there after the supper, so an older save looks at it and gets the note then.',
+  },
 };
 
 /* The hub flag: read nearly everywhere after the quarry. */

@@ -39,6 +39,16 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
     when: { kind: 'flag', key: 'riverside_tea', op: 'set' },
   },
   {
+    id: 'hesra_boot',
+    mapId: 'ba_dan_village',
+    title: 'A shell in a boot',
+    hint: 'Something has been left by the door of the mason’s yard.',
+    found:
+      'A hobnailed boot by the door and a river shell on the sill. Somebody carried it down from the galleries and did not wait to be thanked.',
+    when: { kind: 'visited', nodeId: 'look_hesra_boot' },
+    hintWhile: { kind: 'visited', nodeId: 'welcome_home_supper' },
+  },
+  {
     id: 'ducks',
     mapId: 'forest_road',
     title: 'Lanfen’s unexpected tenants',

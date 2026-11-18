@@ -26,9 +26,9 @@ flowchart TD
   n65["handover_scene<br/>Gate Guard Dorin: Handover. East road is soft past the bend. Ga…"]:::entry
   n66["hanru_watch<br/>Hanru: I have the watch until dawn. Walk where you like. I only…"]:::entry
   n67{"hanru_watch_leave<br/>Branch: act1_complete"}
-  n71["look_gao_jar<br/>Counter jar: PLACEHOLDER (story): the writing pass writes this …"]:::entry
-  n72["look_hesra_boot<br/>Boot on the step: PLACEHOLDER (story): the writing pass writes …"]:::entry
-  n73["look_side_gate_hung<br/>Side gate: PLACEHOLDER (story): the writing pass writes this lo…"]:::entry
+  n71["look_gao_jar<br/>The jar by the counter: A big glazed jar with a paper tag on a …"]:::entry
+  n72["look_hesra_boot<br/>Boot by the door: A hobnailed boot stands by the door, stuffed …"]:::entry
+  n73["look_side_gate_hung<br/>Side gate: The side gate hangs the right way round now, and it …"]:::entry
   n255["plant_chair<br/>Gao the Shopkeeper: Come in out of the sun. Sit down a minute."]:::entry
   n256["plant_chair_box<br/>Gao the Shopkeeper: There are three drawers in it. I have found…"]
   n257{"plant_chair_decline<br/>Branch: act1_complete"}:::entry
