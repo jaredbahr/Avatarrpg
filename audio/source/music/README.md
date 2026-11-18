@@ -20,6 +20,10 @@ instruments, guzheng, dizi, erhu, pipa, taiko and hand percussion, low frame dru
 driving pulse, loopable, no vocals". The Suno style and
 structure text is kept in each file's `lyrics-eng` tag; the main menu theme has none recorded.
 
+**No ambient sound in music prompts** (owner, 2026-11-18). Don't ask Suno for wind, water, birds, rain, crowd
+chatter, background voices or any other sound of a place. It does them badly and it makes the track harder to work
+with. Describe the instruments and the mood. None of the prompts recorded above asks for ambience.
+
 Do not edit these files. The loops in `public/audio/music/` are made from them by
 
 ```sh
