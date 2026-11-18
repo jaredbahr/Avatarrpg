@@ -25,7 +25,7 @@ function exploring(): GameState {
   return {
     ...base,
     screen: 'explore',
-    location: { mapId: 'ba_dan_village', pos: { x: 10, y: 5 } },
+    location: { mapId: 'ba_dan_village', pos: { x: 13, y: 10 } },
     story: { ...base.story, nodeId: 'village_explore' },
   };
 }
@@ -65,7 +65,7 @@ suite('the world clock invariant', () => {
     const commands: readonly Command[] = [
       { type: 'enterNode', nodeId: 'village_explore' },
       { type: 'setFlags', flags: { ruon_spared: true } },
-      { type: 'walkTo', pos: { x: 10, y: 4 } },
+      { type: 'walkTo', pos: { x: 8, y: 10 } },
     ];
     for (const command of commands) {
       const result = apply(CONTENT, state, command);

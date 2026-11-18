@@ -209,9 +209,8 @@
       "round": 1,
       "order": [
         "p0",
-        "e7",
-        "p1",
         "e6",
+        "p1",
         "e5",
         "p2"
       ],
@@ -266,18 +265,6 @@
         },
         {
           "id": "e6",
-          "name": "Quarry Worker",
-          "faction": "enemy",
-          "kind": "bandit_thug",
-          "level": 1,
-          "hp": 28,
-          "pos": {
-            "x": 17,
-            "y": 7
-          }
-        },
-        {
-          "id": "e7",
           "name": "Slinger",
           "faction": "enemy",
           "kind": "bandit_slinger",
@@ -295,7 +282,7 @@
       "difficulty": "story",
       "story": {
         "nodeId": "gate_trade_explore",
-        "deciderIndex": 3,
+        "deciderIndex": 1,
         "visited": [
           "act1_open",
           "village_explore",
@@ -307,6 +294,9 @@
           "mira_table_ask",
           "mira_table_names",
           "mira_table_names_pella",
+          "mira_table_gate",
+          "mira_table_cart",
+          "mira_table_promise",
           "mira_table_road",
           "mira_table_eat",
           "mira_table_his",
@@ -324,6 +314,7 @@
           "ruon_choice",
           "trade_payment",
           "trade_chosen",
+          "ruon_traded",
           "gate_trade_explore"
         ]
       },
@@ -425,8 +416,8 @@
         },
         "returnPos": {
           "ba_dan_village": {
-            "x": 23,
-            "y": 7
+            "x": 31,
+            "y": 9
           },
           "forest_road": {
             "x": 19,
@@ -446,7 +437,7 @@
       "difficulty": "story",
       "story": {
         "nodeId": "quarry_after_explore",
-        "deciderIndex": 3,
+        "deciderIndex": 1,
         "visited": [
           "act1_open",
           "village_explore",
@@ -458,6 +449,9 @@
           "mira_table_ask",
           "mira_table_names",
           "mira_table_names_pella",
+          "mira_table_gate",
+          "mira_table_cart",
+          "mira_table_promise",
           "mira_table_road",
           "mira_table_eat",
           "mira_table_his",
@@ -475,6 +469,7 @@
           "ruon_choice",
           "trade_payment",
           "trade_chosen",
+          "ruon_traded",
           "gate_trade_explore",
           "cutting_culvert",
           "cutting_culvert_ripple",
@@ -595,8 +590,8 @@
             "y": 4
           },
           "ba_dan_village": {
-            "x": 23,
-            "y": 7
+            "x": 31,
+            "y": 9
           },
           "forest_road": {
             "x": 19,
@@ -768,7 +763,7 @@
       "difficulty": "story",
       "story": {
         "nodeId": "gate_escort_explore",
-        "deciderIndex": 3,
+        "deciderIndex": 1,
         "visited": [
           "act1_open",
           "village_explore",
@@ -780,6 +775,9 @@
           "mira_table_ask",
           "mira_table_names",
           "mira_table_names_pella",
+          "mira_table_gate",
+          "mira_table_cart",
+          "mira_table_promise",
           "mira_table_road",
           "mira_table_eat",
           "mira_table_his",
@@ -961,8 +959,8 @@
         },
         "returnPos": {
           "ba_dan_village": {
-            "x": 23,
-            "y": 7
+            "x": 31,
+            "y": 9
           },
           "forest_road": {
             "x": 19,
@@ -982,7 +980,7 @@
       "difficulty": "story",
       "story": {
         "nodeId": "quarry_after_explore",
-        "deciderIndex": 3,
+        "deciderIndex": 1,
         "visited": [
           "act1_open",
           "village_explore",
@@ -994,6 +992,9 @@
           "mira_table_ask",
           "mira_table_names",
           "mira_table_names_pella",
+          "mira_table_gate",
+          "mira_table_cart",
+          "mira_table_promise",
           "mira_table_road",
           "mira_table_eat",
           "mira_table_his",
@@ -1198,8 +1199,8 @@
             "y": 4
           },
           "ba_dan_village": {
-            "x": 23,
-            "y": 7
+            "x": 31,
+            "y": 9
           },
           "forest_road": {
             "x": 19,

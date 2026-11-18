@@ -32,7 +32,7 @@ const VILLAGE: Spot = {
   name: 'village',
   node: 'village_explore',
   mapId: 'ba_dan_village',
-  spot: { x: 10, y: 5 },
+  spot: { x: 13, y: 10 },
 };
 const RIVERSIDE: Spot = {
   name: 'riverside',
@@ -52,7 +52,7 @@ const WATCH: Readonly<Record<DayPhase, string>> = {
 };
 const WATCH_IDS = ['bg.relief_watch', 'lw.npc.dorin', 'lw.npc.hanru'];
 /** `bd03.post` (§3, W8): the one tile a gate watch is ever drawn on. */
-const GATE_POST = { x: 17, y: 6 };
+const GATE_POST = { x: 27, y: 8 };
 
 const VILLAGE_NPCS: Readonly<Record<DayPhase, readonly string[]>> = {
   // Mira's table; Gao's shopfront; Pella's court with the household adult;

@@ -68,6 +68,7 @@ const TRADE = [
   ...FIGHT_TO_CHOICE,
   'trade_payment',
   'trade_chosen',
+  'ruon_traded',
   'gate_trade_explore',
   ...TO_THE_DRILLER,
   ...WALK_HOME,
@@ -164,6 +165,8 @@ describe('followers (#696)', () => {
       ['trade_payment', true],
       // He is still there while Jin says "Captain. Hands where I can see them."
       ['trade_chosen', true],
+      // And while he answers it, before she takes him away.
+      ['ruon_traded', true],
     ]);
   });
 
@@ -172,21 +175,21 @@ describe('followers (#696)', () => {
     const at = (mapId: string, nodes: readonly string[]) =>
       placeFollowers({
         ...walked(base, nodes, { ruon_spared: true }),
-        location: { mapId, pos: { x: 22, y: 7 } },
+        location: { mapId, pos: { x: 30, y: 9 } },
       });
     const arrived = WALK_HOME.slice(0, WALK_HOME.indexOf('forest_return_arrival') + 1);
     // On the road he walks in the line, the arrival included.
     expect(at('forest_road', arrived).walking.map((who) => who.id)).toEqual(['follower.ruon']);
-    // In Ba Dan he waits at the east-road mouth with Bo-shan, through the welcome.
+    // In Ba Dan he waits inside the east gate with the welcomers, through the welcome.
     for (const nodes of [arrived, WALK_HOME]) {
       const village = at('ba_dan_village', nodes);
       expect(village.walking).toEqual([]);
       expect(village.standing.map(({ follower, pos }) => [follower.id, pos])).toEqual([
-        ['follower.ruon', { x: 22, y: 6 }],
+        ['follower.ruon', { x: 23, y: 11 }],
       ]);
     }
     const grid = buildGrid(CONTENT.maps.get('ba_dan_village')!);
-    expect(tileAt(grid, { x: 22, y: 6 })?.blocked).toBe(false);
+    expect(tileAt(grid, { x: 23, y: 11 })?.blocked).toBe(false);
   });
 
   it('never doubles Ruon with his own figure in the Cutting', () => {

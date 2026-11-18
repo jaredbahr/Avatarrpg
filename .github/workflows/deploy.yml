@@ -1,7 +1,16 @@
 # Deploys once a day, not on every merge (Jared, 2026-09-21). The daily run
-# skips the build when `main` has not moved since the previous day, so an idle
-# repo costs one short runner. A supervisor who needs the site current sooner
-# dispatches this workflow by hand. Do not re-add the `push` trigger.
+# skips the build when the newest green commit is not new since the previous
+# day, so an idle repo costs one short runner. A supervisor who needs the site
+# current sooner dispatches this workflow by hand. Do not re-add the `push`
+# trigger.
+#
+# What ships is the newest commit on main's first-parent history (last 50) whose
+# CI fully passed, even when newer commits are still testing; a commit whose CI
+# failed, was cancelled or has not finished is never shipped (owner, 2026-11-15,
+# amending the exact-HEAD rule; see scripts/deploy-gate.mjs and
+# docs/coordination/handoffs/issue-538-deploy-gate.md, in Git history up to 2c132c59). Every later stage
+# revalidates exactly the selected SHA and run, and that the SHA is still an
+# ancestor of main.
 
 name: Deploy to GitHub Pages
 
@@ -27,14 +36,14 @@ concurrency:
 
 jobs:
   freshness:
-    name: Has main moved since yesterday?
+    name: Newest green commit and is it new?
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
       contents: read
       actions: read
     outputs:
-      # `true` when HEAD is younger than the daily window; the build keys on it.
+      # `true` when the selected green commit is younger than the daily window.
       fresh: ${{ steps.fresh.outputs.fresh }}
       sha: ${{ steps.gate.outputs.sha }}
       ci_run_id: ${{ steps.gate.outputs.ci_run_id }}
@@ -56,28 +65,33 @@ jobs:
           EXPECTED_SHA: ${{ github.sha }}
         run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
 
+      - name: Select the newest green main commit
+        id: gate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/deploy-gate.mjs select
+
       - id: fresh
+        env:
+          COMMITTED_AT: ${{ steps.gate.outputs.committed_at }}
         # 25 hours, not 24: cron start times jitter by minutes, and a commit
         # that lands in the gap would otherwise never deploy. A repeated
-        # deploy of the same revision is harmless.
+        # deploy of the same revision is harmless. Judged on the selected green
+        # commit, not on HEAD, so a day whose newest green commit is new still
+        # deploys even while newer commits are testing.
         run: |
-          if [ -n "$(git log -1 --since='25 hours ago' --format=%H)" ]; then
+          committed=$(date -d "$COMMITTED_AT" +%s)
+          if [ "$committed" -ge "$(date -d '25 hours ago' +%s)" ]; then
             echo "fresh=true" >> "$GITHUB_OUTPUT"
           else
             echo "fresh=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Require successful exact-SHA main CI
-        id: gate
-        if: ${{ github.event_name == 'workflow_dispatch' || steps.fresh.outputs.fresh == 'true' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: node scripts/deploy-gate.mjs select
-
   build:
     name: Build site
     needs: freshness
-    # A manual dispatch always builds; the daily run only when `main` moved.
+    # A manual dispatch always builds; the daily run only when the newest green
+    # commit is new.
     if: ${{ github.event_name == 'workflow_dispatch' || needs.freshness.outputs.fresh == 'true' }}
     runs-on: ubuntu-latest
     permissions:

@@ -28,7 +28,7 @@ export interface GesturePoint {
 
 export type PointerKind = 'mouse' | 'pen' | 'touch';
 
-export interface PinchGesture {
+interface PinchGesture {
   readonly centre: GesturePoint;
   /** Current spread divided by the spread when the pinch began. */
   readonly scale: number;

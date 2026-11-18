@@ -169,7 +169,7 @@ interface Original {
 }
 
 const SOURCE = readFileSync(
-  new URL('../../../prototypes/topdown/src/v13/shadow.js', import.meta.url),
+  new URL('../../../prototypes/topdown/src/v14/shadow.js', import.meta.url),
   'utf8',
 );
 
@@ -228,6 +228,27 @@ const SHAPES: Record<string, RgbaImage> = {
       (x >= 14 && x < 30 && y >= 10 && y < 36) ||
       (x >= 32 && x < 38 && y >= 4 && y < 8),
   ),
+  // a tree: a wide crown with a lit gap under it, a trunk and splayed roots (Imagination #881)
+  tree: shape(
+    44,
+    64,
+    (x, y) =>
+      ((x - 22) ** 2 / 400 + (y - 16) ** 2 / 169 <= 1 && y < 30) ||
+      (x >= 19 && x < 25 && y >= 30 && y < 58) ||
+      (x >= 14 && x < 30 && y >= 58 && y < 61 && (x < 18 || x >= 21)),
+  ),
+  // the same crown, ragged: 2 px notches in its columns and a detached lobe off its upper right
+  raggedTree: shape(
+    44,
+    64,
+    (x, y) =>
+      ((x - 22) ** 2 / 400 + (y - 16) ** 2 / 169 <= 1 &&
+        y < 30 &&
+        !(x % 5 === 0 && y >= 14 && y < 16)) ||
+      (x >= 19 && x < 25 && y >= 30 && y < 58) ||
+      (x >= 14 && x < 30 && y >= 58 && y < 61 && (x < 18 || x >= 21)) ||
+      (x >= 40 && x < 44 && y >= 0 && y < 4),
+  ),
   // a thin pole and a handle: lone specks the cleanup pass should drop
   thin: shape(16, 40, (x, y) => (x === 5 && y >= 4 && y < 38) || (x >= 9 && x < 12 && y === 20)),
 };
@@ -244,6 +265,7 @@ const HARD_OPTIONS: Record<string, HardShadowOptions> = {
   dirLeft: { dir: { x: -0.6, y: 0.4 } },
   dirReach: { dir: { x: 1, y: 0.5 }, reach: 14 },
   dirSweep: { dir: { x: 0.9, y: 0.4 }, sweep: 0.6 },
+  treeSun: { dir: { x: 0.42, y: 0.3 }, foot: 8, sweep: 1, reach: 52 },
   dirUnder: { dir: { x: 0.7, y: 0.3 }, under: true, overhang: 4 },
   hitch: { hitch: 6 },
   dusk: { dusk: true },
@@ -460,5 +482,77 @@ describe('groundKit matches the prototype under the measured canvas blend (withi
     const c = groundKit(img, 8)!;
     expect(Array.from(a.fringe.data)).toEqual(Array.from(b.fringe.data));
     expect(Array.from(a.fringe.data)).not.toEqual(Array.from(c.fringe.data));
+  });
+});
+
+/*
+ * Imagination ecfcea1 (issue #881): a swept shadow casts each pixel from the bottom of its own
+ * opaque run, and is one 8-connected piece. The cases above hold the port to the original byte for
+ * byte; these say what that buys, on a tree.
+ */
+describe('a swept (tree) shadow, as Imagination ecfcea1 draws it', () => {
+  const TREE_SUN: HardShadowOptions = { dir: { x: 0.42, y: 0.3 }, foot: 8, sweep: 1, reach: 52 };
+  const run = (name: string): { m: ShadowMask; img: RgbaImage } => {
+    const img = SHAPES[name]!;
+    return { m: hardShadowMask(alphaOf(img), img.width, img.height, TREE_SUN), img };
+  };
+  const px = (m: ShadowMask, x: number, y: number): number => m.alpha[y * m.width + x] ?? 0;
+
+  it('a crown over a gap keeps its own outline instead of filling the box under it', () => {
+    const { m } = run('tree');
+    // the crown's far-left edge (x 2, y 16) stands about 40 px above the foot; its own cast point is
+    // far to the right. The floor just right of the foot, near the trunk's left side, is nearer the
+    // foot than any point the crown's underside (25 px up) casts to, so the crown must not shade it
+    expect(px(m, m.pad + 8, m.base + 4)).toBe(0);
+    expect(px(m, m.pad + 8, m.base + 12)).toBe(0);
+    // the crown's outline lands further along the light, up to its top's cast point
+    let farthest = 0;
+    for (let i = 0; i < m.alpha.length; i++)
+      if (m.alpha[i]) farthest = Math.max(farthest, i % m.width);
+    expect(farthest).toBeGreaterThan(m.pad + 30);
+  });
+
+  it('a trunk shades from its foot: its pool is one unbroken run from the seam outward', () => {
+    const { m } = run('tree');
+    // down the light from the trunk's right foot column, every cast row has shade from the seam to
+    // the far end: a trunk pixel is solid to the floor, so nothing is lit in between
+    for (let k = 0; k <= 15; k++)
+      expect(
+        px(m, m.pad + 24 + Math.round(0.42 * k), m.base + 1 + Math.round(0.3 * k)),
+      ).toBeGreaterThan(0);
+  });
+
+  it('a ragged crown leaves no dark island floating: every shaded pixel joins the seam', () => {
+    for (const name of ['tree', 'raggedTree']) {
+      const { m } = run(name);
+      const seen = new Uint8Array(m.alpha.length),
+        stack: number[] = [];
+      const seed = (x: number, y: number): void => {
+        if (x < 0 || y < 0 || x >= m.width || y >= m.height) return;
+        const i = y * m.width + x;
+        if (m.alpha[i] && !seen[i]) {
+          seen[i] = 1;
+          stack.push(i);
+        }
+      };
+      for (let x = 0; x < m.width; x++) {
+        seed(x, m.base + 1);
+        seed(x, m.base + 2);
+      }
+      while (stack.length) {
+        const i = stack.pop() as number,
+          x = i % m.width,
+          y = (i - x) / m.width;
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) seed(x + dx, y + dy);
+      }
+      for (let i = 0; i < m.alpha.length; i++) if (m.alpha[i]) expect(seen[i]).toBe(1);
+    }
+  });
+
+  it('a lobe cut off from the crown casts no floating patch', () => {
+    const { m } = run('raggedTree');
+    // measured without the flood fill, the lobe (x 40..43, y 0..3) lays a 9 px island at
+    // (67..71, 74..75), clear of every other pixel of the shadow
+    for (let y = 74; y <= 75; y++) for (let x = 67; x <= 71; x++) expect(px(m, x, y)).toBe(0);
   });
 });

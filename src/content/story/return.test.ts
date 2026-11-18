@@ -68,7 +68,7 @@ describe('the authored walk home', () => {
     );
   });
 
-  it('frees the workers into the walk home after victory and keeps defeat terminal', () => {
+  it('frees the workers into the walk home after victory, and a defeat carries on (C-01)', () => {
     const victory = CONTENT.story.get('act1_epilogue');
     const defeat = CONTENT.story.get('act1_epilogue_lost');
     if (victory?.kind !== 'dialogue' || defeat?.kind !== 'end') throw new Error('Missing endings');
@@ -77,8 +77,10 @@ describe('the authored walk home', () => {
     const ledger = CONTENT.story.get(victory.next);
     if (ledger?.kind !== 'dialogue') throw new Error('Missing the delivery book');
     expect(ledger.next).toBe('act1_evening');
-    expect(defeat.next).toBeUndefined();
+    // A chapter break that opens onto occupied Ba Dan (lost.test.ts walks it).
+    expect(defeat.next).toBe('village_explore');
     const lost = enterStoryNode(CONTENT, game(), 'act1_lost').state;
+    // The five stay held: a loss releases nobody.
     expect(lost.world.residentProfiles).toEqual({});
     const ended = apply(CONTENT, game(), { type: 'enterNode', nodeId: 'act1_victory' }).state;
     expect(ended.world.residentProfiles).toEqual(profiles('returning'));
@@ -127,11 +129,12 @@ describe('the authored walk home', () => {
       home = advanceDialogue(CONTENT, home).state;
     expect(home.location.mapId).toBe('ba_dan_village');
     expect(home.screen).toBe('explore');
-    const at = { ...home, location: { ...home.location, pos: { x: 22, y: 7 } } };
+    const at = { ...home, location: { ...home.location, pos: { x: 30, y: 9 } } };
 
-    const welcomed = apply(CONTENT, at, { type: 'walkTo', pos: { x: 18, y: 7 } }).state;
+    // The first step in from the east gate crosses column 28, whatever row the walk takes.
+    const welcomed = apply(CONTENT, at, { type: 'walkTo', pos: { x: 22, y: 9 } }).state;
     expect(welcomed.story.nodeId).toBe('welcome_home_mira');
-    expect(welcomed.location.pos).toEqual({ x: 20, y: 7 });
+    expect(welcomed.location.pos).toEqual({ x: 28, y: 9 });
 
     let card = welcomed;
     const speakers: string[] = [];
@@ -233,7 +236,7 @@ describe('the authored walk home', () => {
     expect(worldObjective(CONTENT, road)).not.toContain('home');
 
     const village = withProfiles(
-      { ...road, location: { mapId: 'ba_dan_village', pos: { x: 22, y: 7 } } },
+      { ...road, location: { mapId: 'ba_dan_village', pos: { x: 30, y: 9 } } },
       'resting',
     );
     expect(worldObjective(CONTENT, village)).toContain('home');

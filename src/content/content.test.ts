@@ -467,6 +467,31 @@ describe('content', () => {
     expect(problems.some((p) => p.includes('standing_trap') && p.includes('0 is'))).toBe(true);
   });
 
+  it('accepts a branchWhen on standing, and checks its targets and conditions (ADR 0117)', () => {
+    const gate = (over: Record<string, unknown>) =>
+      validateContent({
+        ...CONTENT_BUNDLE,
+        story: [
+          ...CONTENT_BUNDLE.story,
+          {
+            id: 'gate_test',
+            kind: 'branchWhen',
+            when: { kind: 'standing', nation: 'fire', op: 'gte', value: 0 },
+            ifTrue: STORY_ENTRY,
+            ifFalse: STORY_ENTRY,
+            ...over,
+          } as never,
+        ],
+      }).filter((p) => p.includes('gate_test') && !p.includes('unreachable'));
+    expect(gate({})).toEqual([]);
+    expect(gate({ ifFalse: 'nowhere_node' }).join()).toContain(
+      '"nowhere_node", which does not exist',
+    );
+    expect(
+      gate({ when: { kind: 'not', of: { kind: 'partyHas', characterId: 'nobody' } } }).join(),
+    ).toContain('unknown character "nobody"');
+  });
+
   it('refuses scene memory other than completed or declined (ADR 0047 §6)', () => {
     const problems = validateContent({
       ...CONTENT_BUNDLE,
@@ -538,9 +563,9 @@ describe('content', () => {
 
     // The gate tile and the road tile immediately west of it. The village
     // enforces its edge contract, so the gate's second rim cell stays covered.
-    const gate = { x: 23, y: 7 };
-    const beside = { x: 22, y: 7 };
-    const rim = { x: 23, y: 8 };
+    const gate = east.pos;
+    const beside = { x: gate.x - 1, y: gate.y };
+    const rim = { x: gate.x, y: gate.y + 1 };
     expect(probe([gate, rim, beside]).filter((p) => p.includes('exit'))).toEqual([]);
     expect(probe([beside])).toContain(
       `map "${mapId}" exit at (${gate.x},${gate.y}) is not part of its area`,
@@ -552,7 +577,7 @@ describe('content', () => {
     expect(probe([gate, { x: 99, y: 0 }])).toContain(
       `map "${mapId}" exit area cell (99,0) is blocked or off-map`,
     );
-    // The riverside exit already owns (19,15); the east area cannot also claim it.
+    // The riverside exit already owns its cell; the east area cannot also claim it.
     const riverside = rest[0];
     if (!riverside) throw new Error('Missing the village riverside exit');
     const overlap = probe([gate, riverside.pos]);
@@ -699,17 +724,17 @@ describe('content', () => {
         {
           ...boss,
           // Same flag, opposite sides: only one of these can ever spawn, so the
-          // pair costs one thug (100 of 510, 20%), not two.
+          // pair costs one rigger (100 of 510, 20%), not two.
           conditionalEnemies: [
             {
               flag: 'ruon_traded',
               whenSet: true,
-              placements: [{ enemyId: 'bandit_thug', pos: { x: 14, y: 3 } }],
+              placements: [{ enemyId: 'line_rigger', pos: { x: 14, y: 3 } }],
             },
             {
               flag: 'ruon_traded',
               whenSet: false,
-              placements: [{ enemyId: 'bandit_thug', pos: { x: 14, y: 8 } }],
+              placements: [{ enemyId: 'line_rigger', pos: { x: 14, y: 8 } }],
             },
           ],
         },

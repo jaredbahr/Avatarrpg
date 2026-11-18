@@ -13,6 +13,13 @@ for (const renderer of ['canvas', 'webgl']) {
     });
     await enterNode(page, 'village_explore');
     await waitForIdle(page);
+    // Stand clear of the table and the residents round it.
+    await page.evaluate(() => {
+      const app = window.fnt!.app;
+      const state = app.state!;
+      app.adoptSave({ ...state, location: { ...state.location, pos: { x: 15, y: 8 } } }, undefined);
+    });
+    await waitForIdle(page);
 
     await page.getByRole('button', { name: 'Look around', exact: true }).click();
     await page.getByRole('button', { name: /Visit Gao/ }).click();
@@ -94,7 +101,7 @@ for (const renderer of ['canvas', 'webgl']) {
     );
     await enterNode(page, 'village_explore');
     await waitForIdle(page);
-    await page.evaluate(() => window.fnt!.app.dispatch({ type: 'walkTo', pos: { x: 10, y: 4 } }));
+    await page.evaluate(() => window.fnt!.app.dispatch({ type: 'walkTo', pos: { x: 19, y: 7 } }));
     await waitForIdle(page);
     await page.getByRole('button', { name: 'Follow party', exact: true }).click();
     const talk = page.getByRole('button', { name: /^Talk/ });

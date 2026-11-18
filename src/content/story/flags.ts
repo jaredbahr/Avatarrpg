@@ -25,10 +25,11 @@
  * Adding a flag: add the entry first, then the content. The test prints the
  * exact `setBy`/`readBy` it found when they disagree, so paste from there.
  *
- * Reading the past from a later scene: a save already past a flag's setter can
- * never come to hold it, so declare how such a save answers in
- * `flagBackfills.ts` (#773). `flagContinuity.test.ts` holds every frozen save
- * to that rule.
+ * Reading the past from a later scene (ADR 0112): a save already past a flag's
+ * setter can never come to hold it. When a flag that something reads gains a
+ * write in a region a release already shipped, its entry says how that
+ * release's saves answer (`oldSaves`). `saveHistory.test.ts` holds every
+ * release snapshot and every frozen save to that rule.
  */
 
 import type { FlagValue } from '../../core/types';
@@ -57,6 +58,7 @@ export const FLAG_ARCS = [
   'Side story · SQ-01 Too Many Cabbages',
   'Side story · SQ-02 A Very Official Gate',
   'Side story · SQ-03 Gao’s Other Ledger',
+  'Act II · Saltstep',
   'Saga · Nation standing',
   'Saga · Disciplines',
   'App · Guidance',
@@ -64,6 +66,24 @@ export const FLAG_ARCS = [
 export type FlagArc = (typeof FLAG_ARCS)[number];
 
 export type FlagType = 'boolean' | 'number' | 'string';
+
+/**
+ * - `backfill`: a rule in `flagBackfills.ts` gives the save its answer on load.
+ * - `open`: every save can still set it (a new scene nobody is locked out of).
+ * - `unset`: a save past the setter answers "never happened", and that is the
+ *   intended answer; `why` says what the player sees because of it.
+ */
+export interface OldSavesAnswer {
+  /** The newest release (`src/core/save/fixtures/releases/index.json`) this was decided for. */
+  readonly upTo: string;
+  /**
+   * The write sites this answers for (`story:<node>`, `app:<module>`). A flag's answer covers
+   * only the sites it names, so a write added later is asked about afresh. Not used by a scene.
+   */
+  readonly sites?: readonly string[];
+  readonly answer: 'backfill' | 'open' | 'unset';
+  readonly why: string;
+}
 
 export interface FlagDef {
   /** The exact key, or a family ending in `.*` for keys the app builds at run time. */
@@ -81,11 +101,87 @@ export interface FlagDef {
   readonly setBy: readonly string[];
   readonly readBy: readonly string[];
   /**
-   * The save format or release that introduced the flag, such as `'save v5'`
-   * or `'0.3.0'`. Documentation for whoever writes its backfill (`flagBackfills.ts`).
+   * How saves written before the flag's newest write site answer it (ADR 0112).
+   * Required once a release has shipped the region without that write and
+   * something reads the flag.
    */
-  readonly since?: string;
+  readonly oldSaves?: OldSavesAnswer;
 }
+
+/**
+ * The first release (`src/core/save/fixtures/releases/`): the story as the
+ * commit that wrote the `golden/v5` saves had it, on 2026-11-08.
+ */
+const GOLDEN_V5 = '2026-11-08-golden-v5';
+
+/* How saves from before each of these answer (ADR 0112). */
+const GUIDED_FIGHT_IS_FOR_NEW_GAMES = (...sites: string[]): OldSavesAnswer => ({
+  upTo: GOLDEN_V5,
+  sites,
+  answer: 'unset',
+  why: 'Only a new game is offered the guided first fight; an older save plays the Forest Road unguided, as it always did.',
+});
+const REASON_STAYS_ON_THE_FLOOR = (...sites: string[]): OldSavesAnswer => ({
+  upTo: GOLDEN_V5,
+  sites,
+  answer: 'open',
+  why: 'The find waits on its map after the rescue until its hero takes it, and the road back to the quarry stays open.',
+});
+const SIDE_STORY_WINDOW = (...sites: string[]): OldSavesAnswer => ({
+  upTo: GOLDEN_V5,
+  sites,
+  answer: 'unset',
+  why: 'The side story is offered before the rescue. A save already past it answers as a player who walked by, and every reader has a line for that.',
+});
+
+/**
+ * Scenes that a `visited` condition reads and that were added to a region a
+ * release had already shipped (ADR 0112). A save of that release may be past
+ * the only road into the scene, so each says how such a save answers, exactly
+ * as a flag's `oldSaves` does. `saveHistory.test.ts` asks for an entry.
+ */
+export const LATE_SCENES: Readonly<Record<string, OldSavesAnswer>> = {
+  sq01_packing_list: {
+    upTo: GOLDEN_V5,
+    answer: 'backfill',
+    why: 'Pella hands the list over as she asks about Bo-shan, a scene an older save has already had. A save that was asked and has not finished the rescue is given the list.',
+  },
+  sq02_return: {
+    upTo: GOLDEN_V5,
+    answer: 'open',
+    why: 'Read only by its own once-only gate on Dorin; it plays for any save that settled the side gate.',
+  },
+  sq03_jar: {
+    upTo: GOLDEN_V5,
+    answer: 'open',
+    why: 'Read only by its own once-only gate on Gao; it plays for any save that settled the ledger.',
+  },
+  cutting_culvert: {
+    upTo: GOLDEN_V5,
+    answer: 'open',
+    why: 'The culvert is a crossing in the Cutting that waits until it has been seen, and the Cutting stays open.',
+  },
+  demo_complete: {
+    upTo: GOLDEN_V5,
+    answer: 'open',
+    why: 'The welcome home waits at the village gate for any save that has walked home and not yet seen it.',
+  },
+  welcome_home_supper: {
+    upTo: GOLDEN_V5,
+    answer: 'open',
+    why: 'Read only to show Hesra’s boot on the mason’s yard step afterwards, a keepsake and not a gate. A save that has not had the supper still plays it on the walk home and sees the boot after.',
+  },
+  gao_lost: {
+    upTo: '2026-11-15-demo',
+    answer: 'open',
+    why: 'Read only by its own once-only gate on Gao after a Driller loss. A release save that lost sat on the terminal card, so it has not heard it and hears it first when it carries on.',
+  },
+  look_hesra_boot: {
+    upTo: '2026-11-15-demo',
+    answer: 'open',
+    why: 'Read only by the journal note for the boot by the mason’s yard door. The boot stays there after the supper, so an older save looks at it and gets the note then.',
+  },
+};
 
 /* The hub flag: read nearly everywhere after the quarry. */
 const ACT1_COMPLETE_READERS = [
@@ -162,6 +258,12 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     meaning: 'The party handed Mira the rubbing of the driller’s Republic City maker’s plate.',
     arc: 'Demo · Walk home',
     status: 'live',
+    oldSaves: {
+      upTo: GOLDEN_V5,
+      sites: ['story:mira_rubbing_given'],
+      answer: 'open',
+      why: 'Mira asks for the rubbing at the end of her epilogue, which repeats until she has it.',
+    },
     setBy: ['story:mira_rubbing_given'],
     readBy: ['map:ba_dan_village'],
   },
@@ -279,7 +381,10 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     readBy: [
       'map:ambush_road',
       'story:mira_epilogue',
+      'story:defeat_boss_drain',
       'story:demo_complete',
+      'story:lost_home_table',
+      'story:hanru_watch',
       'follower:follower.ruon',
       'journal:gate_wages',
     ],
@@ -298,11 +403,13 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'story:mira_epilogue',
       'story:welcome_home_gao',
       'story:demo_complete',
+      'story:gao_lost',
       'story:plant_chair',
       'story:plant_chair_decline_home',
       'story:plant_chair_decline_road',
       'story:sq03_hook',
       'story:sq03_jar',
+      'story:mq02_freight_clerk',
       'journal:gate_wages',
     ],
   },
@@ -390,11 +497,35 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     key: 'act1_lost',
     type: 'boolean',
     values: [true],
-    meaning: 'The party lost to the Driller: the quarry keeps running and the act ends there.',
+    meaning:
+      'The party lost to the Driller and carried on: the quarry stays occupied, the five stay held, and Dorin drives the cart until MQ-11.',
     arc: 'Demo · Quarry floor',
     status: 'live',
     setBy: ['story:act1_lost'],
-    readBy: ['resident:lw.npc.mira', 'resident:lw.npc.gao'],
+    readBy: [
+      'map:ba_dan_village',
+      'map:forest_road',
+      'map:quarry_gate',
+      'map:ambush_road',
+      'story:village_explore',
+      'story:riverside_mira',
+      'story:forest_explore',
+      'story:cutting_after_explore',
+      'story:plant_chair_decline_lost',
+      'story:hanru_watch',
+      'story:mq02_coast_driver',
+      'story:mq02_parcel',
+      'story:mq02_stall_reads',
+      'story:mq02_pump_driver',
+      'story:mq02_galleries',
+      'story:mq02_ferry_driver',
+      'story:sf21_driver',
+      'resident:lw.npc.mira',
+      'resident:lw.npc.gao',
+      'resident:lw.npc.dorin',
+      'resident:lw.npc.hanru',
+      'journal:storm_drain',
+    ],
   },
 
   // Each present hero's reason to keep going (reasons.ts; saga outline decision 22).
@@ -406,6 +537,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'Kaya found her old neighbour’s lantern-workshop stamp on a crate of lamp glass (C-31): a reason to keep going.',
     arc: 'Demo · Quarry floor',
     status: 'live',
+    oldSaves: REASON_STAYS_ON_THE_FLOOR('story:reason_kaya_kept'),
     note: 'Hides the find’s marker once seen. PQ-01 should read it when Kaya is in the party.',
     setBy: ['story:reason_kaya_kept'],
     readBy: ['map:quarry_floor'],
@@ -418,6 +550,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'Tenzo found the workers’ ration crates, signed for and never opened (C-31): a reason to keep going.',
     arc: 'Demo · Quarry floor',
     status: 'live',
+    oldSaves: REASON_STAYS_ON_THE_FLOOR('story:reason_tenzo_kept'),
     note: 'Hides the find’s marker once seen. PQ-02 should read it when Tenzo is in the party.',
     setBy: ['story:reason_tenzo_kept'],
     readBy: ['map:quarry_floor'],
@@ -430,6 +563,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'Nilak found his old healing house’s emblem on a “medical supplies” crate of restraints (C-31): a reason to keep going.',
     arc: 'Demo · Quarry floor',
     status: 'live',
+    oldSaves: REASON_STAYS_ON_THE_FLOOR('story:reason_nilak_kept'),
     note: 'Hides the find’s marker once seen. PQ-03 should read it when Nilak is in the party.',
     setBy: ['story:reason_nilak_kept'],
     readBy: ['map:quarry_floor'],
@@ -442,6 +576,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'Nima found a sanctuary knot on a supply crate diverted from the mountain shelters (C-31): a reason to keep going.',
     arc: 'Demo · Quarry floor',
     status: 'live',
+    oldSaves: REASON_STAYS_ON_THE_FLOOR('story:reason_nima_kept'),
     note: 'Hides the find’s marker once seen. PQ-07 should read it when Nima is in the party.',
     setBy: ['story:reason_nima_kept'],
     readBy: ['map:quarry_floor'],
@@ -454,6 +589,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'Bo found Renn and his old crew on next month’s labour roster in the Driller’s cab (C-31): a reason to keep going.',
     arc: 'Demo · Quarry floor',
     status: 'live',
+    oldSaves: REASON_STAYS_ON_THE_FLOOR('story:reason_bo_kept'),
     note: 'Hides the find’s marker once seen. PQ-05 should read it when Bo is in the party.',
     setBy: ['story:reason_bo_kept'],
     readBy: ['map:quarry_floor'],
@@ -466,6 +602,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'Wen found her own regulator in the Driller, its manual release taken out (C-31): a reason to keep going.',
     arc: 'Demo · Quarry floor',
     status: 'live',
+    oldSaves: REASON_STAYS_ON_THE_FLOOR('story:reason_wen_kept'),
     note: 'Hides the find’s marker once seen. PQ-10 should read it when Wen is in the party.',
     setBy: ['story:reason_wen_kept'],
     readBy: ['map:quarry_floor'],
@@ -478,6 +615,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'Lin Mei found her own survey mark on the gallery plan Grumbler drew through (C-31): a reason to keep going.',
     arc: 'Demo · Quarry floor',
     status: 'live',
+    oldSaves: REASON_STAYS_ON_THE_FLOOR('story:reason_lin_mei_kept'),
     note: 'Hides the find’s marker once seen. PQ-06 should read it when Lin Mei is in the party.',
     setBy: ['story:reason_lin_mei_kept'],
     readBy: ['map:quarry_floor'],
@@ -490,6 +628,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'Riko found a hold her teacher taught her, chalked on the guards’ practice board (C-31): a reason to keep going.',
     arc: 'Demo · Quarry floor',
     status: 'live',
+    oldSaves: REASON_STAYS_ON_THE_FLOOR('story:reason_riko_kept'),
     note: 'Hides the find’s marker once seen. PQ-09 should read it when Riko is in the party.',
     setBy: ['story:reason_riko_kept'],
     readBy: ['map:quarry_floor'],
@@ -502,6 +641,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'Jinu found the messengers’ undelivered letters in the gate office (C-31): a reason to keep going.',
     arc: 'Demo · Walk home',
     status: 'live',
+    oldSaves: REASON_STAYS_ON_THE_FLOOR('story:reason_jinu_kept'),
     note: 'Hides the find’s marker once seen. PQ-08 should read it when Jinu is in the party.',
     setBy: ['story:reason_jinu_kept'],
     readBy: ['map:quarry_gate'],
@@ -580,6 +720,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'Where the party sent Bo-shan’s tipped load: home to Ba Dan, partly to the trapped crews, or hidden to bargain with.',
     arc: 'Side story · SQ-01 Too Many Cabbages',
     status: 'live',
+    oldSaves: SIDE_STORY_WINDOW('story:sq01_choice'),
     setBy: ['story:sq01_choice'],
     readBy: [
       'map:ba_dan_village',
@@ -601,6 +742,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'How the backwards side gate was put right: quietly with Dorin, by helping him explain it publicly, or by laughing it open.',
     arc: 'Side story · SQ-02 A Very Official Gate',
     status: 'live',
+    oldSaves: SIDE_STORY_WINDOW('story:sq02_choice'),
     setBy: ['story:sq02_choice'],
     readBy: [
       'map:ba_dan_village',
@@ -620,11 +762,46 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'How the party helped Gao carry his neighbours’ debts: a quiet letter for more time, a shared food jar, or praise in the square he asked them not to give.',
     arc: 'Side story · SQ-03 Gao’s Other Ledger',
     status: 'live',
+    oldSaves: SIDE_STORY_WINDOW('story:sq03_choice'),
     setBy: ['story:sq03_choice'],
     readBy: ['map:ba_dan_village', 'story:demo_complete', 'story:sq03_jar', 'story:sq03_jar_label'],
   },
 
   /* ----------------------------------------------- Nation standing (reserved prefix) */
+  /* --------------------------------------------- Act II · Saltstep (RG-02, MQ-02) */
+  {
+    key: 'lost_saltstep_docks',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'The table chose "Carry on" after losing the winch fight at the Saltstep freight pontoon: the tenth crate went to Emberwatch, and Veyra hooked the pay packet out of the water.',
+    arc: 'Act II · Saltstep',
+    status: 'live',
+    setBy: ['story:mq02_winch_lost'],
+    readBy: ['story:mq02_safety_materials', 'story:mq02_public_witnesses'],
+  },
+  {
+    key: 'inquiry_public',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'Scene 2.7: the table voted to have the customs clerk read the pay packet out at the level pole. The market heard, and Emberwatch is warned.',
+    arc: 'Act II · Saltstep',
+    status: 'live',
+    setBy: ['story:mq02_vote'],
+    readBy: ['map:saltstep_market', 'story:mq02_market_explore'],
+  },
+  {
+    key: 'inquiry_quiet',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'Scene 2.7: the table voted to seal a copy of the pay packet and carry it quietly across the bay. Nobody at Emberwatch is warned.',
+    arc: 'Act II · Saltstep',
+    status: 'live',
+    setBy: ['story:mq02_vote'],
+    readBy: ['map:saltstep_market', 'story:mq02_market_explore'],
+  },
   {
     key: 'standing.earth',
     type: 'number',
@@ -741,6 +918,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     meaning: 'This is a genuinely new game, so the Forest Road may run the guided first fight.',
     arc: 'App · Guidance',
     status: 'live',
+    oldSaves: GUIDED_FIGHT_IS_FOR_NEW_GAMES('app:app/App'),
     setBy: ['app:app/App'],
     readBy: ['app:app/scenes/combatGuidance'],
   },
@@ -751,6 +929,10 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     meaning: 'How far the guided first fight has got: move, attack, end turn, then done.',
     arc: 'App · Guidance',
     status: 'live',
+    oldSaves: GUIDED_FIGHT_IS_FOR_NEW_GAMES(
+      'app:app/scenes/combatGuidance',
+      'app:app/scenes/CombatScene',
+    ),
     note: 'Written by CombatScene through FIRST_FIGHT_GUIDANCE.stage; the literal lives in combatGuidance.',
     setBy: ['app:app/scenes/combatGuidance', 'app:app/scenes/CombatScene'],
     readBy: ['app:app/scenes/combatGuidance'],
@@ -759,9 +941,16 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     key: 'guidance.tip.*',
     type: 'boolean',
     values: [true],
-    meaning: 'A one-time combat tip (cover, prop, status, surface.<id>) has been shown.',
+    meaning:
+      'A one-time combat tip (cover, prop, status, surface.<id>) has been shown, or a "stay safe" hint (defend.heal, defend.guard, defend.retreat) was dismissed.',
     arc: 'App · Guidance',
     status: 'live',
+    oldSaves: {
+      upTo: GOLDEN_V5,
+      sites: ['app:app/scenes/CombatScene'],
+      answer: 'unset',
+      why: 'Each tip shows once per save. An older save has seen none, so it is shown each tip the first time it applies.',
+    },
     setBy: ['app:app/scenes/CombatScene'],
     readBy: ['app:app/scenes/CombatScene', 'app:app/scenes/combatGuidance'],
   },

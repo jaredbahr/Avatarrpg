@@ -107,6 +107,34 @@ animation or presentation work. Add to it when something fails.
   - Stripping a bush's baked mound inside the root flare's columns left a brown stump plate with tan in it. Cut to
     the trunk's own width, and test every plant for plate pixels.
 
+- **The cohesion pilot (2026-11-17, ADR 0119, `docs/art-cohesion.md`):**
+  - Density passes that add props as islands made the village feel thrown together. Design the place first (who,
+    a day, paths, storage, one focus), then subtract: nine pieces left the square and it read better at once.
+  - A flagstone pad laid as a regular course of equal flags read as a pale rectangle of bricks. Vary the flags'
+    widths and heights, chip their corners, and cut the pad's outline per pixel on a wobbled ellipse.
+  - The palette lock first turned the plinths' cool greys into the water's blue: a ramp the area needs was missing.
+    Compare 3x crops before and after a lock, and add the ramp rather than nudging colours.
+  - Lowering the cobble's contrast to 0.55 still read busy in game at 3x, though it looked calm in a 1x composite.
+    Judge the ground in the game at the explore zoom.
+  - Pulled to its mean at 0.42, the cobble went a flat, cold grey: "lifeless" beside the old warm cobble. Calm needs
+    warmth and a little of the stones' shape: warm the mean, keep the joints at more contrast than the faces.
+  - A worn-path tint first came back as thin, ruled pale lines (road markings), and before that a faint tint
+    vanished in the palette lock. Lift the paving a whole ramp step, in a broad band that wanders and thins.
+
+- **The Ba Dan kit (2026-11-18, `tools/bd20gen.py`):**
+  - **The reference's own drawn size and aspect set the size of the result, not the canvas or the "about N px" in the
+    prompt.** A square house as the reference gave a 150 px "200 px" house; a 2:1 shop as the reference gave a 202 px one;
+    a store asked at 80 px came back 124 px on a wide canvas and then 64 px on a small one. Scale the reference (it must
+    fit the canvas) to about the size and shape wanted: that is what finally gave an 87 px storeroom.
+  - **The reference's contents are copied too.** An awning generated against the old stall brought the stall's counter and
+    crates under the cloth; the retake used the stall's cloth and posts only, with "completely open underneath". Pick or
+    crop a reference with nothing in it you do not want.
+  - **Edits of a variant keep the base:** a door colour, a shut shutter and a narrow annex (the base squeezed to size, "redraw
+    it crisp") each came out on the first try. An edit of the bending `earth_wall` into a "mended wall" showed no repair,
+    and the old `earth_wall` is a bending mound, not a village wall: a new wall piece, with the mend drawn in code,
+    replaced both. Do not edit a piece that is the wrong thing to begin with.
+  - A quarry `gatehouse` (castle battlements) does not read as a hut on Ba Dan's palette; the hut was generated.
+
 ### Characters and objects
 
 - **"No effects" in a `skeleton-v3` prompt is a hint, not a rule.** Fire and earth got painted into strike frames;

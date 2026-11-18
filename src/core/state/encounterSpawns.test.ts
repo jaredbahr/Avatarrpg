@@ -3,6 +3,7 @@ import { CONTENT } from '../../content';
 import { RngCursor } from '../rng';
 import { distanceBetweenUnits, occupiedCells, posKey, reachable, tileAt } from '../rules/grid';
 import { SQUARE_FOOTPRINTS } from '../rules/footprint';
+import { friendlyExtras } from '../rules/guests';
 import { partyOfSize } from '../sim/balance';
 import { evaluate } from '../story/conditions';
 import type {
@@ -190,46 +191,97 @@ describe('assembled encounter spawn validity', () => {
   });
 
   it.each(cases)('$label', ({ encounter, state, variant }) => {
-    const original = structuredClone(state);
-    const battle = createBattle(
-      CONTENT,
-      state,
-      encounter.id,
-      new RngCursor(state.rng),
-      variant ? { variantId: variant.id } : {},
-    );
-    expect(battle.variantId).toBe(variant?.id ?? null);
-    const roster = encounterRoster(encounter, state.flags, state.party.length, variant);
-    expect(
-      battle.units.filter((unit) => unit.faction === 'party').map((unit) => unit.characterId),
-    ).toEqual(state.party.map((unit) => unit.characterId));
-    expect(
-      battle.units.filter((unit) => unit.faction === 'ally').map((unit) => unit.enemyId),
-    ).toEqual(roster.allies.map((placement) => placement.enemyId));
-    const enemyIds = battle.units
-      .filter((unit) => unit.faction === 'enemy')
-      .map((unit) => unit.enemyId);
-    expect(enemyIds).toEqual(roster.enemies.map((placement) => placement.enemyId));
-    expect(battle.units).toHaveLength(
-      state.party.length + roster.allies.length + roster.enemies.length,
-    );
-    const extra = encounter.reinforcements.slice(
-      0,
-      Math.max(0, state.party.length + roster.allies.length - encounter.baselinePartySize),
-    );
-    if (extra.length)
-      expect(enemyIds.slice(-extra.length)).toEqual(extra.map((placement) => placement.enemyId));
-    // Reinforcements are an immediate roster suffix; there is no delayed-wave
-    // API or timer in the current encounter schema or battle creation path.
-    if (encounter.id === 'enc_grumbler') {
-      expect(battle.props.some((prop) => prop.propId === 'cabbage_cart')).toBe(
-        Boolean(state.flags.pella_asked),
-      );
+    expectAssembled(CONTENT, encounter, state, variant);
+  });
+
+  it('counts guests on the party side, after the story allies (ADR 0116)', () => {
+    // No shipped encounter has guests yet (RG-02's winch fight will), so a copy of the Forest
+    // Road with two holds the same assembly rules to them: one character guest, one enemy guest.
+    const source = CONTENT.encounters.get('enc_forest_road');
+    if (!source) throw new Error('Missing guest fixture source');
+    const encounter: EncounterDef = {
+      ...source,
+      variants: [],
+      guests: [
+        { characterId: 'sura', pos: { x: 4, y: 5 } },
+        { enemyId: 'ruon_ally', pos: { x: 5, y: 6 } },
+      ],
+    };
+    const content: ContentIndex = {
+      ...CONTENT,
+      encounters: new Map([...CONTENT.encounters, [encounter.id, encounter]]),
+    };
+    for (let size = 1; size <= 6; size++) {
+      const state = createGame(content, {
+        seed: `encounter-spawns-guests:${size}`,
+        startNode: '',
+        party: partyOfSize(size).map((slot) => ({
+          ...slot,
+          level: encounter.expectedLevel,
+          autoChoose: true,
+        })),
+      });
+      expectAssembled(content, encounter, state, null);
     }
-    expect(spawnProblems(battle)).toEqual([]);
-    expect(state).toEqual(original);
   });
 });
+
+/**
+ * The battle `createBattle` builds holds the party in order, then the story allies and guests on
+ * the party's side (ADR 0116: guests after the allies), then exactly the roster's enemies, with
+ * the reinforcements as a suffix for every friendly body above the baseline, and no spawn faults.
+ */
+function expectAssembled(
+  content: ContentIndex,
+  encounter: EncounterDef,
+  state: GameState,
+  variant: EncounterVariant | null,
+): void {
+  const original = structuredClone(state);
+  const battle = createBattle(
+    content,
+    state,
+    encounter.id,
+    new RngCursor(state.rng),
+    variant ? { variantId: variant.id } : {},
+  );
+  expect(battle.variantId).toBe(variant?.id ?? null);
+  const roster = encounterRoster(encounter, state.flags, state.party.length, variant);
+  const guests = encounter.guests ?? [];
+  expect(
+    battle.units.filter((unit) => unit.faction === 'party').map((unit) => unit.characterId),
+  ).toEqual(state.party.map((unit) => unit.characterId));
+  expect(
+    battle.units
+      .filter((unit) => unit.faction === 'ally')
+      .map((unit) => unit.enemyId ?? unit.characterId),
+  ).toEqual([
+    ...roster.allies.map((placement) => placement.enemyId),
+    ...guests.map((guest) => guest.enemyId ?? guest.characterId),
+  ]);
+  const enemyIds = battle.units
+    .filter((unit) => unit.faction === 'enemy')
+    .map((unit) => unit.enemyId);
+  expect(enemyIds).toEqual(roster.enemies.map((placement) => placement.enemyId));
+  expect(battle.units).toHaveLength(
+    state.party.length + roster.allies.length + guests.length + roster.enemies.length,
+  );
+  const extra = encounter.reinforcements.slice(
+    0,
+    Math.max(0, state.party.length + friendlyExtras(encounter) - encounter.baselinePartySize),
+  );
+  if (extra.length)
+    expect(enemyIds.slice(-extra.length)).toEqual(extra.map((placement) => placement.enemyId));
+  // Reinforcements are an immediate roster suffix; there is no delayed-wave
+  // API or timer in the current encounter schema or battle creation path.
+  if (encounter.id === 'enc_grumbler') {
+    expect(battle.props.some((prop) => prop.propId === 'cabbage_cart')).toBe(
+      Boolean(state.flags.pella_asked),
+    );
+  }
+  expect(spawnProblems(battle, content)).toEqual([]);
+  expect(state).toEqual(original);
+}
 
 /** Real creation with tiny adversarial maps exercises exhausted relocation. */
 function adverseBattle(rows: readonly string[], enemyAt: Vec2): BattleState {

@@ -29,7 +29,7 @@ const INK = [0x1b, 0x14, 0x10, 0xff];
 const CLEAR = [0, 0, 0, 0];
 
 /** Pose colours, far apart so a sample cannot be mistaken for a neighbour. */
-export const PROBE_FRAMES = [
+const PROBE_FRAMES = [
   ['idle', 0, [214, 58, 52, 255]],
   ['idle', 1, [66, 178, 90, 255]],
   ['cast', 0, [58, 110, 214, 255]],

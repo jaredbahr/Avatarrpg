@@ -17,6 +17,7 @@ import { portraitKeyFor } from './PartyRoster';
 import { abilityCard } from './AbilityCard';
 import { knownAbilities } from '../../core/rules/abilities';
 import { effectiveStats } from '../../core/rules/stats';
+import { isGuest } from '../../core/rules/guests';
 import { describeIncoming } from '../../core/rules/status';
 import { describeFooting } from '../../core/rules/reactions';
 import { occupiedCells, tileAt } from '../../core/rules/grid';
@@ -43,7 +44,11 @@ export class UnitInspector extends Dialog {
     this.footingKey = grid ? unitFootingKey(unit, grid) : undefined;
     const player = app.session.playerFor(unit.id);
     this.options = {
-      title: player ? `${unit.name} (${player.name})` : unit.name,
+      title: player
+        ? `${unit.name} (${player.name})`
+        : isGuest(unit)
+          ? `${unit.name} (guest)`
+          : unit.name,
       subtitle:
         unit.faction === 'enemy'
           ? (app.content.enemies.get(unit.enemyId ?? '')?.description ?? 'An enemy.')

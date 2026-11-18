@@ -66,6 +66,7 @@ export const SQ03_STORY: readonly StoryNode[] = [
   {
     id: 'sq03_ask',
     kind: 'choice',
+    routine: true,
     speaker: GAO,
     portrait: GAO_FACE,
     prompt: 'Rice, oil, a twist of salt. He has tied every knot twice.',

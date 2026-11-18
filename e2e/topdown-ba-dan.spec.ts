@@ -33,13 +33,11 @@ test('the top-down village walks from the spawn out of the east exit', async ({ 
   // At the top-down zoom about ten tiles fit across, so each hop stays on screen; the camera
   // follows the walk (with full motion: a reduced-motion walk lands at once and does not pan).
   for (const to of [
-    { x: 5, y: 7 },
-    { x: 8, y: 8 },
-    { x: 11, y: 7 },
-    { x: 14, y: 8 },
-    { x: 17, y: 7 },
-    { x: 20, y: 8 },
-    { x: 22, y: 7 },
+    { x: 15, y: 11 },
+    { x: 19, y: 9 },
+    { x: 23, y: 9 },
+    { x: 27, y: 9 },
+    { x: 30, y: 9 },
   ]) {
     const point = await paintedTileCentre(page, to);
     expect(point, 'no camera to map the tile through').not.toBeNull();
@@ -52,7 +50,7 @@ test('the top-down village walks from the spawn out of the east exit', async ({ 
   }
 
   // The east exit's mouth, one more tile on, leads to the Forest Road.
-  const gate = await paintedTileCentre(page, { x: 23, y: 7 });
+  const gate = await paintedTileCentre(page, { x: 31, y: 9 });
   expect(gate).not.toBeNull();
   if (!gate) return;
   await page.mouse.click(gate.x, gate.y);
@@ -85,11 +83,17 @@ test('the Ba Dan practice ground is ready on arrival and all three benders cast'
   expect(await page.evaluate(() => window.fnt?.app.rendererCamera()?.projection)).toBe('topdown');
 
   const practice = page.getByRole('button', { name: /^Practice/ });
-  // The practice ground's anchor (`BA_DAN_PRACTICE`): the canal bank south-east of the bridge.
-  const anchor = { x: 10, y: 8 };
+  // The practice ground's anchor (`BA_DAN_PRACTICE`): the wash steps on the canal's north bank.
+  const anchor = { x: 9, y: 11 };
   // The mark every bend is thrown at, on the canal's near edge.
-  const mark = { x: 6, y: 7 };
-  for (const to of [{ x: 5, y: 7 }, { x: 8, y: 8 }, anchor]) {
+  const mark = { x: 9, y: 12 };
+  // Start a few steps west of the wash steps, where Practice is not offered.
+  const away = await paintedTileCentre(page, { x: 6, y: 10 });
+  expect(away, 'no camera to map the tile through').not.toBeNull();
+  if (!away) return;
+  await page.mouse.click(away.x, away.y);
+  await waitForIdle(page);
+  for (const to of [anchor]) {
     // Not offered on the way there.
     await expect(practice).toHaveCount(0);
     const point = await paintedTileCentre(page, to);

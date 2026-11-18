@@ -44,9 +44,11 @@ import {
   isValidTarget,
   knownAbilities,
   resolveAbility,
+  reviveHp,
   sameSide,
   shoveOrigin,
   unitsOnTiles,
+  unitsTouched,
   usableAbilities,
   validatingOrigin,
 } from './abilities';
@@ -72,6 +74,7 @@ import { canMove, effectiveStats, isAlive } from './stats';
 import { findCombo } from './surfaces';
 import { directAttackThreats, type ThreatBudget } from './directAttackThreats';
 import { refreshTurnResources, tickTurnStart } from './turnStart';
+import { objectiveDistance } from './objectives';
 
 /** How much the AI wants to inflict each status, in "points of damage". */
 const STATUS_VALUE: Record<StatusId, number> = {
@@ -106,6 +109,9 @@ interface Weights {
   /** Friendly-fire aversion. Above 1 means it actively avoids its own side. */
   readonly friendlyFire: number;
 }
+
+/** What bringing a downed friend back is worth beyond the health it gives (ADR 0118). */
+const REVIVE_VALUE = 40;
 
 const WEIGHTS: Record<AiProfile, Weights> = {
   aggressive: {
@@ -566,7 +572,7 @@ export function scoreAbility(
   const origin =
     validatingOrigin(content, draft.grid, caster, ability, target, true, squareFootprints) ??
     caster.pos;
-  const struck = unitsOnTiles(draft.units, tiles, squareFootprints).filter(
+  const struck = unitsTouched(draft.units, tiles, ability, squareFootprints).filter(
     (u) => u.id !== caster.id,
   );
   // A prospective move changes the caster's occupied cells. Keep its stale
@@ -676,6 +682,14 @@ export function scoreAbility(
             score += expected * weights.damage;
             if (expected >= victim.hp) score += weights.kill;
           }
+          break;
+        }
+        case 'revive': {
+          // Helping a fallen friend up (ADR 0118) brings a whole body back to the
+          // fight, which is worth more than the health it restores: a flat bonus
+          // on top, so a side that can stand somebody up will, before it heals.
+          if (!friendly) break;
+          score += (reviveHp(victim, effect.fraction) + REVIVE_VALUE) * weights.support;
           break;
         }
         case 'heal': {
@@ -1065,6 +1079,13 @@ export function candidateTargets(
     if (!sameSide(caster, friend)) continue;
     push(friend.pos);
   }
+  // A fallen friend can be helped up, so their tile is worth scoring (ADR 0118).
+  if (abilities.some((a) => a.targeting.shape === 'unit' && a.targeting.allow === 'downed')) {
+    for (const fallen of draft.units) {
+      if (fallen.hp > 0 || !sameSide(caster, fallen)) continue;
+      push(fallen.pos);
+    }
+  }
   push(caster.pos);
 
   return out;
@@ -1284,6 +1305,57 @@ export function positionScore(
   return score;
 }
 
+/*
+ * Objectives (ADR 0116's 2026-11-15 amendment). A unit on the party's side wants
+ * to be standing on an objective cell when the round ends; an enemy wants to
+ * stand on it first, or failing that beside it. The values are flat points on
+ * the same scale as an ability's score: holding outweighs a kill, so a guest on
+ * the brake does not step off it for one, and blocking is worth about a kill.
+ * With no objective every value is 0 and the AI plays exactly as before.
+ */
+export const OBJECTIVE_HOLD = 60;
+export const OBJECTIVE_BLOCK = 24;
+/** Points per step nearer the nearest objective cell, for the party's side. */
+const OBJECTIVE_PULL = 3;
+/** Points per step an enemy stands further than adjacent to the nearest objective cell. */
+const OBJECTIVE_GUARD = 1.5;
+
+/** What standing at `pos` is worth to `unit` for the encounter's objective; 0 without one. */
+export function objectiveValue(draft: BattleDraft, unit: Unit, pos: Vec2): number {
+  const objective = draft.content.encounters.get(draft.encounterId)?.objective;
+  if (!objective) return 0;
+  const steps = objectiveDistance(objective, unit, pos, draft.squareFootprints);
+  if (unit.faction === 'enemy') {
+    return steps === 0 ? OBJECTIVE_BLOCK : -Math.max(0, steps - 1) * OBJECTIVE_GUARD;
+  }
+  return steps === 0 ? OBJECTIVE_HOLD : -steps * OBJECTIVE_PULL;
+}
+
+/**
+ * Steps onto an objective cell first when one is in reach this turn and the
+ * unit is not already on one, so the turn's attack is made from there. The
+ * safest reachable objective cell wins, then the cheapest; nothing is drawn.
+ */
+function takeObjective(draft: BattleDraft, unitId: string, weights: Weights): void {
+  const unit = draft.unit(unitId);
+  if (!unit || unit.move <= 0 || !canMove(draft.content, unit)) return;
+  const objective = draft.content.encounters.get(draft.encounterId)?.objective;
+  const square = draft.squareFootprints;
+  if (!objective || objectiveDistance(objective, unit, unit.pos, square) === 0) return;
+  const cells = reachable(draft.moveContext(unit), unit.pos, unit.move);
+  let best: { path: readonly Vec2[]; score: number } | null = null;
+  for (const cell of cells.values()) {
+    if (cell.cost === 0) continue;
+    if (objectiveDistance(objective, unit, cell.pos, square) !== 0) continue;
+    const score =
+      -footprintDanger(draft, unit, cell.pos, draft.squareFootprints) * weights.selfPreservation -
+      pathDanger(draft, unit, cell.path, draft.squareFootprints) * weights.selfPreservation * 0.8 -
+      cell.cost * 0.05;
+    if (!best || score > best.score) best = { path: cell.path, score };
+  }
+  if (best && best.path.length > 0) walk(draft, unitId, best.path);
+}
+
 /**
  * Runs one AI unit's whole turn against the draft.
  *
@@ -1296,11 +1368,16 @@ export function planAiTurn(draft: BattleDraft, unitId: string, rng: RngCursor): 
   let acted = 0;
 
   for (let iteration = 0; iteration < 8; iteration++) {
+    if (iteration === 0) {
+      const first = draft.unit(unitId);
+      if (first && isAlive(first)) takeObjective(draft, unitId, WEIGHTS[first.ai] ?? WEIGHTS.none);
+    }
     const unit = draft.unit(unitId);
     if (!unit || !isAlive(unit)) return;
     if (unit.ap <= 0 && unit.move <= 0) return;
 
     const weights = WEIGHTS[unit.ai] ?? WEIGHTS.none;
+    const objectiveHere = objectiveValue(draft, unit, unit.pos);
     const abilities = usableAbilities(content, unit).filter(
       (a) => canUseAbility(content, unit, a).ok,
     );
@@ -1338,7 +1415,8 @@ export function planAiTurn(draft: BattleDraft, unitId: string, rng: RngCursor): 
           positionScore(draft, unit, cell.pos, weights, reach, draft.squareFootprints) * 0.25 -
           danger * weights.selfPreservation -
           pathRisk * weights.selfPreservation * 0.8 -
-          cell.cost * 0.05;
+          cell.cost * 0.05 +
+          (objectiveValue(draft, unit, cell.pos) - objectiveHere);
         if (!plan || adjusted > plan.score) {
           plan = {
             score: adjusted,
@@ -1435,7 +1513,8 @@ function repositionToward(
       positionScore(draft, unit, cell.pos, weights, reach, draft.squareFootprints) -
       danger * weights.selfPreservation -
       pathRisk * weights.selfPreservation * 0.8 -
-      cell.cost * 0.05;
+      cell.cost * 0.05 +
+      objectiveValue(draft, unit, cell.pos);
     if (!best || score > best.score) best = { pos: cell.pos, path: cell.path, score };
   }
 

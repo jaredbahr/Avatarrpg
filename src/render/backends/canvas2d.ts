@@ -1142,6 +1142,21 @@ export class Canvas2DBackend implements RenderBackend {
     target.imageSmoothingEnabled = false;
   }
 
+  /**
+   * Moves a caster's top-left corner onto the nearest texel corner of the shadow grid, as the WebGL
+   * backend rounds its sprites. Smoothing off samples the caster nearest, but WebKit still
+   * antialiases the edges of a destination rectangle that starts between texels, which put a soft
+   * one-texel rim on the feet blob in Safari (ADR 0093: shadows stay on the world-pixel grid).
+   */
+  private onShadowTexel(at: { x: number; y: number }): { x: number; y: number } {
+    const grid = this.shadowGridNow;
+    if (!grid) return { x: at.x, y: at.y };
+    return {
+      x: grid.originX + Math.round((at.x - grid.originX) / grid.texel) * grid.texel,
+      y: grid.originY + Math.round((at.y - grid.originY) / grid.texel) * grid.texel,
+    };
+  }
+
   /** Lays a world-pixel mask over the screen, each texel a hard block of one world pixel. */
   private drawShadowTexels(source: HTMLCanvasElement, grid: ShadowGrid): void {
     const smoothing = this.ctx.imageSmoothingEnabled;
@@ -1300,7 +1315,8 @@ export class Canvas2DBackend implements RenderBackend {
         cels.scale,
         worldPixel,
       );
-      const draw = (canvas: HTMLCanvasElement, level: number, box: typeof geometry.cast) =>
+      const draw = (canvas: HTMLCanvasElement, level: number, at: typeof geometry.cast) => {
+        const box = { ...at, ...this.onShadowTexel(at) };
         this.castInto(
           target,
           level,
@@ -1312,6 +1328,7 @@ export class Canvas2DBackend implements RenderBackend {
             context.restore();
           },
         );
+      };
       draw(art.cast, this.grounding.cast, geometry.cast);
       draw(art.blob, this.grounding.contact, geometry.blob);
       return;
@@ -1325,8 +1342,10 @@ export class Canvas2DBackend implements RenderBackend {
       const offset = poolOffset(cels?.resting, cels?.flip ?? false);
       const w = blob.width * worldPixel,
         h = blob.height * worldPixel;
-      const x = foot.x + offset.x * tile - w / 2,
-        y = foot.y + offset.y * tile - h / 2;
+      const { x, y } = this.onShadowTexel({
+        x: foot.x + offset.x * tile - w / 2,
+        y: foot.y + offset.y * tile - h / 2,
+      });
       const level = topdownFeetLevel(this.pavedCells, at);
       this.castInto(target, level, { x0: x, y0: y, x1: x + w, y1: y + h }, (t) => {
         t.save();
@@ -1430,7 +1449,7 @@ export class Canvas2DBackend implements RenderBackend {
         { x: box.x + (width * box.size) / 2, y: box.y + FOOT_LINE * box.size },
         scale,
         1,
-        npc.alpha ?? 1,
+        npc.footShadow === false ? 0 : (npc.alpha ?? 1),
         worldPixel,
         at,
         sheet
@@ -2011,6 +2030,8 @@ export function overlayColors(kind: OverlayKind): [string, string | null] {
   switch (kind) {
     case 'move':
       return [OVERLAY.move, OVERLAY.moveEdge];
+    case 'reach':
+      return [OVERLAY.reach, OVERLAY.reachEdge];
     case 'target':
       return [OVERLAY.target, OVERLAY.targetEdge];
     case 'area':
@@ -2019,6 +2040,8 @@ export function overlayColors(kind: OverlayKind): [string, string | null] {
       return [OVERLAY.rangeBonus, OVERLAY.rangeBonusEdge];
     case 'hover':
       return [OVERLAY.hover, null];
+    case 'objective':
+      return [OVERLAY.objective, OVERLAY.objectiveEdge];
   }
 }
 

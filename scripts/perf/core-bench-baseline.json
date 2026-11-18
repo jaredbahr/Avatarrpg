@@ -54,12 +54,12 @@
       "ceiling": 331.6726313701212
     },
     "reachable/topdown/ba_dan_village": {
-      "normalizedMedian": 9.956649267866029,
-      "ceiling": 39.826597071464114
+      "normalizedMedian": 38.43956295574626,
+      "ceiling": 153.75825182298505
     },
     "findPath/topdown/ba_dan_village": {
-      "normalizedMedian": 32.41192900675779,
-      "ceiling": 129.64771602703115
+      "normalizedMedian": 31.67944456962326,
+      "ceiling": 126.71777827849304
     }
   },
   "calibrationReportSha256": "675690b43e7376ac68b2bc501bf91ca63588d406a69d1807bf1cc4319c6d7978",
@@ -73,6 +73,43 @@
       "calibrationHarnessSha256": "ae7dd67a165fd72365cfaf3570d8bc69fb76af64935c3b4b09858f04bf5d00c8",
       "calibrationDriverSha256": "c1edb713399ff59cb5f7b3cc7938a3481cb8ed5dc201f15e8bb1a1562c253889",
       "originalBaselineSha256": "780fe27936856fa5461d79b26ba16cd3fbd673a32e5fb5653911c40d33d4b22a"
+    },
+    {
+      "source": "385b57cb18a7b5f88d50d434b5e5650940036a82",
+      "tree": "68ab7e8f29fd21cdc10185e6803efc0b57d88b96",
+      "caseIds": ["reachable/topdown/ba_dan_village", "findPath/topdown/ba_dan_village"],
+      "calibrationReportSha256": "20a610cc4e03d0caabc243ef8b356487907f05db875c735da036ad33267d0c18",
+      "calibrationHarnessSha256": "56646a856f515dcca111ea9611e22cf96f9a2d0d05e2f7e25d3e13191dfd5180",
+      "calibrationDriverSha256": "6d9c1700eb0bd1082fb2abca5271bc85d64f549cae03540727100af1fcb59e7b",
+      "originalBaselineSha256": "4d38ea9d451f2b65f50c3641f66cef1e4120c0d2574604d849344bf393076992",
+      "board": "32 x 20",
+      "replaces": {
+        "reachable/topdown/ba_dan_village": {
+          "normalizedMedian": 9.956649267866029,
+          "ceiling": 39.826597071464114
+        },
+        "findPath/topdown/ba_dan_village": {
+          "normalizedMedian": 32.41192900675779,
+          "ceiling": 129.64771602703115
+        }
+      }
+    }
+  ],
+  "harnessRevisions": [
+    {
+      "source": "c1df7417c87b583cb1a4f92e10c6acb5f05521ff",
+      "calibrationHarnessSha256": "fdd85f0fe80c3ba5d2a0a9d2b298a54f6dc9acaf0846ab3326c23c051c76e5b8",
+      "reason": "tied largest boards benchmark one map; no new measurement"
+    },
+    {
+      "source": "fd7d2de765dd416e5fe31ab8accec4d8e5518f71",
+      "calibrationHarnessSha256": "bdd03778d50d664e3ff57d9a0c7ae4befcaffef58e2c2f6c0b154f18c1047816",
+      "reason": "Ba Dan's frozen cases keep measuring the 24 x 16 board while the village is a 32 x 20 blockout; no new measurement"
+    },
+    {
+      "source": "385b57cb18a7b5f88d50d434b5e5650940036a82",
+      "calibrationHarnessSha256": "56646a856f515dcca111ea9611e22cf96f9a2d0d05e2f7e25d3e13191dfd5180",
+      "reason": "Ba Dan's cases measure its registered 32 x 20 board, freshly calibrated (ADR 0106 amendment, 2026-11-18)"
     }
   ]
 }

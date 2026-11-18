@@ -62,6 +62,3 @@ export const LEGEND: Readonly<Record<string, TileTemplate>> = {
   o: { terrain: 'stone', surface: 'oil', surfaceDuration: -1 },
   m: { terrain: 'dirt', surface: 'mud', surfaceDuration: -1 },
 };
-
-/** Every legend key, for the validation test's error messages. */
-export const LEGEND_KEYS = Object.keys(LEGEND);

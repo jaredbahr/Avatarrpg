@@ -10,9 +10,9 @@ describe('region level bands (ADR 0011, #784)', () => {
     expect(levelBandProblems(REGIONS, REGION_CONTENT, MAX_LEVEL)).toEqual([]);
   });
 
-  it('lists the bands still waiting for the owner (#784)', () => {
-    // When Jared answers #784, set the approved numbers, clear `placeholder` and shrink this list.
-    expect(placeholderBands(REGIONS)).toEqual(['ba_dan_valley']);
+  it('ships no band the owner has not approved (#784, approved 2026-11-18)', () => {
+    // A new region starts with a placeholder band (`new:region`); it stays listed here until approved.
+    expect(placeholderBands(REGIONS)).toEqual([]);
   });
 
   const region = (minLevel: number, maxLevel: number): RegionManifest =>

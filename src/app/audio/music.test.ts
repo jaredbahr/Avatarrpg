@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CONTENT } from '../../content';
+import { REGIONS } from '../../content/regions';
 import { MAP_MUSIC, MUSIC_TRACKS, MUSIC_TRACK_IDS } from '../../content/music';
 import { CROSSFADE_SECONDS, FIGHT_DUCK, MusicPlayer, musicFor } from './music';
 import type { MusicBackend, MusicVoice } from './music';
@@ -10,8 +11,24 @@ describe('which track an area plays', () => {
     expect(musicFor({ scene: 'setup', mapId: 'forest_road' })).toBe('title');
   });
 
+  /*
+   * Regions whose area track is not made yet (ADR 0108: the owner listens to each first). Their
+   * maps keep whatever is playing. Listed by name, so a region cannot ship silent by accident:
+   * when its track lands, its id leaves this list and every map below must name one.
+   */
+  const AWAITING_MUSIC = ['saltstep_emberwatch'];
+  const awaiting = new Set(
+    REGIONS.filter((region) => AWAITING_MUSIC.includes(region.id)).flatMap((r) => r.mapIds),
+  );
+
+  it('lists only regions that really have no music yet', () => {
+    for (const region of REGIONS.filter((r) => AWAITING_MUSIC.includes(r.id)))
+      expect(region.music, region.id).toEqual({});
+  });
+
   it('gives every map in the game a track, each of which ships', () => {
-    for (const map of CONTENT.maps.values()) expect(MAP_MUSIC[map.id], map.id).toBeDefined();
+    for (const map of CONTENT.maps.values())
+      if (!awaiting.has(map.id)) expect(MAP_MUSIC[map.id], map.id).toBeDefined();
     for (const id of MUSIC_TRACK_IDS) expect(MUSIC_TRACKS[id]).toMatch(/^audio\/music\/.+\.m4a$/);
     for (const mapId of Object.keys(MAP_MUSIC)) expect(CONTENT.maps.has(mapId), mapId).toBe(true);
   });
@@ -29,14 +46,16 @@ describe('which track an area plays', () => {
     expect(at('dialogue', 'ba_dan_village')).toBe('ba-dan');
     // Every explore node on the route resolves through its map.
     for (const node of CONTENT.story.values())
-      if (node.kind === 'explore') expect(at('explore', node.mapId), node.id).not.toBeNull();
+      if (node.kind === 'explore' && !awaiting.has(node.mapId))
+        expect(at('explore', node.mapId), node.id).not.toBeNull();
   });
 
   it('plays a fight’s battlefield, and keeps what plays for an unknown place', () => {
     for (const encounter of CONTENT.encounters.values())
-      expect(
-        musicFor({ scene: 'combat', mapId: 'ba_dan_village', battleMapId: encounter.mapId }),
-      ).toBe(MAP_MUSIC[encounter.mapId]);
+      if (!awaiting.has(encounter.mapId))
+        expect(
+          musicFor({ scene: 'combat', mapId: 'ba_dan_village', battleMapId: encounter.mapId }),
+        ).toBe(MAP_MUSIC[encounter.mapId]);
     expect(musicFor({ scene: 'combat', battleMapId: 'forest_road' })).toBe('road');
     expect(musicFor({ scene: 'dialogue', mapId: '' })).toBeNull();
     expect(musicFor({ scene: 'dialogue', mapId: 'nowhere' })).toBeNull();

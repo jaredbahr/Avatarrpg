@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { CONTENT } from './index';
 import { STATUSES } from './statuses';
 import { RngCursor } from '../core/rng';
+import { canUseAbility, isValidTarget } from '../core/rules/abilities';
 import { posKey, tileAt } from '../core/rules/grid';
 import { describeStatus } from '../core/rules/status';
 import { activeUnit } from '../core/rules/turnOrder';
@@ -226,8 +227,147 @@ describe('shipped status lifetimes through reducer turns', () => {
 });
 
 describe('shipped status reapplication', () => {
-  // Repeating Chilled upgrades to Frozen. Its explicit-duration upgrade policy
-  // is the unresolved part of #560, separate from these refresh contracts.
+  it('upgrades a real two-round Chilled hit to one-round Frozen and skips one worker turn', () => {
+    const initial = createGame(CONTENT, {
+      // Re-pinned for #846: the road lost an enemy, so the old seed's roll sequence moved.
+      seed: 3845378273,
+      startNode: '',
+      party: [
+        { characterId: 'nilak', level: 5, discipline: 'ice_shaping' },
+        { characterId: 'sura', level: 5, discipline: 'ice_shaping' },
+      ],
+    });
+    const rng = new RngCursor(initial.rng);
+    const base = createBattle(CONTENT, initial, 'enc_forest_road', rng, {
+      variantId: 'thugs',
+      enemyLevel: 10,
+    });
+    const nilak = required(
+      base.units.find((member) => member.characterId === 'nilak'),
+      'Nilak',
+    );
+    const sura = required(
+      base.units.find((member) => member.characterId === 'sura'),
+      'Sura',
+    );
+    const worker = required(
+      base.units.find((member) => member.enemyId === 'bandit_thug'),
+      'Quarry Worker',
+    );
+    const otherEnemies = base.units.filter(
+      (member) => member.faction === 'enemy' && member.id !== worker.id,
+    );
+    const placements = new Map([
+      [nilak.id, { x: 10, y: 4 }],
+      [sura.id, { x: 10, y: 9 }],
+      [worker.id, { x: 10, y: 7 }],
+      ...otherEnemies.map((member, index) => [member.id, { x: 12 + index, y: 7 }] as const),
+    ]);
+    const units = base.units.map((member) => {
+      const pos = required(placements.get(member.id), `placement for ${member.name}`);
+      const tile = required(tileAt(base.grid, pos), `tile ${pos.x},${pos.y}`);
+      expect(tile.blocked).toBe(false);
+      expect(tile.surface).toBeNull();
+      expect(base.props.some((prop) => posKey(prop.pos) === posKey(pos))).toBe(false);
+      return { ...member, pos };
+    });
+    const start: GameState = {
+      ...initial,
+      screen: 'combat',
+      rng: rng.state,
+      battle: {
+        ...base,
+        units,
+        order: [nilak.id, sura.id, worker.id, ...otherEnemies.map((member) => member.id)],
+        turnIndex: 0,
+      },
+    };
+    const target = { x: 10, y: 7 };
+    const iceSpikes = required(CONTENT.abilities.get('ice_spikes'), 'Ice Spikes');
+    const cast = (state: GameState, casterId: string) => {
+      const caster = unit(state, casterId);
+      const battle = required(state.battle, 'battle');
+      expect(activeUnit(battle)?.id).toBe(casterId);
+      expect(caster.abilities).toContain(iceSpikes.id);
+      expect(canUseAbility(CONTENT, caster, iceSpikes)).toEqual({ ok: true, reason: '' });
+      expect(isValidTarget(CONTENT, battle, caster, iceSpikes, target)).toEqual({
+        ok: true,
+        reason: '',
+      });
+      const result = apply(CONTENT, state, {
+        type: 'useAbility',
+        unitId: casterId,
+        abilityId: iceSpikes.id,
+        target,
+      });
+      expect(result.events).toContainEqual(
+        expect.objectContaining({
+          type: 'abilityUsed',
+          unitId: casterId,
+          abilityId: 'ice_spikes',
+        }),
+      );
+      return result;
+    };
+
+    const chilled = cast(start, nilak.id);
+    expect(unit(chilled.state, worker.id).statuses).toEqual([
+      { id: 'chilled', duration: 2, stacks: 1 },
+    ]);
+    expect(chilled.events).toContainEqual({
+      type: 'statusApplied',
+      unitId: worker.id,
+      status: 'chilled',
+      duration: 2,
+    });
+
+    const frozen = cast(endTurn(chilled.state, nilak.id).state, sura.id);
+    const workerBeforeSkip = unit(frozen.state, worker.id);
+    expect(workerBeforeSkip.hp).toBeGreaterThan(0);
+    expect(workerBeforeSkip.statuses).toEqual([{ id: 'frozen', duration: 1, stacks: 1 }]);
+    expect(frozen.events).toContainEqual({
+      type: 'statusExpired',
+      unitId: worker.id,
+      status: 'chilled',
+    });
+    expect(frozen.events).toContainEqual({
+      type: 'statusApplied',
+      unitId: worker.id,
+      status: 'frozen',
+      duration: 1,
+    });
+
+    const skipped = endTurn(frozen.state, sura.id);
+    let state = skipped.state;
+    expect(activeUnit(required(state.battle, 'battle'))?.id).not.toBe(worker.id);
+    expect(skipped.events).toContainEqual({
+      type: 'statusExpired',
+      unitId: worker.id,
+      status: 'frozen',
+    });
+    expect(skipped.events).toContainEqual({ type: 'turnEnded', unitId: worker.id });
+    expect(skipped.events).not.toContainEqual(
+      expect.objectContaining({ type: 'turnStarted', unitId: worker.id }),
+    );
+    expect(unit(state, worker.id).statuses).toEqual([]);
+    expect(unit(state, worker.id).hp).toBe(workerBeforeSkip.hp);
+
+    for (const actor of [...otherEnemies.map((member) => member.id), nilak.id]) {
+      state = endTurn(state, actor).state;
+    }
+    const nextWorkerTurn = endTurn(state, sura.id);
+    state = nextWorkerTurn.state;
+    expect(activeUnit(required(state.battle, 'battle'))?.id).toBe(worker.id);
+    expect(nextWorkerTurn.events).toContainEqual({
+      type: 'turnStarted',
+      unitId: worker.id,
+      round: base.round + 1,
+    });
+    expect(unit(state, worker.id).ap).toBeGreaterThan(0);
+  });
+
+  // Repeating Chilled upgrades to Frozen; other statuses still refresh under
+  // the usual explicit-duration policy without shortening or exceeding stacks.
   it.each(STATUSES.filter((status) => status.id !== 'chilled'))(
     '$id refreshes a single instance without shortening it or exceeding maxStacks',
     (def) => {

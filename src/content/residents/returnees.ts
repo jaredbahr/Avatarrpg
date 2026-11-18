@@ -143,8 +143,8 @@ const door = (id: string, place: string, x: number, y: number): WorldAnchor => (
 
 /**
  * The road group sits on the open north verge at the west bend, beyond the x=4
- * departure trigger and clear of Lanfen. BD12-BD15 are honest south-lane contact
- * doors, not claims that painted workshops exist on today's village map.
+ * departure trigger and clear of Lanfen. BD12-BD15 are the lane doors past the canal,
+ * except Hesra's, which is the mason's yard (`return.ts`).
  */
 export const RETURNEE_ANCHORS: readonly WorldAnchor[] = [
   tile('return.bo_shan', 'FOREST-RETURN', FOREST, 5, 3),
@@ -152,21 +152,21 @@ export const RETURNEE_ANCHORS: readonly WorldAnchor[] = [
   tile('return.amri', 'FOREST-RETURN', FOREST, 7, 2),
   tile('return.hesra', 'FOREST-RETURN', FOREST, 6, 2),
   tile('return.senn', 'FOREST-RETURN', FOREST, 9, 2),
-  // The east-road mouth, either side of the lane the party walks in on (#628).
-  tile('welcome.bo_shan', 'BD-EAST-ROAD', VILLAGE, 21, 6),
-  tile('welcome.leto', 'BD-EAST-ROAD', VILLAGE, 21, 9),
-  tile('welcome.amri', 'BD-EAST-ROAD', VILLAGE, 22, 9),
-  tile('recovery.bo_shan', 'BD04', VILLAGE, 12, 12),
-  tile('recovery.amri', 'BD12-CONTACT', VILLAGE, 13, 9),
-  tile('recovery.leto', 'BD13-CONTACT', VILLAGE, 10, 9),
-  tile('recovery.hesra', 'BD14-CONTACT', VILLAGE, 17, 9),
+  // Inside the east gate, either side of the road the party walks in on (#628).
+  tile('welcome.bo_shan', 'BD-EAST-ROAD', VILLAGE, 27, 11),
+  tile('welcome.leto', 'BD-EAST-ROAD', VILLAGE, 26, 12),
+  tile('welcome.amri', 'BD-EAST-ROAD', VILLAGE, 25, 11),
+  tile('recovery.bo_shan', 'BD04', VILLAGE, 14, 16),
+  tile('recovery.amri', 'BD12-CONTACT', VILLAGE, 16, 10),
+  tile('recovery.leto', 'BD13-CONTACT', VILLAGE, 17, 10),
+  tile('recovery.hesra', 'BD14-CONTACT', VILLAGE, 6, 7),
   tile('recovery.senn', 'BD15-RIVER', RIVERSIDE, 18, 14),
   // Bo-shan shares the BD04 household door while keeping his own saved identity.
-  door('home.bo_shan', 'BD04', 8, 14),
-  door('home.amri', 'BD12', 12, 15),
-  door('home.leto', 'BD13', 13, 15),
-  door('home.hesra', 'BD14', 14, 15),
-  door('home.senn', 'BD15', 15, 15),
+  door('home.bo_shan', 'BD04', 9, 14),
+  door('home.amri', 'BD12', 16, 15),
+  door('home.leto', 'BD13', 4, 15),
+  door('home.hesra', 'BD14', 5, 7),
+  door('home.senn', 'BD15', 24, 17),
 ];
 
 const profile = (residentId: ReturneeId, ...profiles: ResidentProfile[]): Condition => ({
@@ -209,6 +209,15 @@ const WELCOME_WALK: Condition = {
   ],
 };
 
+/**
+ * Bo-shan took the reins the morning after the supper (`cart_departure`), and
+ * the end card sees the cart onto the coast road. From the card on he is not
+ * in Ba Dan, so free roam never shows him at home or asleep.
+ */
+const ON_THE_ROAD: Readonly<Partial<Record<ReturneeRecord['npc'], Condition>>> = {
+  bo_shan: { kind: 'visited', nodeId: 'demo_complete' },
+};
+
 const resident = (record: ReturneeRecord): ResidentDef => {
   const welcome = WELCOMERS[record.npc];
   const returning = slot(record.returning, record.npc, 'returning_together');
@@ -222,6 +231,17 @@ const resident = (record: ReturneeRecord): ResidentDef => {
     // No occupation is asserted: these are neutral safe appearances only.
     schedule: schedule({ ...recovery, activity: 'available' }, record.readyPhases),
     overrides: [
+      ...(ON_THE_ROAD[record.npc]
+        ? [
+            {
+              id: `${record.npc}_on_the_road`,
+              tier: 'presence' as const,
+              when: ON_THE_ROAD[record.npc] as Condition,
+              slots: {},
+              all: 'absent' as const,
+            },
+          ]
+        : []),
       {
         id: `${record.npc}_missing`,
         tier: 'presence',

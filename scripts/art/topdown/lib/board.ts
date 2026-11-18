@@ -69,6 +69,11 @@ export interface Baked {
    * boundary between two keys counts.
    */
   readonly edges?: Uint8Array;
+  /**
+   * Plate pixels of made edges (a dug canal and its kerb, a terrace, a plinth): straight is allowed there (core G8),
+   * so the natural-edge check leaves them out, as it does what objects cover.
+   */
+  readonly made?: Uint8Array;
   /** Plate pixels any object's sprite covers (uprights and flats). */
   readonly cover: Uint8Array;
   /** Plate pixels the board's frame darkens toward its edge, which the shadow check leaves out. */

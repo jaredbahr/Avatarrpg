@@ -162,7 +162,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     // Both variants retain sampled rendered windows under the larger fake-clock cap.
     test.setTimeout(FAKE_CLOCK_WALK_BUDGET_MS);
     allowSoftwareWebgl(test, renderer);
-    await village(page, renderer, 'midday', { x: 10, y: 5 });
+    await village(page, renderer, 'midday', { x: 13, y: 10 });
     await expect.poll(async () => (await markers(page)).map((m) => m.id)).toContain('lw.npc.mira');
     await pauseClock(page);
     await page.evaluate(() => window.fnt!.app.dispatch({ type: 'wait', until: 'afternoon' }));
@@ -241,8 +241,8 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     }
     expect(end.find((m) => m.id === 'lw.npc.mira')).toBeUndefined();
     expect(end.find((m) => m.id === 'lw.npc.dorin')).toMatchObject({
-      pos: { x: 17, y: 6 },
-      at: { x: 17, y: 6 },
+      pos: { x: 27, y: 8 },
+      at: { x: 27, y: 8 },
       alpha: 1,
     });
     if (renderer === 'webgl') {
@@ -260,25 +260,25 @@ test('Gao restocks his display in trading hours, his tap tile never leaving the 
   page,
 }) => {
   test.setTimeout(FAKE_CLOCK_WALK_BUDGET_MS);
-  // The party out on the east lawn, clear of the square.
-  await village(page, 'canvas', 'morning', { x: 20, y: 11 });
+  // The party out on the west lawn, clear of the square.
+  await village(page, 'canvas', 'morning', { x: 4, y: 10 });
   await pauseClock(page);
   // The initial six-second shop hold has no motion to render.
   await advanceResidentsWithoutFrames(page, 6_000);
   const seen = new Set<string>();
   let moving = false;
   // A tenth of a second is one fifth of a tile at the current stroll pace.
-  for (let step = 0; step < 200 && !seen.has('8,5'); step++) {
+  for (let step = 0; step < 200 && !seen.has('19,7'); step++) {
     await page.clock.runFor(100);
     const frame = await residentFrame(page);
     const gao = frame.markers.find((m) => m.id === 'lw.npc.gao');
-    expect(gao?.pos).toEqual({ x: 9, y: 4 });
+    expect(gao?.pos).toEqual({ x: 20, y: 7 });
     if (gao) seen.add(`${Math.round(gao.at.x)},${Math.round(gao.at.y)}`);
     moving ||= frame.moving;
   }
   await page.clock.resume();
-  // Round by the lane to the display's crates; an errand is not a walk anyone waits on.
-  expect([...seen]).toEqual(expect.arrayContaining(['9,4', '9,5', '8,5']));
+  // One step west along the road to the display; an errand is not a walk anyone waits on.
+  expect([...seen]).toEqual(expect.arrayContaining(['20,7', '19,7']));
   expect(moving).toBe(false);
 });
 
@@ -286,15 +286,15 @@ test('the relief watch holds the gate at midday, and the party stops beside them
   page,
 }) => {
   test.setTimeout(FAKE_CLOCK_WALK_BUDGET_MS);
-  await village(page, 'canvas', 'midday', { x: 13, y: 7 });
+  await village(page, 'canvas', 'midday', { x: 24, y: 9 });
   const watch = (await markers(page)).find((m) => m.id === 'bg.relief_watch');
-  expect(watch).toMatchObject({ pos: { x: 17, y: 6 }, alpha: 1, quiet: true });
-  await page.evaluate(() => window.fnt!.app.dispatch({ type: 'walkTo', pos: { x: 17, y: 6 } }));
+  expect(watch).toMatchObject({ pos: { x: 27, y: 8 }, alpha: 1, quiet: true });
+  await page.evaluate(() => window.fnt!.app.dispatch({ type: 'walkTo', pos: { x: 27, y: 8 } }));
   await waitForIdle(page);
   const after = await page.evaluate(() => {
     const state = window.fnt!.app.state!;
     return { screen: state.screen, pos: state.location.pos };
   });
   expect(after.screen).toBe('explore');
-  expect(Math.max(Math.abs(after.pos.x - 17), Math.abs(after.pos.y - 6))).toBe(1);
+  expect(Math.max(Math.abs(after.pos.x - 27), Math.abs(after.pos.y - 8))).toBe(1);
 });

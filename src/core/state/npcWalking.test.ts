@@ -91,22 +91,24 @@ function reload(state: GameState): GameState {
 }
 
 describe('exploration walks around resolved people', () => {
-  it('takes the previewed ground route around Gao instead of crossing his shopfront tile', () => {
-    const state = at({ x: 8, y: 4 });
-    const gao = visibleNpcs(CONTENT, village, state).find((npc) => npc.id === 'shopkeeper_gao');
-    expect(gao?.pos).toEqual({ x: 9, y: 4 });
-    const result = walk(state, { x: 10, y: 4 });
+  it('takes the previewed ground route around Pella instead of crossing her bench tile', () => {
+    // Before Mira's briefing Pella sits at the bench (14,10), on the straight line along row 10.
+    const state = at({ x: 11, y: 10 });
+    const pella = visibleNpcs(CONTENT, village, state).find((npc) => npc.id === 'kid_pella');
+    expect(pella?.pos).toEqual({ x: 14, y: 10 });
+    const result = walk(state, { x: 17, y: 10 });
     expectClearRoute(state, result.path);
-    expect(result.path.at(-1)).toEqual({ x: 10, y: 4 });
-    expect(result.state.location.pos).toEqual({ x: 10, y: 4 });
+    expect(result.path).not.toContainEqual({ x: 14, y: 10 });
+    expect(result.path.at(-1)).toEqual({ x: 17, y: 10 });
+    expect(result.state.location.pos).toEqual({ x: 17, y: 10 });
     expect(result.state.screen).toBe('explore');
     expect(result.state.world.talk).toBeNull();
     expect(result.events.some((event) => event.type === 'storyNodeEntered')).toBe(false);
   });
 
   it('keeps the recursive approach to Mira clear and opens her conversation exactly once', () => {
-    const state = at({ x: 8, y: 4 });
-    const target = { x: 11, y: 5 };
+    const state = at({ x: 8, y: 10 });
+    const target = { x: 12, y: 9 };
     const result = walk(state, target);
     expectClearRoute(state, result.path);
     expect(result.preview.label).toBe('Elder Mira');
@@ -125,10 +127,14 @@ describe('exploration walks around resolved people', () => {
   });
 
   it.each([
-    ['bg.relief_watch', { x: 17, y: 5 }, { x: 17, y: 7 }],
-    ['bg.pella_household', { x: 11, y: 11 }, { x: 9, y: 14 }],
+    // The post (27,8) is on the diagonal between these; the household's yard (13,16) is on the column.
+    ['bg.relief_watch', { x: 28, y: 9 }, { x: 26, y: 7 }],
+    ['bg.pella_household', { x: 13, y: 14 }, { x: 13, y: 17 }],
   ] as const)('routes a ground walk around the resolved %s background role', (id, from, target) => {
-    const state = at(from);
+    // After Mira's briefing: before it Pella sits at Mira's table (DLG-01) and her
+    // household stays indoors.
+    const fresh = at(from);
+    const state = { ...fresh, story: { ...fresh.story, visited: ['mira_intro'] } };
     expect(backgroundFigures(CONTENT, village, state).some((role) => role.id === id)).toBe(true);
     const result = walk(state, target);
     expectClearRoute(state, result.path);
@@ -138,24 +144,24 @@ describe('exploration walks around resolved people', () => {
   });
 
   it('leaves hidden residents and inactive background-role tiles available at night', () => {
-    const state = at({ x: 8, y: 4 }, 'night');
+    const state = at({ x: 18, y: 7 }, 'night');
     expect(visibleNpcs(CONTENT, village, state).some((npc) => npc.id === 'shopkeeper_gao')).toBe(
       false,
     );
-    const pastShop = walk(state, { x: 10, y: 4 });
-    expect(pastShop.path).toContainEqual({ x: 9, y: 4 });
+    const pastShop = walk(state, { x: 20, y: 7 });
+    expect(pastShop.path).toContainEqual({ x: 20, y: 7 });
     expectClearRoute(state, pastShop.path);
 
-    const yard = at({ x: 11, y: 11 }, 'night');
+    const yard = at({ x: 13, y: 14 }, 'night');
     expect(backgroundFigures(CONTENT, village, yard)).toEqual([]);
-    const pastYard = walk(yard, { x: 9, y: 14 });
-    expect(pastYard.path).toContainEqual({ x: 11, y: 13 });
+    const pastYard = walk(yard, { x: 13, y: 17 });
+    expect(pastYard.path).toContainEqual({ x: 13, y: 16 });
     expectClearRoute(yard, pastYard.path);
   });
 
   it('still talks directly to an adjacent person without adding movement', () => {
-    const state = at({ x: 8, y: 4 });
-    const result = apply(CONTENT, state, { type: 'walkTo', pos: { x: 9, y: 4 } });
+    const state = at({ x: 19, y: 7 });
+    const result = apply(CONTENT, state, { type: 'walkTo', pos: { x: 20, y: 7 } });
     expect(result.events.some((event) => event.type === 'partyWalked')).toBe(false);
     expect(result.events.filter((event) => event.type === 'storyNodeEntered')).toHaveLength(1);
     expect(result.state.screen).toBe('dialogue');
@@ -164,12 +170,12 @@ describe('exploration walks around resolved people', () => {
   });
 
   it('replays the same ground and conversation commands across the full save load path', () => {
-    const state = at({ x: 8, y: 4 });
+    const state = at({ x: 8, y: 10 });
     const loaded = reload(state);
     expect(loaded).toEqual(state);
     for (const target of [
-      { x: 10, y: 4 },
-      { x: 11, y: 5 },
+      { x: 10, y: 10 },
+      { x: 12, y: 9 },
     ]) {
       const command = { type: 'walkTo', pos: target } as const;
       const first = apply(CONTENT, state, command);

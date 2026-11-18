@@ -20,47 +20,47 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 
 ```mermaid
 flowchart TD
-  n104["quarry_ledger<br/>The Quarry: Behind the Driller’s seat, wedged under a coil of h…"]:::entry
-  n105["reason_bo<br/>Labour roster in the Driller’s cab: A labour roster is pinned i…"]:::entry
-  n106["reason_bo_kept<br/>Set flags"]
-  n107["reason_jinu<br/>Bundle in the gate office: In the gate office, a bundle of lett…"]:::entry
-  n108["reason_jinu_kept<br/>Set flags"]
-  n109["reason_kaya<br/>Crate with a lantern stamp: A crate stamped with a lantern with…"]:::entry
-  n110["reason_kaya_kept<br/>Set flags"]
-  n111["reason_lin_mei<br/>Gallery plan: A gallery plan is nailed up beside the barred doo…"]:::entry
-  n112["reason_lin_mei_kept<br/>Set flags"]
-  n113["reason_nilak<br/>Crate marked “medical supplies”: A crate stencilled “medical su…"]:::entry
-  n114["reason_nilak_kept<br/>Set flags"]
-  n115["reason_nima<br/>Crate tied with a ribbon: A supply crate tied with a faded ribb…"]:::entry
-  n116["reason_nima_kept<br/>Set flags"]
-  n117["reason_riko<br/>Guards’ practice board: A board by the guards’ shelter is chalk…"]:::entry
-  n118["reason_riko_kept<br/>Set flags"]
-  n119["reason_tenzo<br/>Ration crates: Ration crates addressed to the workers’ cookhous…"]:::entry
-  n120["reason_tenzo_kept<br/>Set flags"]
-  n121["reason_wen<br/>The Driller’s drive housing: The Driller’s drive housing hangs …"]:::entry
-  n122["reason_wen_kept<br/>Set flags"]
+  n270["quarry_ledger<br/>The Quarry: Behind the Driller’s seat, wedged under a coil of h…"]:::entry
+  n271["reason_bo<br/>Labour roster in the Driller’s cab: A labour roster is pinned i…"]:::entry
+  n272["reason_bo_kept<br/>Set flags"]
+  n273["reason_jinu<br/>Bundle in the gate office: In the gate office, a bundle of lett…"]:::entry
+  n274["reason_jinu_kept<br/>Set flags"]
+  n275["reason_kaya<br/>Crate with a lantern stamp: A crate stamped with a lantern with…"]:::entry
+  n276["reason_kaya_kept<br/>Set flags"]
+  n277["reason_lin_mei<br/>Gallery plan: A gallery plan is nailed up beside the barred doo…"]:::entry
+  n278["reason_lin_mei_kept<br/>Set flags"]
+  n279["reason_nilak<br/>Crate marked “medical supplies”: A crate stencilled “medical su…"]:::entry
+  n280["reason_nilak_kept<br/>Set flags"]
+  n281["reason_nima<br/>Crate tied with a ribbon: A supply crate tied with a faded ribb…"]:::entry
+  n282["reason_nima_kept<br/>Set flags"]
+  n283["reason_riko<br/>Guards’ practice board: A board by the guards’ shelter is chalk…"]:::entry
+  n284["reason_riko_kept<br/>Set flags"]
+  n285["reason_tenzo<br/>Ration crates: Ration crates addressed to the workers’ cookhous…"]:::entry
+  n286["reason_tenzo_kept<br/>Set flags"]
+  n287["reason_wen<br/>The Driller’s drive housing: The Driller’s drive housing hangs …"]:::entry
+  n288["reason_wen_kept<br/>Set flags"]
   n2["act1_evening — exit to act1 / part 1"]:::external
-  n51["gate_return_explore — exit to return / part 1"]:::external
-  n101["quarry_after_explore — exit to return / part 1"]:::external
-  n104 -->|"Next"| n2
-  n105 -->|"Next"| n106
-  n106 -->|"set: reason.bo=true"| n101
-  n107 -->|"Next"| n108
-  n108 -->|"set: reason.jinu=true"| n51
-  n109 -->|"Next"| n110
-  n110 -->|"set: reason.kaya=true"| n101
-  n111 -->|"Next"| n112
-  n112 -->|"set: reason.lin_mei=true"| n101
-  n113 -->|"Next"| n114
-  n114 -->|"set: reason.nilak=true"| n101
-  n115 -->|"Next"| n116
-  n116 -->|"set: reason.nima=true"| n101
-  n117 -->|"Next"| n118
-  n118 -->|"set: reason.riko=true"| n101
-  n119 -->|"Next"| n120
-  n120 -->|"set: reason.tenzo=true"| n101
-  n121 -->|"Next"| n122
-  n122 -->|"set: reason.wen=true"| n101
+  n58["gate_return_explore — exit to return / part 1"]:::external
+  n267["quarry_after_explore — exit to return / part 1"]:::external
+  n270 -->|"Next"| n2
+  n271 -->|"Next"| n272
+  n272 -->|"set: reason.bo=true"| n267
+  n273 -->|"Next"| n274
+  n274 -->|"set: reason.jinu=true"| n58
+  n275 -->|"Next"| n276
+  n276 -->|"set: reason.kaya=true"| n267
+  n277 -->|"Next"| n278
+  n278 -->|"set: reason.lin_mei=true"| n267
+  n279 -->|"Next"| n280
+  n280 -->|"set: reason.nilak=true"| n267
+  n281 -->|"Next"| n282
+  n282 -->|"set: reason.nima=true"| n267
+  n283 -->|"Next"| n284
+  n284 -->|"set: reason.riko=true"| n267
+  n285 -->|"Next"| n286
+  n286 -->|"set: reason.tenzo=true"| n267
+  n287 -->|"Next"| n288
+  n288 -->|"set: reason.wen=true"| n267
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

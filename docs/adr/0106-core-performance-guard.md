@@ -48,3 +48,13 @@ acceptance. Raw CPU milliseconds remain diagnostics. Native/device gates stay
 separate. A failure requires preserved evidence and investigation, not a larger
 ceiling. Any justified optimization belongs in a separate change with unchanged
 behavior and regression controls.
+
+## Amendment: Ba Dan's 32 x 20 board (2026-11-18)
+
+Ba Dan's rows grew from 24 x 16 to 32 x 20 (the place brief, `docs/places/ba_dan_village.md`) and the board is
+registered again with its ground (ADR 0120). While it was a grey blockout its two cases kept measuring the retired
+24 x 16 board as a fixture. Now they measure the live board, which is the largest registered top-down board on its
+own, and carry a separate one-time capture on it: the same policy (three warmups, eleven paired samples, 32 queries
+a batch), the ceiling exactly four times the calibration median, recorded as a second supplemental calibration in
+`core-bench-baseline.json` with its source commit, tree, report, harness and driver hashes and the 24 x 16 limits it
+replaces. The eleven original cases and their provenance are unchanged.

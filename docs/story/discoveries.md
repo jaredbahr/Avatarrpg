@@ -20,37 +20,37 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 
 ```mermaid
 flowchart TD
-  n28["discover_duck_nest<br/>Turtle duck nest: A turtle duck stands over a nest lined with r…"]:::entry
-  n29["discover_runoff_marker<br/>Runoff measuring stone: Flood marks are cut into the stone besi…"]:::entry
-  n30["discover_tea_station<br/>Workers’ tea station: Six cups stand beside the kettle. A seven…"]:::entry
-  n61{"leave_duck_nest<br/>Branch: act1_complete"}
-  n62{"leave_runoff_marker<br/>Branch: act1_complete"}
-  n63{"leave_tea_station<br/>Branch: act1_complete"}
-  n123["remember_duck_nest<br/>Set flags"]
-  n124["remember_runoff_marker<br/>Set flags"]
-  n125["remember_tea_station<br/>Set flags"]
-  n139["revisit_duck_nest<br/>Turtle duck nest: The ducklings are asleep in the sock. Their m…"]:::entry
-  n140["revisit_runoff_marker<br/>Runoff measuring stone: Another thin layer of silt has caught a…"]:::entry
-  n141["revisit_tea_station<br/>Workers’ tea station: The mended cup is back in the washing bow…"]:::entry
+  n34["discover_duck_nest<br/>Turtle duck nest: A turtle duck stands over a nest lined with r…"]:::entry
+  n35["discover_runoff_marker<br/>Runoff measuring stone: Flood marks are cut into the stone besi…"]:::entry
+  n36["discover_tea_station<br/>Workers’ tea station: Six cups stand beside the kettle. A seven…"]:::entry
+  n68{"leave_duck_nest<br/>Branch: act1_complete"}
+  n69{"leave_runoff_marker<br/>Branch: act1_complete"}
+  n70{"leave_tea_station<br/>Branch: act1_complete"}
+  n289["remember_duck_nest<br/>Set flags"]
+  n290["remember_runoff_marker<br/>Set flags"]
+  n291["remember_tea_station<br/>Set flags"]
+  n305["revisit_duck_nest<br/>Turtle duck nest: The ducklings are asleep in the sock. Their m…"]:::entry
+  n306["revisit_runoff_marker<br/>Runoff measuring stone: Another thin layer of silt has caught a…"]:::entry
+  n307["revisit_tea_station<br/>Workers’ tea station: The mended cup is back in the washing bow…"]:::entry
   n17["cutting_explore — exit to world / part 1"]:::external
   n18["cutting_return_explore — exit to return / part 1"]:::external
-  n38["forest_explore — exit to world / part 1"]:::external
-  n41["forest_return_explore — exit to return / part 1"]:::external
-  n28 -->|"Next"| n123
-  n29 -->|"Next"| n124
-  n30 -->|"Next"| n125
-  n61 -->|"act1_complete: truthy (you have act1 complete)"| n41
-  n61 -->|"act1_complete: falsy (you have not act1 complete)"| n38
-  n62 -->|"act1_complete: truthy (you have act1 complete)"| n41
-  n62 -->|"act1_complete: falsy (you have not act1 complete)"| n38
-  n63 -->|"act1_complete: truthy (you have act1 complete)"| n18
-  n63 -->|"act1_complete: falsy (you have not act1 complete)"| n17
-  n123 -->|"set: world.discovered.duck_nest=true"| n61
-  n124 -->|"set: world.discovered.runoff_marker=true"| n62
-  n125 -->|"set: world.discovered.tea_station=true"| n63
-  n139 -->|"Next"| n61
-  n140 -->|"Next"| n62
-  n141 -->|"Next"| n63
+  n44["forest_explore — exit to world / part 1"]:::external
+  n47["forest_return_explore — exit to return / part 1"]:::external
+  n34 -->|"Next"| n289
+  n35 -->|"Next"| n290
+  n36 -->|"Next"| n291
+  n68 -->|"act1_complete: truthy (you have act1 complete)"| n47
+  n68 -->|"act1_complete: falsy (you have not act1 complete)"| n44
+  n69 -->|"act1_complete: truthy (you have act1 complete)"| n47
+  n69 -->|"act1_complete: falsy (you have not act1 complete)"| n44
+  n70 -->|"act1_complete: truthy (you have act1 complete)"| n18
+  n70 -->|"act1_complete: falsy (you have not act1 complete)"| n17
+  n289 -->|"set: world.discovered.duck_nest=true"| n68
+  n290 -->|"set: world.discovered.runoff_marker=true"| n69
+  n291 -->|"set: world.discovered.tea_station=true"| n70
+  n305 -->|"Next"| n68
+  n306 -->|"Next"| n69
+  n307 -->|"Next"| n70
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5
