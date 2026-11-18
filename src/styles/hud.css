@@ -2309,13 +2309,17 @@ html[data-contrast='high'] .hud-panel::after {
 
 /*
  * The chosen action (Move or an ability) is never told by colour alone: a heavy inset frame in
- * the deep gold, a lit gold body, bold type and a check badge in the corner. Nothing here moves
+ * the deep gold, a lit gold body, heavier type and a check badge in the corner. Nothing here moves
  * or animates, so reduce motion and Large text change nothing but the badge's size, in rem.
+ *
+ * The heavier type is a text stroke, not font-weight: a bold face is wider, and at iPad landscape
+ * the row beside the aim column has only a few px to spare, so a bold label wrapped End turn onto
+ * a second line and the board shrank under the target. A stroke never changes the label's width.
  */
 .action-button.selected {
   border-color: var(--c-gold-deep);
   background-color: color-mix(in srgb, var(--c-gold-hi) 55%, var(--c-panel-raised));
-  font-weight: 700;
+  -webkit-text-stroke: 0.035em currentcolor;
   box-shadow:
     inset 0 0 0 var(--stroke-emphasis) var(--c-gold-deep),
     0 0 0 var(--stroke-bold) var(--c-gold-hi);
