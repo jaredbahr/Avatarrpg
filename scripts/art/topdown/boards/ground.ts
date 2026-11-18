@@ -25,7 +25,9 @@ import {
   hash2,
   inBox,
   polylineDistance,
+  polylineNearest,
   trackDepth,
+  widthAt,
   trackHalf,
   vnoise,
   type GroundApron,
@@ -142,9 +144,13 @@ const BLADE: readonly Rgb[] = [
 ];
 /** Worn ground: the pale limestone the square goes to, packed earth, and the earth a rut holds. */
 const WORN: Rgb = [0xe6, 0xdf, 0xcd];
+/** Loose limestone dust pressed by feet and wheels: darker and warmer than the loose dust. */
+const PACKED_DUST: Rgb = [0xb6, 0xa5, 0x84];
+/** Loose dust heaped at the fringes and against walls. */
+const DRIFT: Rgb = [0xea, 0xe2, 0xcc];
 const PACKED: Rgb = [0xb0, 0x9a, 0x78];
 const EARTH: Rgb = [0x8a, 0x70, 0x52];
-const RUT: Rgb = [0x7c, 0x6a, 0x58];
+const RUT: Rgb = [0x8d, 0x7c, 0x66];
 const MUD: Rgb = [0x4c, 0x3a, 0x2c];
 const SOIL: readonly Rgb[] = [
   [0x4c, 0x34, 0x28],
@@ -163,6 +169,12 @@ const PLINTH: readonly Rgb[] = [
   [0x4b, 0x3f, 0x38],
   [0x5b, 0x4d, 0x43],
   [0x7c, 0x6c, 0x5c],
+];
+/** Dry hillside grass, dark to light. */
+const DRY: readonly Rgb[] = [
+  [0x5e, 0x5a, 0x3e],
+  [0x7a, 0x74, 0x4c],
+  [0x9a, 0x92, 0x62],
 ];
 const CHIP: Rgb = [0xef, 0xea, 0xdd];
 const CHIP_SHADE: Rgb = [0x9a, 0x8f, 0x80];
@@ -260,11 +272,8 @@ export function bakeGround(tr: GroundTerrain): GroundBaked {
     const m = means[k] ?? [0, 0, 0];
     const calm = def.calm ?? 1,
       grade = def.grade ?? [1, 1, 1];
-    // a slow drift in two steps, so no two stretches of one ground read alike, never a smooth ramp
-    const x = i % PW,
-      y = (i - x) / PW;
-    const t = vnoise(x, y, S0 + 77, 70) + vnoise(x, y, S0 + 78, 23) * 0.4;
-    const drift = t > 0.5 ? 1.022 : t < -0.5 ? 0.978 : 1;
+    // no drift: a plain field of one ground is one calm field; variation gathers at edges and feet (owner, 2026-11-18)
+    const drift = 1;
     const c = get(i);
     set(
       i,
@@ -317,6 +326,57 @@ export function bakeGround(tr: GroundTerrain): GroundBaked {
         set(y * PW + x, c);
       }
     }
+  // the hillside above the face: scree with sparse dry grass, and pale outcrops of its own stone, calm
+  if (hillK >= 0) {
+    const rock = tileFile('q_rock_var', 'clean_12');
+    const top = (x: number, y: number): boolean => K(x, y) === hillK && !face[y * PW + x];
+    // sparse dry grass: small olive tufts, a few to a cell
+    for (let y = 2; y < PH; y++)
+      for (let x = 1; x < PW - 1; x++) {
+        if (!top(x, y) || hash2(x, y, S0 + 121) > 0.005) continue;
+        const len = 2 + Math.floor(hash2(x, y, S0 + 122) * 2);
+        for (let b = 0; b < 3; b++)
+          for (let st = 0; st < len; st++) {
+            const X = x + Math.round((b - 1) * st * 0.5),
+              Y = y - st;
+            if (top(X, Y)) set(Y * PW + X, DRY[st >= len - 1 ? 2 : st ? 1 : 0] ?? SHADE);
+          }
+      }
+    // outcrops: low pale ellipses of rock, lit on the upper left, shaded and casting to the lower right
+    const per = (spec.hill?.outcrops ?? 0) / 100;
+    for (let cy = -4; cy < tr.gh + 4; cy++)
+      for (let cx = -3; cx < tr.gw + 3; cx++) {
+        if (hash2(cx, cy, S0 + 131) > per) continue;
+        const ox = tr.grid.x + (cx + 0.2 + hash2(cx, cy, S0 + 132) * 0.6) * CELL,
+          oy = tr.grid.y + (cy + 0.2 + hash2(cx, cy, S0 + 133) * 0.6) * CELL;
+        const rx = 9 + hash2(cx, cy, S0 + 134) * 13,
+          ry = 5 + hash2(cx, cy, S0 + 135) * 6;
+        const inside = (x: number, y: number): boolean =>
+          Math.hypot((x - ox) / rx, (y - oy) / ry) + vnoise(x, y, S0 + 136, 4) * 0.18 < 1;
+        // only on the hill's top, clear of the face by a few px
+        let clear = true;
+        for (let y = Math.floor(oy - ry - 2); y <= oy + ry + 8 && clear; y++)
+          for (let x = Math.floor(ox - rx - 2); x <= ox + rx + 6; x++)
+            if (!top(x, y)) {
+              clear = false;
+              break;
+            }
+        if (!clear) continue;
+        for (let y = Math.floor(oy - ry - 1); y <= oy + ry + 4; y++)
+          for (let x = Math.floor(ox - rx - 1); x <= ox + rx + 4; x++) {
+            const i = y * PW + x;
+            if (inside(x, y)) {
+              const c = px(rock, x, y);
+              const lit = !inside(x - 1, y - 1),
+                dark = !inside(x + 1, y + 1);
+              let o: Px = mixPx([c[0] * 1.1, c[1] * 1.08, c[2] * 1.0], [0xcd, 0xc4, 0xb0], 0.35);
+              if (lit) o = mixPx(o, [0xe6, 0xdd, 0xc8], 0.45);
+              else if (dark) o = mixPx(o, SHADE, 0.45);
+              set(i, o);
+            } else if (inside(x - 2, y - 2) || inside(x - 1, y - 3)) mix(i, SHADE, 0.32);
+          }
+      }
+  }
   // the face's cast: a short hard band on the ground below and to the right of its foot
   if (hillK >= 0)
     for (let y = 0; y < PH; y++)
@@ -405,6 +465,11 @@ export function bakeGround(tr: GroundTerrain): GroundBaked {
         continue;
       }
       if (up < 7) mix(i, SHADE, up < 5 ? 0.42 : 0.24);
+      // where the canal runs off the rim, the water breaks pale over the lip
+      if (K(x + 1, y) === voidK || K(x + 2, y) === voidK) {
+        set(i, hash2(x, y, S0 + 145) < 0.5 ? GLINT : mixPx(get(i), GLINT, 0.5));
+        continue;
+      }
       // the damp line where water meets the south kerb
       if (!isWater(x, y + 1)) mix(i, SHADE, 0.3);
     }
@@ -520,6 +585,7 @@ export function bakeGround(tr: GroundTerrain): GroundBaked {
   const wear = new Float32Array(N);
   const onTrack = new Uint8Array(N);
   const rut = new Uint8Array(N);
+  const mid = new Uint8Array(N);
   spec.tracks.forEach((t, ti) => {
     const half = trackHalf(t) * CELL;
     // a narrow light trail is a crisp line narrower than the cells it keeps clear; a worn band is nearly its width
@@ -566,13 +632,19 @@ export function bakeGround(tr: GroundTerrain): GroundBaked {
           Math.max(wear[i] ?? 0, w * strength) + (onTrack[i] > 1 ? 0.12 : 0),
         );
         if (t.ruts && 'line' in t) {
-          const dist = polylineDistance(cellX(x), cellY(y), t.line) * CELL;
-          const off = half * 0.42 + vnoise(x, y, S0 + 211, 23) * 2.5;
-          if (
-            Math.abs(dist - off) < 2.6 + vnoise(x, y, S0 + 212, 6) * 1.2 &&
-            vnoise(x, y, S0 + 213, 17) > -0.2
-          )
-            rut[i] = 1;
+          // only alongside the line, never round its ends
+          const near = polylineNearest(cellX(x), cellY(y), t.line);
+          const endSeg = near.seg === t.line.length - 2;
+          if ((near.seg === 0 && near.t <= 0) || (endSeg && near.t >= 1)) continue;
+          const dist = near.d * CELL;
+          // the ruts thin out where the line ends inside the board (its last point); its first may leave the map
+          const fade = (1 - near.along) * (t.line.length - 1);
+          if (fade < 0.6 && hash2(x >> 1, y >> 1, S0 + 215) > fade / 0.6) continue;
+          const gauge = Math.min(12, (widthAt(t, cellX(x), cellY(y)) * CELL) / 2 - 8);
+          // two wheel ruts a cart's track apart, unbroken, and the hooves' worn middle between them
+          const off = gauge + vnoise(x, y, S0 + 211, 31) * 1.5;
+          if (Math.abs(dist - off) < 2.2 + vnoise(x, y, S0 + 212, 9) * 0.6) rut[i] = 1;
+          if (dist < 6 + vnoise(x, y, S0 + 214, 13) * 2) mid[i] = 1;
         }
       }
   });
@@ -581,11 +653,22 @@ export function bakeGround(tr: GroundTerrain): GroundBaked {
     if (w <= 0 || madeIdx[i] !== -1) continue;
     const k = cls[i] ?? 0;
     if (!isGround(k) || face[i]) continue;
-    const terrain = spec.classes[k]?.terrain;
+    const def = spec.classes[k];
+    const wears =
+      def?.wears ?? (def?.terrain === 'D' ? 'packs' : def?.terrain === 'C' ? 'lifts' : 'bares');
     const x = i % PW,
       y = (i - x) / PW;
-    if (terrain === 'D') mix(i, WORN, Math.min(0.62, 0.5 * w));
-    else if (terrain === 'C') {
+    if (wears === 'packs') {
+      // loose ground pressed: its speckle smoothed toward its own mean, a step darker and warmer
+      const m = means[k] ?? [0, 0, 0];
+      const g0 = def?.grade ?? [1, 1, 1];
+      const smooth = [0, 1, 2].map((j) => (m[j] ?? 0) * (g0[j] ?? 1));
+      const ww = Math.min(1, w);
+      mix(i, smooth, 0.75 * ww);
+      mix(i, PACKED_DUST, 0.6 * ww);
+      if (mid[i]) mix(i, PACKED_DUST, 0.25);
+      if (rut[i]) set(i, mixPx(get(i), RUT, 0.55));
+    } else if (wears === 'lifts') {
       mix(i, WORN, Math.min(0.32, 0.22 * w));
       if (rut[i]) mix(i, RUT, 0.26);
     } else {
@@ -593,6 +676,48 @@ export function bakeGround(tr: GroundTerrain): GroundBaked {
       const bare = mixPx(PACKED, WORN, 0.45);
       if (w >= 0.9) set(i, mixPx(bare, get(i), hash2(x, y, S0 + 221) < 0.12 ? 0.35 : 0.08));
       else mix(i, bare, 0.25 + 0.6 * w);
+    }
+  }
+
+  /* 4b. drifts: loose ground heaped at its edges and against walls, where no wheel or foot packs it --------- */
+  {
+    const drifts = (k: number): boolean => spec.classes[k]?.drifts === true;
+    // a two-pass chamfer distance (px) from anything that is not drifting ground
+    const dist = new Float32Array(N).fill(99);
+    const packs = (k: number): boolean => {
+      const def = spec.classes[k];
+      return (def?.wears ?? (def?.terrain === 'D' ? 'packs' : '')) === 'packs';
+    };
+    for (let i = 0; i < N; i++)
+      if ((!drifts(cls[i] ?? 0) && !packs(cls[i] ?? 0)) || madeIdx[i] !== -1) dist[i] = 0;
+    for (let y = 0; y < PH; y++)
+      for (let x = 0; x < PW; x++) {
+        const i = y * PW + x;
+        let v = dist[i] ?? 0;
+        if (x > 0) v = Math.min(v, (dist[i - 1] ?? 0) + 1);
+        if (y > 0) v = Math.min(v, (dist[i - PW] ?? 0) + 1);
+        if (x > 0 && y > 0) v = Math.min(v, (dist[i - PW - 1] ?? 0) + 1.4);
+        if (x < PW - 1 && y > 0) v = Math.min(v, (dist[i - PW + 1] ?? 0) + 1.4);
+        dist[i] = v;
+      }
+    for (let y = PH - 1; y >= 0; y--)
+      for (let x = PW - 1; x >= 0; x--) {
+        const i = y * PW + x;
+        let v = dist[i] ?? 0;
+        if (x < PW - 1) v = Math.min(v, (dist[i + 1] ?? 0) + 1);
+        if (y < PH - 1) v = Math.min(v, (dist[i + PW] ?? 0) + 1);
+        if (x < PW - 1 && y < PH - 1) v = Math.min(v, (dist[i + PW + 1] ?? 0) + 1.4);
+        if (x > 0 && y < PH - 1) v = Math.min(v, (dist[i + PW - 1] ?? 0) + 1.4);
+        dist[i] = v;
+      }
+    for (let i = 0; i < N; i++) {
+      const dd = dist[i] ?? 0;
+      if (dd <= 0 || dd > 16) continue;
+      const x = i % PW,
+        y = (i - x) / PW;
+      const reach = 9 + vnoise(x, y, S0 + 231, 17) * 5 + vnoise(x, y, S0 + 232, 5) * 1.5;
+      if (dd > reach || (wear[i] ?? 0) > 0.5 || !drifts(cls[i] ?? 0)) continue;
+      mix(i, DRIFT, dd > reach - 2.5 ? 0.22 : 0.4);
     }
   }
 
@@ -680,6 +805,42 @@ export function bakeGround(tr: GroundTerrain): GroundBaked {
               if (x + 1 < PW) mix(i + 1, CHIP_SHADE, 0.5);
               if (y + 1 < PH) mix(i + PW, CHIP_SHADE, 0.55);
             }
+            break;
+          }
+          case 'sward': {
+            // grass surviving where nobody walks: thick in the corner, thinning to tufts toward the trodden ground
+            if (!groundHere || madeIdx[i] !== -1 || (onTrack[i] ?? 0) > 0 || depthPx <= 0) break;
+            const t = Math.min(1, depthPx / 22) + vnoise(x, y, sk + 3, 9) * 0.35;
+            if (t < 0.35 || hash2(x, y, sk + 2) > t * 1.3) break;
+            const g = tiles[tr.classIndex.get('grass') ?? -1];
+            if (!g) break;
+            const gm = means[tr.classIndex.get('grass') ?? 0] ?? [0, 0, 0];
+            const gc = quilt(g, x, y, 60, S0 + 31 + (tr.classIndex.get('grass') ?? 0) * 13);
+            const gdef = spec.classes[tr.classIndex.get('grass') ?? 0];
+            const calm = gdef?.calm ?? 1;
+            set(
+              i,
+              [0, 1, 2].map(
+                (j) =>
+                  ((gm[j] ?? 0) + ((gc[j] ?? 0) - (gm[j] ?? 0)) * calm) * (gdef?.grade?.[j] ?? 1),
+              ),
+            );
+            break;
+          }
+          case 'treads': {
+            // steps cut down the bank into the water: each tread's nose lit, its riser in shade, the last one wet
+            if (!('rect' in a) || reads(k) !== 'water') break;
+            const lx = x - (tr.grid.x + a.rect[0] * CELL),
+              ly = y - (tr.grid.y + a.rect[1] * CELL);
+            const w = (a.rect[2] - a.rect[0] + 1) * CELL;
+            if (lx < 0 || lx >= w || ly < 0 || ly >= 16) break;
+            const r = ly % 5;
+            const step = Math.floor(ly / 5);
+            let c: readonly number[] = KERB[2] ?? SHADE;
+            if (r === 0) c = KERB[3] ?? SHADE;
+            else if (r === 4) c = KERB[0] ?? SHADE;
+            if (lx === 0 || lx === w - 1) c = KERB[0] ?? SHADE;
+            set(i, step >= 2 ? mixPx(c, [0x37, 0x5d, 0x69], 0.45) : c);
             break;
           }
           case 'tilled': {
