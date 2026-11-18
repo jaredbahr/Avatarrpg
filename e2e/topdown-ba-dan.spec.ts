@@ -84,16 +84,16 @@ test('the Ba Dan practice ground is ready on arrival and all three benders cast'
 
   const practice = page.getByRole('button', { name: /^Practice/ });
   // The practice ground's anchor (`BA_DAN_PRACTICE`): the wash steps on the canal's north bank.
-  const anchor = { x: 10, y: 11 };
+  const anchor = { x: 9, y: 11 };
   // The mark every bend is thrown at, on the canal's near edge.
-  const mark = { x: 10, y: 12 };
-  // The new game opens one step from the wash steps, so Practice is already offered: walk off first.
+  const mark = { x: 9, y: 12 };
+  // Start a few steps west of the wash steps, where Practice is not offered.
   const away = await paintedTileCentre(page, { x: 6, y: 10 });
   expect(away, 'no camera to map the tile through').not.toBeNull();
   if (!away) return;
   await page.mouse.click(away.x, away.y);
   await waitForIdle(page);
-  for (const to of [{ x: 8, y: 10 }, anchor]) {
+  for (const to of [anchor]) {
     // Not offered on the way there.
     await expect(practice).toHaveCount(0);
     const point = await paintedTileCentre(page, to);

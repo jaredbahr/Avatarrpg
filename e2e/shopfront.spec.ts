@@ -13,7 +13,7 @@ for (const renderer of ['canvas', 'webgl']) {
     });
     await enterNode(page, 'village_explore');
     await waitForIdle(page);
-    // The new game opens one step from the wash steps, where Practice takes Look around's slot: step away.
+    // Stand clear of the table and the residents round it.
     await page.evaluate(() => {
       const app = window.fnt!.app;
       const state = app.state!;

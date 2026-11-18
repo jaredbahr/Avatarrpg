@@ -44,9 +44,9 @@ const BA_DAN_PRACTICE: PracticeGround = (() => {
 })();
 /** The bank at the wash steps, as the party stands for the review capture. */
 const STANDING: readonly Vec2[] = [
-  { x: 10, y: 11 },
   { x: 9, y: 11 },
-  { x: 11, y: 11 },
+  { x: 8, y: 11 },
+  { x: 10, y: 11 },
 ];
 
 describe('where the party can practise', () => {
@@ -214,11 +214,11 @@ describe('practice playback', () => {
 describe('the practice camera', () => {
   it('frames the benders and leans toward the mark', () => {
     const benders = [
-      { x: 10, y: 11 },
       { x: 9, y: 11 },
-      { x: 8, y: 10 },
+      { x: 8, y: 11 },
+      { x: 7, y: 10 },
     ];
-    expect(practiceFrame(benders, BA_DAN_PRACTICE.mark)).toEqual({ x: 9.5, y: 11.5 });
+    expect(practiceFrame(benders, BA_DAN_PRACTICE.mark)).toEqual({ x: 8.5, y: 11.5 });
   });
 
   it('glides with an ease and lands exactly on its target', () => {

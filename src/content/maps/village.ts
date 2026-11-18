@@ -30,13 +30,14 @@ export const BA_DAN_VILLAGE: MapDef = {
   ambience: 'village',
   // The courtyard's open air, with a pond tone that swells near the canal's water.
   soundscape: 'courtyard',
-  // Bending practice (#284) from the wash steps on the canal's north bank: the party stands at (10,11)
-  // and every bend goes south at the mark on the bank's edge (10,12), out over the canal.
+  // Bending practice (#284) from the wash steps on the canal's north bank: the party stands at (9,11)
+  // and every bend goes south at the mark on the bank's edge (9,12), out over the canal. It sits two
+  // steps west of the new-game spawn (11,10), so Practice is not offered before the party moves.
   practice: {
     label: 'Wash steps',
-    anchor: { x: 10, y: 11 },
+    anchor: { x: 9, y: 11 },
     reach: 1,
-    mark: { x: 10, y: 12 },
+    mark: { x: 9, y: 12 },
   },
   legend: {
     ...LEGEND,

@@ -42,8 +42,7 @@ test('waiting at Mira’s table moves the day on and relabels it', async ({ page
   await expect(page.locator('.explore-phase')).toHaveText('Midday');
   // The time of day stands where 'Exploring' did.
   await expect(page.locator('.explore-mode')).toHaveCount(0);
-  // The new game opens one step from the wash steps, where Practice takes Look around's slot: step
-  // away from the canal first. Away from the table the hotbar keeps Look around, which leads to the seat.
+  // Step away from the table first: away from it the hotbar keeps Look around, which leads to the seat.
   await page.evaluate(() => {
     const app = window.fnt!.app;
     const state = app.state!;
