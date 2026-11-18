@@ -57,6 +57,7 @@ describe('the day light table (ADR 0121)', () => {
         expect(ring.alpha).toBeGreaterThan(prev.alpha);
       });
     }
-    expect(Math.max(...LAMP_POOL.rings.map((r) => r.alpha))).toBeLessThanOrEqual(0.35);
+    // Lamplight, never a spotlight: the owner asked for stronger pools (2026-11-18), still well short of opaque.
+    expect(Math.max(...LAMP_POOL.rings.map((r) => r.alpha))).toBeLessThanOrEqual(0.5);
   });
 });

@@ -57,12 +57,13 @@ export interface LampGlowDef {
 
 /** The pool on the ground under a lit lamp: modest, so it reads as lamplight, not a spotlight. */
 export const LAMP_POOL: LampGlowDef = {
-  radiusX: 30,
-  radiusY: 15,
+  // Stronger and a little wider by the owner's eye (2026-11-18): the lamps must read as coming on.
+  radiusX: 36,
+  radiusY: 18,
   rings: [
-    { scale: 1, alpha: 0.12 },
-    { scale: 0.72, alpha: 0.2 },
-    { scale: 0.42, alpha: 0.28 },
+    { scale: 1, alpha: 0.18 },
+    { scale: 0.72, alpha: 0.3 },
+    { scale: 0.42, alpha: 0.42 },
   ],
   color: [255, 148, 64],
 };
