@@ -243,3 +243,77 @@ art and may be reused if they pass the scale chart.
 3. Which houses are Dorin's and Hanru's? Is "the gate" a real gate across the road or a post beside it?
 4. Where is the school, if Ba Dan has one, and where does the village's one bell hang?
 5. What lies past the west ford, and when does it open?
+
+## Kit list (stage 5)
+
+The set pieces are placed as labelled boxes: `src/content/scenes/baDan.setpieces.ts` (19 set pieces, 71 members besides
+the rim's 98 trees), checked by `src/content/setPieces.test.ts` and drawn in the game with `?boxes` on a dev build.
+This is every piece of art that plan needs, and nothing it does not. **Sizes are the plan's, in px**: width is the
+footprint (40 px a cell), height is the plan's height in figures (1 figure = 45 px); a sprite's drawn box is a little
+deeper than that where a roof or a cloth shows its top. Credits are the guide's costs (object about 5, house about 9,
+tileset 15, `docs/level-design.md` section 7) for a first take, and 0 where existing art serves. No art is generated yet.
+
+| #   | Art                                              | Used by (members)                            | Size px (w x h) | Existing art (native px)                                                                                   | Credits |
+| --- | ------------------------------------------------ | -------------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------- | ------: |
+| 1   | Mira's house, one storey                         | `mira_house`                                 | 200 x 76        | EK `house_mira` 256 x 238 (#865): 5.3 figures tall and 56 px wider than the footprint, so not at this plan |       9 |
+| 2   | Gao's shop front                                 | `gao_shop`                                   | 160 x 76        | EK `house_gao` 216 x 167 (#865), `house_merchant` 216 x 164: taller and wider than the plan                |       9 |
+| 3   | Gao's storeroom, the L's short arm               | `gao_shop`                                   | 80 x 76         | none                                                                                                       |       5 |
+| 4   | Mason's house (Hesra lodges here)                | `mason_yard`                                 | 120 x 72        | none (the old cream/green/ochre houses are the European drift)                                             |       9 |
+| 5   | Pella's house                                    | `pella_house`                                | 160 x 72        | EK `house_pella` 242 x 216 (#865): taller and wider than the plan                                          |       9 |
+| 6   | Guard hut                                        | `guard_hut`                                  | 80 x 63         | quarry `gatehouse` 85 x 55 (objects13): reuse if it reads on Ba Dan's palette                              |   0 (5) |
+| 7   | Quarry row house, base style (Leto's)            | `quarry_leto`                                | 120 x 68        | none                                                                                                       |       9 |
+| 8   | Quarry row house, blue door (Amri's)             | `quarry_amri`                                | 120 x 68        | an edit of #7 (door colour)                                                                                |       5 |
+| 9   | Quarry row house, long with the bent shutter     | `quarry_senn`                                | 160 x 68        | none                                                                                                       |       9 |
+| 10  | Senn's annex, the L's corner                     | `quarry_senn`                                | 40 x 68         | an edit of #9                                                                                              |       5 |
+| 11  | Quarry row house, shutters closed (Hanru's)      | `hanru_house`                                | 80 x 68         | an edit of #7 (shutters)                                                                                   |       5 |
+| 12  | Mira's table, with bowls and the covered bowl    | `mira_table`                                 | 80 x 30         | `mira_table` 73 x 30 (objects7), the old board's table                                                     |       0 |
+| 13  | The patched awning: cloth over four posts        | `mira_table` (cloth and 4 posts)             | 128 x 112       | none; the one strong colour in Ba Dan                                                                      |       5 |
+| 14  | Crew bench                                       | `mira_table`                                 | 80 x 18         | `bench` 51 x 37 (objects12), the old crew bench                                                            |       0 |
+| 15  | Repaired chair (flipped for the second)          | `mira_table` x2                              | 24 x 22         | none                                                                                                       |       5 |
+| 16  | Water jar                                        | `mira_house`                                 | 24 x 32         | `rain_barrel` 22 x 28 (props)                                                                              |       0 |
+| 17  | Potted shrub                                     | `mira_house`                                 | 24 x 27         | `flower_pots` 26 x 27 (objects12)                                                                          |       0 |
+| 18  | Plant on the spare chair                         | `gao_shop`                                   | 24 x 36         | none                                                                                                       |       5 |
+| 19  | Stool (one sprite; the small one is a scale)     | `gao_shop` x2, `east_gate`, `tea_terrace` x2 | 14 x 18         | none                                                                                                       |       5 |
+| 20  | Sacks                                            | `gao_shop`                                   | 24 x 27         | `sack` 22 x 28 (objects12)                                                                                 |       0 |
+| 21  | Trough                                           | `trough`                                     | 40 x 27         | `trough` 44 x 26 (objects12)                                                                               |       0 |
+| 22  | Bucket                                           | `trough`                                     | 16 x 18         | `bucket_broom` 25 x 29 (objects12) has a broom with it, so not as is                                       |       5 |
+| 23  | Gate post with the old shift bell                | `east_gate`                                  | 40 x 72         | none; the gate's landmark                                                                                  |       5 |
+| 24  | Low stone wall, one cell (14 cells in the run)   | `east_gate`                                  | 40 x 32         | `earth_wall` 44 x 34 (props), or bake it into the plate as the ground's `#` link                           |       0 |
+| 25  | The mended wall section                          | `east_gate`                                  | 40 x 25         | an edit of #24                                                                                             |       5 |
+| 26  | Lamp (gate lamp on the wall, three on the canal) | `east_gate`, `canal_lamps` x3                | 40 x 72         | `lamp` 34 x 82 (objects_t3, #865); 4 glows, the map's lantern limit                                        |       0 |
+| 27  | Washing line, hut to shrine                      | `guard_hut`                                  | 40 x 58         | `laundry_line` 79 x 56 (objects12)                                                                         |       0 |
+| 28  | Notice board, a decal on the hut's west wall     | `guard_hut` (not a member)                   | 38 x 47         | `notice_board` 38 x 47 (objects12)                                                                         |       0 |
+| 29  | Wayside shrine, with offering bowl               | `shrine`                                     | 40 x 45         | `shrine` 56 x 76 (objects_t3, #865): 1.7 figures, the plan says 1.0                                        |       0 |
+| 30  | Basket (wash steps, gardens)                     | `wash_steps`, `gardens`                      | 16 x 18         | none                                                                                                       |       5 |
+| 31  | Washboard on the kerb                            | `wash_steps`                                 | 16 x 18         | none                                                                                                       |       5 |
+| 32  | Worked stone block (three, flipped)              | `mason_yard` x3                              | 40 x 36         | `stone_blocks` 28 x 30 (objects13)                                                                         |       0 |
+| 33  | Mason's work bench                               | `mason_yard`                                 | 32 x 27         | `workshop_bench` 50 x 38 (Saltstep objects_rg02): wider than the plan                                      |       5 |
+| 34  | Offcut heap                                      | `mason_yard`                                 | 24 x 18         | `rubble` 42 x 24 (props)                                                                                   |       0 |
+| 35  | Side gate, hung open on its post                 | `side_gate`                                  | 40 x 40         | none                                                                                                       |       5 |
+| 36  | Tool lean-to                                     | `gardens`                                    | 40 x 50         | `lean_to` 48 x 38 (objects13)                                                                              |       0 |
+| 37  | Carved stone peg (three, one sprite)             | `gardens` x3                                 | 12 x 14         | none                                                                                                       |       5 |
+| 38  | Tea tray                                         | `tea_terrace`                                | 12 x 14         | `teapot` 27 x 26 (objects_rg02)                                                                            |       0 |
+| 39  | Bo-shan's handcart                               | `pella_house`                                | 32 x 40         | `handcart` 32 x 41 (objects12)                                                                             |       0 |
+| 40  | Bench by Leto's door                             | `quarry_leto`                                | 32 x 18         | `bench` 36 x 26 (objects7)                                                                                 |       0 |
+| 41  | Pot by Amri's door                               | `quarry_amri`                                | 20 x 22         | `pots` 26 x 19 (objects12)                                                                                 |       0 |
+| 42  | Log pile by Senn's door                          | `quarry_senn`                                | 28 x 22         | `firewood` 39 x 29 (objects12)                                                                             |       0 |
+| 43  | Drying rack                                      | `hanru_house`                                | 40 x 50         | `drying_rack` 35 x 41 (objects_rg02)                                                                       |       0 |
+| 44  | Rim trees: tree, blossom tree, bush              | `rim_trees` x98                              | 40 x 85         | `tree` 101 x 121, `tree_blossom` 56 x 89, `bush` 36 x 42 (the old board's)                                 |       0 |
+| 45  | Doorsteps and free doorsteps (10), treads        | house pieces, `wash_steps`, `mason_yard`     | 40 x 40         | none needed: baked into the plate as ground (aprons)                                                       |       0 |
+| 46  | Tilesets                                         | the ground                                   | 32 px           | the ground spec's own: `gc32`, `q_floor32b`, `canal32`, `cliff32`, `flag32`                                |       0 |
+
+**Total, first takes: 134 credits** (houses and buildings 74, objects 60). Reserve one retake on the four focal anchors
+(the awning 5, the gate post 5, Mira's house 9, the mason's house 9): **28 more, 162 in all**. If the owner accepts the
+EK houses of #865 as they are, lines 1, 2 and 5 drop out and the total falls by 27 (a design call: those houses are
+3.6 to 5.3 figures tall and wider than this plan's footprints, so the footprints and rows would change with them).
+Lines marked "a variant" are edits of a first take (`edit-image-pro-flash`) and are priced as one object. Book the spend
+in `prototypes/topdown/ledger.json` and send the credit total to the owner first (credit budgets are his).
+
+**Where the rules moved the plan** (stage 5, each by the smallest step; the rest stands as written):
+
+- Mira's water jar (14,7) to (16,7): (14,7) lies on the table's own disk, which only the table piece may use.
+- Gao's plant on the chair (18,7) to (18,6): (18,7) lies on the `shop_front` track.
+- The watch's stool (28,8) to (29,10): every cell beside the gate post is on the `gate_post` ring or the east road.
+- The garden's north-west stone peg (26,2) to (27,2), so that it touches the lean-to (anchored rule).
+- The side gate hangs on the fence cell (25,2), against the post, because its gap (25,3) is the `side_gate` track.
+- The east wall's rows 3-8 are rows 3-7 and the bell post on row 8, which the post's own cell already is.
