@@ -35,8 +35,9 @@ export const BA_DAN_VALLEY: RegionManifest = {
     quarry_floor: 'quarry',
   },
   scenes: {
-    // Ba Dan has no scene while it is a grey blockout (`docs/places/ba_dan_village.md`): it draws its bare board from
-    // the legend until its ground and dressing stages.
+    // Ba Dan's ground alone (stage 4 of `docs/places/ba_dan_village.md`, ADR 0120): the plate runs two cells past the
+    // grid either side, three above and two below; its set pieces stand on it at stage 5.
+    ba_dan_village: { url: 'art/topdown/ba-dan/scene.json', cameraCentreMargin: 1 },
     // The forest plate runs two cells past the grid either side and three above (the pine margin).
     forest_road: { url: 'art/topdown/forest-road/scene.json', cameraCentreMargin: 1 },
     // The quarry's plates run the same two cells past the grid either side and three above (T5).

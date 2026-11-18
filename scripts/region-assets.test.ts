@@ -17,7 +17,7 @@ describe('region assets (ADR 0111 §4)', () => {
     for (const path of sharedMusic) expect(seen.has(path), path).toBe(false);
   });
 
-  it("gives the demo region its four baked boards and its three area tracks; the title's is shared; RG-02 its four boards", () => {
+  it("gives the demo region its five baked boards and its three area tracks; the title's is shared; RG-02 its four boards", () => {
     const { regions, sharedMusic } = regionAssets();
     expect(regions.map((region) => region.id)).toEqual(['ba_dan_valley', 'saltstep_emberwatch']);
     // RG-02, the pipeline trial: its four boards, and no area track yet.
@@ -28,8 +28,9 @@ describe('region assets (ADR 0111 §4)', () => {
       'art/topdown/emberwatch-power-yard/',
     ]);
     expect(regions[1]?.musicFiles).toEqual([]);
-    // Ba Dan is a grey blockout with no scene or plates (`docs/places/ba_dan_village.md`), so its folder is not shipped.
+    // Ba Dan ships its ground alone (stage 4, ADR 0120) until its set pieces stand on it.
     expect(regions[0]?.artDirs).toEqual([
+      'art/topdown/ba-dan/',
       'art/topdown/forest-road/',
       'art/topdown/quarry-gate/',
       'art/topdown/cutting/',

@@ -10,7 +10,10 @@ interface Payload {
   [key: string]: unknown;
 }
 
-const shipped = [...TOPDOWN_SCENES].map(([id, source]) => ({ id, url: source.url }));
+const all = [...TOPDOWN_SCENES].map(([id, source]) => ({ id, url: source.url }));
+/** A board shipped as its ground alone (Ba Dan's stage 4, ADR 0120) has no scenery to mutate. */
+const shipped = all.filter(({ url }) => readScene(url).scenery.length > 0);
+const groundOnly = all.filter(({ url }) => readScene(url).scenery.length === 0);
 
 function readScene(url: string): Payload {
   return JSON.parse(readFileSync(`public/${url}`, 'utf8')) as Payload;
@@ -57,6 +60,17 @@ describe('fetched top-down scene validation', () => {
       expect(payload.scenery.every((piece) => piece.sourceRect !== undefined)).toBe(true);
       const result = await load(payload, url);
       expect(result.get('fixture')?.scene).toStrictEqual(payload);
+      expect(payload).toStrictEqual(before);
+    },
+  );
+
+  it.each(groundOnly)(
+    'preserves every shipped field of $id, a board of ground alone',
+    async ({ url }) => {
+      const payload = readScene(url);
+      const before = structuredClone(payload);
+      expect(first(payload.ground).sourceRect).toBeUndefined();
+      expect((await load(payload, url)).get('fixture')?.scene).toStrictEqual(payload);
       expect(payload).toStrictEqual(before);
     },
   );
