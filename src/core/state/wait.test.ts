@@ -63,7 +63,7 @@ function exploring(): GameState {
   return {
     ...base,
     screen: 'explore',
-    location: { mapId: 'ba_dan_village', pos: { x: 10, y: 5 } },
+    location: { mapId: 'ba_dan_village', pos: { x: 13, y: 10 } },
     story: { ...base.story, nodeId: 'village_explore' },
   };
 }

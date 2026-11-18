@@ -168,7 +168,7 @@ test('three freed workers walk into Ba Dan for the welcome home', async ({ page 
     pos: { x: 3, y: 4 },
     flags: { act1_complete: true, ruon_spared: true },
     profiles: 'returning',
-    villageReturn: { x: 22, y: 7 },
+    villageReturn: { x: 30, y: 9 },
     visited: ['road_depart', 'after_forest', 'gate_parley', 'ruon_choice', 'act1_victory'],
   });
   await walkTo(page, 1, 4);
@@ -191,7 +191,7 @@ test('three freed workers walk into Ba Dan for the welcome home', async ({ page 
   const ids = await npcIds(page);
   expect(ids).not.toContain('lw.npc.hesra');
   expect(ids).not.toContain('lw.npc.senn_messenger');
-  await walkTo(page, 20, 7);
+  await walkTo(page, 24, 9);
   expect(await page.evaluate(() => window.fnt!.app.state!.story.nodeId)).toBe('welcome_home_mira');
   // The welcome plays over the village as the party left it: they are still there.
   expect(
@@ -203,12 +203,12 @@ test('Mira takes the maker-plate rubbing once', async ({ page }) => {
   await adopt(page, {
     node: 'village_return_explore',
     mapId: 'ba_dan_village',
-    pos: { x: 12, y: 7 },
+    pos: { x: 9, y: 10 },
     flags: { act1_complete: true, ruon_traded: true },
     profiles: 'resting',
     visited: ['act1_victory', 'forest_return_arrival', 'demo_complete'],
   });
-  await walkTo(page, 11, 5);
+  await walkTo(page, 12, 9);
   expect(await page.evaluate(() => window.fnt!.app.state!.story.nodeId)).toBe('mira_epilogue');
   const next = page.locator('[data-conversation-control="next"]');
   await next.click();
@@ -223,6 +223,6 @@ test('Mira takes the maker-plate rubbing once', async ({ page }) => {
   await next.click();
   await expect(page.locator('.explore-conversation')).toBeHidden();
   expect(await page.evaluate(() => window.fnt!.app.state!.flags.rubbing_given)).toBe(true);
-  await walkTo(page, 11, 5);
+  await walkTo(page, 12, 9);
   expect(await page.evaluate(() => window.fnt!.app.state!.story.nodeId)).toBe('mira_rubbing_kept');
 });

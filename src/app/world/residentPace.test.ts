@@ -20,7 +20,7 @@ function state(phase: 'morning' | 'midday'): GameState {
     ...base,
     screen: 'explore',
     story: { ...base.story, nodeId: 'village_explore', visited: ['mira_intro'] },
-    location: { mapId: map.id, pos: { x: 10, y: 5 } },
+    location: { mapId: map.id, pos: { x: 13, y: 10 } },
     world: { ...base.world, clock: { day: 1, phase } },
   };
 }
@@ -44,8 +44,8 @@ describe('the complete resident amble schedule', () => {
       anchor: 'bd02.shopfront',
       activities: ['short_stock_service'],
       legs: [
-        { path: [{ x: 9, y: 5 }], hold: 5000 },
-        { path: [{ x: 9, y: 4 }], hold: 0 },
+        { path: [{ x: 20, y: 8 }], hold: 5000 },
+        { path: [{ x: 20, y: 7 }], hold: 0 },
       ],
     };
     const walks = new ResidentWalks(CONTENT, () => false, [routine]);
@@ -53,24 +53,24 @@ describe('the complete resident amble schedule', () => {
     const before = state('morning');
     walks.update(map, before, party, true);
     const gao = () => walks.figures().find((figure) => figure.id === GAO);
-    expect(gao()?.drawPos).toEqual({ x: 9, y: 4 });
+    expect(gao()?.drawPos).toEqual({ x: 20, y: 7 });
     for (const [time, y] of [
-      [320, 4.08],
-      [1000, 4.42],
-      [2160, 4.98],
+      [320, 7.08],
+      [1000, 7.42],
+      [2160, 7.98],
     ] as const) {
       advance(time);
       expect(gao()?.drawPos.y).toBeCloseTo(y, 9);
     }
     advance(2320);
-    expect(gao()).toMatchObject({ drawPos: { x: 9, y: 5 }, walking: false });
+    expect(gao()).toMatchObject({ drawPos: { x: 20, y: 8 }, walking: false });
     advance(7319);
     walks.update(map, before, party, true);
-    expect(gao()).toMatchObject({ drawPos: { x: 9, y: 5 }, walking: false });
+    expect(gao()).toMatchObject({ drawPos: { x: 20, y: 8 }, walking: false });
     advance(7320);
     walks.update(map, before, party, true);
     advance(7640);
-    expect(gao()?.drawPos.y).toBeCloseTo(4.92, 9);
+    expect(gao()?.drawPos.y).toBeCloseTo(7.92, 9);
   });
 
   it('retains the private amble animator’s ramp, settle and reduced-motion timing', () => {

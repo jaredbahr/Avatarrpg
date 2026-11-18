@@ -1304,6 +1304,24 @@ shelf. I can't walk in there. My pass stopped working on Monday.
 **Narrator:** The archive smells of oil and old paper. Ledgers go up three galleries into the dark. Somewhere
 above, a pen is scratching, quickly and evenly.
 
+> **If `pq03_labels_known` —** _(found on the first gallery, on the way up; sets `labels_ledger_read`)_
+>
+> **Narrator:** A stores receipt book lies open on a shelf end. The page is headed "Emberwatch stores.
+> Received uncounted, under healing-house label." Under the heading there is a column of ticks, tied in fives.
+>
+> **Party:** Count them.
+>
+> **Narrator:** Five. Ten. Fifteen. Twenty. Twenty-five. Thirty. And one over. Against every tick is the same
+> word, in the same level hand: "Security."
+
+> **If `pq03_labels_known` and Nilak is in the party —**
+> **Nilak:** Thirty-one. Aru chalked thirty-nine inside the lid. So it's eight. Eight still out.
+>
+> **Nilak:** And not one of these went near a clinic.
+
+> **If `pq03_labels_known` and Nilak is not in the party —** **Narrator:** Thirty-one. The number Aru chalked
+> inside the chest lid was thirty-nine. That leaves eight.
+
 **Narrator:** On the middle gallery, at a reading desk with a shaded lamp, Jin is copying a file. Two of her
 clerks are copying beside her. She turns a page before she speaks.
 
@@ -1769,3 +1787,7 @@ What changed in this file; the reasons and the proposals not applied are in the 
    and 9.4 may play inside the archive fight's clock.
 5. **Votes:** `findings_guild` is read in 6.4 and `findings_engineers` in 8.2.
 6. **Cutscenes:** pointers to [cutscenes.md](cutscenes.md) at 7.5 and 9.8.
+7. **The forty labels (owner, 2026-11-17).** PQ-03 leaves "thirty-nine" chalked in Aru's chest lid. After
+   `pq03_labels_known`, 9.2 has a stores receipt book on the first gallery with thirty-one ticks, counted
+   aloud in fives, all received by Security: the number comes down to eight. It sets `labels_ledger_read`.
+   Scene 11.6 takes it down by one more.

@@ -30,6 +30,7 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
   {
     id: 'plant_chair',
     kind: 'choice',
+    routine: true,
     speaker: GAO,
     portrait: 'portrait.gao',
     prompt: 'Come in out of the sun. Sit down a minute.',
@@ -317,6 +318,39 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
           'Underneath, in careful chalk: “PELLA IS AT SCHOOL. NOBODY MOVE BO-SHAN’S STONE. IT IS HIS TURN.”',
         ],
       },
+    ],
+    next: 'village_leave',
+  },
+
+  /* ------------------------------------------------- Later-state look-ats */
+  // One look-at each for the props the village shows once a story condition holds (`maps/village.ts`).
+  {
+    id: 'look_side_gate_hung',
+    kind: 'dialogue',
+    speaker: 'Side gate',
+    portrait: 'portrait.narrator',
+    lines: [
+      'The side gate hangs the right way round now, and it is shut. A brown hen sits on its roof. She has not been entered in the register.',
+    ],
+    next: 'village_leave',
+  },
+  {
+    id: 'look_gao_jar',
+    kind: 'dialogue',
+    speaker: 'The jar by the counter',
+    portrait: 'portrait.narrator',
+    lines: [
+      'A big glazed jar with a paper tag on a string: “For whoever needs it; no speeches.” The lid is not on straight. Somebody has been at it today. You cannot tell which way.',
+    ],
+    next: 'village_leave',
+  },
+  {
+    id: 'look_hesra_boot',
+    kind: 'dialogue',
+    speaker: 'Boot by the door',
+    portrait: 'portrait.narrator',
+    lines: [
+      'A hobnailed boot stands by the door, stuffed with straw to dry. On the windowsill above it sits a river shell. Nobody in Ba Dan has said who carried it home.',
     ],
     next: 'village_leave',
   },

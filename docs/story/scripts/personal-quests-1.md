@@ -354,6 +354,8 @@ for the noise you made.
 
 **Kaya:** My uncle's barge was going upriver that night. I asked to be on it. Nobody said no.
 
+_Cutscene candidate, from here to "Ours was short.": [cutscenes.md](cutscenes.md), CS-PQ01 (a proposal, pending the trial). The scene works played exactly as written._
+
 **Narrator:** Kaya reaches into her sash. What she takes out is a folded letter. It has been carried so long
 that the corners have gone round and the paper is soft as cloth.
 
@@ -812,8 +814,9 @@ it, quickly and well.
   fall with `pq01_left`. Winning K.4 raises it a little; the collectors remember being offered Friday.
 - **Keepsake:** Oko's sleeping turtle duck (not after `pq01_left`).
 - **MQ-12, Scene 12.2:** Miri's forty lanterns arrive at the shed with "Thursday, if you're alive. M." That
-  scene plays for every Kaya and already works with all three outcomes: after `pq01_left`, "She's written
-  'Thursday' again" means Miri asked a second time after all.
+  scene plays for every Kaya. After `pq01_whole_story` or `pq01_quiet_help` her answer to Hua is in the past
+  tense ("After that I used to go"); after `pq01_left`, or with the quest unopened, it is the present, and
+  "She's written 'Thursday' again" means Miri asked a second time after all.
 - **MQ-15, Scene 15.4:** the "resolved" version (Kaya on the ladder, Miri holding it) plays after
   `pq01_whole_story` or `pq01_quiet_help`; the "open" version (the date on the crate lid) after `pq01_left` or
   if the quest was never opened.
@@ -1235,6 +1238,8 @@ for the first.
 
 **Dema:** You're on the rota as washing-up, third shift. Until then you're a customer. Sit down.
 
+_Cutscene candidate, from here to Yuna's hand on his shoulder: [cutscenes.md](cutscenes.md), CS-PQ02 (a proposal, pending the trial). The scene works played exactly as written._
+
 **Narrator:** Tenzo sits. Yuna puts a bowl in front of him. It is a river-fish stew with greens, and it is
 not how he would have done it.
 
@@ -1312,8 +1317,8 @@ name. From the owner's list, this quest carries: you show up for people.
 
 - [x] No nation, element or culture stereotype (the house is one institution with a rule; Aru and its other
       healers are not cruel)
-- [x] Every valid party, non-benders included, has a real route through (ordinary medicine does half the
-      queue)
+- [x] Every valid party, non-benders included, has a real route through (Nilak is always present; the care
+      that lasts is a cold cloth, a count of two hundred and Dr. Iset's clinic)
 - [x] No instant forgiveness or absolution (Aru hears the apology and says they will wait and see)
 - [x] The other side's reasons are shown (Aru's father; why the house needs the company's freight space)
 - [x] The theme is never stated outright
@@ -1398,11 +1403,10 @@ going to sit there being right at me, or are you going to wash?
 ### Scene N.2 — The queue
 
 **Shown:** played. **Where:** the clinic landing, between Aru's table and the Open Palm Clinic's open door.
-Three people, taken in the order the decider picks. No order is wrong and nobody is harmed by waiting.
+Two people, taken in the order the decider picks. Neither order is wrong and nobody is harmed by waiting.
 
-**Narrator:** The Open Palm Clinic is across the landing: a long whitewashed room with its doors wedged open
-and a line of boiled cloths drying in the sun. A grey-haired woman in a doctor's apron is counting bottles on
-the step and getting a number she does not like.
+**Narrator:** The Open Palm Clinic is across the landing: a long whitewashed room with its doors wedged
+open. A grey-haired woman in a doctor's apron is counting bottles on the step.
 
 **Dr. Iset:** You're the healer off the vegetable cart. Good. Don't glow at anybody until you've asked them.
 Half my landing thinks waterbending is something that's done to you.
@@ -1420,24 +1424,10 @@ I?
 **Nilak:** It might, a little. I can ease the pain now. I can't promise what I haven't checked. Let me see it
 with the rag off first.
 
-**Narrator:** The greaser holds out his arm. It takes the time it takes to drink a cup of tea.
+**Narrator:** The greaser holds out his arm.
 
 **Tram greaser:** That's the first time anyone's told me what they were going to do before they did it. The
 company surgeon just grabs.
-
-**The ferryman.**
-
-**Narrator:** An old bargeman with a cough like a boat scraping a quay. Nilak listens to his chest with his
-ear, and then with two fingers of water, and then he sits back.
-
-**Nilak:** There's nothing here for me to move. It's the damp, and forty years of it. Dr. Iset?
-
-**Dr. Iset:** Thyme and honey syrup, a spoon at night, and he's to sleep with his head up. I've been telling
-him since the spring.
-
-**Old bargeman:** I thought the glowing would be quicker.
-
-**Nilak:** It wouldn't be. It would only look quicker. Take the syrup.
 
 **The girl.**
 
@@ -1462,7 +1452,7 @@ but I'd like him back.
 
 **Narrator:** He does not get him back.
 
-**After all three:**
+**After both:**
 
 **Narrator:** The grandfather's knee wants a week of treatment, a little each day. Nilak has his hand on it
 and his mouth open.
@@ -1470,8 +1460,6 @@ and his mouth open.
 **Nilak:** Come back tomorrow. And the day after. I'll see to all of it, I...
 
 **Dr. Iset:** Will you be here tomorrow?
-
-**Narrator:** She has not looked up from her bottles.
 
 **Nilak:** We're on the road at dawn.
 
@@ -1491,15 +1479,6 @@ day but the ninth.
 >
 > **Sura:** Where? In your sleep? You've given that away already. I've seen you.
 
-> **If Bo is in the party —**
-> **Narrator:** Bo has been sent to the bench to wait his turn for a pulled shoulder. He has not sat down.
->
-> **Nilak:** Sit, Bo.
->
-> **Bo:** There are people ahead of me.
->
-> **Nilak:** That's what the bench is for.
-
 ### Scene N.3 — Four polite slips
 
 **Shown:** played. **Where:** the end of the queue.
@@ -1510,8 +1489,8 @@ someone.
 
 **Odi:** I'm not here for the first treatment. I've had the first treatment. I've had it four times.
 
-**Narrator:** She puts four paper slips on the table, in a row. Each has the emblem at the top. Each is in a
-different hand.
+**Narrator:** She puts four paper slips on the table, in a row. Each has the emblem printed at the top, with
+the outreach room's mark under it. Each is in a different hand.
 
 **Odi:** Shoulder, down into the hand. From hauling wet net over a beam, twelve years. The first treatment
 works. For about six days I can close my fingers. Then it goes back.
@@ -1553,66 +1532,37 @@ or without it. You choose that. I don't.
 
 **Odi:** With. I've been "the net-loft woman" on four slips. Put Odi.
 
-### Scene N.4 — Forty labels
+> **If `reason.nilak` is set —** _(the forty labels; sets `pq03_labels_known`)_
+>
+> **Narrator:** Nilak squares the four slips. He stops with his thumb on the printed emblem.
+>
+> **Nilak:** Aru. This label was on a crate at Stoneback Quarry, under the dust. I opened it. Wrist straps
+> and buckled cuffs. Not one bandage.
+>
+> **Narrator:** Aru sits down on the supply chest.
+>
+> **Aru:** The company's boat carries our crates. They asked for labels in return, for bandage of their own.
+> Nothing under that label gets counted on a quay. I signed forty, in the spring. Blank.
+>
+> **Nilak:** One was at the quarry.
+>
+> **Aru:** Then there are thirty-nine I never looked for.
+>
+> **Nilak:** I saw that emblem and never read the mark. Three years, and I never asked what the room I'd left
+> had turned into. I was busy telling people why I'd gone.
+>
+> **Narrator:** Aru chalks a number inside the lid of the supply chest, where it will be the first thing
+> seen every morning: 39.
 
-**Shown:** played. **Where:** behind the table, at Aru's supply chest. This scene plays only if
-`reason.nilak` is set; otherwise go to N.5.
-
-**Narrator:** Aru's supply chest is stencilled "medical supplies" under the emblem. Nilak stands looking at
-the stencil for some time.
-
-**Nilak:** I saw that stencil at Stoneback Quarry. On a crate. I opened it.
-
-**Aru:** Bandage? Fever bark?
-
-**Nilak:** Wrist straps. Buckled cuffs. Nothing else. Not one bandage.
-
-**Narrator:** Aru goes very still.
-
-**Aru:** That can't be ours. We don't ship to quarries. We barely ship to Saltstep.
-
-**Nilak:** How does a crate get that mark?
-
-**Aru:** With a label. Anybody can cut a stencil. The label is what a customs clerk reads: the emblem,
-printed, and the outreach room's mark under it. The house has an exemption. Anything under that label crosses
-the bay uncounted, because it's medicine and nobody wants medicine held up on a quay.
-
-**Aru:** We can't afford a boat. So the company's contractor carries our crates on theirs. In exchange they
-asked for labels. For bandage of their own, they said. For their clinic at Emberwatch.
-
-**Narrator:** Nobody says anything for a moment.
-
-**Nilak:** How many labels?
-
-**Aru:** Forty. In the spring. I signed them blank.
-
-**Narrator:** Aru sits down on the supply chest.
-
-**Aru:** I didn't look. They said bandage, and there is a clinic at Emberwatch, and it does have bandage in
-it. I've seen it. So I signed forty and I didn't look where the other thirty-nine went.
-
-**Nilak:** There was a label on that crate, under the dust. I saw the emblem and I didn't read the mark. I
-walked out of that house three years ago, and I never once asked what the room I'd left turned into. I was too
-busy telling people why I'd gone.
-
-**Narrator:** Dr. Iset has come over with a bottle in each hand. She has heard all of it.
-
-**Dr. Iset:** Well. That's two of you who didn't look, and one of me who's been wondering since spring why a
-crate of "medical supplies" clinked at the ferry. I didn't ask either. I had a full bench.
-
-**Dr. Iset:** Sit there feeling dreadful for the length of one cup of tea. Then get up, because the woman
-with the shoulder is still waiting.
-
-### Scene N.5 — VOTE: a name on it
+### Scene N.4 — VOTE: a name on it
 
 **Shown:** played. **Where:** the clinic step, with Aru, Dr. Iset and Odi.
 
-**Aru:** I can take a petition to the house. Open admission, no last column. I've wanted to for a year. On my
-own they'll pat my head. With an outside name on it, counting who we turn away, they'd have to answer.
+**Aru:** I can take a petition to the house. Open admission, no last column. On my own they'll pat my head.
+With an outside name on it, counting who we turn away, they'd have to answer.
 
-**Dr. Iset:** Or you stop asking the house. I've got a room, a boiler and no waterbender. Anyone trained who
-wants to treat here can, and there's no last column in my book. But somebody has to say out loud why it's
-needed, and the house won't thank them.
+**Dr. Iset:** Or you stop asking the house. I've a room, a boiler and no waterbender, and there's no last
+column in my book. But somebody has to say out loud why it's needed, and the house won't thank them.
 
 **Odi:** Or you do my shoulder from the back of your cart while you're in town, and it's six days again. I'm
 not sneering at six days. I've taken them four times.
@@ -1620,7 +1570,7 @@ not sneering at six days. I've taken them four times.
 **VOTE — What does Nilak put his name to?**
 
 - **Publish it, and build the partnership.** Odi's slips and the register rule go up on the clinic door and
-  the dispatch board (and, if N.4 played, the forty labels). Follow-up care moves to the Open Palm, with any
+  the dispatch board (and, after `pq03_labels_known`, the forty labels). Follow-up care moves to the Open Palm, with any
   trained healer who will come. The house is embarrassed in public. _Sets `pq03_published`._
 - **Back Aru's petition, with Dr. Iset keeping count.** Nilak signs Aru's open-admission petition as a
   house-trained healer. Dr. Iset keeps an outside tally of everyone the table turns away, and posts it monthly
@@ -1647,7 +1597,7 @@ Nilak's name, a second one.
 **Aru:** Don't read that as agreeing. I think you've burned a year of my work to do in a morning what I'd have
 done by next spring. It's true, so my name goes on it.
 
-> **If N.4 played —** **Narrator:** A third sheet goes up beside it: "Forty supply labels, issued blank,
+> **After `pq03_labels_known` —** **Narrator:** A third sheet goes up beside it: "Forty supply labels, issued blank,
 > spring. One found at Stoneback Quarry on a crate of restraints. Thirty-nine not accounted for. Signed by the
 > one who issued them: Aru."
 
@@ -1679,25 +1629,21 @@ slip, and a nicer one than mine.
 
 **Narrator:** Nilak has no answer to that. He does not pretend he has.
 
-### Scene N.6 — Handing over
+### Scene N.5 — Handing over
 
 **Shown:** played. **Where:** the Open Palm Clinic, late in the day. Plays after any of the three.
 
 **Narrator:** Odi sits on the clinic bench with her sleeve rolled. Nilak has given the first session. Her
 fingers close, and open, and close.
 
-**Narrator:** There is a young nurse beside her with a basin, and Aru on the other side, and a sheet of paper
-on the bench between them in Nilak's small handwriting.
+**Narrator:** A young nurse sits beside her with a basin, and Aru on the other side. Between them is a sheet
+in Nilak's small handwriting.
 
 **Nilak:** Six sessions. Tomorrow is the second. Cold cloth for a count of two hundred first, every time.
 That part needs no bending, and it matters as much as the rest.
 
-**Nurse:** Two hundred. Then?
-
 **Nilak:** Then Aru, or whoever is at the table, works from the shoulder down. Not from the hand up. I've
 drawn it.
-
-**Narrator:** The nurse looks at the drawing.
 
 **Nurse:** Is that her arm?
 
@@ -1747,17 +1693,23 @@ not get back. It is pinned inside the cart's canopy. It looks no more like a tur
 
 ### PQ-03: what it sets and where it pays off
 
-| Sets             | Meaning                                                            |
-| ---------------- | ------------------------------------------------------------------ |
-| `pq03_open`      | Nilak sat down at Aru's table                                      |
-| `pq03_published` | The rule (and the labels) made public; follow-up moves to the Palm |
-| `pq03_monitored` | Aru's petition, co-signed, with Dr. Iset's outside tally           |
-| `pq03_tent`      | A cart clinic for as long as the cart stays                        |
-| `pq03_done`      | The quest is closed (any of the three)                             |
+| Sets                | Meaning                                                            |
+| ------------------- | ------------------------------------------------------------------ |
+| `pq03_open`         | Nilak sat down at Aru's table                                      |
+| `pq03_labels_known` | Aru told of the forty blank labels (N.3, only with `reason.nilak`) |
+| `pq03_published`    | The rule (and the labels) made public; follow-up moves to the Palm |
+| `pq03_monitored`    | Aru's petition, co-signed, with Dr. Iset's outside tally           |
+| `pq03_tent`         | A cart clinic for as long as the cart stays                        |
+| `pq03_done`         | The quest is closed (any of the three)                             |
 
 - **Trust:** Causeway's low landing rises with `pq03_published` (most) and `pq03_monitored`.
 - **TR-02:** not gated by any of this.
-- **MQ-12, Scene 12.2:** Dr. Iset schedules Nilak to rest. N.6 is the first time he does it.
+- **The thirty-nine labels** (after `pq03_labels_known`) come down twice in the main story. In Act III's
+  archive (Scene 9.2) a stores receipt book has thirty-one ticks "received uncounted, under healing-house
+  label", all to Security: eight still out. At Ruon's hearing (Scene 11.6) Daiyu puts a second quarry label
+  on the table: seven. The last seven are never found. When this is built, the number in Aru's lid (and on
+  the clinic door after `pq03_published`) should read whatever the party last sent back.
+- **MQ-12, Scene 12.2:** Dr. Iset schedules Nilak to rest. N.5 is the first time he does it.
 - **MQ-15, Scene 15.4:** "resolved" after `pq03_published` or `pq03_monitored`; "open" after `pq03_tent` or if
   never opened.
 
@@ -2326,6 +2278,8 @@ pile-heads if we break them up. It's three more days' work, with hammers.
 ### Scene S.5 — The one she hadn't had
 
 **Shown:** played. **Where:** the landing, at the end of whichever day it was.
+
+_Cutscene candidate, from here to "After a while she nods at the pole.": [cutscenes.md](cutscenes.md), CS-PQ04 (a proposal, pending the trial). The scene works played exactly as written._
 
 **Narrator:** Vessa is washing tar off her hands in a bucket. Sura sits down on the upturned hull beside her,
 with the pole across her knees.
@@ -2906,15 +2860,46 @@ person, and that is written in the scenes.
 
 ## How each scene is shown
 
-At most one cutscene candidate per quest, and none is relied on: every one also works played.
+At most one cutscene candidate per quest, and none is relied on: every one also works played. The owner
+approved three as candidates on 2026-11-17 (Kaya's letter, Sura's "I heard you", Tenzo's salt). Their shot
+lists are in [cutscenes.md](cutscenes.md), pending the trial in issue #810.
 
-| Quest | Found         | Played             | Cutscene candidate                                      |
-| ----- | ------------- | ------------------ | ------------------------------------------------------- |
-| PQ-01 | K.1, K.6, K.7 | K.2, K.3, K.4, K.5 | K.3, the letter: the unbroken seal, and four lines      |
-| PQ-02 | none          | T.1, T.2, T.3, T.4 | T.4, the hand that does not reach the salt              |
-| PQ-03 | none          | N.1 to N.6         | None                                                    |
-| PQ-04 | S.1           | S.2, S.3, S.4, S.5 | S.4 (`pq04_joint_ice`): cutting the hole in her own ice |
-| PQ-05 | none          | B.1 to B.5         | B.4, Bo's hands on the jack handle while the beam binds |
+| Quest | Found         | Played             | Cutscene candidate                                                                          |
+| ----- | ------------- | ------------------ | ------------------------------------------------------------------------------------------- |
+| PQ-01 | K.1, K.6, K.7 | K.2, K.3, K.4, K.5 | K.3, the letter: the unbroken seal, and four lines (CS-PQ01)                                |
+| PQ-02 | none          | T.1, T.2, T.3, T.4 | T.4, the hand that does not reach the salt (CS-PQ02)                                        |
+| PQ-03 | none          | N.1 to N.5         | None                                                                                        |
+| PQ-04 | S.1           | S.2, S.3, S.4, S.5 | S.5, "I heard you" (CS-PQ04). It plays on every route; S.4's hole in the ice is seen on one |
+| PQ-05 | none          | B.1 to B.5         | None now. B.4 stays in the table's hands (see cutscenes.md)                                 |
+
+## Decided (owner, 2026-11-17)
+
+The owner read the edit pass's proposals on 2026-11-17. What he decided for this file, and where it is written:
+
+1. **How Kaya left.** She was fourteen, and she left that night on her uncle's barge, going upriver: she
+   asked to be on it and nobody said no (K.3). Miri's workshop is the shop that burned, on the street where
+   Kaya was born, and in K.5 the chandler shuts his shutter on her telling. Approved as written.
+2. **Which takeaway each card names.** Kaya's card names "you show up for people" (the letter asked whether
+   she was coming on Thursday). Sura's names "saying sorry isn't the end of it" (Vessa has had the apology,
+   with soup). Approved as exchanged. Cards only; they are never shown to players.
+3. **PQ-03 is shorter.** The old bargeman is cut from N.2, so the queue is two people (the greaser, who shows
+   the asking, and the girl, who gives Bun and her grandfather's knee to hand over). The forty labels are no
+   longer a scene of their own: when `reason.nilak` is set they are a short exchange at the end of N.3, over
+   Odi's slips, and Aru chalks "39" inside the chest lid. The vote is now N.4 and the handover N.5. Cut with
+   them: Dr. Iset's "clinked at the ferry", Bo's turn on the bench, and a few lines of narration. The quest
+   is about a seventh shorter by word count, with five scenes in place of six. The new flag
+   `pq03_labels_known` replaces "if N.4 played".
+4. **The forty labels stay, and the thirty-nine come down.** Both places the edit pass suggested are used,
+   because they do different work. Scene 9.2 (the archive) gives the paper: thirty-one ticks counted aloud
+   in fives, so thirty-nine becomes eight, and every one went to Security. Scene 11.6 (Ruon's hearing) gives
+   a person: Ruon signed for two crates as bandage and never lifted a lid, and Daiyu hands over the second
+   label, so eight becomes seven. Both are guarded on `pq03_labels_known`, both work without Nilak, and seven
+   are left unfound on purpose.
+
+5. **Cutscene candidates.** Kaya opening the letter (K.3), Sura's "I heard you" (S.5) and Tenzo's hand not
+   reaching for the salt (T.4) are approved as candidates and have shot lists in
+   [cutscenes.md](cutscenes.md): CS-PQ01, CS-PQ04, CS-PQ02. They are hands and objects only, and all three
+   wait on the trial in issue #810. Sura's candidate moved from S.4 to S.5 because S.5 plays on every route.
 
 ## Open, for the owner
 
@@ -2953,7 +2938,8 @@ Everything below is written into the scripts as recommended, per the standing in
    gave the outreach room a customs exemption and had Aru sign forty blank supply labels for the contractor's
    boat in exchange for freight space. It makes Aru answerable for something real without making them a
    villain, and it is inside the reveal ladder (MQ-02 already has uncounted "safety materials"). Recommend:
-   approve; it is the largest invention in this file.
+   approve; it is the largest invention in this file. _Decided (owner, 2026-11-17):_ kept, with the thirty-nine paid
+   off in Scenes 9.2 and 11.6.
 9. **Scene 15.4's "resolved" line for Tenzo** says "The kitchen is run by its cooks now." That is true after
    `pq02_cooks_shelf` but not after `pq02_posted_terms`, where Ketu still holds the contract. Recommend: when
    15.4 is built, give the posted-terms route its own first sentence ("The terms are still on the wall beside
@@ -2995,18 +2981,10 @@ Everything below is written into the scripts as recommended, per the standing in
     - **Dema's name.** The demo's old road keeper was a placeholder "Dema", since renamed Lanfen; the shipped
       portrait key is still `portrait.dema`. The canon Dema is the Six-Ladle cook. Nothing to fix here; a
       build session should not reuse that portrait for him.
-15. **Edit pass (2026-11-17): how Kaya left.** The script had Kaya, at fourteen, "gone before the tiles were
-    cold" with no way to have gone. K.3 now gives her one line: her uncle's barge was going upriver that night
-    and she asked to be on it. K.3 also says plainly that Miri's workshop is the shop that burned, on the
-    street where Kaya was born, and in K.5 the chandler shuts his shutter on her telling. Recommend: approve,
-    or name another way she left.
-16. **Edit pass: which takeaway each card names.** Kaya's card now names "you show up for people" (the letter
-    asked whether she was coming on Thursday) and Sura's names "saying sorry isn't the end of it" (Vessa has
-    had the apology, with soup). They were the other way about. Cards only.
-17. **Edit pass: Bo and his crew.** Bo is 30 and has run this crew six years (Scene 6.4), so in B.2 he was
+15. **Edit pass: Bo and his crew.** Bo is 30 and has run this crew six years (Scene 6.4), so in B.2 he was
     twenty-four, not nineteen, when the old foreman walked off. Renn calls the count, as in Scenes 6.4, 13.3
     and 15.4, and Wick watches the jacks from the tank. The vote in B.3 is taken in the night, so that "Bo
     does it alone" can happen while the crew sleep.
-18. **Edit pass: a quest played with no cart.** The reading key now says what a quest loses between MQ-09 and
+16. **Edit pass: a quest played with no cart.** The reading key now says what a quest loses between MQ-09 and
     MQ-11. A quest played while the party is on the posters will also want a line from the people who
     recognise them; none is written yet.

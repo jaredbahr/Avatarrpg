@@ -92,7 +92,7 @@ test('rescued riverside return keeps the shrine discovery and party health', asy
       battle: null,
       flags: { ...app.state.flags, act1_complete: true },
       story: { ...app.state.story, nodeId: 'village_explore', lineIndex: 0 },
-      location: { mapId: 'ba_dan_village', pos: { x: 19, y: 15 } },
+      location: { mapId: 'ba_dan_village', pos: { x: 18, y: 19 } },
     };
     app.resync();
     return party.map((unit) => ({ id: unit.id, hp: unit.hp }));
@@ -175,7 +175,7 @@ for (const renderer of ['canvas', 'webgl']) {
     await page.evaluate(() => {
       const app = window.fnt?.app;
       if (!app?.state) throw new Error('No game');
-      app.state = { ...app.state, location: { mapId: 'ba_dan_village', pos: { x: 22, y: 7 } } };
+      app.state = { ...app.state, location: { mapId: 'ba_dan_village', pos: { x: 30, y: 9 } } };
       app.resync();
     });
     await page.getByRole('button', { name: 'Map', exact: true }).click();
@@ -202,7 +202,7 @@ for (const renderer of ['canvas', 'webgl']) {
     await page.getByRole('button', { name: 'West → Ba Dan Village', exact: true }).click();
     await waitForIdle(page);
     await expect(page.locator('.title-plate-name')).toHaveText('Ba Dan Village');
-    expect(await page.evaluate(() => window.fnt?.app.state?.location.pos)).toEqual({ x: 22, y: 7 });
+    expect(await page.evaluate(() => window.fnt?.app.state?.location.pos)).toEqual({ x: 30, y: 9 });
     expect(errors).toEqual([]);
   });
 }

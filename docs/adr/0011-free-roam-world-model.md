@@ -201,3 +201,25 @@ for — stated over a band instead of a point.
   region has to start paging its art rather than precaching it.
 - Every W slice that changes what is drawn ships with its gallery beat, like
   every other slice since ADR 0006.
+
+## Amendment: the approved level bands (owner, 2026-11-18, #784)
+
+The owner approved the proposed bands. Level 10 is reached only in the finale.
+
+| Region (saga outline)                              | Missions     | Band |
+| -------------------------------------------------- | ------------ | ---- |
+| Ba Dan valley (the demo)                           | MQ-01        | 1–3  |
+| Saltstep                                           | MQ-02        | 3–4  |
+| Emberwatch                                         | MQ-03        | 4–5  |
+| Causeway, tram yards                               | MQ-04, MQ-05 | 5–6  |
+| Copper Orchard, Reedglass, Bellweather (any order) | MQ-06–MQ-08  | 6–8  |
+| Maintenance archive                                | MQ-09        | 7–8  |
+| The assembly; Ba Dan again                         | MQ-10, MQ-11 | 8–9  |
+| Stillwater Works                                   | MQ-12–MQ-15  | 9–10 |
+
+- **A region revisited later is its own region.** Ba Dan's Act IV visit (MQ-11) is "Ba Dan, later": it shares the
+  village's maps and has its own 8–9 band and fights. A region never carries a second band switched by the story.
+- **A region that holds several missions takes the union of their bands.** RG-02 (`saltstep_emberwatch`) holds both
+  MQ-02 and MQ-03, so its band is 3–5.
+- **Arriving over the band is allowed, up to 2 levels**, and `rules/difficulty.ts` absorbs it, as this ADR planned.
+  Entry below a band stays hard-gated by the exit's `Condition`.

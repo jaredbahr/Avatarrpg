@@ -12,8 +12,10 @@ import {
 } from '../../render/fx/simulate';
 import { MAX_SHEDDING_CANOPIES, ambientEmitters, waterCells } from './ambience';
 
-/** Ba Dan's top-down scene: its chimneys and canopies are what the ambience reads. */
-const BA_DAN = JSON.parse(readFileSync('public/art/topdown/ba-dan/scene.json', 'utf8')) as MapScene;
+/** Ba Dan's top-down scene as it shipped before the grey blockout, frozen: its chimneys and canopies are what the ambience reads. */
+const BA_DAN = JSON.parse(
+  readFileSync('src/content/maps/fixtures/oldVillageScene.json', 'utf8'),
+) as MapScene;
 
 const grid: Grid = { width: 20, height: 12, tiles: [] };
 

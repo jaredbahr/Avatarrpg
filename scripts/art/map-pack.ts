@@ -73,10 +73,10 @@ const SCENES: Readonly<Record<string, Scene>> = {
     light: 'Hard afternoon light into the pit; the terraces cast no shadow onto the floor.',
   },
   ba_dan_village: {
-    place: 'Ba Dan, the small village the party sets out from: a clearing in the woods.',
+    place: 'Ba Dan, a quarry village built from the pale stone of its own hill.',
     scene:
-      'A village clearing ringed by trees, thickest in the corners. A road of flagstones crosses the whole picture left to right through the middle, two tiles deep, and runs out through the east gate at the right edge where the flagstones give way to bare earth. At the west edge the road enters through a shallow flooded ford and pond. Four timber houses, two above the road and two below, each an open cutaway rectangle of timber walls round a visible floor of planks with a doorway opening onto a paved path that leads to the road. Between the houses above the road a paved yard opens off the road. One shallow canal enters from the west edge along row 6: nine water cells, a dry stone footbridge, then three more water cells at its east end. There is no canal along the south edge; below the road the matching paved yard has small market and garden edges, and its south lawn continues into meadow. Grass everywhere else, worn to paths near the doors.',
-    light: 'Soft mid-morning light, no long shadows.',
+      'A village on a hillside under a quarry. Cliff and trees close the top edge, with a dry-stone terrace on the left reached by a short flight of steps, and trees close the left and bottom edges. A road of flagstones runs in from the east edge through a gap in a low stone wall, past a shop with a storeroom and a stone trough on the road, and opens into a square at the middle of the picture. A long patched awning over a table stands at the near side of the square, in front of the largest house. A lane leaves the square to the left past a yard of cut stone blocks and a small house, and a path runs behind the house backs along the top, through a side gate in a garden fence on the right. A canal crosses the lower third from the left edge to the right, with a two-tile-wide stone bridge a little left of centre and washing steps on its near bank, and runs out under the east wall. South of the canal a row of small houses with doorsteps faces a lane, and a path leaves the bottom edge at the middle. A flooded ford closes the left edge of the road.',
+    light: 'Soft midday light, pale dust on the square, no long shadows.',
   },
   /*
    * RG-02, the pipeline-trial slice. Written from the script's build list

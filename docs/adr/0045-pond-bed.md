@@ -61,7 +61,7 @@ gate in `e2e/renderer.spec.ts` sampled the pond's middle at `b-r` 3.8 on CI
 against 23.1 on hardware, and passed again once the plate was swapped back to
 its pre-bed version. `BED_COOL` was therefore widened to red ×0.80 / blue
 ×1.26 — brightness, depth, mottle and the bite are unchanged — and the plate
-repacked. Evidence: `docs/coordination/handoffs/pond-bed-blue-gate.md`.
+repacked. Evidence: `docs/coordination/handoffs/pond-bed-blue-gate.md` (in Git history up to 2c132c59).
 
 Costs and limits: `public/art/maps/forest-scene/pond-bank.webp` grows from
 34,822 to 36,562 bytes (precache 17.32 MB of 25 MB). The bed has no reeds or

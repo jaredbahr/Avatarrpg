@@ -1302,6 +1302,11 @@ export type StoryNode =
       readonly presentation?: NodePresentation;
       readonly options: readonly StoryOption[];
       readonly variants?: readonly DialogueVariant[];
+      /**
+       * A now-or-later prompt ("Sit down" / "Another time", rest or carry on): the
+       * player in charge answers it alone, with no table vote (owner, 2026-11-17, #846).
+       */
+      readonly routine?: boolean;
       /** Line under the options. Act-specific colour, so it lives in the data. */
       readonly footer?: string;
     }

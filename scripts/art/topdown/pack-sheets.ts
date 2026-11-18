@@ -38,14 +38,35 @@ export const OUT = 'public/art/topdown';
 export const DATA = 'src/content/assets/topdownSheets.ts';
 /**
  * The standing objects packed as plain trimmed PNGs under `objects/`: T3's (`world.route_sign`, `world.school_notice`)
- * and RG-02's cart with Parcel in harness (`world.parcel_cart`, `tools/rg02obj.py`).
+ * and RG-02's cart with Parcel in harness and Miri's lantern crates (`world.parcel_cart`, `world.lantern_crates`,
+ * `tools/rg02obj.py`), and Ba Dan's three later-state props (`tools/bd20gen.py`).
  */
-export const OBJECTS = ['route_sign', 'school_notice', 'parcel_cart'] as const;
+export const OBJECTS = [
+  'route_sign',
+  'school_notice',
+  'parcel_cart',
+  'lantern_crates',
+  'side_gate_hung',
+  'gao_jar',
+  'hesra_boot',
+] as const;
 /** Each object's source folder under `SOURCE`. */
 const OBJECT_SOURCE: Readonly<Record<(typeof OBJECTS)[number], string>> = {
   route_sign: 'objects_t3',
   school_notice: 'objects_t3',
   parcel_cart: 'objects_rg02',
+  lantern_crates: 'objects_rg02',
+  // Ba Dan's later-state props (`tools/bd20gen.py`): shown when a story condition holds.
+  side_gate_hung: 'objects_bd20',
+  gao_jar: 'objects_bd20',
+  hesra_boot: 'objects_bd20',
+};
+/**
+ * An object whose shipped image is not `<name>.png` in its source folder: the hung side gate stands on a cell south of
+ * the baked open gate it covers, so its image carries the transparent rows between the two (`tools/bd20set.py`).
+ */
+const OBJECT_FILE: Readonly<Partial<Record<(typeof OBJECTS)[number], string>>> = {
+  side_gate_hung: 'side_gate_hung_set.png',
 };
 export const OBJECTS_OUT = `${OUT}/objects`;
 
@@ -54,7 +75,7 @@ export function shippedFiles(): string[] {
   const top = existsSync(OUT) ? readdirSync(OUT) : [];
   const objects = existsSync(OBJECTS_OUT) ? readdirSync(OBJECTS_OUT) : [];
   return [
-    // The boards' folders (`ba-dan/`, `forest-road/`, the quarry's three) are the ground packer's
+    // The boards' folders (`ba-dan/`, `forest-road/`, the quarry's three, RG-02's) are the ground packer's
     // (`pack-ground.ts`) and `props/` the prop packer's (`pack-props.ts`), each held by its own test.
     ...top
       .filter(
@@ -66,6 +87,10 @@ export function shippedFiles(): string[] {
             'quarry-gate',
             'cutting',
             'quarry-floor',
+            'saltstep-market',
+            'saltstep-pontoon',
+            'emberwatch-parade',
+            'emberwatch-power-yard',
             'props',
           ].includes(f),
       )
@@ -1596,7 +1621,9 @@ export async function packTopdownSheets(): Promise<Map<string, Uint8Array | stri
   // The standing objects, trimmed hard-alpha PNGs the scene loads by name (T3's `prototypes/topdown/tools/t3objproc.py`;
   // RG-02's cut at alpha 128 and trimmed the same way from `tools/rg02obj.py`'s take).
   for (const name of OBJECTS) {
-    const bytes = readFileSync(join(SOURCE, OBJECT_SOURCE[name], `${name}.png`));
+    const bytes = readFileSync(
+      join(SOURCE, OBJECT_SOURCE[name], OBJECT_FILE[name] ?? `${name}.png`),
+    );
     files.set(`${OBJECTS_OUT}/${name}.png`, new Uint8Array(bytes));
     // A one-image atlas (every cel the image), so the object stands on its cell as a figure does
     // (`topdownObject` in the manifest).

@@ -242,11 +242,14 @@ export function straightEdge(
  * purpose: it is a built stone channel, ruled straight between its kerbs as the owner approved it
  * (v12, v13), and its edges are kerb against water, not ground against ground.
  */
+/** What the edge checks do not see: what objects cover, and made edges (ADR 0120). */
+const hiddenOf = (b: Baked): Uint8Array =>
+  b.made ? b.cover.map((c, i) => (c || b.made?.[i] ? 1 : 0)) : b.cover;
 const SOFT: ReadonlySet<number> = new Set([CLASS.G, CLASS.C, CLASS.D]);
 export const terrainEdge = (b: Baked): StraightEdge =>
   b.edges
-    ? // a board with a finer key (the quarry's grounds and shelf levels): every boundary counts
-      straightEdge(b.edges, b.cover, b.ground.width, b.ground.height)
+    ? // a board with a finer key (the quarry's grounds and shelf levels): every boundary counts, but a made one
+      straightEdge(b.edges, hiddenOf(b), b.ground.width, b.ground.height)
     : straightEdge(
         b.classes,
         b.cover,
