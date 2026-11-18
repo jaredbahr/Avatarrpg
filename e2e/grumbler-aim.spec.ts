@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { grumblerAimCheckpoint } from '../scripts/e2e/grumbler-aim-checkpoint';
 import { CONTENT } from '../src/content';
-import { isValidTarget } from '../src/core/rules/abilities';
+import { canUseAbility, isValidTarget } from '../src/core/rules/abilities';
 import { distance, occupiedCells, samePos } from '../src/core/rules/grid';
 import { apply } from '../src/core/state/reducer';
 import type { Command, GameEvent, GameState, Vec2 } from '../src/core/types';
@@ -182,7 +182,8 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     const boss = battle?.units.find((unit) => unit.id === checkpoint.targetId);
     const ability = CONTENT.abilities.get(checkpoint.abilityId);
     if (!battle || !caster || !boss || !ability) throw new Error('Missing earned aim checkpoint');
-    expect(caster.ap).toBe(5);
+    // The earned turn's AP moves with any AI retune; what the taps need is a usable shot.
+    expect(canUseAbility(CONTENT, caster, ability).ok).toBe(true);
     expect(boss.size).toBe(2);
     const footprint = occupiedCells(boss);
     const emptyTiles = battle.grid.tiles.flatMap((tile, index) => {

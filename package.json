@@ -47,6 +47,7 @@
     "new:region": "node --import tsx scripts/content/new-region.ts",
     "soak": "node --import tsx scripts/soak.ts",
     "replay": "node --import tsx scripts/replay.ts",
+    "checkpoints": "node --import tsx scripts/e2e/checkpoint-pins.ts",
     "bench:core": "node --import tsx scripts/perf/core-bench.ts",
     "lighthouse": "node scripts/lighthouse.mjs"
   },

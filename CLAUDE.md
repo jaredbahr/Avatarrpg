@@ -369,6 +369,14 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   hold is in `src/content/ids.ledger.json` for good. Run `npm run ids:ledger` after adding content; to rename or
   remove an id, leave the ledger alone and add a row to `src/content/idAliases.ts`, which `applyIdAliases` applies
   first on load. `savedIds.test.ts` fails on a shipped id that vanished without one.
+- **The quarry checkpoints are pinned by facts, never by a digest** (#795).
+  `scripts/e2e/quarry-checkpoints.facts.json` holds what an AI retune must not move: the story path, the party, the
+  flags, the world, the save's shape and the first fight's opening. A failing test lists the moved facts by path.
+  Re-pin with `npm run checkpoints -- --write` and paste its summary into the pull request; on a merge conflict in
+  that file, take either side and run the same command. How the fights play (transcript, RNG cursor, log) is not
+  pinned, only bounded: to see whether a change moved it, run `npm run checkpoints -- --dump before.json` on `main`
+  and `npm run checkpoints -- --diff before.json` on the branch. Never add a hash of a save or a transcript to a
+  test: nobody can review one, and every AI or content pull request then conflicts with every other.
 - **A save remembers only what the story recorded when it was written** (ADR 0112). A flag that something reads
   and that gains a write in a region a release already shipped must say how that release's saves answer, in its
   registry entry (`oldSaves`: a backfill rule in `src/content/story/flagBackfills.ts`, `open` or `unset`); a new scene
