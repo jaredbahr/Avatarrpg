@@ -4,7 +4,8 @@ import { tileAt } from '../core/rules/grid';
 import { SQUARE_FOOTPRINTS } from '../core/rules/footprint';
 import type { Grid, MapScene, SceneImage, SceneScenery } from '../core/types';
 import type { Camera } from './camera';
-import type { MapView } from './view';
+import type { LightGrade, MapView } from './view';
+import { gradedSource } from './dayLight';
 import { footprintFoot } from '../core/rules/footprint';
 import { BackdropStore } from './backdrops';
 import { featherAlpha } from './geometry/feather';
@@ -185,16 +186,19 @@ export function drawSceneImage(
   y: number,
   width: number,
   height: number,
+  grade: LightGrade | null = null,
 ): void {
   const rect = sceneSourceRect(piece, image);
   if (!rect) return;
   const source = sceneDrawable(piece, image);
   if (!source) return;
+  // The day's grade (ADR 0121) is a graded copy of the same page: every rectangle still holds.
+  const drawn = gradedSource(source, grade);
   // Nearest-neighbour where a painting pixel is a whole block of device pixels (ADR 0088).
   drawArt(context, rect.width, width, () => {
     if (source === image)
-      context.drawImage(image, rect.x, rect.y, rect.width, rect.height, x, y, width, height);
-    else context.drawImage(source, 0, 0, rect.width, rect.height, x, y, width, height);
+      context.drawImage(drawn, rect.x, rect.y, rect.width, rect.height, x, y, width, height);
+    else context.drawImage(drawn, 0, 0, rect.width, rect.height, x, y, width, height);
   });
 }
 

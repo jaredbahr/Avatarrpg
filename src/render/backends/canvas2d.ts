@@ -41,6 +41,7 @@ import { drawBendFx } from '../fx/bendFxDraw';
 import { backdrops } from '../backdrops';
 import { sceneForGrid, sceneImage, drawSceneImage, sceneryOpacities } from '../scene';
 import { drawArt } from '../pixelSampling';
+import { gradedSource, lampGlowArt, lampGlowBox } from '../dayLight';
 import { propShadows, rgbaCanvas, topdownPropArt } from '../topdown/propLayer';
 import { drawsWash, washLayer } from '../topdown/wash';
 import {
@@ -89,9 +90,12 @@ import {
   FLOATER_TEXT_SCALE,
   fallenAlpha,
   floaterScale,
+  gradedRgb,
   npcClip,
   unitMarkerGroundPoint,
   type AimArc,
+  type BoardLight,
+  type LightGrade,
   type MapView,
   type OverlayKind,
   type OverlayLayer,
@@ -206,6 +210,9 @@ export class Canvas2DBackend implements RenderBackend {
   private reliefSignature = '';
   /** The flock whose page was last asked for, so a scene change asks once. */
   private flock: SceneFlock | undefined;
+  /** This frame's day light (ADR 0121): the world's art draws from graded pages. */
+  private light: BoardLight | null = null;
+  private grade: LightGrade | null = null;
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -243,6 +250,8 @@ export class Canvas2DBackend implements RenderBackend {
     };
 
     this.organic = false;
+    this.light = view.light ?? null;
+    this.grade = this.light?.grade ?? null;
     ctx.save();
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.imageSmoothingEnabled = true;
@@ -282,6 +291,8 @@ export class Canvas2DBackend implements RenderBackend {
     if (!painted || view.crispOverlays) this.drawDecor(view, camera);
     const surfaces = this.organic ? surfaceArt(view, painted) : null;
     if (surfaces) this.drawTopdownSurfaces(surfaces, camera);
+    // The lamps' pools lie on the ground, under every mark and figure (ADR 0121).
+    this.drawLampPools(camera);
     // A painted scene runs past the grid and carries its own light, so the board-edge falloff
     // (clipped to the grid) would cut a straight band through it. Pixi skips it the same way.
     if (view.atmosphere && !scenePainted) this.drawShade(view, camera);
@@ -362,10 +373,13 @@ export class Canvas2DBackend implements RenderBackend {
             -piece.height * camera.scale,
             piece.width * camera.scale,
             piece.height * camera.scale,
+            this.grade,
           );
           ctx.restore();
         },
       })),
+      // A lit lamp's glass draws with its lamp: over it, under whatever stands in front.
+      ...this.glassOccupants(camera),
       ...view.npcs.map((npc) => ({
         pos: {
           x: (npc.renderPos ?? npc.pos).x + this.npcWidth(npc.sprite) / 2,
@@ -393,6 +407,69 @@ export class Canvas2DBackend implements RenderBackend {
     this.drawReveal(view, camera);
   }
 
+  /** A page of the world's art as this frame's grade leaves it (ADR 0121); the page itself by day. */
+  private art<T extends HTMLCanvasElement | HTMLImageElement>(page: T): T | HTMLCanvasElement {
+    return gradedSource(page, this.grade);
+  }
+
+  /**
+   * Each lit lamp's pool on the ground (ADR 0121): stepped rings added onto the graded ground, on the
+   * world-pixel grid, drawn nearest where a world pixel is whole device pixels. Top-down only: the
+   * lamps are a scene's, in its 40 px tiles.
+   */
+  private drawLampPools(camera: Camera): void {
+    const light = this.light;
+    if (!light?.lamps.length || camera.projection !== 'topdown') return;
+    const art = lampGlowArt(light.pool);
+    if (!art) return;
+    const { ctx } = this;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    for (const lamp of light.lamps) {
+      const box = lampGlowBox(lamp.ground, light.pool, camera.tile);
+      drawArt(ctx, box.w, box.w * camera.scale, () =>
+        ctx.drawImage(
+          art,
+          box.x * camera.scale - camera.offsetX,
+          box.y * camera.scale - camera.offsetY,
+          box.w * camera.scale,
+          box.h * camera.scale,
+        ),
+      );
+    }
+    ctx.restore();
+  }
+
+  /**
+   * Each lit lamp's glass, as an occupant at its lamp's depth. Pixi adds it inside the graded
+   * figures' layer, so the grade lands on it too; here the colour is graded first to match.
+   */
+  private glassOccupants(camera: Camera) {
+    const light = this.light;
+    if (!light?.lamps.length || camera.projection !== 'topdown') return [];
+    const art = lampGlowArt(light.glass, gradedRgb(light.grade, light.glass.color));
+    if (!art) return [];
+    const { ctx } = this;
+    return light.lamps.map((lamp) => ({
+      pos: lamp.depth,
+      draw: () => {
+        const box = lampGlowBox(lamp.glass, light.glass, camera.tile);
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        drawArt(ctx, box.w, box.w * camera.scale, () =>
+          ctx.drawImage(
+            art,
+            box.x * camera.scale - camera.offsetX,
+            box.y * camera.scale - camera.offsetY,
+            box.w * camera.scale,
+            box.h * camera.scale,
+          ),
+        );
+        ctx.restore();
+      },
+    }));
+  }
+
   /** The scene's ground plates, each at its own world-px rectangle under pan and zoom only. */
   private drawScenePlates(
     ground: readonly { piece: SceneImage; image: HTMLImageElement | null }[],
@@ -408,6 +485,7 @@ export class Canvas2DBackend implements RenderBackend {
         piece.y * camera.scale - camera.offsetY,
         piece.width * camera.scale,
         piece.height * camera.scale,
+        this.grade,
       );
     }
   }
@@ -418,7 +496,7 @@ export class Canvas2DBackend implements RenderBackend {
   private drawBackdrop(image: HTMLImageElement, view: MapView, camera: Camera): void {
     const origin = camera.toScreen({ x: 0, y: 0 });
     this.ctx.drawImage(
-      image,
+      this.art(image),
       origin.x,
       origin.y,
       view.grid.width * origin.size,
@@ -894,7 +972,7 @@ export class Canvas2DBackend implements RenderBackend {
         const f = frame.frame;
         drawArt(ctx, f.w, fw, () =>
           ctx.drawImage(
-            frame.source,
+            this.art(frame.source),
             f.x,
             f.y,
             f.w,
@@ -907,7 +985,7 @@ export class Canvas2DBackend implements RenderBackend {
         );
       } else {
         const sprite = sprites.get(npc.sprite, box.size * dpr * scale, npcPose(npc), width);
-        ctx.drawImage(sprite, box.x, box.y, box.size * width, box.size);
+        ctx.drawImage(this.art(sprite), box.x, box.y, box.size * width, box.size);
       }
 
       ctx.restore();
@@ -987,7 +1065,7 @@ export class Canvas2DBackend implements RenderBackend {
         if (!f) return;
         drawArt(ctx, f.w, f.w * camera.scale, () =>
           ctx.drawImage(
-            art.image,
+            this.art(art.image),
             f.x,
             f.y,
             f.w,
@@ -1053,7 +1131,7 @@ export class Canvas2DBackend implements RenderBackend {
         const { box: at } = art;
         drawArt(ctx, at.w, at.w * camera.scale, () =>
           ctx.drawImage(
-            art.image,
+            this.art(art.image),
             at.x * camera.scale - camera.offsetX,
             at.y * camera.scale - camera.offsetY,
             at.w * camera.scale,
@@ -1062,7 +1140,7 @@ export class Canvas2DBackend implements RenderBackend {
         );
       } else if (prop.sprite) {
         const sprite = sprites.get(prop.sprite, box.size * dpr, { facing: 1 });
-        ctx.drawImage(sprite, box.x, box.y, box.size, box.size);
+        ctx.drawImage(this.art(sprite), box.x, box.y, box.size, box.size);
       } else continue;
 
       /*
@@ -1795,7 +1873,7 @@ export class Canvas2DBackend implements RenderBackend {
         }
         // A sheet pixel on a whole block of device pixels draws nearest (ADR 0088).
         drawArt(ctx, f.w, fw, () => {
-          ctx.drawImage(frame.source, f.x, f.y, f.w, f.h, drawX, drawY, fw, fh);
+          ctx.drawImage(this.art(frame.source), f.x, f.y, f.w, f.h, drawX, drawY, fw, fh);
           if (unit.flash && unit.flash > 0) {
             ctx.globalAlpha *= Math.min(1, unit.flash);
             ctx.drawImage(this.mask(frame.source), f.x, f.y, f.w, f.h, drawX, drawY, fw, fh);
@@ -1814,7 +1892,7 @@ export class Canvas2DBackend implements RenderBackend {
           unit.size,
           heightTiles,
         );
-        ctx.drawImage(sprite, drawX, drawY, drawWidth, drawHeight);
+        ctx.drawImage(this.art(sprite), drawX, drawY, drawWidth, drawHeight);
         if (unit.flash && unit.flash > 0) {
           ctx.globalAlpha *= Math.min(1, unit.flash);
           ctx.drawImage(this.mask(sprite), drawX, drawY, drawWidth, drawHeight);
