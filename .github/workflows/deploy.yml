@@ -8,7 +8,7 @@
 # CI fully passed, even when newer commits are still testing; a commit whose CI
 # failed, was cancelled or has not finished is never shipped (owner, 2026-11-15,
 # amending the exact-HEAD rule; see scripts/deploy-gate.mjs and
-# docs/coordination/handoffs/issue-538-deploy-gate.md). Every later stage
+# docs/coordination/handoffs/issue-538-deploy-gate.md, in Git history up to 2c132c59). Every later stage
 # revalidates exactly the selected SHA and run, and that the SHA is still an
 # ancestor of main.
 
