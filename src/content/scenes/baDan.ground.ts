@@ -322,7 +322,7 @@ export const BA_DAN_GROUND_SPEC: GroundSpec = {
       tile: { set: 'gc32', key: 'c1111' },
       reads: 'ground',
       terrain: 'C',
-      calm: 0.32,
+      calm: 0.24,
       grade: [1.16, 1.08, 0.94],
     },
     // the rim's tree line: shaded ground, darker and cooler, where the trees will stand
