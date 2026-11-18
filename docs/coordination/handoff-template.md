@@ -1,6 +1,6 @@
 # Task handoff template
 
-Copy this into the task's PR description or a task-specific handoff. Replace every
+Copy this into the task's PR description (handoff files in the tree were retired, owner 2026-11-18, #777). Replace every
 placeholder; use "not run" or "unknown" rather than implying verification.
 
 - **Updated:** UTC timestamp; outgoing owner/session; incoming owner if assigned.
