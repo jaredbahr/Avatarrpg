@@ -18,9 +18,10 @@ export const SALTSTEP_EMBERWATCH: RegionManifest = {
   mapIds: ['saltstep_market', 'saltstep_pontoon', 'emberwatch_parade', 'emberwatch_power_yard'],
   // Ba Dan's coast road is this region's way in, and the market's west road its way home.
   neighbours: ['ba_dan_valley'],
-  // PLACEHOLDER until the owner answers #784: every Act I route ends on level 4, and SF-2.1 can
-  // lift a party to 5 before MQ-03.
-  levelBand: { minLevel: 4, maxLevel: 5, placeholder: true },
+  // Approved by the owner on #784 (2026-11-18): Saltstep (MQ-02) 3-4 and Emberwatch (MQ-03) 4-5.
+  // This one region holds both, so its band is their union. Every Act I route ends on level 4, and
+  // SF-2.1 can lift a party to 5 before MQ-03.
+  levelBand: { minLevel: 3, maxLevel: 5, placeholder: false },
   // Waiting for the region's own area track (ADR 0108; the owner listens first). With no row a map
   // keeps whatever is playing, so the coast road carries Ba Dan's theme down to the water. A track
   // may belong to one region only (ADR 0111 §4), so Act I's cannot be borrowed.
