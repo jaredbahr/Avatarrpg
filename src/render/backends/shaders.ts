@@ -345,3 +345,23 @@ void main(void) {
   }
   fragColor = acc * quad.a;
 }`;
+
+/**
+ * The day's grade (ADR 0121) over a layer of the world's art: `colour * multiply + lift`, the lift
+ * weighted by alpha because the input is premultiplied, so a faded piece grades as Canvas 2D's
+ * graded page does. The `#version 300 es` line is load-bearing: without it Pixi links GLSL ES 1.00
+ * and the pass draws nothing.
+ */
+export const GRADE_FRAGMENT = `#version 300 es
+precision highp float;
+
+in vec2 vTextureCoord;
+uniform sampler2D uTexture;
+uniform vec3 uMultiply;
+uniform vec3 uLift;
+out vec4 fragColor;
+
+void main(void) {
+  vec4 c = texture(uTexture, vTextureCoord);
+  fragColor = vec4(min(c.rgb * uMultiply + uLift * c.a, vec3(c.a)), c.a);
+}`;

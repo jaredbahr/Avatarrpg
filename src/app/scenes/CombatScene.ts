@@ -70,6 +70,7 @@ import {
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
 import { ambienceFx, resolveFx } from '../../content/fx';
 import { ambientEmitters } from '../anim/ambience';
+import { boardLightFor } from '../dayLight';
 import { burningPropEmitters } from '../anim/propFire';
 import { announce, button, clear, el, mark, motionReduced, painterCanvas, tip } from '../ui/dom';
 import { assetCanvas } from '../ui/assetCanvas';
@@ -3369,6 +3370,12 @@ export class CombatScene implements Scene {
       time: now,
       reducedMotion: motionReduced(),
       flushedAt: this.flushedAt,
+      // Half the exploration grade, and the scene's lamps (ADR 0121); every rule mark draws over it.
+      light: boardLightFor(
+        this.app.state?.world.clock.phase ?? 'midday',
+        this.app.content.maps.get(battle.mapId)?.scene,
+        'combat',
+      ),
     };
 
     renderer.draw(view);
