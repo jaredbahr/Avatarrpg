@@ -23,7 +23,7 @@ function at(phase: DayPhase, day: number, pos: Vec2, seen = true): GameState {
   };
 }
 
-const GATE = { x: 20, y: 7 };
+const GATE = { x: 26, y: 9 };
 
 describe('handover barks (ADR 0047 §8)', () => {
   it('speak at the gate at dawn and in the evening, once the handover has been seen', () => {

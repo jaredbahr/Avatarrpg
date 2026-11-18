@@ -1,0 +1,302 @@
+{
+ "mira_house": {
+  "w": 202,
+  "h": 96,
+  "seed": 4,
+  "ledger_job": "bd20_mira_house_4",
+  "credits": 12.0,
+  "job_id": "3de8c85a-6d7e-412a-8235-d6efb8f7831b",
+  "takes": 2,
+  "prompt": "Mira's house, the most important house in the village: a very wide, low-spread t..."
+ },
+ "gao_shop": {
+  "w": 144,
+  "h": 71,
+  "seed": 3,
+  "ledger_job": "bd20_gao_shop_3",
+  "credits": 6.0,
+  "job_id": "fc77faa6-3be0-4879-99cc-a5c658189dd9",
+  "takes": 1,
+  "prompt": "Gao's shop front, a one-storey Earth Kingdom village shop: pale limestone walls,..."
+ },
+ "gao_store": {
+  "w": 87,
+  "h": 62,
+  "seed": 5,
+  "ledger_job": "bd20_gao_store_5",
+  "credits": 16.0,
+  "job_id": "c5e2db93-959b-4e64-b333-afad9c36af30",
+  "takes": 3,
+  "prompt": "a small plain one-storey storeroom: pale limestone walls, one small barred woode..."
+ },
+ "mason_house": {
+  "w": 126,
+  "h": 61,
+  "seed": 4,
+  "ledger_job": "bd20_mason_house_4",
+  "credits": 12.0,
+  "job_id": "e25f2f84-3aa3-473e-a3ab-c807f2594f18",
+  "takes": 2,
+  "prompt": "the stonemason's house, a wide low one-storey Earth Kingdom village house, wider..."
+ },
+ "pella_house": {
+  "w": 148,
+  "h": 70,
+  "seed": 3,
+  "ledger_job": "bd20_pella_house_3",
+  "credits": 6.0,
+  "job_id": "231e3c22-9003-44ec-84f6-2020a6b06cb3",
+  "takes": 1,
+  "prompt": "Pella's house, a one-storey Earth Kingdom village house: pale limestone base, wa..."
+ },
+ "quarry_row": {
+  "w": 124,
+  "h": 60,
+  "seed": 3,
+  "ledger_job": "bd20_quarry_row_3",
+  "credits": 6.0,
+  "job_id": "d99d544d-feee-47d1-9af1-658aed6105db",
+  "takes": 1,
+  "prompt": "a plain quarry-company row house, all the same: a one-storey house of plain pale..."
+ },
+ "quarry_long": {
+  "w": 156,
+  "h": 68,
+  "seed": 3,
+  "ledger_job": "bd20_quarry_long_3",
+  "credits": 6.0,
+  "job_id": "aa80e9b2-7b5e-4d1d-a300-e2bc2be448bc",
+  "takes": 1,
+  "prompt": "a long plain quarry-company row house, the same company style as its neighbours:..."
+ },
+ "quarry_amri": {
+  "w": 124,
+  "h": 60,
+  "seed": 3,
+  "ledger_job": "bd20_quarry_amri_3",
+  "credits": 6.0,
+  "job_id": "d7a519bf-3dec-4a1b-ae6b-eeb48ea60c86",
+  "takes": 1,
+  "prompt": "Change only the door colour: the front door is painted a bright cornflower blue ..."
+ },
+ "hanru_house": {
+  "w": 80,
+  "h": 60,
+  "seed": 3,
+  "ledger_job": "bd20_hanru_house_3",
+  "credits": 5.0,
+  "job_id": "18fd6c52-05aa-4821-8e34-33ad6d44a3f1",
+  "takes": 1,
+  "prompt": "This house was squeezed narrower and is blurry. Redraw it as crisp pixel art at ..."
+ },
+ "senn_annex": {
+  "w": 41,
+  "h": 60,
+  "seed": 3,
+  "ledger_job": "bd20_senn_annex_3",
+  "credits": 5.0,
+  "job_id": "5e4eb47a-b764-4a59-ac50-5f7a3bb771c3",
+  "takes": 1,
+  "prompt": "This building was squeezed narrow and is blurry. Redraw it as crisp pixel art at..."
+ },
+ "awning": {
+  "w": 102,
+  "h": 76,
+  "seed": 4,
+  "ledger_job": "bd20_awning_4",
+  "credits": 12.0,
+  "job_id": "be583e7b-ded8-481a-b2eb-bf830d022643",
+  "takes": 2,
+  "prompt": "a free-standing patched awning ONLY: four slim bare wooden posts, one at each co..."
+ },
+ "gate_post": {
+  "w": 30,
+  "h": 69,
+  "seed": 3,
+  "ledger_job": "bd20_gate_post_3",
+  "credits": 5.0,
+  "job_id": "bae7bd38-4c38-4b1b-a720-5d16afae26bb",
+  "takes": 1,
+  "prompt": "a tall square pale limestone gate post with a hanging old bronze shift bell, the..."
+ },
+ "side_gate": {
+  "w": 28,
+  "h": 32,
+  "seed": 3,
+  "ledger_job": "bd20_side_gate_3",
+  "credits": 5.0,
+  "job_id": "8173ba75-6598-4f29-848b-ff38c3c89dea",
+  "takes": 1,
+  "prompt": "a small garden side gate of weathered timber hung open on its pale limestone pos..."
+ },
+ "guard_hut": {
+  "w": 76,
+  "h": 61,
+  "seed": 3,
+  "ledger_job": "bd20_guard_hut_3",
+  "credits": 5.0,
+  "job_id": "0f4b3ca5-07b2-4607-804e-f05fae1e68a9",
+  "takes": 1,
+  "prompt": "a small guard hut: a little one-room Earth Kingdom watch house of pale limestone..."
+ },
+ "chair": {
+  "w": 20,
+  "h": 30,
+  "seed": 3,
+  "ledger_job": "bd20_chair_3",
+  "credits": 5.0,
+  "job_id": "edc2416c-0a95-4049-9e94-f08036e6fc9e",
+  "takes": 1,
+  "prompt": "a small repaired wooden chair with one leg mended with a lashed splint of pale w..."
+ },
+ "plant_chair": {
+  "w": 18,
+  "h": 31,
+  "seed": 3,
+  "ledger_job": "bd20_plant_chair_3",
+  "credits": 5.0,
+  "job_id": "e3f4f724-1d6d-4e79-a6f0-691c45b5131c",
+  "takes": 1,
+  "prompt": "a small wooden chair holding a potted green leafy plant in a plain clay pot on i..."
+ },
+ "stool": {
+  "w": 22,
+  "h": 22,
+  "seed": 3,
+  "ledger_job": "bd20_stool_3",
+  "credits": 5.0,
+  "job_id": "829c70f2-ff86-45c4-960c-482055f06f9e",
+  "takes": 1,
+  "prompt": "a small round three-legged wooden stool, plain weathered timber, seen front-on. ..."
+ },
+ "bucket": {
+  "w": 18,
+  "h": 24,
+  "seed": 3,
+  "ledger_job": "bd20_bucket_3",
+  "credits": 5.0,
+  "job_id": "0e0b617c-29ba-4166-8676-af1e3f588ccb",
+  "takes": 1,
+  "prompt": "a small wooden bucket with two iron-free rope-bound hoops and a rope handle, pla..."
+ },
+ "basket": {
+  "w": 19,
+  "h": 25,
+  "seed": 3,
+  "ledger_job": "bd20_basket_3",
+  "credits": 5.0,
+  "job_id": "aa6adddc-681a-435d-b5b2-e67a2d78235e",
+  "takes": 1,
+  "prompt": "a small round woven bamboo basket with a rope handle, empty, plain. An Earth Kin..."
+ },
+ "washboard": {
+  "w": 19,
+  "h": 26,
+  "seed": 3,
+  "ledger_job": "bd20_washboard_3",
+  "credits": 5.0,
+  "job_id": "dcf8a359-83e3-4aa6-9f78-a38b330e4d5d",
+  "takes": 1,
+  "prompt": "a small wooden washboard with ridged slats in a plain timber frame, leaning upri..."
+ },
+ "mason_bench": {
+  "w": 36,
+  "h": 23,
+  "seed": 3,
+  "ledger_job": "bd20_mason_bench_3",
+  "credits": 5.0,
+  "job_id": "b911f208-8fcd-415c-b3aa-c6857adee817",
+  "takes": 1,
+  "prompt": "a mason's low work bench: a thick plain timber slab on two stout legs with a mal..."
+ },
+ "peg": {
+  "w": 13,
+  "h": 24,
+  "seed": 3,
+  "ledger_job": "bd20_peg_3",
+  "credits": 5.0,
+  "job_id": "f6afb411-06ce-43e0-ae61-6b34f8255ccb",
+  "takes": 1,
+  "prompt": "a short carved pale limestone boundary peg, a squat rounded stone post with a si..."
+ },
+ "wall_low": {
+  "w": 40,
+  "h": 28,
+  "seed": 3,
+  "ledger_job": "bd20_wall_low_3",
+  "credits": 5.0,
+  "job_id": "bfc7a259-206f-4f07-bbe8-470371e2b882",
+  "takes": 1,
+  "prompt": "a straight section of low village boundary wall, one stone cell long: fitted pal..."
+ },
+ "wall_mended": {
+  "w": 40,
+  "h": 28,
+  "seed": null,
+  "ledger_job": null,
+  "credits": 5.0,
+  "job_id": null,
+  "note": "code-drawn from wall_low (tools/bd20mend.py); the PixelLab edit bd20_wall_mended_3 of earth_wall showed no mend"
+ },
+ "tree_pine": {
+  "w": 38,
+  "h": 81,
+  "seed": 3,
+  "ledger_job": "bd20_tree_pine_3",
+  "credits": 5.0,
+  "job_id": "da87173b-35cf-422b-9c0a-803e1585fc5c",
+  "takes": 1,
+  "prompt": "an upland pine tree of the Earth Kingdom hills: a slim dark green conifer with l..."
+ },
+ "tree_broadleaf": {
+  "w": 38,
+  "h": 54,
+  "seed": 3,
+  "ledger_job": "bd20_tree_broadleaf_3",
+  "credits": 5.0,
+  "job_id": "632670ea-8818-4b21-90c1-fe98ff41af3f",
+  "takes": 1,
+  "prompt": "a small summer-green broadleaf tree of an upland village: a rounded crown of mid..."
+ },
+ "bamboo": {
+  "w": 35,
+  "h": 56,
+  "seed": 3,
+  "ledger_job": "bd20_bamboo_3",
+  "credits": 5.0,
+  "job_id": "95021833-52d3-4018-8dc0-04bf2a3a3fb3",
+  "takes": 1,
+  "prompt": "a clump of green bamboo, a few slender jointed culms of different heights with n..."
+ },
+ "gao_jar": {
+  "w": 21,
+  "h": 26,
+  "seed": 3,
+  "ledger_job": "bd20_gao_jar_3",
+  "credits": 5.0,
+  "job_id": "75d32b61-61e6-428e-a3ec-d6bfa7130739",
+  "takes": 1,
+  "prompt": "a round glazed earthenware storage jar with a wooden lid and a little folded pap..."
+ },
+ "hesra_boot": {
+  "w": 12,
+  "h": 20,
+  "seed": 4,
+  "ledger_job": "bd20_hesra_boot_4",
+  "credits": 10.0,
+  "job_id": "fffa6032-5727-425e-926d-d8d413996d49",
+  "takes": 2,
+  "prompt": "one single worn brown leather work boot lying on its sole, seen from the side wi...",
+  "note": "take 4 (24x40) halved with a box filter, alpha cut at 128, snapped to the palette: the take came out person-sized"
+ },
+ "side_gate_hung": {
+  "w": 28,
+  "h": 32,
+  "seed": 4,
+  "ledger_job": "bd20_side_gate_hung_4",
+  "credits": 10.0,
+  "job_id": "5551a43b-3784-49c5-b8b3-c5b6cde86007",
+  "takes": 2,
+  "prompt": "Remove the open plank door on the right completely, nothing left hanging outside..."
+ }
+}

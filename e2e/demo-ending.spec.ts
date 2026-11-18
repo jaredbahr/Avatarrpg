@@ -63,7 +63,7 @@ test('the walk home ends in a welcome home and a demo-complete card', async ({ p
   // The first step in from the east road: a tap where the street is painted.
   await settleLayout(page);
   const from = await page.evaluate(() => window.fnt!.app.state!.location.pos);
-  const point = await paintedTileCentre(page, { x: Math.min(from.x - 2, 19), y: 7 });
+  const point = await paintedTileCentre(page, { x: from.x - 3, y: 9 });
   if (!point) throw new Error('No camera to tap through');
   await page.mouse.click(point.x, point.y);
   await waitForIdle(page);

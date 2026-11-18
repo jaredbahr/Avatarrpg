@@ -121,6 +121,20 @@ animation or presentation work. Add to it when something fails.
   - A worn-path tint first came back as thin, ruled pale lines (road markings), and before that a faint tint
     vanished in the palette lock. Lift the paving a whole ramp step, in a broad band that wanders and thins.
 
+- **The Ba Dan kit (2026-11-18, `tools/bd20gen.py`):**
+  - **The reference's own drawn size and aspect set the size of the result, not the canvas or the "about N px" in the
+    prompt.** A square house as the reference gave a 150 px "200 px" house; a 2:1 shop as the reference gave a 202 px one;
+    a store asked at 80 px came back 124 px on a wide canvas and then 64 px on a small one. Scale the reference (it must
+    fit the canvas) to about the size and shape wanted: that is what finally gave an 87 px storeroom.
+  - **The reference's contents are copied too.** An awning generated against the old stall brought the stall's counter and
+    crates under the cloth; the retake used the stall's cloth and posts only, with "completely open underneath". Pick or
+    crop a reference with nothing in it you do not want.
+  - **Edits of a variant keep the base:** a door colour, a shut shutter and a narrow annex (the base squeezed to size, "redraw
+    it crisp") each came out on the first try. An edit of the bending `earth_wall` into a "mended wall" showed no repair,
+    and the old `earth_wall` is a bending mound, not a village wall: a new wall piece, with the mend drawn in code,
+    replaced both. Do not edit a piece that is the wrong thing to begin with.
+  - A quarry `gatehouse` (castle battlements) does not read as a hut on Ba Dan's palette; the hut was generated.
+
 ### Characters and objects
 
 - **"No effects" in a `skeleton-v3` prompt is a hint, not a rule.** Fire and earth got painted into strike frames;

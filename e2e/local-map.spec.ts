@@ -17,10 +17,10 @@ test('local map tracks a real walk and preserves the campaign when opened', asyn
   const party = page.locator('.explore-map-corner .local-party');
   await expect(party).toHaveCount(2);
   const start = await party.first().getAttribute('cx');
-  await page.evaluate(() => window.fnt?.app.dispatch({ type: 'walkTo', pos: { x: 8, y: 7 } }));
+  await page.evaluate(() => window.fnt?.app.dispatch({ type: 'walkTo', pos: { x: 8, y: 10 } }));
   await waitForIdle(page);
   await expect(party.first()).toHaveAttribute('cx', '8.5');
-  await expect(party.first()).toHaveAttribute('cy', '7.5');
+  await expect(party.first()).toHaveAttribute('cy', '10.5');
   expect(start).not.toBe('8.5');
   const before = await page.evaluate(() => JSON.stringify(window.fnt?.app.state));
   await page.getByRole('button', { name: 'Map', exact: true }).click();

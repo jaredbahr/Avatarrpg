@@ -166,10 +166,20 @@ export const LATE_SCENES: Readonly<Record<string, OldSavesAnswer>> = {
     answer: 'open',
     why: 'The welcome home waits at the village gate for any save that has walked home and not yet seen it.',
   },
+  welcome_home_supper: {
+    upTo: GOLDEN_V5,
+    answer: 'open',
+    why: 'Read only to show Hesra’s boot on the mason’s yard step afterwards, a keepsake and not a gate. A save that has not had the supper still plays it on the walk home and sees the boot after.',
+  },
   gao_lost: {
     upTo: '2026-11-15-demo',
     answer: 'open',
     why: 'Read only by its own once-only gate on Gao after a Driller loss. A release save that lost sat on the terminal card, so it has not heard it and hears it first when it carries on.',
+  },
+  look_hesra_boot: {
+    upTo: '2026-11-15-demo',
+    answer: 'open',
+    why: 'Read only by the journal note for the boot by the mason’s yard door. The boot stays there after the supper, so an older save looks at it and gets the note then.',
   },
 };
 

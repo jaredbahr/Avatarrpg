@@ -329,6 +329,8 @@ export interface NpcMarker {
   readonly lean?: number;
   /** No talk pip: a background role, or someone walking off the map. */
   readonly quiet?: boolean;
+  /** False draws no foot blob: art that stands on the plate's own baked shadow (the hung side gate). */
+  readonly footShadow?: false;
 }
 
 /** The sheet clip a marker draws: its heading clip, else the plain walk or idle. */

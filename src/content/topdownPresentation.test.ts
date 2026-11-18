@@ -41,7 +41,7 @@ function map(id: string, content = CONTENT): MapDef {
 }
 
 describe('withTopDownMaps', () => {
-  it('registers Ba Dan (T3), the Forest Road (T4), the quarry (T5) and RG-02, their scenes assets', async () => {
+  it('registers Ba Dan (its ground and set pieces, ADR 0120), the Forest Road (T4), the quarry (T5) and RG-02', async () => {
     expect([...TOPDOWN_SCENES.keys()]).toEqual([
       'ba_dan_village',
       'forest_road',
@@ -57,9 +57,11 @@ describe('withTopDownMaps', () => {
     const swapped = withTopDownMaps(CONTENT, presentations);
     const badan = map('ba_dan_village', swapped);
     expect(badan.projection).toBe('topdown');
-    expect(badan.cameraCentreMargin).toBe(1);
+    // its ground, with the set-piece plan's sprites standing on it (stage 6)
     expect(badan.scene?.ground[0]?.url).toBe('art/topdown/ba-dan/ground.webp');
-    expect(badan.scene?.scenery.length).toBeGreaterThan(50);
+    expect(badan.scene?.scenery.length).toBeGreaterThan(100);
+    expect(badan.scene?.ambienceSources?.lanterns).toHaveLength(4);
+    expect(badan.rows).toBe(map('ba_dan_village').rows);
     const forest = map('forest_road', swapped);
     expect(forest.projection).toBe('topdown');
     expect(forest.scene?.ground[0]?.url).toBe('art/topdown/forest-road/ground.webp');

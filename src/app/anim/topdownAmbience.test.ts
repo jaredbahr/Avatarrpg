@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { ambienceFx } from '../../content/fx';
 import { loadTopDownPresentations, topDownMap } from '../../content/topdown';
+import { oldVillage } from '../../content/maps/oldVillage.fixture';
 import { buildGrid } from '../../core/rules/grid';
 import { PARTICLE_STRIDE, sampleParticles } from '../../render/fx/simulate';
 import type { EmitterInstance } from '../../render/view';
@@ -18,13 +19,24 @@ function geometry(emitters: readonly EmitterInstance[]): number[][] {
   });
 }
 
+/**
+ * Ba Dan's scene as it shipped before the grey blockout, frozen on its old 24 x 16 board: the village has no scene
+ * while it is a blockout, and this is the only sample with chimneys (`maps/fixtures/oldVillageScene.json`).
+ */
 async function village() {
-  const presentations = await loadTopDownPresentations((url) =>
-    Promise.resolve(JSON.parse(readFileSync(`public/${url}`, 'utf8')) as unknown),
+  const presentations = await loadTopDownPresentations(
+    () =>
+      Promise.resolve(
+        JSON.parse(
+          readFileSync('src/content/maps/fixtures/oldVillageScene.json', 'utf8'),
+        ) as unknown,
+      ),
+    new Map([['ba_dan_village', { url: 'art/topdown/ba-dan/scene.json', cameraCentreMargin: 1 }]]),
   );
-  const original = CONTENT.maps.get('ba_dan_village');
+  const live = CONTENT.maps.get('ba_dan_village');
   const presentation = presentations.get('ba_dan_village');
-  if (!original || !presentation) throw new Error('Missing shipped top-down village');
+  if (!live || !presentation) throw new Error('Missing the frozen top-down village');
+  const original = oldVillage(live);
   const map = topDownMap(original, presentation);
   const scene = map.scene;
   const recipe = ambienceFx(map.ambience);
@@ -44,7 +56,7 @@ async function village() {
   return { map, scene, recipe, at };
 }
 
-describe('shipped top-down village ambience', () => {
+describe('frozen top-down village ambience', () => {
   it('freezes populated smoke geometry a second apart and omits moving ambience', async () => {
     const { map, scene, recipe, at } = await village();
     expect(map.projection).toBe('topdown');

@@ -36,8 +36,8 @@ export const BA_DAN_VALLEY: RegionManifest = {
     quarry_floor: 'quarry',
   },
   scenes: {
-    // The oblique margin (-0.61) was fitted to one diamond at either side; the top-down plate runs
-    // three tiles past the grid into the rim, and `paintExtent` keeps the view inside it.
+    // Ba Dan's ground alone (stage 4 of `docs/places/ba_dan_village.md`, ADR 0120): the plate runs two cells past the
+    // grid either side, three above and two below; its set pieces stand on it at stage 5.
     ba_dan_village: { url: 'art/topdown/ba-dan/scene.json', cameraCentreMargin: 1 },
     // The forest plate runs two cells past the grid either side and three above (the pine margin).
     forest_road: { url: 'art/topdown/forest-road/scene.json', cameraCentreMargin: 1 },

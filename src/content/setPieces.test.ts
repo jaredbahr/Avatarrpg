@@ -1,13 +1,27 @@
 import { describe, expect, it } from 'vitest';
+import { OLD_VILLAGE_ROWS } from './maps/oldVillage.fixture';
 import { BA_DAN_VILLAGE } from './maps/village';
 import { LEGEND } from './maps/legend';
-import { BA_DAN_DRESSING_PLAN } from './scenes/baDan.dressing';
+import { BA_DAN_DRESSING_PLAN } from './maps/oldVillage.dressing.fixture';
 import { BA_DAN_TOPDOWN_OBJECTS } from './scenes/baDan.topdown';
-import { validateDressing, type DressingPlan } from './setPieces';
+import { BA_DAN_SET_PIECE_PLAN } from './scenes/baDan.setpieces';
+import { BA_DAN_TRACKS } from './scenes/baDan.ground';
+import { trackCells } from './ground';
+import {
+  memberCells,
+  validateDressing,
+  validateSetPiecePlan,
+  type DressingPlan,
+  type PlanContext,
+  type PlanMember,
+  type PlannedSetPiece,
+  type SetPiecePlan,
+} from './setPieces';
 import type { TopDownObject } from './topdownLayout';
 
 const blocked = (x: number, y: number): boolean => {
-  const ch = BA_DAN_VILLAGE.rows[y]?.[x];
+  // The dressing plan was drawn to the old 24 x 16 rows; the live village is a blockout until its dressing stage.
+  const ch = OLD_VILLAGE_ROWS[y]?.[x];
   if (ch === undefined) return true;
   const def = BA_DAN_VILLAGE.legend?.[ch] ?? LEGEND[ch];
   return def ? def.blocked === true : true;
@@ -87,5 +101,182 @@ describe('the placement grammar (ADR 0119)', () => {
     expect(validateDressing(plan, far, () => false)).toContain(
       'dressing "fixture": "barrel" stands 4 cells from its anchor "house" (at most 2)',
     );
+  });
+});
+
+/** The live board's rows and the ground spec's tracks: what the stage 5 plan is held against. */
+const liveContext = (): PlanContext => {
+  const blockedLive = (x: number, y: number): boolean => {
+    const ch = BA_DAN_VILLAGE.rows[y]?.[x];
+    if (ch === undefined) return true;
+    const def = BA_DAN_VILLAGE.legend?.[ch] ?? LEGEND[ch];
+    return def ? def.blocked === true : true;
+  };
+  return {
+    width: BA_DAN_VILLAGE.width,
+    height: BA_DAN_VILLAGE.height,
+    blocked: blockedLive,
+    tracks: new Map(
+      BA_DAN_TRACKS.map((t) => [t.id, trackCells(t, BA_DAN_VILLAGE.width, BA_DAN_VILLAGE.height)]),
+    ),
+    // a disk is worn out to its radius, a ring a half cell beyond it
+    disks: new Map(
+      BA_DAN_TRACKS.flatMap((t) =>
+        'disk' in t
+          ? [[t.id, { x: t.disk[0], y: t.disk[1], r: t.r }] as const]
+          : 'ring' in t
+            ? [[t.id, { x: t.ring[0], y: t.ring[1], r: t.r + 0.5 }] as const]
+            : [],
+      ),
+    ),
+  };
+};
+
+describe("Ba Dan's set pieces as boxes (stage 5)", () => {
+  it('holds the plan to the rows, the named tracks, the quiet ground and the placement rules', () => {
+    expect(validateSetPiecePlan(BA_DAN_SET_PIECE_PLAN, liveContext())).toEqual([]);
+  });
+
+  it('gives every member to one set piece and keeps the plan to the lantern limit and a focus a zone', () => {
+    const members = BA_DAN_SET_PIECE_PLAN.pieces.flatMap((p) => p.members.map((m) => m.id));
+    expect(new Set(members).size).toBe(members.length);
+    expect(members.length).toBeGreaterThan(60);
+    const lanterns = BA_DAN_SET_PIECE_PLAN.pieces
+      .flatMap((p) => p.members)
+      .filter((m) => m.lantern);
+    expect(lanterns).toHaveLength(BA_DAN_SET_PIECE_PLAN.maxLanterns);
+    expect(BA_DAN_SET_PIECE_PLAN.zones).toHaveLength(6);
+  });
+
+  it('keeps the plan to the tracks of the ground spec, not a second copy of them', () => {
+    expect(liveContext().tracks.has('east_road')).toBe(true);
+    expect(liveContext().tracks.has('square_table')).toBe(true);
+  });
+
+  describe('names every way a plan breaks a rule', () => {
+    const box = (id: string, x: number, y: number, o: Partial<PlanMember> = {}): PlanMember => ({
+      id,
+      name: id,
+      x,
+      y,
+      w: 1,
+      h: 1,
+      height: 0.5,
+      solid: false,
+      kind: 'prop',
+      ...o,
+    });
+    const piece = (id: string, members: PlanMember[], o: Partial<PlannedSetPiece> = {}) => ({
+      id,
+      purpose: 'a test',
+      anchor: members[0]?.id ?? '',
+      members,
+      ...o,
+    });
+    const plan = (pieces: PlannedSetPiece[], o: Partial<SetPiecePlan> = {}): SetPiecePlan => ({
+      mapId: 'fixture',
+      pieces,
+      zones: [],
+      quiet: [],
+      maxLanterns: 4,
+      ...o,
+    });
+    // an 8 x 8 board: a wall column at x 7, the lane's cells (2,3) and (3,3), a disk at (5, 5)
+    const ctx: PlanContext = {
+      width: 8,
+      height: 8,
+      blocked: (x, y) => x === 7 || y === 0,
+      tracks: new Map([
+        [
+          'lane',
+          [
+            { x: 2, y: 3 },
+            { x: 3, y: 3 },
+          ],
+        ],
+        ['disk', [{ x: 5, y: 5 }]],
+      ]),
+      disks: new Map([['disk', { x: 5.5, y: 5.5, r: 1 }]]),
+    };
+    const find = (p: SetPiecePlan, text: string) =>
+      validateSetPiecePlan(p, ctx).filter((s) => s.includes(text));
+
+    it('reads a fractional footprint as the cells it overlaps', () => {
+      expect(memberCells(box('post', 12.5, 8.5, { w: 0.2, h: 0.2 }))).toEqual([{ x: 12, y: 8 }]);
+      expect(memberCells(box('cloth', 12.5, 8.4, { w: 3, h: 2 }))).toHaveLength(4 * 3);
+    });
+
+    it('a solid member on an open cell, and a non-solid one on a blocked cell', () => {
+      const p = plan([
+        piece('a', [box('a1', 4, 4), box('solid-open', 4, 5, { solid: true }), box('wall', 7, 5)]),
+      ]);
+      expect(find(p, 'solid "solid-open"')).toHaveLength(1);
+      expect(find(p, 'non-solid "wall"')).toHaveLength(1);
+    });
+
+    it('a member on a named track, but not a flat, an overhead one, or the table on its own disk', () => {
+      const p = plan([
+        piece('a', [
+          box('a1', 2, 2),
+          box('on-lane', 2, 3),
+          box('step', 3, 3, { kind: 'flat', height: 0 }),
+          box('line', 3, 3, { overhead: true, kind: 'fades', height: 1.3 }),
+        ]),
+        piece('table', [box('t', 5, 5, { solid: false })], { ownDisk: 'disk' }),
+      ]);
+      expect(find(p, 'on track "lane"')).toHaveLength(1);
+      expect(find(p, 'on track "disk"')).toHaveLength(0);
+      const other = plan([piece('b', [box('b1', 5, 5)])]);
+      expect(find(other, 'track "disk"')).toHaveLength(1);
+    });
+
+    it('a member in quiet ground, unless its piece is let in', () => {
+      const quiet = [{ id: 'q', x0: 4, y0: 4, x1: 5, y1: 5 }];
+      expect(
+        find(plan([piece('a', [box('a1', 4, 4)])], { quiet }), 'quiet ground "q"'),
+      ).toHaveLength(1);
+      expect(
+        find(plan([piece('a', [box('a1', 4, 4)], { quietOk: ['q'] })], { quiet }), 'quiet'),
+      ).toHaveLength(0);
+    });
+
+    it('a tall non-solid member that is not a fades, and a tall prop south of a walkable cell', () => {
+      const p = plan([
+        piece('a', [
+          box('lean', 3, 5, { height: 1.1 }),
+          box('lamp', 4, 5, { height: 1.1, kind: 'fades' }),
+          box('post', 5, 6, { height: 1.6, solid: true }),
+        ]),
+      ]);
+      expect(find(p, 'is 1.1 figures tall but is a prop')).toHaveLength(1);
+      expect(find(p, 'stands south of walkable cell (5,5)')).toHaveLength(1);
+    });
+
+    it('a member away from its anchor and its fellows, and a loose single', () => {
+      const p = plan([piece('a', [box('a1', 1, 5), box('near', 2, 5), box('far', 5, 7)])]);
+      expect(find(p, '"far" at (5,7) stands away from its anchor')).toHaveLength(1);
+      expect(find(p, '"far" at (5,7) stands alone')).toHaveLength(1);
+      expect(find(p, '"near"')).toHaveLength(0);
+      const marker = plan([piece('a', [box('a1', 1, 5), box('far', 5, 7)], { marker: true })]);
+      expect(find(marker, 'alone')).toHaveLength(0);
+      const run = plan([
+        piece('a', [box('a1', 7, 3, { solid: true }), box('far', 7, 6, { solid: true })], {
+          run: true,
+        }),
+      ]);
+      expect(find(run, 'stands')).toHaveLength(0);
+    });
+
+    it('too many lanterns, a doubled member id, and a zone without one focus', () => {
+      const lamps = [1, 2, 3, 4, 5].map((i) =>
+        box(`l${i}`, i, 2, { lantern: true, solid: false, height: 1.6, kind: 'fades' }),
+      );
+      const p = plan([piece('a', lamps), piece('b', [box('l1', 1, 6)])], {
+        zones: [{ id: 'z', rect: { x0: 0, y0: 0, x1: 3, y1: 3 } }],
+      });
+      expect(find(p, '5 lanterns')).toHaveLength(1);
+      expect(find(p, 'belongs to both "a" and "b"')).toHaveLength(1);
+      expect(find(p, 'zone "z" has 0 focal')).toHaveLength(1);
+    });
   });
 });

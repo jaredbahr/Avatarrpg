@@ -94,7 +94,7 @@ const WELCOME_CROWD: FollowerStation = {
     of: [visited('forest_return_arrival'), unvisited('demo_complete')],
   },
   mapId: 'ba_dan_village',
-  pos: { x: 22, y: 6 },
+  pos: { x: 23, y: 11 },
 };
 
 export const FOLLOWERS: readonly FollowerDef[] = [

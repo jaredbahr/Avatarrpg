@@ -17,8 +17,9 @@ import { settle } from './settle';
 import { backgroundFigures, visibleNpcs } from './world';
 
 const VILLAGE = CONTENT.maps.get('ba_dan_village') as MapDef;
-const POST: Vec2 = { x: 17, y: 6 };
-const YARD: Vec2 = { x: 11, y: 13 };
+const POST: Vec2 = { x: 27, y: 8 };
+const YARD: Vec2 = { x: 13, y: 16 };
+const COURT: Vec2 = { x: 12, y: 15 };
 
 /** A new game (midday, D4) exploring the village with the leader at `pos`. */
 function at(pos: Vec2, visited: readonly string[] = []): GameState {
@@ -41,7 +42,7 @@ const roleTiles = (state: GameState) =>
 describe('background roles on the village (W8)', () => {
   it('staff the gate at midday before victory, and stand the household adult by Pella', () => {
     // After Mira's briefing: before it Pella sits at Mira's table (DLG-01).
-    const state = at({ x: 3, y: 7 }, ['mira_intro']);
+    const state = at({ x: 11, y: 10 }, ['mira_intro']);
     expect(state.world.clock.phase).toBe('midday');
     expect(backgroundFigures(CONTENT, VILLAGE, state)).toEqual([
       { id: 'bg.relief_watch', label: 'Relief watch', sprite: 'npc.guard', pos: POST },
@@ -54,7 +55,7 @@ describe('background roles on the village (W8)', () => {
   });
 
   it('walk the party up to a role, never onto its tile, and open nothing', () => {
-    const result = apply(CONTENT, at({ x: 14, y: 7 }), { type: 'walkTo', pos: POST });
+    const result = apply(CONTENT, at({ x: 22, y: 9 }), { type: 'walkTo', pos: POST });
     expect(result.state.screen).toBe('explore');
     expect(distance(result.state.location.pos, POST)).toBe(1);
     expect(result.events.some((event) => event.type === 'partyWalked')).toBe(true);
@@ -66,12 +67,12 @@ describe('background roles on the village (W8)', () => {
 
   it('keep an approach to Pella off the household adult beside her', () => {
     // From here the first tile beside Pella that `findApproach` tries is the yard itself.
-    const result = apply(CONTENT, at({ x: 12, y: 14 }, ['mira_intro']), {
+    const result = apply(CONTENT, at({ x: 14, y: 17 }, ['mira_intro']), {
       type: 'walkTo',
-      pos: { x: 11, y: 12 },
+      pos: COURT,
     });
     expect(result.state.screen).toBe('dialogue');
-    expect(distance(result.state.location.pos, { x: 11, y: 12 })).toBe(1);
+    expect(distance(result.state.location.pos, COURT)).toBe(1);
     expect(roleTiles(result.state).has(posKey(result.state.location.pos))).toBe(false);
   });
 

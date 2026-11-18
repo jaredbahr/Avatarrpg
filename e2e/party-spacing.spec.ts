@@ -20,11 +20,11 @@ test('five people keep their spacing through courtyard turns and arrive on dry g
   await waitForIdle(page);
   const report = [];
   for (const destination of [
-    { x: 10, y: 7 },
-    { x: 10, y: 3 },
-    { x: 11, y: 3 },
-    { x: 10, y: 5 },
-    { x: 10, y: 7 },
+    { x: 16, y: 10 },
+    { x: 17, y: 8 },
+    { x: 15, y: 8 },
+    { x: 12, y: 11 },
+    { x: 16, y: 10 },
   ]) {
     const leg = await page.evaluate(async (pos) => {
       const app = window.fnt!.app;
@@ -66,7 +66,10 @@ test('five people keep their spacing through courtyard turns and arrive on dry g
     expect(leg.minimum, JSON.stringify(leg)).toBeGreaterThanOrEqual(0.78);
     expect(new Set(leg.seats?.map((seat) => `${seat.x},${seat.y}`)).size).toBe(5);
     for (const seat of leg.seats?.slice(1) ?? [])
-      expect(seat.y === 6 && seat.x >= 10 && seat.x <= 12).toBe(false);
+      // The canal beside the bridge's foot: row 12 (and 13) at x 10-12 and 15.
+      expect(
+        (seat.y === 12 || seat.y === 13) && ((seat.x >= 10 && seat.x <= 12) || seat.x === 15),
+      ).toBe(false);
   }
   await testInfo.attach('actual-walk-cadence-and-spacing', {
     body: JSON.stringify(report, null, 2),

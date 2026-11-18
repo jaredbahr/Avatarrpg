@@ -69,7 +69,7 @@ function at(phase: DayPhase, cls: StateClass = {}, mapId = VILLAGE): GameState {
     screen: 'explore',
     flags: { ...base.flags, ...cls.flags },
     story: { ...base.story, nodeId: 'village_explore', visited: [...(cls.visited ?? [])] },
-    location: { mapId, pos: { x: 3, y: 7 } },
+    location: { mapId, pos: CONTENT.maps.get(mapId)?.partySpawns[0] ?? { x: 0, y: 0 } },
     world: { ...base.world, clock: { day: 1, phase } },
   };
 }

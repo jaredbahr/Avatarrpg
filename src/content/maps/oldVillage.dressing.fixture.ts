@@ -1,4 +1,7 @@
 /**
+ * FROZEN with the old 24 x 16 board (`oldVillage.fixture.ts`): it is checked against the old rows and the old
+ * objects only, by `setPieces.test.ts`. The live village's set pieces are `scenes/baDan.setpieces.ts`.
+ *
  * Ba Dan square's dressing plan (ADR 0119, the cohesion pilot, 2026-11-17): the design note in
  * `docs/art-cohesion.md` ("Worked example: Ba Dan square"), as data. Each set piece says what it is
  * for; the paths are where people walk between doors, the table, the well and the road; the quiet
