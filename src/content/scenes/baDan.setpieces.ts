@@ -70,7 +70,7 @@ const QUIET: SetPiecePlan['quiet'] = [
     y1: BA_DAN_GROUND_SPEC.quiet?.[0]?.[3] ?? 12,
   },
   // the flooded ford: the old road going under
-  { id: 'ford', x0: 0, y0: 9, x1: 2, y1: 11 },
+  { id: 'ford', x0: 0, y0: 9, x1: 2, y1: 10 },
   // the square's open middle round the table
   { id: 'square_middle', x0: 10, y0: 8, x1: 17, y1: 10 },
 ];
@@ -81,7 +81,7 @@ const inRect = (r: CellRect, x: number, y: number): boolean =>
 const RIM_TREES: readonly PlanMember[] = BA_DAN_VILLAGE.rows.flatMap((row, y) =>
   [...row].flatMap((ch, x) =>
     ch === 'T' && !QUIET.some((q) => inRect(q, x, y))
-      ? [mem(`rim-tree-${x}-${y}`, 'rim tree', x, y, 1, 1, 1.9, true, 'fades', { have: 'tree' })]
+      ? [mem(`rim-tree-${x}-${y}`, 'rim tree', x, y, 1, 1, 1.5, true, 'fades')]
       : [],
   ),
 );
@@ -96,17 +96,17 @@ const PIECES: readonly PlannedSetPiece[] = [
     ownDisk: 'square_table',
     quietOk: ['square_middle'],
     members: [
-      mem('mira-table', 'table', 13, 9, 2, 1, 0.67, true, 'prop', { have: 'mira_table' }),
+      mem('mira-table', 'table', 13, 9, 2, 1, 0.65, true, 'prop', { have: 'mira_table' }),
       mem('awning-post-nw', 'awning post NW', 12.5, 8.5, 0.2, 0.2, 1.6, false, 'fades'),
       mem('awning-post-ne', 'awning post NE', 15.3, 8.5, 0.2, 0.2, 1.6, false, 'fades'),
       mem('awning-post-sw', 'awning post SW', 12.5, 9.8, 0.2, 0.2, 1.6, false, 'fades'),
       mem('awning-post-se', 'awning post SE', 15.3, 9.8, 0.2, 0.2, 1.6, false, 'fades'),
-      mem('awning-cloth', 'patched awning', 12.5, 8.5, 3, 1.5, 1.6, false, 'fades', {
+      mem('awning-cloth', 'patched awning', 12.5, 8.5, 3, 1.5, 1.7, false, 'fades', {
         overhead: true,
       }),
-      mem('crew-bench', 'bench', 13, 10, 2, 1, 0.4, false, 'prop', { have: 'bench' }),
-      small('chair-west', 'repaired chair W', 12.2, 9.2, 0.6, 0.5),
-      small('chair-east', 'repaired chair E', 15.2, 9.2, 0.6, 0.5),
+      mem('crew-bench', 'bench', 13, 10, 2, 1, 0.8, false, 'prop', { have: 'bench' }),
+      small('chair-west', 'repaired chair W', 12.2, 9.2, 0.6, 0.65),
+      small('chair-east', 'repaired chair E', 15.2, 9.2, 0.6, 0.65),
     ],
   },
   {
@@ -115,9 +115,9 @@ const PIECES: readonly PlannedSetPiece[] = [
       "Mira's house on the square: her doorstep faces the table, the water jar and a potted shrub stand against her wall.",
     anchor: 'mira-house',
     members: [
-      building('mira-house', "Mira's house", 11, 4, 5, 3, 1.7),
+      building('mira-house', "Mira's house", 11, 4, 5, 3, 2.15),
       flat('mira-doorstep', 'doorstep', 13, 6),
-      small('mira-jar', 'water jar', 16.2, 7.2, 0.6, 0.7),
+      small('mira-jar', 'water jar', 16.2, 7.2, 0.6, 0.6),
       small('mira-shrub', 'potted shrub', 11.2, 7.2, 0.6, 0.6),
     ],
   },
@@ -127,11 +127,11 @@ const PIECES: readonly PlannedSetPiece[] = [
       "Gao's shop and the storeroom behind it, an L of stone: the plant on the only spare chair, two stools and the sacks he restocks from by the storeroom.",
     anchor: 'gao-house',
     members: [
-      building('gao-house', "Gao's shop", 19, 4, 4, 3, 1.7),
-      building('gao-store', 'storeroom', 23, 4, 2, 2, 1.7),
-      small('gao-plant', 'plant on the spare chair', 18.2, 6.2, 0.6, 0.8),
-      small('gao-stool-a', 'stool', 24.1, 6.4, 0.35, 0.4),
-      small('gao-stool-b', 'stool', 24.55, 6.4, 0.35, 0.4),
+      building('gao-house', "Gao's shop", 19, 4, 4, 3, 1.55),
+      building('gao-store', 'storeroom', 23, 4, 2, 2, 1.4),
+      small('gao-plant', 'plant on the spare chair', 18.2, 6.2, 0.6, 0.7),
+      small('gao-stool-a', 'stool', 24.1, 6.4, 0.35, 0.5),
+      small('gao-stool-b', 'stool', 24.55, 6.4, 0.35, 0.5),
       small('gao-sacks', 'sacks', 25.2, 6.2, 0.6, 0.6),
     ],
   },
@@ -142,7 +142,7 @@ const PIECES: readonly PlannedSetPiece[] = [
     anchor: 'trough',
     members: [
       mem('trough', 'trough', 21, 7, 1, 1, 0.6, true, 'prop', { have: 'trough' }),
-      small('trough-bucket', 'bucket', 22.3, 7.3, 0.4, 0.4),
+      small('trough-bucket', 'bucket', 22.3, 7.3, 0.4, 0.55),
     ],
   },
   {
@@ -153,16 +153,16 @@ const PIECES: readonly PlannedSetPiece[] = [
     focal: true,
     ownDisk: 'gate_post',
     members: [
-      mem('gate-post', 'gate post with the old shift bell', 29, 8, 1, 1, 1.6, true, 'prop'),
-      mem('gate-wall-a', 'low wall', 29, 3, 1, 2, 0.7, true, 'prop'),
-      mem('gate-wall-mended', 'mended section', 29, 5, 1, 1, 0.55, true, 'prop'),
-      mem('gate-wall-b', 'low wall', 29, 6, 1, 2, 0.7, true, 'prop'),
-      mem('gate-wall-south-a', 'low wall', 29, 11, 1, 2, 0.7, true, 'prop'),
+      mem('gate-post', 'gate post with the old shift bell', 29, 8, 1, 1, 1.55, true, 'prop'),
+      mem('gate-wall-a', 'low wall', 29, 3, 1, 2, 0.6, true, 'prop'),
+      mem('gate-wall-mended', 'mended section', 29, 5, 1, 1, 0.6, true, 'prop'),
+      mem('gate-wall-b', 'low wall', 29, 6, 1, 2, 0.6, true, 'prop'),
+      mem('gate-wall-south-a', 'low wall', 29, 11, 1, 2, 0.6, true, 'prop'),
       // the canal passes under the wall line here
       flat('gate-culvert', 'culvert grate over the canal', 29, 13, 1, 2),
-      mem('gate-wall-south-b', 'low wall', 29, 15, 1, 4, 0.7, true, 'prop'),
-      small('gate-stool', "the watch's stool", 28.3, 8.3, 0.4, 0.4),
-      mem('lamp-post', 'gate lamp on the wall', 29, 11, 1, 1, 1.6, true, 'fades', {
+      mem('gate-wall-south-b', 'low wall', 29, 15, 1, 4, 0.6, true, 'prop'),
+      small('gate-stool', "the watch's stool", 28.3, 8.3, 0.4, 0.5),
+      mem('lamp-post', 'gate lamp on the wall', 29, 11, 1, 1, 1.8, true, 'fades', {
         lantern: true,
         have: 'lamp',
       }),
@@ -174,8 +174,8 @@ const PIECES: readonly PlannedSetPiece[] = [
       'The guard hut by the gate where Dorin and Hanru keep the watch: the notice board on its west wall, a cupboard behind the post, and the washing line tied across to the shrine.',
     anchor: 'guard-hut',
     members: [
-      building('guard-hut', 'guard hut', 27, 6, 2, 2, 1.4),
-      mem('washing-line', 'washing line, hut to shrine', 26, 7, 1, 1, 1.3, false, 'fades', {
+      building('guard-hut', 'guard hut', 27, 6, 2, 2, 1.35),
+      mem('washing-line', 'washing line, hut to shrine', 26, 7, 1, 1, 1.25, false, 'fades', {
         overhead: true,
       }),
     ],
@@ -193,8 +193,8 @@ const PIECES: readonly PlannedSetPiece[] = [
     anchor: 'wash-treads',
     members: [
       flat('wash-treads', 'stone treads', 9, 12, 2, 1),
-      small('wash-basket', 'basket', 8.3, 11.3, 0.4, 0.4),
-      small('wash-board', 'washboard on the kerb', 11.3, 11.3, 0.4, 0.4),
+      small('wash-basket', 'basket', 8.3, 11.3, 0.4, 0.55),
+      small('wash-board', 'washboard on the kerb', 11.3, 11.3, 0.4, 0.6),
     ],
   },
   {
@@ -204,15 +204,15 @@ const PIECES: readonly PlannedSetPiece[] = [
     anchor: 'canal-lamp-west',
     run: true,
     members: [
-      mem('canal-lamp-west', 'canal lamp', 5, 12, 1, 1, 1.6, true, 'fades', {
+      mem('canal-lamp-west', 'canal lamp', 5, 12, 1, 1, 1.8, true, 'fades', {
         lantern: true,
         have: 'lamp',
       }),
-      mem('canal-lamp-middle', 'canal lamp', 17, 13, 1, 1, 1.6, true, 'fades', {
+      mem('canal-lamp-middle', 'canal lamp', 17, 13, 1, 1, 1.8, true, 'fades', {
         lantern: true,
         have: 'lamp',
       }),
-      mem('canal-lamp-east', 'canal lamp', 24, 13, 1, 1, 1.6, true, 'fades', {
+      mem('canal-lamp-east', 'canal lamp', 24, 13, 1, 1, 1.8, true, 'fades', {
         lantern: true,
         have: 'lamp',
       }),
@@ -225,12 +225,12 @@ const PIECES: readonly PlannedSetPiece[] = [
     anchor: 'mason-house',
     focal: true,
     members: [
-      building('mason-house', "mason's house", 2, 5, 3, 3, 1.6),
-      mem('mason-block-a', 'worked block', 5, 6, 1, 1, 0.8, true, 'prop'),
-      mem('mason-block-b', 'worked block', 6, 6, 1, 1, 0.9, true, 'prop'),
-      mem('mason-block-c', 'worked block', 5, 8, 1, 1, 0.7, true, 'prop'),
-      small('mason-bench', 'work bench', 7.1, 6.2, 0.8, 0.6),
-      small('mason-offcuts', 'offcut heap', 8.2, 6.4, 0.6, 0.4),
+      building('mason-house', "mason's house", 2, 5, 3, 3, 1.35),
+      mem('mason-block-a', 'worked block', 5, 6, 1, 1, 0.65, true, 'prop'),
+      mem('mason-block-b', 'worked block', 6, 6, 1, 1, 0.65, true, 'prop'),
+      mem('mason-block-c', 'worked block', 5, 8, 1, 1, 0.65, true, 'prop'),
+      small('mason-bench', 'work bench', 7.1, 6.2, 0.8, 0.5),
+      small('mason-offcuts', 'offcut heap', 8.2, 6.4, 0.6, 0.55),
       flat('hesra-step', "Hesra's step and windowsill", 5, 7),
     ],
   },
@@ -239,32 +239,28 @@ const PIECES: readonly PlannedSetPiece[] = [
     purpose:
       "The side gate in the garden fence, hung open on its post: Dorin's key register is about it (SQ-02), and later it is hung the right way round with a hen on its post.",
     anchor: 'side-gate',
-    members: [mem('side-gate', 'side gate, open', 25, 2, 1, 1, 0.9, true, 'prop')],
+    members: [mem('side-gate', 'side gate, open', 25, 2, 1, 1, 0.7, true, 'prop')],
   },
   {
     id: 'gardens',
     purpose:
-      'The common vegetable strips behind the houses, one per household: a lean-to for the tools, stone pegs at the strip ends, a basket.',
+      'The common vegetable strips behind the houses, one per household: a lean-to for the tools and a basket (the strip ends are marked another way, later).',
     anchor: 'garden-lean-to',
     focal: true,
     members: [
-      mem('garden-lean-to', 'tool lean-to', 28, 2, 1, 1, 1.1, false, 'fades'),
-      small('garden-peg-nw', 'stone peg', 27.35, 2.35, 0.3, 0.3),
-      small('garden-peg-sw', 'stone peg', 26.35, 4.35, 0.3, 0.3),
-      small('garden-peg-se', 'stone peg', 28.35, 4.35, 0.3, 0.3),
-      small('garden-basket', 'basket', 27.3, 4.3, 0.4, 0.4),
+      mem('garden-lean-to', 'tool lean-to', 28, 2, 1, 1, 0.85, false, 'fades'),
+      small('garden-basket', 'basket', 28.3, 3.3, 0.4, 0.55),
     ],
   },
   {
     id: 'tea_terrace',
     purpose:
-      "Nala's tea terrace cut into the hillside above the square, quiet, looking down: two stools and a tea tray that Pella picks for her.",
+      "Nala's tea terrace cut into the hillside above the square, quiet, looking down: two stools, and the tea that Pella picks for her.",
     anchor: 'terrace-stool-large',
     focal: true,
     members: [
-      small('terrace-stool-large', 'stool', 7.3, 2.3, 0.4, 0.4),
-      small('terrace-stool-small', 'small stool', 8.35, 2.35, 0.3, 0.3),
-      small('terrace-tray', 'tea tray', 7.35, 3.35, 0.3, 0.3),
+      small('terrace-stool-large', 'stool', 7.3, 2.3, 0.4, 0.5),
+      small('terrace-stool-small', 'small stool', 8.35, 2.35, 0.3, 0.5),
     ],
   },
   {
@@ -274,7 +270,7 @@ const PIECES: readonly PlannedSetPiece[] = [
     anchor: 'pella-house',
     focal: true,
     members: [
-      building('pella-house', "Pella's house", 8, 15, 4, 3, 1.6),
+      building('pella-house', "Pella's house", 8, 15, 4, 3, 1.55),
       flat('pella-doorstep', 'doorstep', 9, 14),
       small('handcart', "Bo-shan's handcart", 12.1, 17.1, 0.8, 0.9, { have: 'handcart' }),
     ],
@@ -285,10 +281,10 @@ const PIECES: readonly PlannedSetPiece[] = [
       "Leto's house in the company-built quarry row: the same style as its neighbours, with a bench by the door and a free doorstep for the boots that come home later.",
     anchor: 'leto-house',
     members: [
-      building('leto-house', "Leto's house", 3, 16, 3, 2, 1.5),
+      building('leto-house', "Leto's house", 3, 16, 3, 2, 1.35),
       flat('leto-doorstep', 'doorstep', 4, 15),
       flat('leto-free-step', 'free doorstep', 5, 15),
-      mem('leto-bench', 'bench', 3.05, 15.3, 0.8, 0.4, 0.4, false, 'prop'),
+      mem('leto-bench', 'bench', 3.05, 15.3, 0.8, 0.4, 0.6, false, 'prop'),
     ],
   },
   {
@@ -297,10 +293,10 @@ const PIECES: readonly PlannedSetPiece[] = [
       "Amri's house with the blue door in the quarry row: a pot against the wall and a free doorstep for the boots.",
     anchor: 'amri-house',
     members: [
-      building('amri-house', "Amri's house", 15, 16, 3, 2, 1.5),
+      building('amri-house', "Amri's house", 15, 16, 3, 2, 1.35),
       flat('amri-doorstep', 'doorstep', 16, 15),
       flat('amri-free-step', 'free doorstep', 17, 15),
-      small('amri-pot', 'pot', 14.3, 16.3, 0.5, 0.5),
+      small('amri-pot', 'pot', 14.3, 16.3, 0.5, 0.4),
     ],
   },
   {
@@ -310,10 +306,10 @@ const PIECES: readonly PlannedSetPiece[] = [
     anchor: 'senn-house',
     members: [
       building('senn-house', "Senn's house", 20, 16, 4, 2, 1.5),
-      building('senn-annex', "Senn's house, the L", 23, 18, 1, 1, 1.5),
+      building('senn-annex', "Senn's house, the L", 23, 18, 1, 1, 1.35),
       flat('senn-doorstep', 'doorstep', 24, 17),
       flat('senn-free-step', 'free doorstep', 24, 16),
-      small('senn-logs', 'log pile', 24.1, 18.2, 0.7, 0.5),
+      small('senn-logs', 'log pile', 24.1, 18.2, 0.7, 0.65),
     ],
   },
   {
@@ -322,8 +318,8 @@ const PIECES: readonly PlannedSetPiece[] = [
       "Hanru's house with its shutters closed, for the night watch who sleeps by day, and her drying rack at the end wall.",
     anchor: 'hanru-house',
     members: [
-      building('hanru-house', "Hanru's house", 26, 16, 2, 2, 1.5),
-      mem('hanru-rack', 'drying rack', 28, 16, 1, 1, 1.1, false, 'fades'),
+      building('hanru-house', "Hanru's house", 26, 16, 2, 2, 1.35),
+      mem('hanru-rack', 'drying rack', 28, 16, 1, 1, 0.9, false, 'fades'),
     ],
   },
   {

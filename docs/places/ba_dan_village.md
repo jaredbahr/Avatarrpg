@@ -321,3 +321,13 @@ in `prototypes/topdown/ledger.json` and send the credit total to the owner first
 - The garden's north-west stone peg (26,2) to (27,2), so that it touches the lean-to (anchored rule).
 - The side gate hangs on the fence cell (25,2), against the post, because its gap (25,3) is the `side_gate` track.
 - The east wall's rows 3-8 are rows 3-7 and the bell post on row 8, which the post's own cell already is.
+
+## Kit placed (stage 6, part 2)
+
+The kit stands in the game: `src/content/scenes/baDan.layout.ts` turns every member of the set-piece plan into an object
+(the plan stays the one source of placement; a table says which sprite stands for each member), the ground board bakes
+their static shadows and contacts (`boards/ground.ts`, ADR 0104 section 2 and ADR 0093) with no plinths, and `?boxes` still
+draws the plan on top. Changes to the plan: the carved stone pegs and the tea tray are cut (strip edges will be marked another
+way later); heights are the drawn sprites' real heights (the houses keep their drawn sizes, no resampling); the ford's
+quiet box ends at row 10 so the rim tree on (0,11) can stand; the garden basket hugs the lean-to. The rim mixes the pine,
+the broadleaf, the bamboo and the bush with a varied rhythm; the old oak and blossom tree are not used in Ba Dan.
