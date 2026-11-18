@@ -1621,7 +1621,9 @@ export async function packTopdownSheets(): Promise<Map<string, Uint8Array | stri
   // The standing objects, trimmed hard-alpha PNGs the scene loads by name (T3's `prototypes/topdown/tools/t3objproc.py`;
   // RG-02's cut at alpha 128 and trimmed the same way from `tools/rg02obj.py`'s take).
   for (const name of OBJECTS) {
-    const bytes = readFileSync(join(SOURCE, OBJECT_SOURCE[name], OBJECT_FILE[name] ?? `${name}.png`));
+    const bytes = readFileSync(
+      join(SOURCE, OBJECT_SOURCE[name], OBJECT_FILE[name] ?? `${name}.png`),
+    );
     files.set(`${OBJECTS_OUT}/${name}.png`, new Uint8Array(bytes));
     // A one-image atlas (every cel the image), so the object stands on its cell as a figure does
     // (`topdownObject` in the manifest).
