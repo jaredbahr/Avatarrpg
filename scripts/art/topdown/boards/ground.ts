@@ -35,7 +35,24 @@ import {
   type MadeDef,
 } from '../../../../src/content/ground';
 import type { RgbaImage } from '../../../../src/render/shadow/hardShadowMask';
-import { ASSETS, CLASS, type Baked, type TopDownBoard, type UprightData } from '../lib/board';
+import type { TopDownObject } from '../../../../src/content/topdownLayout';
+import type { SceneScenery } from '../../../../src/core/types';
+import {
+  ASSETS,
+  CLASS,
+  type Baked,
+  type Placed,
+  type TopDownBoard,
+  type UprightData,
+} from '../lib/board';
+import {
+  FLAT_KINDS,
+  groundObject,
+  seatFringe,
+  shadowOptions,
+  standingUprights,
+} from '../lib/grounding';
+import { cleanSprite } from '../lib/sprites';
 import { lockImage, nearestIn } from '../lib/look';
 import { at, blank, crop, draw, load, type Rgb } from '../lib/raster';
 import { BA_DAN_PALETTE } from '../palettes/baDan';
@@ -199,7 +216,7 @@ export interface GroundBaked extends Baked {
   readonly groundClasses: Uint8Array;
 }
 
-export function bakeGround(tr: GroundTerrain): GroundBaked {
+export function bakeGround(tr: GroundTerrain, opts: { hidePlinths?: boolean } = {}): GroundBaked {
   const spec = tr.spec;
   const PW = tr.plateW,
     PH = tr.plateH,
@@ -218,7 +235,8 @@ export function bakeGround(tr: GroundTerrain): GroundBaked {
     for (let x = 0; x < PW; x++) {
       const m = tr.madeAt(x, y);
       const i = y * PW + x;
-      if (m) {
+      // a board whose set pieces stand on it draws no plinth: the sprites are the houses, walls and pieces
+      if (m && !(opts.hidePlinths && m.def.draw === 'plinth')) {
         cls[i] = m.k;
         madeIdx[i] = madeDefs.indexOf(m.def);
       } else cls[i] = tr.blendAt(x, y);
@@ -992,8 +1010,58 @@ function scene(
   tr: GroundTerrain,
   url: string,
   baked: Baked,
-  _uprights: readonly UprightData[],
+  uprights: readonly UprightData[],
+  layout: GroundLayout | undefined,
+  boardId: string,
 ): MapScene {
+  const byId = new Map(uprights.map((u) => [u.id, u]));
+  // the glow of each lamp is centred on its lantern's glass: the centroid of the warm yellow pixels of its sprite
+  const lanterns = (layout?.objects ?? []).flatMap((o) => {
+    const up = o.sprite === 'lamp' ? baked.uprights.find((u) => u.id === o.id) : undefined;
+    if (!up) return [];
+    let n = 0,
+      sx = 0,
+      sy = 0;
+    for (let y = 0; y < up.image.height; y++)
+      for (let x = 0; x < up.image.width; x++) {
+        const i = (y * up.image.width + x) * 4,
+          d = up.image.data;
+        if (
+          at(d, i + 3) &&
+          at(d, i) >= 235 &&
+          at(d, i + 1) >= 205 &&
+          at(d, i + 2) >= 100 &&
+          at(d, i + 2) <= 135
+        ) {
+          n++;
+          sx += x;
+          sy += y;
+        }
+      }
+    return n ? [{ x: (up.x + (sx / n + 0.5)) / 40, y: (up.y + (sy / n + 0.5)) / 40 }] : [];
+  });
+  const scenery: SceneScenery[] = (layout?.objects ?? []).flatMap((o) => {
+    const art = byId.get(o.id);
+    if (!art) return [];
+    return [
+      {
+        id: `${boardId}.td.${o.id}`,
+        url: `${url}/uprights.webp`,
+        sourceRect: art.sourceRect,
+        x: art.x,
+        y: art.y,
+        width: art.width,
+        height: art.height,
+        footprint: o.footprint,
+        depth: o.depth,
+        ...(o.exterior && { exterior: true }),
+        ...(o.fadeWhenOccluding && { fadeWhenOccluding: true }),
+        ...(o.revealOccluded && { revealOccluded: true }),
+        contactShadow: false,
+        castShadow: false,
+      },
+    ];
+  });
   return {
     paintedWater: true,
     paintExtent: { x: tr.origin.x, y: tr.origin.y, width: tr.plateW, height: tr.plateH },
@@ -1008,8 +1076,87 @@ function scene(
         height: tr.plateH,
       },
     ],
-    scenery: [],
+    scenery,
+    ...(lanterns.length > 0 && { ambienceSources: { steam: [], lanterns } }),
   };
+}
+
+/** The set pieces that stand on a ground board: its objects and where each sprite's art is (relative to `ASSETS`). */
+export interface GroundLayout {
+  readonly objects: readonly TopDownObject[];
+  readonly sprites: Readonly<Record<string, string>>;
+}
+
+/** The shadow's strength on Ba Dan's grass (the ground is calm and light, so the plain 1). */
+const GRASS_SCALE = 1;
+
+function mirror(img: RgbaImage): RgbaImage {
+  const out = blank(img.width, img.height);
+  for (let y = 0; y < img.height; y++)
+    for (let x = 0; x < img.width; x++)
+      for (let c = 0; c < 4; c++)
+        out.data[(y * img.width + x) * 4 + c] = at(
+          img.data,
+          (y * img.width + img.width - 1 - x) * 4 + c,
+        );
+  return out;
+}
+
+/** Grounds every object of `layout` on the baked ground (ADR 0093 / 0104 §2): the shared `hardShadowMask` casts, the grass kit's contacts, one upright atlas. */
+export function placeObjects(tr: GroundTerrain, b: GroundBaked, layout: GroundLayout): GroundBaked {
+  const g = b.ground;
+  const PW = g.width;
+  const sprites = new Map<string, RgbaImage>();
+  const sprite = (o: TopDownObject): RgbaImage => {
+    const key = `${o.sprite}${o.flip ? '|flip' : ''}`;
+    let img = sprites.get(key);
+    if (!img) {
+      const file = layout.sprites[o.sprite];
+      if (!file) throw new Error(`no art registered for sprite "${o.sprite}" (${o.id})`);
+      const raw = cleanSprite(load(`${ASSETS}/${file}`));
+      img = o.flip ? mirror(raw) : raw;
+      sprites.set(key, img);
+    }
+    return img;
+  };
+  const placed: Placed[] = layout.objects.map((o) => {
+    const img = sprite(o);
+    const base = o.base - tr.origin.y;
+    return {
+      o,
+      img,
+      x: Math.round(o.x - tr.origin.x - img.width / 2),
+      y: base - img.height,
+      w: img.width,
+      h: img.height,
+      base,
+    };
+  });
+  const bare = { ...b.bare, data: new Uint8ClampedArray(b.bare.data) };
+  for (const p of placed)
+    if (FLAT_KINDS.has(p.o.kind)) {
+      draw(g, p.img, p.x, p.y);
+      draw(bare, p.img, p.x, p.y);
+    }
+  const shadows: Baked['shadows'][number][] = [];
+  const fringes = new Map<Placed, RgbaImage>();
+  for (const p of placed) {
+    if (FLAT_KINDS.has(p.o.kind)) continue;
+    const ux = Math.max(0, Math.min(PW - 1, p.x + (p.w >> 1))),
+      uy = Math.max(0, Math.min(g.height - 1, p.base - 2));
+    const soft = b.classes[uy * PW + ux] === CLASS.G;
+    const { record, fringe } = groundObject(g, p, b.classes, soft, shadowOptions(p), {
+      softScale: GRASS_SCALE,
+      dryKit: true,
+    });
+    shadows.push(record);
+    if (fringe) {
+      seatFringe(fringe, p, record.m, b.classes, soft ? GRASS_SCALE : 1.3, g);
+      fringes.set(p, fringe);
+    }
+  }
+  const { cover, uprights } = standingUprights(placed, fringes, g, tr.origin);
+  return { ...b, bare, cover, shadows, uprights, placed };
 }
 
 /** A board baked from its ground data alone (its set pieces stand on it at stage 5). */
@@ -1017,13 +1164,18 @@ export function groundBoard(cfg: {
   id: string;
   folder: string;
   terrain: GroundTerrain;
+  /** Set pieces standing on the ground; their plinths are then not drawn. */
+  layout?: GroundLayout;
 }): TopDownBoard {
   const url = `art/topdown/${cfg.folder}`;
   return {
     id: cfg.id,
     out: `public/art/topdown/${cfg.folder}`,
     url,
-    bake: () => bakeGround(cfg.terrain),
-    scene: (baked, uprights) => scene(cfg.terrain, url, baked, uprights),
+    bake: () =>
+      cfg.layout
+        ? placeObjects(cfg.terrain, bakeGround(cfg.terrain, { hidePlinths: true }), cfg.layout)
+        : bakeGround(cfg.terrain),
+    scene: (baked, uprights) => scene(cfg.terrain, url, baked, uprights, cfg.layout, cfg.id),
   };
 }
