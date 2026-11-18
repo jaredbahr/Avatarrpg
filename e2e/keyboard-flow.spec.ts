@@ -110,9 +110,10 @@ test('the opening route uses the keyboard from title to a conversation on the Fo
   await advanceLines(page, opening, linesOf('act1_open'));
   await expectNode(page, 'village_explore');
   const map = button(page, 'Map');
-  await expectVisibleFocus(map);
+  // The party arrives within reach of Mira's table (the Ba Dan blockout, #875), so the
+  // HUD's contextual action, Talk, takes the first focus and one Enter opens her scene.
+  await expectVisibleFocus(button(page, 'Talk Elder Mira'));
   await page.keyboard.press('Enter');
-  await pressControl(page, button(page, 'Walk to Elder Mira'));
   await expectNode(page, 'mira_intro');
   const next = page.locator('[data-conversation-control="next"]');
   await advanceLines(page, next, linesOf('mira_intro'));
@@ -126,14 +127,28 @@ test('the opening route uses the keyboard from title to a conversation on the Fo
   }
   await expectNode(page, 'village_explore');
 
+  // Mira's table seats the party two cells from where her scene ends, so walk there by
+  // keyboard the way a player would: Look around offers the seat.
+  await pressControl(page, button(page, 'Look around'));
+  await pressControl(page, button(page, /Sit and wait/));
+  await waitForIdle(page);
   await pressControl(page, button(page, /^Wait/));
   await pressControl(page, button(page, /Afternoon/));
   await expect
     .poll(() => page.evaluate(() => window.fnt?.app.state?.world.clock.phase))
     .toBe('afternoon');
   await expectVisibleFocus(button(page, /^Wait/));
+  // Gao keeps his shop across the square: walk over by direction, east along the square's
+  // south side and then north to his shop front, until his Talk is offered.
   const gao = button(page, 'Talk Gao the Shopkeeper');
-  await pressControl(page, gao, 'Enter', 'Shift+Tab');
+  for (let step = 0; step < 16 && !(await gao.isVisible()); step++) {
+    const x = await page.evaluate(() => window.fnt?.app.state?.location.pos.x ?? 0);
+    await page.locator('canvas.map-canvas').focus();
+    await page.keyboard.press(x < 19 ? 'ArrowRight' : 'ArrowUp');
+    await waitForIdle(page);
+  }
+  // Focus is on the map after the walk; the HUD's Talk comes after it in tab order.
+  await pressControl(page, gao);
   await expectNode(page, 'plant_chair');
   await pressControl(page, button(page, /Another time/));
   await expectNode(page, 'gao_friendly');
