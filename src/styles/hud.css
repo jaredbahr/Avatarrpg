@@ -2322,7 +2322,10 @@ html[data-contrast='high'] .hud-panel::after {
 }
 
 .action-button.selected::before {
+  /* A mark for the eye only: aria-pressed already says it, and in the name it would read "check
+     Fire Jab" and break every lookup by name. The empty alt text keeps it out (fallback first). */
   content: '\2713';
+  content: '\2713' / '';
   position: absolute;
   top: var(--stroke-emphasis);
   left: var(--stroke-emphasis);
