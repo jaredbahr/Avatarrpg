@@ -9,7 +9,7 @@ import os, sys, json
 sys.path.insert(0, 'tools'); import pl
 from PIL import Image
 
-CAP = 180.0   # 162 (owner, 2026-11-18) + about 18 for three trees (owner, 2026-11-18)
+CAP = 210.0   # 162 (owner, 2026-11-18) + about 18 for three trees + 30 for the stage 7 later-state props, one retake each (owner, 2026-11-18)
 RAW = os.environ.get('BD20_RAW', 'bd20/raw')
 os.environ.setdefault('PIXELLAB_REGION', 'ba_dan_valley')
 S = json.load(open('style.json'))
@@ -55,6 +55,8 @@ IT = {
                     "Summer green only, not autumn red, not a big oak. " + LOOK, 60, 81, 72, 88, 'tree', 'a'),
  'bamboo': ("a clump of green bamboo, a few slender jointed culms of different heights with narrow leaf sprays at the top, rooted in one tuft at the base, seen from the front in low top-down. " + LOOK, 40, 68, 48, 76, 'tree', 'a'),
 
+ 'gao_jar': ("a round glazed earthenware storage jar with a wooden lid and a little folded paper tag tied round its neck with string, plain warm brown clay with a green glaze band, sitting on its base. " + LOOK, 16, 20, 48, 48, 'barrel', 's'),
+ 'hesra_boot': ("one single worn leather work boot standing upright, hobnailed sole, laced up the front, dusty brown leather, with a small pale river shell resting just inside its open top. " + LOOK, 14, 16, 48, 48, 'crate', 's'),
  'peg': ("a short carved pale limestone boundary peg, a squat rounded stone post with a simple notched ring carved round its head. " + LOOK, 12, 14, 48, 48, 'crate', 's'),
 }
 # Retakes (a corrected prompt, the key and seed they replace): the first takes came back narrower or wider than asked, because the
@@ -68,17 +70,22 @@ RETAKE = {
  ('mason_house', 4): ("the stonemason's house, a wide low one-storey Earth Kingdom village house, wider than it is tall (about 120 px wide and 72 px tall), built of fitted pale limestone blocks with visible block joints, "
                       "a wide plain wooden door with one broad stone step in front of it, a lattice window beside it with a thick stone windowsill, one tier of green glazed roof with upturned eave corners. " + ROOF + BLD, 120, 72, 128, 80, 'pella_house', 'b'),
 }
+RETAKE[('hesra_boot', 4)] = ("one single worn brown leather work boot lying on its sole, seen from the side with the toe pointing to the right: a low ankle-high shaft at the left, laces, a thick hobnailed sole along the bottom, "
+    "wider than it is tall (about 20 px wide and 14 px tall); a small pale cream river shell pokes out of the open top of the shaft. Not a lantern, not a cage, not standing upright. " + LOOK, 20, 14, 48, 48, 'crate_wide', 's')
 RETAKE[('gao_store', 5)] = (IT['gao_store'][0], 80, 76, 88, 80, 'pella', 'b')   # the reference's own drawn size sets the result: pella scaled to fit 84 x 76 is about 84 x 75
 RETAKE[('awning', 4)] = ("a free-standing patched awning ONLY: four slim bare wooden posts, one at each corner, and a sagging patched cloth stretched across their tops, patches of faded red, ochre and indigo stitched together. "
     "The space under the cloth is completely empty and open: no counter, no table, no crates, no goods, no stall, no benches; just four thin posts standing on the ground and the cloth above, seen from the front, the cloth a wide shallow slanted band. "
     "It is wide: about 128 px wide and 96 px tall, the posts about 80 px tall. " + LOOK, 128, 96, 136, 104, 'stall_top', 'a')
-RETAKE_EDIT = {('wall_mended', 4): ('wall_low', "Change only the middle of the wall: three of its blocks are replaced by visibly newer, whiter, neater blocks, with a bright line of fresh pale mortar round them, so a repair is easy to spot. "
+RETAKE_EDIT = {('side_gate_hung', 4): ('side_gate', "Remove the open plank door on the right completely, nothing left hanging outside the posts. Fill the opening between the two posts with ONE closed plank gate, flat and square to the viewer, its rope latch tied. "
+    "On top of the green roof, in the middle of the ridge, sits a clearly visible small plump brown hen with a red comb, about 9 px tall, seen from the side. Keep the same posts, roof, outline and colours.", None),
+ ('wall_mended', 4): ('wall_low', "Change only the middle of the wall: three of its blocks are replaced by visibly newer, whiter, neater blocks, with a bright line of fresh pale mortar round them, so a repair is easy to spot. "
     "Keep the same wall shape, the same outline, the same colours elsewhere.", None)}
 # edits: key -> (source key, prompt, canvas w, canvas h)
 EDIT = {
  'quarry_amri': ('quarry_row', "Change only the door colour: the front door is painted a bright cornflower blue instead of plain timber. Keep everything else exactly the same: the same walls, window, roof, outline and colours.", None),
  'hanru_house': ('quarry_row', "This house was squeezed narrower and is blurry. Redraw it as crisp pixel art at this size, the same house with the same roof, walls, door and colours, but its one window is now covered by a closed wooden shutter. Keep the same style.", (80, 60)),
  'senn_annex': ('quarry_long', "This building was squeezed narrow and is blurry. Redraw it as crisp pixel art at this size: a narrow square annex wing of a plain house, the same pale limestone walls, the same dull green roof, a plain closed wooden door, no window. Keep the same style.", (44, 60)),
+ 'side_gate_hung': ('side_gate', "Change the gate: it is now hung the right way round and shut, the single plank gate closed flat across the opening, square to the viewer, with its rope latch fastened, and a small plump brown hen sits on top of the stone post. Keep the same post, the same timber, the same outline and colours.", None),
  'wall_mended': ('earth_wall', "Show the same low stone wall section but one block course in the middle has been repaired with a few newer, paler, neater blocks and a patch of fresh mortar; keep the same outline, same shape and same colours.", None),
 }
 SRC_PATH = {'earth_wall': '../../public/art/topdown/props/earth_wall.png'}
@@ -88,6 +95,8 @@ def ref_image(name, canvas):
     if name == 'stall_top':   # the old stall's cloth and posts only, its counter cut off and widened, so nothing is left to copy under the cloth
         st = Image.open('assets/objects12/stall.png').convert('RGBA').crop((0, 0, 77, 46))
         return st.resize((round(77 * 1.5), round(46 * 1.5)), Image.LANCZOS)
+    if name == 'crate_wide':   # the crate squashed to the boot's wide, low aspect: the reference's drawn aspect sets the result's (art-lessons)
+        return Image.open('assets/objects12/crate.png').convert('RGBA').resize((22, 15), Image.LANCZOS)
     p = {'pella': 'assets/objects_bd13/house_pella.png', 'trough': 'assets/objects12/trough.png', 'crate': 'assets/objects12/crate.png', 'barrel': 'assets/objects12/barrel.png',
          'planter': 'assets/objects12/planter.png', 'lamp': 'assets/objects_t3/lamp.png', 'fence': 'assets/objects12/fence.png', 'stall': 'assets/objects12/stall.png', 'earth_wall': '../../public/art/topdown/props/earth_wall.png', 'tree': 'assets/objects12/tree.png'}.get(name) or f'assets/objects_bd20/{name}.png'
     im = Image.open(p).convert('RGBA')

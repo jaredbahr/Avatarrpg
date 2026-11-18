@@ -267,5 +267,36 @@
   "job_id": "95021833-52d3-4018-8dc0-04bf2a3a3fb3",
   "takes": 1,
   "prompt": "a clump of green bamboo, a few slender jointed culms of different heights with n..."
+ },
+ "gao_jar": {
+  "w": 21,
+  "h": 26,
+  "seed": 3,
+  "ledger_job": "bd20_gao_jar_3",
+  "credits": 5.0,
+  "job_id": "75d32b61-61e6-428e-a3ec-d6bfa7130739",
+  "takes": 1,
+  "prompt": "a round glazed earthenware storage jar with a wooden lid and a little folded pap..."
+ },
+ "hesra_boot": {
+  "w": 12,
+  "h": 20,
+  "seed": 4,
+  "ledger_job": "bd20_hesra_boot_4",
+  "credits": 10.0,
+  "job_id": "fffa6032-5727-425e-926d-d8d413996d49",
+  "takes": 2,
+  "prompt": "one single worn brown leather work boot lying on its sole, seen from the side wi...",
+  "note": "take 4 (24x40) halved with a box filter, alpha cut at 128, snapped to the palette: the take came out person-sized"
+ },
+ "side_gate_hung": {
+  "w": 28,
+  "h": 32,
+  "seed": 4,
+  "ledger_job": "bd20_side_gate_hung_4",
+  "credits": 10.0,
+  "job_id": "5551a43b-3784-49c5-b8b3-c5b6cde86007",
+  "takes": 2,
+  "prompt": "Remove the open plank door on the right completely, nothing left hanging outside..."
  }
 }

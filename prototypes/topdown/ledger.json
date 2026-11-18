@@ -41891,6 +41891,303 @@
     "object_id": "5cfce715-4aef-4a70-b454-ec4173ce902c"
    },
    "region": "ba_dan_valley"
+  },
+  {
+   "name": "bd20_gao_jar_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "75d32b61-61e6-428e-a3ec-d6bfa7130739",
+   "status": "completed",
+   "settings": {
+    "description": "a round glazed earthenware storage jar with a wooden lid and a little folded pap...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 22,
+      "height": 28
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view, front face square to the viewer, its top a shallow slanted band. Match its pixel density, one-pixel outline in a darker tone of the material, flat shading with light from the upper left, and palette. Do not copy its colours or design."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 4761.0654640625,
+   "balance_after": 4756.0654640625,
+   "secs": 25,
+   "notes": "",
+   "ids": {
+    "background_job_id": "75d32b61-61e6-428e-a3ec-d6bfa7130739",
+    "object_id": "45ded720-38d6-4e0f-a69e-a264eb15ee75"
+   },
+   "region": "ba_dan_valley"
+  },
+  {
+   "name": "bd20_hesra_boot_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "b41a87c6-e8a0-424e-abce-d0b9c87eef34",
+   "status": "completed",
+   "settings": {
+    "description": "one single worn leather work boot standing upright, hobnailed sole, laced up the...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 20,
+      "height": 24
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view, front face square to the viewer, its top a shallow slanted band. Match its pixel density, one-pixel outline in a darker tone of the material, flat shading with light from the upper left, and palette. Do not copy its colours or design."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 4756.0654640625,
+   "balance_after": 4751.0654640625,
+   "secs": 25,
+   "notes": "",
+   "ids": {
+    "background_job_id": "b41a87c6-e8a0-424e-abce-d0b9c87eef34",
+    "object_id": "54ef5002-9d35-4089-82c8-7f9c5060a5e2"
+   },
+   "region": "ba_dan_valley"
+  },
+  {
+   "name": "bd20_side_gate_hung_3",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "1673bab7-bb48-40b6-9501-b5b5b8a41cf1",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Change the gate: it is now hung the right way round and shut, the single plank g...",
+    "no_background": true,
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 4751.0654640625,
+   "balance_after": 4746.0654640625,
+   "secs": 20,
+   "notes": "",
+   "ids": {
+    "background_job_id": "1673bab7-bb48-40b6-9501-b5b5b8a41cf1",
+    "image_id": "ea868017-344b-5255-b513-43d9e80bcebf",
+    "source_image_id": "ea868017-344b-5255-b513-43d9e80bcebf"
+   },
+   "region": "ba_dan_valley"
+  },
+  {
+   "name": "bd20_hesra_boot_4",
+   "endpoint": "/create-object-pro-flash",
+   "job": "fffa6032-5727-425e-926d-d8d413996d49",
+   "status": "completed",
+   "settings": {
+    "description": "one single worn brown leather work boot lying on its sole, seen from the side wi...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 22,
+      "height": 15
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view, front face square to the viewer, its top a shallow slanted band. Match its pixel density, one-pixel outline in a darker tone of the material, flat shading with light from the upper left, and palette. Do not copy its colours or design."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 4
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 4746.0654640625,
+   "balance_after": 4741.0654640625,
+   "secs": 19,
+   "notes": "",
+   "ids": {
+    "background_job_id": "fffa6032-5727-425e-926d-d8d413996d49",
+    "object_id": "a44c549f-d2af-4b08-90b7-32bd5a98b093"
+   },
+   "region": "ba_dan_valley"
+  },
+  {
+   "name": "bd20_side_gate_hung_4",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "5551a43b-3784-49c5-b8b3-c5b6cde86007",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Remove the open plank door on the right completely, nothing left hanging outside...",
+    "no_background": true,
+    "seed": 4
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 4741.0654640625,
+   "balance_after": 4736.0654640625,
+   "secs": 19,
+   "notes": "",
+   "ids": {
+    "background_job_id": "5551a43b-3784-49c5-b8b3-c5b6cde86007",
+    "image_id": "9a8f77d3-3d46-5fd0-8d20-2a8dca9b52ff",
+    "source_image_id": "9a8f77d3-3d46-5fd0-8d20-2a8dca9b52ff"
+   },
+   "region": "ba_dan_valley"
   }
  ],
  "end_balance": 16728.0,
