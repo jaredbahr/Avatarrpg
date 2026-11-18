@@ -1449,7 +1449,7 @@ export class Canvas2DBackend implements RenderBackend {
         { x: box.x + (width * box.size) / 2, y: box.y + FOOT_LINE * box.size },
         scale,
         1,
-        npc.alpha ?? 1,
+        npc.footShadow === false ? 0 : (npc.alpha ?? 1),
         worldPixel,
         at,
         sheet

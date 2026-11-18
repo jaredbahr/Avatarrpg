@@ -11,3 +11,8 @@ export function triggerPresentationScale(sprite: string): number {
   if (sprite === 'unit.enemy.driller') return 1;
   return enemyScale(sprite, 1);
 }
+
+/** Standing art whose shadow is already baked into the plate, so it casts no foot blob of its own. */
+export function npcCastsFootShadow(sprite: string): boolean {
+  return sprite !== 'world.side_gate_hung';
+}

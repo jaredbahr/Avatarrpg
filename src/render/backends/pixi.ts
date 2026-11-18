@@ -2329,7 +2329,7 @@ export class PixiBackend implements RenderBackend {
         { x: footX, y: ground + FOOT_LINE * this.tile },
         scale,
         1,
-        alpha,
+        npc.footShadow === false ? 0 : alpha,
         at,
         frame
           ? {

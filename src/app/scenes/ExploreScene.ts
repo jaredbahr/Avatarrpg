@@ -10,7 +10,11 @@
  */
 
 import { RIVERSIDE_ID } from '../../content/maps/riversideIds';
-import { npcPresentationScale, triggerPresentationScale } from './exploreMarkerScale';
+import {
+  npcCastsFootShadow,
+  npcPresentationScale,
+  triggerPresentationScale,
+} from './exploreMarkerScale';
 import { evaluate } from '../../core/story/conditions';
 import {
   activeTriggers,
@@ -1668,6 +1672,7 @@ export class ExploreScene implements Scene {
           sprite: npc.sprite,
           name: npc.name,
           scale: npcPresentationScale(npc.sprite),
+          ...(npcCastsFootShadow(npc.sprite) ? {} : { footShadow: false as const }),
           // Someone at a post on a G sheet faces the camera on its idle loop,
           // or the way its NpcDef says it faces (the gate's watchers, the party).
           ...(sheetLocomotion(npc.sprite)?.headings === 8
