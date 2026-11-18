@@ -31,7 +31,7 @@ frame, no motion to boil.
 
 A map's dressing starts from a written design note (who is here, a day, where people walk, where things are kept,
 the focal point) and a plan drawn from it. The plan is data, `DressingPlan` (`src/content/setPieces.ts`), one file per
-map beside its layout (`src/content/scenes/baDan.dressing.ts`):
+map beside its layout (`src/content/maps/oldVillage.dressing.fixture.ts`, frozen with the old 24 x 16 board; the live 32 x 20 village's plan is `src/content/scenes/baDan.setpieces.ts`, stage 5 of `docs/level-design.md`):
 
 - **Set pieces**: an anchor, its satellites and its ground aprons, with a stated purpose; optionally the zone's focal
   piece, or an edge run.

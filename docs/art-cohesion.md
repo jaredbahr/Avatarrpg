@@ -13,7 +13,7 @@ and the calm ground support the design, they are not the point of it. ADR 0119 r
 
 ## Worked example: Ba Dan square
 
-The square is the cohesion pilot (2026-11-17). Its plan is data in `src/content/scenes/baDan.dressing.ts`, and
+The square is the cohesion pilot (2026-11-17). Its plan is data in `src/content/maps/oldVillage.dressing.fixture.ts` (frozen with the old 24 x 16 board; the live village's set pieces are `src/content/scenes/baDan.setpieces.ts`), and
 `src/content/setPieces.test.ts` holds the layout to it.
 
 ### What this place is, and who is here

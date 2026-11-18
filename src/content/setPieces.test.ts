@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { OLD_VILLAGE_ROWS } from './maps/oldVillage.fixture';
 import { BA_DAN_VILLAGE } from './maps/village';
 import { LEGEND } from './maps/legend';
-import { BA_DAN_DRESSING_PLAN } from './scenes/baDan.dressing';
+import { BA_DAN_DRESSING_PLAN } from './maps/oldVillage.dressing.fixture';
 import { BA_DAN_TOPDOWN_OBJECTS } from './scenes/baDan.topdown';
 import { validateDressing, type DressingPlan } from './setPieces';
 import type { TopDownObject } from './topdownLayout';
