@@ -43,6 +43,7 @@ import { npcPipLift } from '../../render/npcPip';
 import type { RoutePreview } from '../../render/routePreview';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
 import { ambienceFx } from '../../content/fx';
+import { boardLightFor } from '../dayLight';
 import { ambientEmitters, waterCells } from '../anim/ambience';
 import { PartyTrail, placeParty } from '../anim/trail';
 import type { FollowerRoute } from '../anim/trail';
@@ -1796,6 +1797,8 @@ export class ExploreScene implements Scene {
       scene: map.scene,
       time: now,
       reducedMotion: motionReduced(),
+      // The day's grade and the lit lamps (ADR 0121): static, so reduce motion keeps them.
+      light: boardLightFor(state.world.clock.phase, map.scene, 'explore'),
     };
 
     renderer.draw(view);
