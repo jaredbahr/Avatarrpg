@@ -237,5 +237,35 @@
   "credits": 5.0,
   "job_id": null,
   "note": "code-drawn from wall_low (tools/bd20mend.py); the PixelLab edit bd20_wall_mended_3 of earth_wall showed no mend"
+ },
+ "tree_pine": {
+  "w": 38,
+  "h": 81,
+  "seed": 3,
+  "ledger_job": "bd20_tree_pine_3",
+  "credits": 5.0,
+  "job_id": "da87173b-35cf-422b-9c0a-803e1585fc5c",
+  "takes": 1,
+  "prompt": "an upland pine tree of the Earth Kingdom hills: a slim dark green conifer with l..."
+ },
+ "tree_broadleaf": {
+  "w": 38,
+  "h": 54,
+  "seed": 3,
+  "ledger_job": "bd20_tree_broadleaf_3",
+  "credits": 5.0,
+  "job_id": "632670ea-8818-4b21-90c1-fe98ff41af3f",
+  "takes": 1,
+  "prompt": "a small summer-green broadleaf tree of an upland village: a rounded crown of mid..."
+ },
+ "bamboo": {
+  "w": 35,
+  "h": 56,
+  "seed": 3,
+  "ledger_job": "bd20_bamboo_3",
+  "credits": 5.0,
+  "job_id": "95021833-52d3-4018-8dc0-04bf2a3a3fb3",
+  "takes": 1,
+  "prompt": "a clump of green bamboo, a few slender jointed culms of different heights with n..."
  }
 }

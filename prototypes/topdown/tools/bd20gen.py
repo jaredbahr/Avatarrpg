@@ -9,7 +9,7 @@ import os, sys, json
 sys.path.insert(0, 'tools'); import pl
 from PIL import Image
 
-CAP = 162.0
+CAP = 180.0   # 162 (owner, 2026-11-18) + about 18 for three trees (owner, 2026-11-18)
 RAW = os.environ.get('BD20_RAW', 'bd20/raw')
 os.environ.setdefault('PIXELLAB_REGION', 'ba_dan_valley')
 S = json.load(open('style.json'))
@@ -49,6 +49,12 @@ IT = {
  'mason_bench': ("a mason's low work bench: a thick plain timber slab on two stout legs with a mallet and a chisel lying on it and a small half-carved pale limestone block. " + LOOK, 32, 27, 48, 48, 'planter', 's'),
  'wall_low': ("a straight section of low village boundary wall, one stone cell long: fitted pale cream limestone blocks with dark joints, a flat pale cap stone course along the top, a little moss at the foot, plain cut ends left and right so sections join end to end, "
               "no earth, no mound, no rubble heap, no grass tuft on top. " + LOOK, 40, 32, 48, 48, 'earth_wall', 'a'),
+ 'tree_pine': ("an upland pine tree of the Earth Kingdom hills: a slim dark green conifer with layered drooping boughs and a short warm brown trunk, natural and calm, seen from the front in low top-down. "
+               "Not a European oak, no autumn colours. " + LOOK, 48, 86, 64, 96, 'tree', 'a'),
+ 'tree_broadleaf': ("a small summer-green broadleaf tree of an upland village: a rounded crown of mid green leaves in a few soft clumps, a short slim brown trunk, natural and calm, seen from the front in low top-down. "
+                    "Summer green only, not autumn red, not a big oak. " + LOOK, 60, 81, 72, 88, 'tree', 'a'),
+ 'bamboo': ("a clump of green bamboo, a few slender jointed culms of different heights with narrow leaf sprays at the top, rooted in one tuft at the base, seen from the front in low top-down. " + LOOK, 40, 68, 48, 76, 'tree', 'a'),
+
  'peg': ("a short carved pale limestone boundary peg, a squat rounded stone post with a simple notched ring carved round its head. " + LOOK, 12, 14, 48, 48, 'crate', 's'),
 }
 # Retakes (a corrected prompt, the key and seed they replace): the first takes came back narrower or wider than asked, because the
@@ -83,7 +89,7 @@ def ref_image(name, canvas):
         st = Image.open('assets/objects12/stall.png').convert('RGBA').crop((0, 0, 77, 46))
         return st.resize((round(77 * 1.5), round(46 * 1.5)), Image.LANCZOS)
     p = {'pella': 'assets/objects_bd13/house_pella.png', 'trough': 'assets/objects12/trough.png', 'crate': 'assets/objects12/crate.png', 'barrel': 'assets/objects12/barrel.png',
-         'planter': 'assets/objects12/planter.png', 'lamp': 'assets/objects_t3/lamp.png', 'fence': 'assets/objects12/fence.png', 'stall': 'assets/objects12/stall.png', 'earth_wall': '../../public/art/topdown/props/earth_wall.png'}.get(name) or f'assets/objects_bd20/{name}.png'
+         'planter': 'assets/objects12/planter.png', 'lamp': 'assets/objects_t3/lamp.png', 'fence': 'assets/objects12/fence.png', 'stall': 'assets/objects12/stall.png', 'earth_wall': '../../public/art/topdown/props/earth_wall.png', 'tree': 'assets/objects12/tree.png'}.get(name) or f'assets/objects_bd20/{name}.png'
     im = Image.open(p).convert('RGBA')
     mw, mh = canvas[0] - 4, canvas[1] - 4
     if im.width > mw or im.height > mh:

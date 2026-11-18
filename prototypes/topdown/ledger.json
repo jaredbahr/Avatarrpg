@@ -41654,6 +41654,243 @@
     "object_id": "10f8bf51-0fb7-4f7e-a82f-25e03d5f0d25"
    },
    "region": "ba_dan_valley"
+  },
+  {
+   "name": "bd20_tree_pine_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "da87173b-35cf-422b-9c0a-803e1585fc5c",
+   "status": "completed",
+   "settings": {
+    "description": "an upland pine tree of the Earth Kingdom hills: a slim dark green conifer with l...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 64,
+     "height": 96
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 60,
+      "height": 72
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view, front face square to the viewer, its top a shallow slanted band. Match its pixel density, one-pixel outline in a darker tone of the material, flat shading with light from the upper left, and palette. Do not copy its colours or design."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 4776.0654640625,
+   "balance_after": 4771.0654640625,
+   "secs": 19,
+   "notes": "",
+   "ids": {
+    "background_job_id": "da87173b-35cf-422b-9c0a-803e1585fc5c",
+    "object_id": "b85aead9-a184-44e2-98ae-c4e11f5c31e0"
+   },
+   "region": "ba_dan_valley"
+  },
+  {
+   "name": "bd20_tree_broadleaf_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "632670ea-8818-4b21-90c1-fe98ff41af3f",
+   "status": "completed",
+   "settings": {
+    "description": "a small summer-green broadleaf tree of an upland village: a rounded crown of mid...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 72,
+     "height": 88
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 68,
+      "height": 81
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view, front face square to the viewer, its top a shallow slanted band. Match its pixel density, one-pixel outline in a darker tone of the material, flat shading with light from the upper left, and palette. Do not copy its colours or design."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 4771.0654640625,
+   "balance_after": 4766.0654640625,
+   "secs": 20,
+   "notes": "",
+   "ids": {
+    "background_job_id": "632670ea-8818-4b21-90c1-fe98ff41af3f",
+    "object_id": "c1001516-9853-4272-929a-54c82d83881e"
+   },
+   "region": "ba_dan_valley"
+  },
+  {
+   "name": "bd20_bamboo_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "95021833-52d3-4018-8dc0-04bf2a3a3fb3",
+   "status": "completed",
+   "settings": {
+    "description": "a clump of green bamboo, a few slender jointed culms of different heights with n...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 76
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 44,
+      "height": 53
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view, front face square to the viewer, its top a shallow slanted band. Match its pixel density, one-pixel outline in a darker tone of the material, flat shading with light from the upper left, and palette. Do not copy its colours or design."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 4766.0654640625,
+   "balance_after": 4761.0654640625,
+   "secs": 20,
+   "notes": "",
+   "ids": {
+    "background_job_id": "95021833-52d3-4018-8dc0-04bf2a3a3fb3",
+    "object_id": "5cfce715-4aef-4a70-b454-ec4173ce902c"
+   },
+   "region": "ba_dan_valley"
   }
  ],
  "end_balance": 16728.0,
