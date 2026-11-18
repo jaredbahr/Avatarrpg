@@ -358,6 +358,26 @@ export class App {
     // iOS Safari's toolbars come and go without a window resize; the visual
     // viewport is what actually changed.
     window.visualViewport?.addEventListener('resize', () => this.requestResize());
+
+    /*
+     * Sound cannot start before a gesture, and on iOS the context suspends
+     * again whenever the page goes to the background — so this listens for
+     * every gesture rather than the first one, and `unlock()` is a no-op once
+     * the context is already running. `pointerdown` rather than `click`,
+     * because a tap that starts a drag on the board never becomes a click.
+     *
+     * These belong to the app, one each for the life of the page. They used to
+     * be added in `start()`, which every return to the title calls again, so a
+     * long evening left one more set on the window per game quit or finished.
+     */
+    const unlock = (): void => {
+      this.audio.unlock();
+      this.music.unlock();
+    };
+    window.addEventListener('pointerdown', unlock, { passive: true });
+    window.addEventListener('keydown', unlock, { passive: true });
+    // A backgrounded tab pauses the music and returning plays it on, where it left off.
+    document.addEventListener('visibilitychange', () => this.music.setHidden(document.hidden));
   }
 
   /**
@@ -382,24 +402,13 @@ export class App {
     return owner.kind === 'combat' ? new CombatScene(this) : new ExploreScene(this);
   }
 
+  /**
+   * Shows the title. Called at boot and again by every way back to the title (Quit, the ending
+   * card, Back from party setup), so it must add nothing that outlives the title scene.
+   */
   start(): void {
     // The real icon set, if it is there; every mark falls back to the drawn one.
     loadIcons();
-    /*
-     * Sound cannot start before a gesture, and on iOS the context suspends
-     * again whenever the page goes to the background — so this listens for
-     * every gesture rather than the first one, and `unlock()` is a no-op once
-     * the context is already running. `pointerdown` rather than `click`,
-     * because a tap that starts a drag on the board never becomes a click.
-     */
-    const unlock = (): void => {
-      this.audio.unlock();
-      this.music.unlock();
-    };
-    window.addEventListener('pointerdown', unlock, { passive: true });
-    window.addEventListener('keydown', unlock, { passive: true });
-    // A backgrounded tab pauses the music and returning plays it on, where it left off.
-    document.addEventListener('visibilitychange', () => this.music.setHidden(document.hidden));
     this.showScene(new TitleScene(this));
   }
 

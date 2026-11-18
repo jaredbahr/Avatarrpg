@@ -10,6 +10,7 @@
  * context, they never own one.
  */
 
+import { releaseCanvas } from '../canvasRelease';
 import type { Grid, MapScene, SceneFlock, SceneImage, Vec2 } from '../../core/types';
 import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
 import { authoredForBothSides, headingClip, type Heading } from '../../content/assets/clips';
@@ -186,7 +187,8 @@ export class Canvas2DBackend implements RenderBackend {
   private curve: { path: readonly Vec2[]; from: Vec2; curve: Curve } | null = null;
   private fx = new CanvasFxLayer();
   /** White silhouettes of unit art, for the hit flash; forgotten with the source. */
-  private masks = new WeakMap<HTMLCanvasElement | HTMLImageElement, HTMLCanvasElement>();
+  /** The hit flash's silhouette is drawn here and blitted at once: one canvas, never one per sheet. */
+  private flashScratch: HTMLCanvasElement | null = null;
   /** One union mask, rebuilt each frame from every upright silhouette. */
   private shadowLayer: HTMLCanvasElement | null = null;
   /** This frame's shadow mask texels (`drawCastShadows`). */
@@ -224,10 +226,24 @@ export class Canvas2DBackend implements RenderBackend {
     sheets.clear();
   }
 
+  /**
+   * Gives back every canvas the backend made, and the map canvas's own store: the scene is
+   * leaving, and a canvas left for the collector is still memory the page holds (ADR 0112).
+   */
   destroy(): void {
     sprites.clear();
     sheets.clear();
     this.pixelMarkDrawables.clear();
+    this.fx.destroy();
+    this.reveal?.release();
+    this.reveal = null;
+    releaseCanvas(this.shadowLayer);
+    releaseCanvas(this.castScratch);
+    releaseCanvas(this.flashScratch);
+    this.shadowLayer = null;
+    this.castScratch = null;
+    this.flashScratch = null;
+    releaseCanvas(this.canvas);
   }
 
   draw(view: MapView, camera: Camera): void {
@@ -1093,31 +1109,14 @@ export class Canvas2DBackend implements RenderBackend {
     const grid = shadowGrid(camera.viewport, camera.scale, camera.offsetX, camera.offsetY);
     this.shadowGridNow = grid;
     const { width, height } = grid;
-    if (
-      !this.shadowLayer ||
-      this.shadowLayer.width !== width ||
-      this.shadowLayer.height !== height
-    ) {
-      this.shadowLayer = document.createElement('canvas');
-      this.shadowLayer.width = width;
-      this.shadowLayer.height = height;
-    }
-    const layer = this.shadowLayer.getContext('2d');
+    const sized = this.sizeShadowCanvases(width, height);
+    const layer = sized.layer.getContext('2d');
     if (!layer) return;
     this.grounding = actorGrounding(view.scene);
     this.topdownFigures = camera.projection === 'topdown';
     this.pavedCells = view.scene?.pavedCells;
     // The union is a grey level per pixel on opaque black; see `castInto`.
-    if (
-      !this.castScratch ||
-      this.castScratch.width !== width ||
-      this.castScratch.height !== height
-    ) {
-      this.castScratch = document.createElement('canvas');
-      this.castScratch.width = width;
-      this.castScratch.height = height;
-    }
-    const scratch = this.castScratch.getContext('2d');
+    const scratch = sized.scratch.getContext('2d');
     if (scratch) this.toShadowTexels(scratch, grid);
     layer.setTransform(1, 0, 0, 1, 0, 0);
     layer.globalCompositeOperation = 'source-over';
@@ -1798,7 +1797,8 @@ export class Canvas2DBackend implements RenderBackend {
           ctx.drawImage(frame.source, f.x, f.y, f.w, f.h, drawX, drawY, fw, fh);
           if (unit.flash && unit.flash > 0) {
             ctx.globalAlpha *= Math.min(1, unit.flash);
-            ctx.drawImage(this.mask(frame.source), f.x, f.y, f.w, f.h, drawX, drawY, fw, fh);
+            const mask = this.flashMask(frame.source, f.x, f.y, f.w, f.h);
+            if (mask) ctx.drawImage(mask, 0, 0, f.w, f.h, drawX, drawY, fw, fh);
           }
         });
       } else {
@@ -1817,7 +1817,19 @@ export class Canvas2DBackend implements RenderBackend {
         ctx.drawImage(sprite, drawX, drawY, drawWidth, drawHeight);
         if (unit.flash && unit.flash > 0) {
           ctx.globalAlpha *= Math.min(1, unit.flash);
-          ctx.drawImage(this.mask(sprite), drawX, drawY, drawWidth, drawHeight);
+          const mask = this.flashMask(sprite, 0, 0, sprite.width, sprite.height);
+          if (mask)
+            ctx.drawImage(
+              mask,
+              0,
+              0,
+              sprite.width,
+              sprite.height,
+              drawX,
+              drawY,
+              drawWidth,
+              drawHeight,
+            );
         }
       }
       ctx.restore();
@@ -1964,22 +1976,52 @@ export class Canvas2DBackend implements RenderBackend {
     this.fx.draw(this.ctx, view.emitters, layer, origin, origin.size);
   }
 
-  /** The art as a white silhouette, for the hit flash. */
-  private mask(sprite: HTMLCanvasElement | HTMLImageElement): HTMLCanvasElement {
-    const existing = this.masks.get(sprite);
-    if (existing) return existing;
-    const canvas = document.createElement('canvas');
-    canvas.width = sprite instanceof HTMLImageElement ? sprite.naturalWidth : sprite.width;
-    canvas.height = sprite instanceof HTMLImageElement ? sprite.naturalHeight : sprite.height;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.drawImage(sprite, 0, 0);
-      ctx.globalCompositeOperation = 'source-in';
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+  /**
+   * The shadow union's layer and its scratch, at the grid's size. They are resized in place, never
+   * replaced: the grid is a texel wider or narrower each time a pan crosses a world pixel, and a
+   * new pair of canvases each time left the old pair's stores for the collector, two screens'
+   * worth of shadow texels per flip.
+   */
+  private sizeShadowCanvases(
+    width: number,
+    height: number,
+  ): { layer: HTMLCanvasElement; scratch: HTMLCanvasElement } {
+    const layer = (this.shadowLayer ??= document.createElement('canvas'));
+    const scratch = (this.castScratch ??= document.createElement('canvas'));
+    for (const canvas of [layer, scratch]) {
+      if (canvas.width !== width) canvas.width = width;
+      if (canvas.height !== height) canvas.height = height;
     }
-    this.masks.set(sprite, canvas);
-    return canvas;
+    return { layer, scratch };
+  }
+
+  /**
+   * One rectangle of the art as a white silhouette, for the hit flash, at the scratch canvas's
+   * origin. The caller blits it at once, so one canvas serves every flash: the silhouette used to
+   * be a copy of the whole source kept per source, which for a sheet is its whole atlas page (the
+   * Driller's is 2048x1948, 16 MB) for a flash a few frames long.
+   */
+  private flashMask(
+    source: HTMLCanvasElement | HTMLImageElement,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+  ): HTMLCanvasElement | null {
+    if (w <= 0 || h <= 0) return null;
+    const scratch = (this.flashScratch ??= document.createElement('canvas'));
+    // Grown, never shrunk: a board's figures are a handful of sizes.
+    if (scratch.width < w) scratch.width = Math.ceil(w);
+    if (scratch.height < h) scratch.height = Math.ceil(h);
+    const ctx = scratch.getContext('2d');
+    if (!ctx) return null;
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(source, x, y, w, h, 0, 0, w, h);
+    ctx.globalCompositeOperation = 'source-in';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, w, h);
+    return scratch;
   }
 
   private drawFloaters(view: MapView, camera: Camera): void {

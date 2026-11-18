@@ -18,11 +18,14 @@
  */
 
 import { resolveAsset } from '../content/assets/manifest';
+import { releaseCanvas, releaseCanvasSoon } from './canvasRelease';
 import { resolvePainter } from './painters/registry';
 import type { PainterOptions } from './painters/units';
 
 interface CacheEntry {
   readonly canvas: HTMLCanvasElement;
+  /** Bytes of canvas the sprite holds, for the cache's budget. */
+  readonly bytes: number;
 }
 
 /**
@@ -44,18 +47,35 @@ const SIZE_BUCKET = 8;
  */
 export const MAX_SPRITE_PX = 256;
 
-/** 128 entries at the cap is 32 MB of canvas: comfortably under the iOS limit. */
+/** Entries kept, and the canvas bytes they may add up to, whichever is reached first. */
 const MAX_ENTRIES = 128;
+/**
+ * 128 one-tile sprites at the pixel cap are 32 MB of canvas. The count alone did not hold that: a
+ * two-tile boss is two or four tiles of canvas, and 128 of those are up to 128 MB. The bytes are
+ * what the tablet counts, so they are the bound (ADR 0112).
+ */
+export const MAX_SPRITE_BYTES = MAX_ENTRIES * MAX_SPRITE_PX * MAX_SPRITE_PX * 4;
 
 export class SpriteCache {
   private entries = new Map<string, CacheEntry>();
+  private bytes = 0;
   private images = new Map<string, HTMLImageElement | null>();
   private loading = new Map<string, Promise<boolean>>();
   private failed = new Set<string>();
 
-  /** Painted sprites are cheap to rebuild; drop them all on a big resize. */
+  /**
+   * Painted sprites are cheap to rebuild; drop them all on a big resize. Their canvases are
+   * released, not left for the collector: the caller has let go of every texture made from them.
+   */
   clear(): void {
+    for (const entry of this.entries.values()) releaseCanvas(entry.canvas);
     this.entries.clear();
+    this.bytes = 0;
+  }
+
+  /** How many painted sprites are held (never more than the cap). */
+  get size(): number {
+    return this.entries.size;
   }
 
   private bucket(size: number): number {
@@ -111,11 +131,21 @@ export class SpriteCache {
       }
     }
 
-    this.entries.set(cacheKey, { canvas });
-    while (this.entries.size > MAX_ENTRIES) {
+    const bytes = canvas.width * canvas.height * 4;
+    this.entries.set(cacheKey, { canvas, bytes });
+    this.bytes += bytes;
+    // The newest sprite always stays, so one sprite larger than the budget still draws.
+    while (
+      this.entries.size > 1 &&
+      (this.entries.size > MAX_ENTRIES || this.bytes > MAX_SPRITE_BYTES)
+    ) {
       const oldest = this.entries.keys().next().value;
       if (oldest === undefined) break;
+      const dropped = this.entries.get(oldest);
       this.entries.delete(oldest);
+      this.bytes -= dropped?.bytes ?? 0;
+      // Soon, not now: a sprite handed out earlier in this frame may still be waiting to be drawn.
+      releaseCanvasSoon(dropped?.canvas);
     }
     return canvas;
   }
@@ -156,7 +186,7 @@ export class SpriteCache {
         img.onload = () => {
           this.images.set(key, img);
           // Anything already painted with the placeholder must be repainted.
-          this.entries.clear();
+          this.clear();
           resolve(true);
         };
         img.onerror = () => {

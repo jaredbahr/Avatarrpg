@@ -46,6 +46,7 @@
     "saves:release": "node --import tsx scripts/saves/releases.ts",
     "new:region": "node --import tsx scripts/content/new-region.ts",
     "soak": "node --import tsx scripts/soak.ts",
+    "soak:browser": "playwright test -c playwright.soak.config.ts",
     "replay": "node --import tsx scripts/replay.ts",
     "bench:core": "node --import tsx scripts/perf/core-bench.ts",
     "lighthouse": "node scripts/lighthouse.mjs"

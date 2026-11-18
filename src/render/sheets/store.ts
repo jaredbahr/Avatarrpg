@@ -14,6 +14,7 @@
  * the iOS canvas cap; a resize clears them.
  */
 
+import { releaseCanvas, releaseCanvasSoon } from '../canvasRelease';
 import type { ClipDef, ClipName, Heading, MeleeDirection } from '../../content/assets/clips';
 import {
   actionClip,
@@ -223,8 +224,14 @@ export class SheetStore {
 
   /** Drops every baked sheet; loaded atlases stay, they are the same at any zoom. */
   clear(): void {
+    for (const sheet of this.baked.values()) releaseCanvas(sheet.canvas);
     this.baked.clear();
     this.bakedBytes = 0;
+  }
+
+  /** Sizes for the long-session soak (#525): atlases held, and baked canvas bytes against the cap. */
+  get sizes(): { readonly atlases: number; readonly bakedBytes: number } {
+    return { atlases: this.loaded.size, bakedBytes: this.bakedBytes };
   }
 
   /** Resolves true once a `sheet` key's atlas is in, false for anything else. Tests use it. */
@@ -399,6 +406,8 @@ export class SheetStore {
       const dropped = this.baked.get(oldest);
       this.baked.delete(oldest);
       this.bakedBytes -= dropped?.bytes ?? 0;
+      // Soon: a frame baked earlier in this draw may still be waiting for its blit or upload.
+      releaseCanvasSoon(dropped?.canvas);
     }
     return sheet;
   }

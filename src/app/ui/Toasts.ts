@@ -69,6 +69,8 @@ export class Toasts {
     const now = performance.now();
     const last = this.recent.get(text) ?? -Infinity;
     if (now - last < 900) return null;
+    // Only the last 900 ms matter; without this the map kept every line a campaign ever showed.
+    for (const [shown, at] of this.recent) if (now - at >= 900) this.recent.delete(shown);
     this.recent.set(text, now);
 
     const node = el('div', { class: `toast toast-${kind}`, text });

@@ -356,6 +356,8 @@ describe('Pixi lays the same layer', () => {
     Object.assign(backend, {
       propShadowSprite: sprite,
       texture: () => texture,
+      layerCanvases: new Map(),
+      retiredPixelSources: new Set(),
     });
     return {
       sprite,

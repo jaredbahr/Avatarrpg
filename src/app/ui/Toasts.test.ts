@@ -106,6 +106,24 @@ describe('toast ownership and dismissal', () => {
     expect(toasts.show('Repeated')).toBeNull();
   });
 
+  it('remembers a line only for the moment a duplicate is suppressed (#525)', () => {
+    vi.useFakeTimers();
+    let now = 0;
+    vi.stubGlobal('performance', { now: () => now });
+    const { toasts } = setup();
+    const recent = Reflect.get(toasts, 'recent') as Map<string, number>;
+    // A campaign's worth of different lines, one a second: the map once kept every one.
+    for (let line = 0; line < 500; line++) {
+      now = line * 1000;
+      toasts.show(`Line ${line}`);
+      expect(recent.size).toBeLessThanOrEqual(1);
+    }
+    // And the suppression it exists for still holds inside the window.
+    now += 100;
+    expect(toasts.show('Line 499')).toBeNull();
+    toasts.clear();
+  });
+
   it('allows fresh identical feedback after clearing the discarded context', () => {
     vi.useFakeTimers();
     vi.stubGlobal('performance', { now: () => 100 });

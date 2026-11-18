@@ -24,6 +24,7 @@
  * backends draw nearest under the figures and over the ground and its surfaces. Each wash's mask is
  * cached by its cell set and kind, so moving the pointer only re-lays the footprints and rings.
  */
+import { dropRgbaCanvas } from './propLayer';
 import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
 import type { Grid, Vec2 } from '../../core/types';
 import type { RgbaImage } from '../shadow/hardShadowMask';
@@ -425,6 +426,8 @@ export function washLayer(view: MapView, square = SQUARE_FOOTPRINTS): RgbaImage 
     !spec.pennants?.length;
   const key = empty ? '' : washKey(spec);
   if (last?.key === key) return last.image;
+  // The picture being replaced is never drawn again; its board-sized canvas goes with it.
+  dropRgbaCanvas(last?.image);
   last = { key, image: empty ? null : washImage(spec) };
   return last.image;
 }

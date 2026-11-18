@@ -23,12 +23,18 @@ import { RegionStore } from './app/regions';
 import { AUTOSAVE_ID, loadFromSlot } from './app/storage/localSaves';
 import { loadTopdownVfx } from './content/assets/topdownVfx';
 import { useTopDownStyle } from './content/assets/manifest';
-import { assetUrl } from './render/spriteCache';
+import { assetUrl, sprites } from './render/spriteCache';
+import { sheets } from './render/sheets/store';
 
 /** Gallery checks await decoded pixels, not just successful HTTP requests. */
 async function loadedFxCels() {
   await fxCelsReady();
   return FX_CELS.filter(celReady);
+}
+
+/** Cache sizes for the long-session soak (#525), which fits each one's trend over many games. */
+function caches(): Record<string, number> {
+  return { sprites: sprites.size, ...sheets.sizes };
 }
 
 const root = document.getElementById('app');
@@ -83,7 +89,7 @@ function boot(): void {
   // A new game from the title opens on the flash-forward prologue (C-28).
   const app = new App(regions.content, root, STORY_PROLOGUE, regions);
   app.start();
-  window.fnt = { app, bakeReview, loadedFxCels };
+  window.fnt = { app, bakeReview, loadedFxCels, caches };
   // New game and the riverside preview start in the start region; fetch it while the title shows.
   void regions.ensure(START_REGION_ID).catch((error: unknown) => {
     console.error('The start region did not load.', error);
@@ -105,6 +111,7 @@ declare global {
       app: App;
       bakeReview?: typeof bakeReview;
       loadedFxCels: typeof loadedFxCels;
+      caches: typeof caches;
     };
   }
 }

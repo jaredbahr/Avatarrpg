@@ -9,6 +9,7 @@
  * what ADR 0002 asks of it.
  */
 
+import { releaseCanvas } from '../canvasRelease';
 import type { Vec2 } from '../../core/types';
 import type { FxCell } from '../../content/fx';
 import { ATLAS_CELL, cellFrame, fxAtlas, celAtSize, celPx, celReady, rungFrame } from './atlas';
@@ -157,6 +158,14 @@ export class CanvasFxLayer {
     }
   }
 
+  /** Gives back every canvas the layer made; the backend calls it when it is destroyed. */
+  destroy(): void {
+    for (const canvas of this.tinted.values()) releaseCanvas(canvas);
+    this.tinted.clear();
+    this.stills.clear();
+    this.strokeRaster.release();
+  }
+
   /** A still emitter's particles, sampled the first time it is drawn and kept. */
   private still(instance: EmitterInstance): Float32Array {
     const { def, seed, elapsed, from, to, arc } = instance;
@@ -219,7 +228,11 @@ export class CanvasFxLayer {
     this.tinted.set(key, canvas);
     if (this.tinted.size > MAX_TINTED) {
       const oldest = this.tinted.keys().next().value;
-      if (oldest !== undefined) this.tinted.delete(oldest);
+      if (oldest !== undefined) {
+        // Canvas 2D blits a cell as soon as it is handed out, so the oldest is free to go now.
+        releaseCanvas(this.tinted.get(oldest));
+        this.tinted.delete(oldest);
+      }
     }
     return canvas;
   }

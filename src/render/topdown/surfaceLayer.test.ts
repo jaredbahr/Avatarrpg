@@ -243,6 +243,8 @@ describe('Pixi draws the same surfaces', () => {
       glowSprite,
       topdownSteam: new Graphics(),
       texture: () => texture,
+      layerCanvases: new Map(),
+      retiredPixelSources: new Set(),
     });
     return { backend, surfaceSprite, glowSprite };
   }
