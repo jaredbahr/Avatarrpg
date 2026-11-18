@@ -317,8 +317,9 @@ export const TOPDOWN_OBJECTS: Readonly<Record<string, { readonly w: number; read
     'world.parcel_cart': { w: 58, h: 79 },
     // RG-02: Miri's lantern crates on the Saltstep quay, stamped with her crooked-handle lantern.
     'world.lantern_crates': { w: 34, h: 33 },
-    // Ba Dan's later-state props, each drawn at its native size (1 art px per world px).
-    'world.side_gate_hung': { w: 28, h: 32 },
+    // Ba Dan's later-state props, each drawn at its native size (1 art px per world px). The hung gate's 66 rows are
+    // its 32 of gate over 34 transparent ones, so its base lands on the baked open gate one cell north of its marker.
+    'world.side_gate_hung': { w: 28, h: 66 },
     'world.gao_jar': { w: 21, h: 26 },
     'world.hesra_boot': { w: 12, h: 20 },
   };

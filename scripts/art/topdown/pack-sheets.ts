@@ -61,6 +61,13 @@ const OBJECT_SOURCE: Readonly<Record<(typeof OBJECTS)[number], string>> = {
   gao_jar: 'objects_bd20',
   hesra_boot: 'objects_bd20',
 };
+/**
+ * An object whose shipped image is not `<name>.png` in its source folder: the hung side gate stands on a cell south of
+ * the baked open gate it covers, so its image carries the transparent rows between the two (`tools/bd20set.py`).
+ */
+const OBJECT_FILE: Readonly<Partial<Record<(typeof OBJECTS)[number], string>>> = {
+  side_gate_hung: 'side_gate_hung_set.png',
+};
 export const OBJECTS_OUT = `${OUT}/objects`;
 
 /** Every file shipped under `public/art/topdown/`, the objects folder included. */
@@ -1614,7 +1621,7 @@ export async function packTopdownSheets(): Promise<Map<string, Uint8Array | stri
   // The standing objects, trimmed hard-alpha PNGs the scene loads by name (T3's `prototypes/topdown/tools/t3objproc.py`;
   // RG-02's cut at alpha 128 and trimmed the same way from `tools/rg02obj.py`'s take).
   for (const name of OBJECTS) {
-    const bytes = readFileSync(join(SOURCE, OBJECT_SOURCE[name], `${name}.png`));
+    const bytes = readFileSync(join(SOURCE, OBJECT_SOURCE[name], OBJECT_FILE[name] ?? `${name}.png`));
     files.set(`${OBJECTS_OUT}/${name}.png`, new Uint8Array(bytes));
     // A one-image atlas (every cel the image), so the object stands on its cell as a figure does
     // (`topdownObject` in the manifest).
