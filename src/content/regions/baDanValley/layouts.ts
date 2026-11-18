@@ -6,8 +6,7 @@
 import type { TopDownLayout } from '../../topdownLayout';
 import { BA_DAN_TOPDOWN_TERRAIN } from '../../scenes/baDan.topdown.terrain';
 import { BA_DAN_TOPDOWN_OBJECTS, BA_DAN_TOPDOWN_SLOTS } from '../../scenes/baDan.topdown';
-import { BA_DAN_GROUND } from '../../scenes/baDan.ground';
-import { baDanObjects } from '../../scenes/baDan.layout';
+import { BA_DAN_VILLAGE_TERRAIN, baDanObjects } from '../../scenes/baDan.layout';
 import { FOREST_TOPDOWN_OBJECTS } from '../../scenes/forestRoad.topdown';
 import {
   MOUTHS as FOREST_MOUTHS,
@@ -43,7 +42,7 @@ export const BA_DAN_TOPDOWN_LAYOUT: TopDownLayout = {
  */
 export const BA_DAN_VILLAGE_TOPDOWN_LAYOUT: TopDownLayout = {
   mapId: 'ba_dan_village',
-  terrain: BA_DAN_GROUND.layer(),
+  terrain: BA_DAN_VILLAGE_TERRAIN,
   objects: baDanObjects(),
   slots: [],
 };

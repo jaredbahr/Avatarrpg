@@ -15,6 +15,9 @@ import { BA_DAN_SET_PIECE_PLAN } from './baDan.setpieces';
 
 const CELL = 40;
 
+/** The ground's terrain as a layout takes it (here, so the region's layouts file does not import the ground itself). */
+export const BA_DAN_VILLAGE_TERRAIN = BA_DAN_GROUND.layer();
+
 /** Sprite key -> source file, relative to `prototypes/topdown/assets`. */
 export const BA_DAN_SPRITES: Readonly<Record<string, string>> = {
   mira_table: 'objects7/mira_table.png',
