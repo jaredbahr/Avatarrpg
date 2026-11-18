@@ -8,7 +8,8 @@ piece's drawn height in figures against the plan's (a ratio far from 1 is off-sc
 
 It reads art from prototypes/topdown/assets (the sources the packers ship), public/art/topdown/kaya and ba-dan/ground.webp, and writes only to
 OUT_DIR, outside the repository: pictures are evidence and are never committed. Kaya's standing cel is the 45 px figure of the scale chart.
-Members with no art of their own (flats baked into the plate, the awning's posts, one sprite with the cloth) are listed, not drawn."""
+Members with no art of their own (flats baked into the plate, the awning's posts, one sprite with the cloth) are listed, not drawn.
+The rim row shows each tree sprite the layout uses and how many stand."""
 import json, sys, re
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
@@ -17,32 +18,7 @@ ROOT = Path(__file__).resolve().parents[3]
 A = ROOT / 'prototypes' / 'topdown' / 'assets'
 SC = 3
 FIG = 45.0
-# member id -> art file under prototypes/topdown/assets (or public/), None = no sprite of its own
-ART = {
-    'mira-table': 'objects7/mira_table.png', 'awning-cloth': 'objects_bd20/awning.png', 'crew-bench': 'objects12/bench.png',
-    'chair-west': 'objects_bd20/chair.png', 'chair-east': 'objects_bd20/chair.png',
-    'mira-house': 'objects_bd20/mira_house.png', 'mira-jar': '../../../public/art/topdown/props/rain_barrel.png', 'mira-shrub': 'objects12/flower_pots.png',
-    'gao-house': 'objects_bd20/gao_shop.png', 'gao-store': 'objects_bd20/gao_store.png', 'gao-plant': 'objects_bd20/plant_chair.png',
-    'gao-stool-a': 'objects_bd20/stool.png', 'gao-stool-b': 'objects_bd20/stool.png', 'gao-sacks': 'objects12/sack.png',
-    'trough': 'objects12/trough.png', 'trough-bucket': 'objects_bd20/bucket.png',
-    'gate-post': 'objects_bd20/gate_post.png', 'gate-wall-a': 'objects_bd20/wall_low.png', 'gate-wall-mended': 'objects_bd20/wall_mended.png',
-    'gate-wall-b': 'objects_bd20/wall_low.png', 'gate-wall-south-a': 'objects_bd20/wall_low.png',
-    'gate-wall-south-b': 'objects_bd20/wall_low.png', 'gate-stool': 'objects_bd20/stool.png', 'lamp-post': 'objects_t3/lamp.png',
-    'guard-hut': 'objects_bd20/guard_hut.png', 'washing-line': 'objects12/laundry_line.png', 'shrine': 'objects_t3/shrine.png',
-    'wash-basket': 'objects_bd20/basket.png', 'wash-board': 'objects_bd20/washboard.png',
-    'canal-lamp-west': 'objects_t3/lamp.png', 'canal-lamp-middle': 'objects_t3/lamp.png', 'canal-lamp-east': 'objects_t3/lamp.png',
-    'mason-house': 'objects_bd20/mason_house.png', 'mason-block-a': 'objects13/stone_blocks.png', 'mason-block-b': 'objects13/stone_blocks.png',
-    'mason-block-c': 'objects13/stone_blocks.png', 'mason-bench': 'objects_bd20/mason_bench.png', 'mason-offcuts': '../../../public/art/topdown/props/rubble.png',
-    'side-gate': 'objects_bd20/side_gate.png', 'garden-lean-to': 'objects13/lean_to.png', 'garden-peg-nw': 'objects_bd20/peg.png',
-    'garden-peg-sw': 'objects_bd20/peg.png', 'garden-peg-se': 'objects_bd20/peg.png', 'garden-basket': 'objects_bd20/basket.png',
-    'terrace-stool-large': 'objects_bd20/stool.png', 'terrace-stool-small': 'objects_bd20/stool.png', 'terrace-tray': 'objects_rg02/teapot.png',
-    'pella-house': 'objects_bd20/pella_house.png', 'handcart': 'objects12/handcart.png', 'leto-house': 'objects_bd20/quarry_row.png',
-    'leto-bench': 'objects7/bench.png', 'amri-house': 'objects_bd20/quarry_amri.png', 'amri-pot': 'objects12/pots.png',
-    'senn-house': 'objects_bd20/quarry_long.png', 'senn-annex': 'objects_bd20/senn_annex.png', 'senn-logs': 'objects12/firewood.png',
-    'hanru-house': 'objects_bd20/hanru_house.png', 'hanru-rack': 'objects_rg02/drying_rack.png',
-}
-for m in ('nw', 'ne', 'sw', 'se'): ART[f'awning-post-{m}'] = None   # drawn inside the awning sprite
-RIM = ['objects12/tree.png', 'objects12/tree_blossom.png', 'objects12/bush.png']
+# every member's art file comes from the plan export (`kit-plan.ts`, which reads the layout's own table), so the picture can never drift from the game
 FONT = ImageFont.load_default(10)
 
 
@@ -70,15 +46,13 @@ def main(plan_path, out_dir):
     plan = json.load(open(plan_path)); K = kaya(); rows = []; table = []; missing = []
     for pc in plan['pieces']:
         if pc['bulk']:
-            items = [(f'rim {n.split("/")[-1][:-4]}', load(n)) for n in RIM]
-            ms = [(m, None) for m in pc['members'][:0]]
-            items = [(n, i) for n, i in items if i]; plan_h = {n: 1.9 for n, _ in items}
+            items = [(f'rim {k} x{v["count"]}', load(v['art'])) for k, v in plan['rim'].items()]
+            items = [(n, i) for n, i in items if i]; plan_h = {}
         else:
             items = []; plan_h = {}
             for m in pc['members']:
-                if m['id'] not in ART: missing.append(m['id']); continue
-                rel = ART[m['id']]
-                if rel is None: continue
+                rel = m['art']
+                if rel is None: missing.append(m['id']); continue
                 im = load(rel)
                 if im is None: missing.append(f"{m['id']} ({rel} not found)"); continue
                 items.append((m['id'], im)); plan_h[m['id']] = m['height']
