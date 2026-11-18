@@ -38,7 +38,7 @@ export class BoxesOverlay {
     this.canvas.setAttribute('aria-hidden', 'true');
     this.canvas.dataset.boxes = 'true';
     this.canvas.style.cssText =
-      'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5';
+      'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:var(--z-overlay)';
     wrap.appendChild(this.canvas);
     this.trackCells = BA_DAN_TRACKS.flatMap((t) => trackCells(t, width, height));
   }
