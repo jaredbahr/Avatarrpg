@@ -243,8 +243,9 @@ export const ENEMIES: readonly EnemyDef[] = [
   /*
    * SF-2.2, the tipping platform (ADR 0122): sparring partners, not enemies. Both carry Shove, the
    * whole point of a bout, and pay their XP through the encounter's `xpPerHead`, so their own `xp`
-   * is a token that never pays. Stats are first guesses at level-1 figures; names are the
-   * script's; the descriptions wait for the writing pass.
+   * is a token that never pays. Sturdy on purpose: at 24 and 34 HP the heroes' bending ended every
+   * bout in its first round, before the water mattered; at 50 and 70 a bout runs two to four rounds
+   * (sim, 2026-11-19). Names are the script's; the descriptions wait for the writing pass.
    */
   {
     id: 'ferry_apprentice',
@@ -252,7 +253,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     shortName: 'Apprentice',
     element: 'nonbender',
     size: 1,
-    stats: { maxHp: 24, maxAp: 4, maxMove: 4, power: 4, defense: 1, speed: 7, focus: 5 },
+    stats: { maxHp: 50, maxAp: 4, maxMove: 4, power: 4, defense: 3, speed: 7, focus: 5 },
     abilities: ['shove', 'club_swing'],
     ai: 'aggressive',
     xp: 1,
@@ -265,7 +266,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     shortName: 'Hand',
     element: 'nonbender',
     size: 1,
-    stats: { maxHp: 34, maxAp: 4, maxMove: 3, power: 5, defense: 2, speed: 5, focus: 5 },
+    stats: { maxHp: 70, maxAp: 4, maxMove: 3, power: 5, defense: 4, speed: 5, focus: 5 },
     abilities: ['shove', 'club_swing'],
     ai: 'aggressive',
     xp: 1,

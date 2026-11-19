@@ -117,6 +117,9 @@ export const SALTSTEP_EMBERWATCH_ENCOUNTERS: readonly EncounterDef[] = [
     ],
     variants: [],
     bout: { outOn: ['water_deep'], tipping: { axis: 'x', pivot: 7 } },
+    // Hard keeps +3 power and no extra AP here, as at Edge-on: the shared profile's +2 AP is two more
+    // shoves a turn, which on a deck this size decides the bout in a round.
+    hard: { power: 3, ap: 0 },
     intro:
       'PLACEHOLDER (story): the bout’s opening narration on the spare platform at the midday lull.',
     tip: 'PLACEHOLDER (story): a tip for the kids: push them into the water, and watch the blue cells where the deck will tip.',
