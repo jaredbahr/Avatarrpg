@@ -64,6 +64,10 @@ const SPRITE = {
 } as const;
 
 const ARRIVED = { kind: 'visited', nodeId: 'mq02_saltstep_arrival' } as const;
+// SQ-01's persistent change (the story bible): after Too Many Cabbages, Bo-shan's cart arrives stacked low and even, with
+// one enormous cabbage on top. The flag's key is spelled here rather than imported, so this region's chunk does not pull
+// in Ba Dan's side story.
+const SQ01_RESOLVED = { kind: 'flag', key: 'sq01.cabbages', op: 'set' } as const;
 // The party has heard Scene 2.2 at the bowl stall.
 const BOWL_CARRIED = { kind: 'visited', nodeId: 'mq02_bowl_seller' } as const;
 const VOTED = {
@@ -144,9 +148,25 @@ export const SALTSTEP_MARKET: MapDef = {
       node: 'mq02_saltstep_arrival',
       label: 'Saltstep',
       sprite: 'world.parcel_cart',
-      when: { kind: 'not', of: ARRIVED },
+      when: {
+        kind: 'all',
+        of: [
+          { kind: 'not', of: ARRIVED },
+          { kind: 'not', of: SQ01_RESOLVED },
+        ],
+      },
       once: true,
       // The whole walkable column, so no route east from the coast road slips past it.
+      area: [1, 2, 3, 4, 5, 6, 7, 8, 9].map((y) => ({ x: 3, y })),
+    },
+    {
+      // The same first sight, for a table that sorted Bo-shan's load (SQ-01): only the cart's picture differs.
+      id: 'mq02_saltstep_arrival_tidy',
+      node: 'mq02_saltstep_arrival',
+      label: 'Saltstep',
+      sprite: 'world.parcel_cart_tidy',
+      when: { kind: 'all', of: [{ kind: 'not', of: ARRIVED }, SQ01_RESOLVED] },
+      once: true,
       area: [1, 2, 3, 4, 5, 6, 7, 8, 9].map((y) => ({ x: 3, y })),
     },
   ],

@@ -49,6 +49,8 @@ export const OBJECTS = [
   'side_gate_hung',
   'gao_jar',
   'hesra_boot',
+  'parcel_cart_tidy',
+  'sq01_sled',
 ] as const;
 /** Each object's source folder under `SOURCE`. */
 const OBJECT_SOURCE: Readonly<Record<(typeof OBJECTS)[number], string>> = {
@@ -60,6 +62,9 @@ const OBJECT_SOURCE: Readonly<Record<(typeof OBJECTS)[number], string>> = {
   side_gate_hung: 'objects_bd20',
   gao_jar: 'objects_bd20',
   hesra_boot: 'objects_bd20',
+  // SQ-01's sled and Bo-shan's tidier cart (`tools/sq01gen.py`, art batch #38).
+  parcel_cart_tidy: 'objects_sq01',
+  sq01_sled: 'objects_sq01',
 };
 /**
  * An object whose shipped image is not `<name>.png` in its source folder: the hung side gate stands on a cell south of
