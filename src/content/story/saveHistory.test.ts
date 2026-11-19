@@ -31,6 +31,7 @@ import {
   freezeRelease,
   frozenProblems,
   loadReleases,
+  releaseDue,
   snapshotNow,
 } from '../../../scripts/saves/releases';
 import { FLAG_BACKFILLS, HISTORY_REV } from './flagBackfills';
@@ -881,6 +882,15 @@ describe('freezing a release', () => {
     await expect(
       freezeRelease('test-1', { note: '', frozen: '2026-11-14', commit: 'abc1234', root }),
     ).rejects.toThrow('already frozen');
+
+    // A deploy of the story this release froze needs no new release (owner, 2026-11-19)...
+    expect(releaseDue(root)).toEqual({ due: false, newest: 'test-1' });
+    // ...and one whose story differs does.
+    const history = join(root, 'test-1', 'history.json');
+    const frozenHistory = readFileSync(history, 'utf8');
+    writeFileSync(history, frozenHistory.replace('"historyRev": ', '"historyRev": 99, "was": '));
+    expect(releaseDue(root).due).toBe(true);
+    writeFileSync(history, frozenHistory);
 
     const save = join(root, 'test-1', 'saves', 'party-1-home.json');
     writeFileSync(
