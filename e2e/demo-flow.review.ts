@@ -60,7 +60,8 @@ test('the demo, played through', async ({ page }, info) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => {
-    if (m.type() === 'error' && !/favicon/i.test(m.text())) errors.push(m.text());
+    if (m.type() === 'error' && !/favicon/i.test(`${m.text()} ${m.location().url}`))
+      errors.push(m.text());
   });
   const beats: Beat[] = [];
   const trace: string[] = [];
