@@ -1,6 +1,6 @@
 # Saltstep: what is on the market map, who lives where, and what the places are
 
-**Status: DRAFT for Jared (the writing pass, 2026-11-19).** These are the story's answers to issue #895 and to the
+**Status: approved (Jared, 2026-11-19).** These are the story's answers to issue #895 and to the
 placeholders in the market brief (`docs/places/saltstep_market.md`, blockout v2, 32 by 18). They are facts for the
 level design to build on, not lines. Where a fact was already in the game, the bible or a script it is marked
 **(shipped)**, **(bible)** or **(script)**; the rest is new and is listed at the end for the owner. Acts III to V
