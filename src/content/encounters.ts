@@ -20,6 +20,7 @@
  */
 
 import type { EncounterDef, EncounterPlacement } from '../core/types';
+import { SIDE_FIGHT_XP } from './story/sideFightsAct1';
 
 const at = (x: number, y: number, enemyId: string): EncounterPlacement => ({
   enemyId,
@@ -265,5 +266,64 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     intro:
       'The driller grinds forward on its treads, oil dripping from a split hose. Grumbler hauls on a lever, and the drill arm swings towards you.',
     tip: 'Keep more than two tiles from the driller: its slam hits a cone and knocks people back, once a turn. It sprays oil and churns mud. Light its oil when your party is clear.',
+  },
+
+  /*
+   * Act I's optional side fights (`story/sideFightsAct1.ts`, script #909). They open once Act I is
+   * over, when a table stands on level 4, but RG-01's band is 1-3 (owner, #784), so they are tuned
+   * for level 3 and play a little easy: an optional fight on the way to the next region. Each pays
+   * a flat `xpPerHead` on a win and the same on "Carry on", sized so a table that plays both
+   * reaches level 5 before Saltstep; a quarry worker's 150 XP would have lifted it past RG-02's band.
+   */
+  {
+    id: 'enc_sf11_the_bend',
+    name: 'The bend, again',
+    mapId: 'forest_road',
+    expectedLevel: 3,
+    xpPerHead: SIDE_FIGHT_XP,
+    // Four quarry hands, two with slings (Bessa is one) and two without.
+    enemies: [
+      at(16, 5, 'bandit_thug'),
+      at(15, 7, 'bandit_thug'),
+      at(18, 3, 'bandit_slinger'),
+      at(17, 6, 'bandit_slinger'),
+    ],
+    allies: [],
+    conditionalEnemies: [],
+    baselinePartySize: 3,
+    reinforcements: [
+      at(14, 6, 'bandit_thug'),
+      at(17, 9, 'bandit_slinger'),
+      at(16, 8, 'bandit_thug'),
+    ],
+    variants: [],
+    intro: 'PLACEHOLDER (story): the fight intro at the bend, with the handcart and the mist.',
+    tip: 'PLACEHOLDER (story): a fight tip for a table of 7-to-12-year-olds (two slingers stay back).',
+  },
+  {
+    id: 'enc_sf12_edge_on',
+    name: 'Edge-on',
+    mapId: 'ambush_road',
+    expectedLevel: 3,
+    xpPerHead: SIDE_FIGHT_XP,
+    // Tolma, three of her crew, and one more who came for the soup.
+    enemies: [
+      at(16, 4, 'bandit_earthbender'),
+      at(15, 5, 'bandit_bruiser'),
+      at(15, 6, 'bandit_bruiser'),
+      at(16, 7, 'bandit_bruiser'),
+      at(17, 3, 'bandit_thug'),
+    ],
+    allies: [],
+    conditionalEnemies: [],
+    baselinePartySize: 3,
+    reinforcements: [
+      at(17, 8, 'bandit_thug'),
+      at(18, 5, 'bandit_bruiser'),
+      at(14, 8, 'bandit_thug'),
+    ],
+    variants: [],
+    intro: 'PLACEHOLDER (story): the fight intro at Tolma’s slab across the Cutting.',
+    tip: 'PLACEHOLDER (story): a fight tip for a table of 7-to-12-year-olds (one earthbender behind three bruisers).',
   },
 ];

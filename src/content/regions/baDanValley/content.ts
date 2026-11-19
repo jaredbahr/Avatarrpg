@@ -17,6 +17,7 @@ import { SQ01_GROUP } from '../../story/sq01Cabbages';
 import { SQ02_GROUP } from '../../story/sq02OfficialGate';
 import { REASON_STORY } from '../../story/reasons';
 import { SQ03_GROUP } from '../../story/sq03GaosLedger';
+import { SIDE_FIGHTS_ACT1_GROUP } from '../../story/sideFightsAct1';
 import { withPartyVoices } from '../../story/partyVoices';
 import { BA_DAN_ANCHORS, BA_DAN_BACKGROUND_ROLES, BA_DAN_RESIDENTS } from '../../residents/baDan';
 
@@ -32,6 +33,7 @@ const STORY_GROUPS: readonly StoryGroup[] = [
   SQ01_GROUP,
   SQ02_GROUP,
   SQ03_GROUP,
+  SIDE_FIGHTS_ACT1_GROUP,
 ];
 
 export const BA_DAN_VALLEY_CONTENT: RegionContent = {
