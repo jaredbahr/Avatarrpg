@@ -148,7 +148,19 @@ function readGeometry(page: Page) {
       nameWidth: name.clientWidth,
       nameScrollWidth: name.scrollWidth,
       buttonHeight: button.getBoundingClientRect().height,
+      buttonWidth: button.getBoundingClientRect().width,
     };
+  });
+}
+
+/** The Fire Jab button's width before anything is chosen. */
+function readIdleButtonWidth(page: Page) {
+  return page.evaluate(() => {
+    const button = [...document.querySelectorAll<HTMLButtonElement>('.action-button')].find(
+      (candidate) => candidate.textContent?.includes('Fire Jab'),
+    );
+    if (!button) throw new Error('No Fire Jab button.');
+    return button.getBoundingClientRect().width;
   });
 }
 
@@ -173,6 +185,7 @@ for (const choice of levelThreeChoices) {
       }) => {
         mkdirSync(CAPTURE_DIR, { recursive: true });
         const { originalDescription, idle } = await prepareKaya(page, viewport, choice, largeText);
+        const idleButtonWidth = await readIdleButtonWidth(page);
         await page.screenshot({
           path: resolve(CAPTURE_DIR, `${viewport.name}-${choice}-${largeText}-idle.png`),
         });
@@ -222,6 +235,13 @@ for (const choice of levelThreeChoices) {
         expect(long.canvasTop, label).toBeCloseTo(short.canvasTop, 1);
         expect(long.canvasHeight, label).toBeCloseTo(short.canvasHeight, 1);
         for (const selected of [short, long]) {
+          // The selected style must not widen the label: at iPad landscape the action row has
+          // only a few px spare, and a wider (bold) label wrapped End turn onto a second row.
+          // This holds on any font, where the canvas checks below catch it only on a wide one.
+          expect(selected.buttonWidth, `${label}: selected button width`).toBeCloseTo(
+            idleButtonWidth,
+            1,
+          );
           expect(selected.headerHeight, `${label}: idle header`).toBeCloseTo(idle.headerHeight, 1);
           expect(selected.canvasTop, `${label}: idle canvas top`).toBeCloseTo(idle.canvasTop, 1);
           expect(selected.canvasHeight, `${label}: idle canvas height`).toBeCloseTo(
