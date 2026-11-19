@@ -87,6 +87,32 @@ describe('PadReader directions', () => {
   });
 });
 
+describe('PadReader hold time', () => {
+  it('counts a hold from the first read that saw it to the last, not to now', () => {
+    const reader = new PadReader();
+    reader.step(pad(), 0);
+    reader.step(pad({ 15: 1 }), 100);
+    // One read has seen it: a tap, however long the next frame takes to come.
+    expect(reader.held).toBe('right');
+    expect(reader.heldFor).toBe(0);
+    reader.step(pad({ 15: 1 }), 900);
+    expect(reader.heldFor).toBe(800);
+    reader.step(pad(), 2500);
+    expect(reader.held).toBeNull();
+    expect(reader.heldFor).toBe(0);
+  });
+
+  it('starts the count again when the direction changes', () => {
+    const reader = new PadReader();
+    reader.step(pad(), 0);
+    reader.step(pad({ 15: 1 }), 100);
+    reader.step(pad({ 15: 1 }), 600);
+    reader.step(pad({ 12: 1 }), 700);
+    expect(reader.held).toBe('up');
+    expect(reader.heldFor).toBe(0);
+  });
+});
+
 describe('padPan and padZoom', () => {
   it('pans from axes 2 and 3 with a dead zone', () => {
     expect(padPan(pad({}, { 2: 0.1, 3: -0.15 }))).toEqual({ x: 0, y: 0 });
