@@ -83,7 +83,7 @@ describe('the release fixtures (ADR 0112)', () => {
   it('are never dropped or reordered: the index only grows', () => {
     // The hashes guard each file; this guards the index itself. Freezing a release
     // (`npm run saves:release`) appends its id here, and nothing is ever taken out.
-    const FROZEN = ['2026-11-08-golden-v5', '2026-11-15-demo'];
+    const FROZEN = ['2026-11-08-golden-v5', '2026-11-15-demo', '2026-11-19-roads'];
     expect(RELEASES.map((release) => release.entry.id)).toEqual(FROZEN);
   });
 

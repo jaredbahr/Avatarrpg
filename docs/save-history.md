@@ -4,7 +4,7 @@
 
 Read this before drafting a scene that depends on something that happened earlier. It is generated from the content, the flag registry (`src/content/story/flags.ts`) and the release fixtures (`src/core/save/fixtures/releases/`); ADR 0112 has the rules. Regenerate with `npm run docs:saves`.
 
-Content is at history revision **1**. Releases frozen so far: `2026-11-08-golden-v5` (2026-11-08), `2026-11-15-demo` (2026-11-15).
+Content is at history revision **1**. Releases frozen so far: `2026-11-08-golden-v5` (2026-11-08), `2026-11-15-demo` (2026-11-15), `2026-11-19-roads` (2026-11-19).
 
 ## Before you read the past
 
@@ -218,6 +218,12 @@ Frozen 2026-11-15 from commit `19340085`, history revision 1. Frozen with ADR 01
 | ----------------------- | ----------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | scene `gao_lost`        | `story:gao_lost`        | `map:ba_dan_village` | **Still open.** Read only by its own once-only gate on Gao after a Driller loss. A release save that lost sat on the terminal card, so it has not heard it and hears it first when it carries on. |
 | scene `look_hesra_boot` | `story:look_hesra_boot` | `journal:hesra_boot` | **Still open.** Read only by the journal note for the boot by the mason’s yard door. The boot stays there after the supper, so an older save looks at it and gets the note then.                  |
+
+### Release `2026-11-19-roads`
+
+Frozen 2026-11-19 from commit `3b6897bd`, history revision 1. A test fixture, like 2026-11-15-demo: the first release in snapshot format 2 (roads recorded, options named by where they lead), frozen with #813 so a road rerouted from here on is asked about.
+
+Nothing has been added under this release.
 
 ## Backfill rules
 
