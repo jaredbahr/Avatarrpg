@@ -653,9 +653,12 @@ export class BattleDraft {
     const current = slide.pos;
     if (samePos(current, unit.pos)) return 0;
     if (slide.stopReason === 'out') {
-      // A first shove toward the water leaves them teetering on the brink; a shove while
-      // teetering puts them in and out (ADR 0122 §2a). No contact, no ledge damage.
-      if (!unit.statuses.some((s) => s.id === 'teetering')) {
+      // A first shove toward the water leaves them teetering on the brink; a shove once they
+      // have had a turn to step back puts them in and out (ADR 0122 §2a). Teetering lasts 2 and
+      // ticks at its owner's turn start, so at 1 they have had that turn. No contact, no ledge
+      // damage.
+      const teeter = unit.statuses.find((s) => s.id === 'teetering');
+      if (!teeter || teeter.duration > 1) {
         const brink = slide.brink ?? unit.pos;
         if (!samePos(brink, unit.pos)) {
           this.placeUnit(unitId, brink);
