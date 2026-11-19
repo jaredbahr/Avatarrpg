@@ -271,6 +271,28 @@ These rank with the lists above.
   the Driller's cab until MQ-11. Bo-shan was held about two to three weeks. Stone carts still stop at Gao's
   trough in occupied Ba Dan.
 
+### Owner decisions (2026-11-19, act scripts)
+
+The owner answered the open story questions on 2026-11-19. Each script records its own under "Decided (owner,
+2026-11-19)". These rank with the lists above.
+
+- **Veyra writes once in Act III.** A found letter at the first camp (`act3-currents.md`, C.1), only for a
+  party that took her mandate: her answer to the commission's first page, naming the place it went to first
+  and saying "I am told it is being looked into." It keeps her present between MQ-04 and the assembly and
+  reveals nothing early. A party that declined the mandate gets no letter.
+- **Act II ends on the letter home.** The road vote is taken at the meal, before the courier arrives; the
+  act's last scene is Pella's letter, the river's "...come home." and the canopy going up
+  (`act2-sparks.md`, 5.6 and 5.7). Same events and lines, new order.
+- **Hesra lost both boots** in the galleries. One comes back the night of the homecoming with a river shell
+  in it; Latch returns the other in MQ-07. Acts III and IV agree on both Act I branches.
+- **Nima's quest (PQ-07) stays as written.** If he hands the watch over he sees nothing. If he keeps it he
+  sees the sky bison at first light, the size of his thumbnail, at the cost of Kip being turned away and Hobb
+  being back on nights.
+- **The rubbing goes to customs.** Mira keeps it only until the party leaves; it travels with the cart to the
+  Saltstep customs office in MQ-02.
+- **The blue-door and bent-shutter houses in Ba Dan stay unnamed.** They are two households on Gao's ledger
+  (SQ-03) and nobody names them.
+
 ## Fan-work rule
 
 Non-commercial fan work; keep the `README.md` disclaimer intact. **Original characters only:** no canon character
