@@ -1,6 +1,6 @@
 # Story requests: when to file an issue or call the writing pass
 
-**Status: DRAFT for Jared (the writing pass, 2026-11-19).** For every agent that builds Four Nations Tactics and is not the
+**Status: approved (Jared, 2026-11-19).** For every agent that builds Four Nations Tactics and is not the
 writing pass. It says what counts as story work, what you may do yourself, and exactly when to file an issue or
 send a message. It adds detail to the one-owner rule (Jared, 2026-11-14); it does not replace it.
 
