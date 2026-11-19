@@ -160,7 +160,7 @@ const PIECES: readonly PlannedSetPiece[] = [
       mem('gate-wall-south-a', 'low wall', 29, 11, 1, 2, 0.6, true, 'prop'),
       // the canal passes under the wall line here
       flat('gate-culvert', 'culvert grate over the canal', 29, 13, 1, 2),
-      mem('gate-wall-south-b', 'low wall', 29, 15, 1, 4, 0.6, true, 'prop'),
+      mem('gate-wall-south-b', 'low wall', 29, 15, 1, 6, 0.6, true, 'prop'),
       small('gate-stool', "the watch's stool", 28.3, 8.3, 0.4, 0.5),
       mem('lamp-post', 'gate lamp on the wall', 29, 11, 1, 1, 1.8, true, 'fades', {
         lantern: true,
@@ -287,29 +287,53 @@ const PIECES: readonly PlannedSetPiece[] = [
       mem('leto-bench', 'bench', 3.05, 15.3, 0.8, 0.4, 0.6, false, 'prop'),
     ],
   },
+  // The two households on Gao's ledger (SQ-03) are left unnamed on purpose (owner, 2026-11-19): the houses and their
+  // art stay, each with a plain doorstep, and no `home.*` anchor. Their member ids are older than that decision.
+  {
+    id: 'quarry_blue_door',
+    purpose:
+      "A house past the canal with a blue door: a household on Gao's ledger, unnamed on purpose (SQ-03)",
+    anchor: 'amri-house',
+    members: [
+      building('amri-house', 'house with the blue door', 15, 16, 3, 2, 1.35),
+      flat('blue-door-step', 'doorstep', 16, 15),
+    ],
+  },
+  {
+    id: 'quarry_bent_shutter',
+    purpose:
+      "A house past the canal with a bent shutter: a household on Gao's ledger, unnamed on purpose (SQ-03)",
+    anchor: 'senn-house',
+    members: [
+      building('senn-house', 'house with the bent shutter', 20, 16, 4, 2, 1.5),
+      building('senn-annex', 'house with the bent shutter, the L', 23, 18, 1, 1, 1.35),
+      flat('bent-shutter-step', 'doorstep', 24, 17),
+    ],
+  },
+  // The back row (owner, 2026-11-19): Amri's and Senn's houses on rows 19-20, in Leto's plain row-house art, their
+  // doors on the back lane (row 18).
   {
     id: 'quarry_amri',
     purpose:
-      "Amri's house with the blue door in the quarry row: a pot against the wall and a free doorstep for the boots.",
-    anchor: 'amri-house',
+      "Amri's house in the back row past the canal: a pot against the wall and a free doorstep for the boots.",
+    anchor: 'amri-row-house',
     members: [
-      building('amri-house', "Amri's house", 15, 16, 3, 2, 1.35),
-      flat('amri-doorstep', 'doorstep', 16, 15),
-      flat('amri-free-step', 'free doorstep', 17, 15),
-      small('amri-pot', 'pot', 14.3, 16.3, 0.5, 0.4),
+      building('amri-row-house', "Amri's house", 8, 19, 3, 2, 1.35),
+      flat('amri-doorstep', 'doorstep', 9, 18),
+      flat('amri-free-step', 'free doorstep', 10, 18),
+      small('amri-pot', 'pot', 7.45, 20.3, 0.5, 0.4),
     ],
   },
   {
     id: 'quarry_senn',
     purpose:
-      "Senn's L-shaped house with the bent shutter in the quarry row: a log pile against the end wall and a free doorstep for the boots.",
-    anchor: 'senn-house',
+      "Senn's house at the end of the back row: a log pile against the end wall and a free doorstep for the boots.",
+    anchor: 'senn-row-house',
     members: [
-      building('senn-house', "Senn's house", 20, 16, 4, 2, 1.5),
-      building('senn-annex', "Senn's house, the L", 23, 18, 1, 1, 1.35),
-      flat('senn-doorstep', 'doorstep', 24, 17),
-      flat('senn-free-step', 'free doorstep', 24, 16),
-      small('senn-logs', 'log pile', 24.1, 18.2, 0.7, 0.65),
+      building('senn-row-house', "Senn's house", 13, 19, 3, 2, 1.35),
+      flat('senn-doorstep', 'doorstep', 14, 18),
+      flat('senn-free-step', 'free doorstep', 15, 18),
+      small('senn-logs', 'log pile', 16.05, 20.1, 0.7, 0.65),
     ],
   },
   {
@@ -341,7 +365,7 @@ export const BA_DAN_SET_PIECE_PLAN: SetPiecePlan = {
     { id: 'square', rect: { x0: 9, y0: 6, x1: 18, y1: 11 } },
     { id: 'west', rect: { x0: 1, y0: 4, x1: 8, y1: 11 } },
     { id: 'north_west', rect: { x0: 5, y0: 1, x1: 10, y1: 4 } },
-    { id: 'past_canal', rect: { x0: 1, y0: 14, x1: 29, y1: 19 } },
+    { id: 'past_canal', rect: { x0: 1, y0: 14, x1: 29, y1: 22 } },
     { id: 'north_east', rect: { x0: 23, y0: 1, x1: 28, y1: 5 } },
   ],
   quiet: QUIET,
