@@ -59,7 +59,10 @@ function placed(content: ContentIndex, cells: readonly Vec2[]): BattleState {
   return { ...battle, units: battle.units.map((unit, i) => ({ ...unit, pos: cells[i]! })) };
 }
 
-/** `battle` with these units already teetering on the edge (ADR 0122 §2a). */
+/**
+ * `battle` with these units teetering on the edge and past their own turn since (duration 1), so the
+ * next shove puts them in (ADR 0122 §2a).
+ */
 function teetering(battle: BattleState, ...indexes: number[]): BattleState {
   const ids = new Set(indexes.map((i) => battle.units[i]!.id));
   return {
@@ -68,7 +71,7 @@ function teetering(battle: BattleState, ...indexes: number[]): BattleState {
       ids.has(unit.id)
         ? {
             ...unit,
-            statuses: [...unit.statuses, { id: 'teetering' as const, duration: 2, stacks: 1 }],
+            statuses: [...unit.statuses, { id: 'teetering' as const, duration: 1, stacks: 1 }],
           }
         : unit,
     ),
@@ -140,6 +143,17 @@ describe('out of the bout (ADR 0122 §2)', () => {
     if (!helpUp) throw new Error('help_up is missing');
     const check = isValidTarget(content, after, byId(after, riko!.id), helpUp, kaya!.pos);
     expect(check).toMatchObject({ ok: false, reason: expect.stringContaining('out of the bout') });
+  });
+
+  it('a second shove in the same turn only keeps them teetering: they get a turn to step back', () => {
+    const battle = placed(content, CALM);
+    const kaya = battle.units[0]!;
+    const draft = draftOf(content, battle);
+    draft.shove(kaya.id, { x: 4, y: 8 }, 1, 'push');
+    draft.shove(kaya.id, { x: 4, y: 8 }, 1, 'push');
+    const after = draft.toBattle();
+    expect(byId(after, kaya.id)).toMatchObject({ pos: { x: 4, y: 9 }, hp: kaya.hp });
+    expect(after.boutOut).toBeUndefined();
   });
 
   it('walking off the edge clears a teeter', () => {

@@ -182,7 +182,7 @@ export const STATUSES: readonly StatusDef[] = [
     id: 'teetering',
     name: 'Teetering',
     description:
-      'On the edge of the platform. The next shove toward the water puts them in and out of the bout. Walking clears it.',
+      'On the edge of the platform. Once they have had a turn, the next shove toward the water puts them in and out of the bout. Walking clears it.',
     kind: 'debuff',
     defaultDuration: 2,
   }),
