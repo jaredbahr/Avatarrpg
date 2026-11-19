@@ -408,6 +408,27 @@ describe('a release that records roads and names options by destination (#813)',
     expect(checkReleases(answered).filter((line) => line.includes('lost_quarry_gate'))).toEqual([]);
   });
 
+  it('unites the roads of retired areas folded onto one id', () => {
+    // A copied chain aliased onto the plain one: each copy's roads were the release's roads from
+    // the plain node, whichever of the two the snapshot lists last.
+    const edges = HISTORY_NOW.edges ?? {};
+    const gate = edges['story:lost_quarry_gate'] ?? [];
+    const folded = [...gate, 'next=gate_talked_through'];
+    const release = AGAINST_TODAY.releases[0];
+    if (!release?.edges) throw new Error('The test release records no roads');
+    for (const order of [
+      { 'story:lost_quarry_gate_copy': ['next=gate_talked_through'], ...release.edges },
+      { ...release.edges, 'story:lost_quarry_gate_copy': ['next=gate_talked_through'] },
+    ]) {
+      const input: HistoryInput = {
+        ...withNow({ edges: { ...edges, 'story:lost_quarry_gate': folded } }),
+        releases: [{ ...release, edges: order }],
+        aliases: { story: { lost_quarry_gate_copy: 'lost_quarry_gate' } },
+      };
+      expect(lateEdges(input)).toEqual([]);
+    }
+  });
+
   it('needs nothing for a road into a scene the release did not have', () => {
     const edges = HISTORY_NOW.edges ?? {};
     const fresh = withNow({
