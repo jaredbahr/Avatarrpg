@@ -288,7 +288,9 @@ export const ACT1_NODES: readonly StoryNode[] = [
   },
   /*
    * The rubbing from the driller's plate changes hands (#628). Mira routes to
-   * `mira_rubbing_kept` once she has it, so a second visit never asks again.
+   * `mira_rubbing_kept` once she has it, so a second visit never asks again. She
+   * holds it only until the party leaves: it goes with them to the harbour
+   * customs office in MQ-02 (owner, 2026-11-19).
    */
   {
     id: 'mira_rubbing',
@@ -298,7 +300,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     lines: [
       'Is that the rubbing? Hold that corner flat for me.',
       'Republic City. Somebody paid to bring that machine a long way, and nobody in Ba Dan was asked.',
-      'The province can have a copy. This one stays here until I know who paid.',
+      'The province can have a copy. This one I keep only until you leave. Then it goes with you, to someone who can tell me who paid.',
     ],
     next: 'mira_rubbing_given',
   },
@@ -314,7 +316,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'Elder Mira',
     portrait: 'portrait.mira',
     lines: [
-      'The rubbing is pinned up inside my door. The province has a copy. Dorin copied the maker’s mark into his watch book first.',
+      'The rubbing is in my house until you leave, and then you are carrying it. The province has a copy. Dorin copied the maker’s mark into his watch book first.',
       'Go and eat. Gao has kept bowls for you.',
     ],
     next: 'village_return_explore',

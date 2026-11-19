@@ -59,7 +59,7 @@ flowchart TD
   n89["mira_intro<br/>Elder Mira: Come in. There is rice if you have not eaten."]:::entry
   n91["mira_rubbing<br/>Elder Mira: Is that the rubbing? Hold that corner flat for me."]
   n92["mira_rubbing_given<br/>Set flags"]
-  n93["mira_rubbing_kept<br/>Elder Mira: The rubbing is pinned up inside my door. The provin…"]:::entry
+  n93["mira_rubbing_kept<br/>Elder Mira: The rubbing is in my house until you leave, and the…"]:::entry
   n94["mira_table_ask<br/>Elder Mira: Yes. Five people from this village. And the crews w…"]
   n95["mira_table_before<br/>Pella: Bo-shan went before them. Before still counts."]
   n96["mira_table_bowl<br/>Mira’s Table: Pella hooks a bowl out from under the table with …"]
