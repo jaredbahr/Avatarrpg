@@ -77,6 +77,9 @@ import { refreshTurnResources, tickTurnStart } from './turnStart';
 import { objectiveDistance } from './objectives';
 
 /** How much the AI wants to inflict each status, in "points of damage". */
+/** What leaving a fighter teetering on a bout's edge is worth: about a strong debuff. */
+const TEETER_VALUE = 8;
+
 const STATUS_VALUE: Record<StatusId, number> = {
   stunned: 14,
   frozen: 14,
@@ -90,6 +93,8 @@ const STATUS_VALUE: Record<StatusId, number> = {
   chilled: 3,
   guarded: 9,
   inspired: 9,
+  // Never on an ability; a teeter is priced by the shove forecast's `teeters` (ADR 0122 §4).
+  teetering: 0,
 };
 
 interface Weights {
@@ -595,6 +600,8 @@ export function scoreAbility(
   let ledgeByUnit: Map<string, number> | null = null;
   // Fighters the same forecast puts out of a sparring bout (ADR 0122 §4).
   const outOfBout = new Set<string>();
+  // ...and the ones it leaves teetering on the edge, a step toward that (ADR 0122 §2a).
+  const teetered = new Set<string>();
   const ledgeDropFor = (victimId: string): number => {
     if (!ledgeByUnit) {
       const battle = battleWithHypotheticalCaster(draft.toBattle(), caster);
@@ -617,6 +624,7 @@ export function scoreAbility(
         if (shove.kind !== 'unit' || shove.cause !== 'ability') continue;
         ledgeByUnit.set(shove.id, (ledgeByUnit.get(shove.id) ?? 0) + shove.ledgeDropDamage);
         if (shove.out) outOfBout.add(shove.id);
+        if (shove.teeters) teetered.add(shove.id);
       }
     }
     return ledgeByUnit.get(victimId) ?? 0;
@@ -721,6 +729,11 @@ export function scoreAbility(
             if (friendly) score -= victim.hp * weights.friendlyFire + weights.kill;
             else score += victim.hp * weights.damage + weights.kill;
             break;
+          }
+          if (!fallPriced && teetered.has(victim.id)) {
+            score += friendly
+              ? -TEETER_VALUE * weights.friendlyFire
+              : TEETER_VALUE * weights.status;
           }
           fallPriced = true;
           if (friendly) {
@@ -1501,6 +1514,8 @@ function walk(draft: BattleDraft, unitId: string, path: readonly Vec2[]): void {
   if (!moved) return;
   draft.replace({ ...moved, move: Math.max(0, moved.move - cost) });
   draft.emit({ type: 'unitMoved', unitId, path: walked, cost });
+  // Stepping off a bout's edge clears a teeter (ADR 0122 §2a).
+  if (walked.length > 0) draft.cleanseFrom(unitId, ['teetering']);
 }
 
 /** Walks toward the most attractive reachable tile when no ability is worth using. */

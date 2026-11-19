@@ -157,6 +157,8 @@ export interface ShoveForecast {
   readonly landingStatuses: readonly { readonly id: StatusId; readonly chance: number }[];
   /** A sparring bout's forced move into the water: the fighter is out (ADR 0122 §4). */
   readonly out?: boolean;
+  /** A bout's first shove toward the water: the fighter is left teetering (ADR 0122 §2a). */
+  readonly teeters?: boolean;
 }
 
 /** One unit contact recorded by the shared surface resolver. */
@@ -604,6 +606,9 @@ function shoveUnitForecast(
   const ledgeDropTiers = draft.shove(unitId, origin, distance, mode);
   const after = draft.unit(unitId) ?? before;
   const out = !outBefore && draft.boutOut.includes(unitId);
+  const teetering = (unit: Unit | undefined) =>
+    unit?.statuses.some((status) => status.id === 'teetering') ?? false;
+  const teeters = !out && !teetering(before) && teetering(draft.unit(unitId));
   const movedDistance = Math.max(
     Math.abs(after.pos.x - before.pos.x),
     Math.abs(after.pos.y - before.pos.y),
@@ -644,6 +649,7 @@ function shoveUnitForecast(
     ledgeDropTiers,
     ledgeDropDamage,
     ...(out ? { out } : {}),
+    ...(teeters ? { teeters } : {}),
   };
 }
 

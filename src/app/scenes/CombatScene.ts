@@ -3247,6 +3247,15 @@ export class CombatScene implements Scene {
           }),
         );
       }
+      // A bout's first shove toward the water leaves them on the edge (ADR 0122 §2a).
+      if (shove.teeters) {
+        chips.appendChild(
+          el('span', {
+            class: `chip shove-out-forecast ${shove.friendly ? 'chip-friendly' : 'chip-terrain'}`,
+            text: `${shove.name}: Teetering`,
+          }),
+        );
+      }
       // A sparring bout's water (ADR 0122 §4): in the place a knockout would show.
       if (shove.out) {
         chips.appendChild(
