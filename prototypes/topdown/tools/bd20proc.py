@@ -11,7 +11,7 @@ H = Path(__file__).resolve().parent.parent
 RAW = Path(os.environ.get('BD20_RAW', H / 'bd20' / 'raw'))
 OUT = H / 'assets' / 'objects_bd20'; OUT.mkdir(exist_ok=True)
 SH = (0x32, 0x21, 0x25)
-SMALL = {'chair', 'plant_chair', 'stool', 'bucket', 'basket', 'washboard', 'mason_bench', 'peg', 'side_gate', 'side_gate_hung', 'gao_jar', 'hesra_boot', 'wall_mended', 'wall_low'}
+SMALL = {'chair', 'plant_chair', 'stool', 'bucket', 'basket', 'washboard', 'mason_bench', 'peg', 'side_gate', 'side_gate_hung', 'trough_ek', 'sacks', 'crew_bench', 'gao_jar', 'hesra_boot', 'wall_mended', 'wall_low'}
 
 
 def outline(im):
