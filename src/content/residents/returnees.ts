@@ -144,7 +144,8 @@ const door = (id: string, place: string, x: number, y: number): WorldAnchor => (
 /**
  * The road group sits on the open north verge at the west bend, beyond the x=4
  * departure trigger and clear of Lanfen. BD12-BD15 are the lane doors past the canal,
- * except Hesra's, which is the mason's yard (`return.ts`).
+ * except Hesra's, which is the mason's yard (`return.ts`). Amri's and Senn's doors open onto the back lane
+ * (row 18), from the back row of the quarry houses (owner, 2026-11-19).
  */
 export const RETURNEE_ANCHORS: readonly WorldAnchor[] = [
   tile('return.bo_shan', 'FOREST-RETURN', FOREST, 5, 3),
@@ -163,10 +164,10 @@ export const RETURNEE_ANCHORS: readonly WorldAnchor[] = [
   tile('recovery.senn', 'BD15-RIVER', RIVERSIDE, 18, 14),
   // Bo-shan shares the BD04 household door while keeping his own saved identity.
   door('home.bo_shan', 'BD04', 9, 14),
-  door('home.amri', 'BD12', 16, 15),
+  door('home.amri', 'BD12', 9, 18),
   door('home.leto', 'BD13', 4, 15),
   door('home.hesra', 'BD14', 5, 7),
-  door('home.senn', 'BD15', 24, 17),
+  door('home.senn', 'BD15', 14, 18),
 ];
 
 const profile = (residentId: ReturneeId, ...profiles: ResidentProfile[]): Condition => ({

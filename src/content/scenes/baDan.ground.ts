@@ -149,6 +149,7 @@ export const BA_DAN_TRACKS: readonly GroundTrack[] = [
       [18.9, 15.5],
       [18.9, 18],
       [19, 20],
+      [19, 23],
     ],
     width: 1.4,
     wear: 2,
@@ -174,11 +175,15 @@ export const BA_DAN_TRACKS: readonly GroundTrack[] = [
     width: 1,
     wear: 1,
   },
+  // from the bridge down across the back lane, between Amri's and Senn's houses, to the coast-road sign on the rim
   {
     id: 'coast_sign',
     line: [
       [13.5, 15],
-      [13.5, 18.6],
+      [13.5, 18.2],
+      [12.3, 18.8],
+      [12, 19.5],
+      [12, 21.6],
     ],
     width: 1,
     wear: 1,
@@ -194,13 +199,34 @@ export const BA_DAN_TRACKS: readonly GroundTrack[] = [
     width: 1.2,
     wear: 2,
   },
-  // the quarry house past the gardens' corner: its door's stub down to the lane
+  // the house with the bent shutter, past the gardens' corner: its door's stub down to the lane
   {
-    id: 'senn_door',
+    id: 'bent_shutter_door',
     line: [
       [24.5, 17.5],
       [24.6, 16.5],
       [24.4, 15.6],
+    ],
+    width: 1,
+    wear: 1,
+  },
+  // the back lane (row 18): Senn's door east to the river path (his recovery spot is at the riverside)
+  {
+    id: 'senn_door',
+    line: [
+      [14.5, 18.5],
+      [16.5, 18.55],
+      [18.4, 18.5],
+    ],
+    width: 1,
+    wear: 1,
+  },
+  // the back lane west: Amri's door to the coast path, and up it over the bridge to the square
+  {
+    id: 'back_lane',
+    line: [
+      [9.5, 18.5],
+      [12.1, 18.5],
     ],
     width: 1,
     wear: 1,
@@ -241,10 +267,13 @@ export const BA_DAN_APRONS: readonly GroundApron[] = [
   door('school_door', 'bd05.school', 6, 15),
   door('dorin_door', 'home.dorin', 26, 7, 0.5),
   door('hanru_door', 'home.hanru', 26, 15),
-  door('amri_door', 'home.amri', 16, 15),
+  door('amri_door', 'home.amri', 9, 18),
+  // the two households on Gao's ledger, unnamed on purpose (SQ-03): a plain doorstep each, no `home.*` anchor
+  door('blue_door', 'quarry_blue_door', 16, 15),
+  door('bent_shutter_door', 'quarry_bent_shutter', 24, 17),
   door('leto_door', 'home.leto', 4, 15),
   door('hesra_door', 'home.hesra', 5, 7),
-  door('senn_door', 'home.senn', 24, 17),
+  door('senn_door', 'home.senn', 14, 18),
 ];
 
 /** Where the walkable ground is, for the growth along the rim's tree line. */
@@ -436,8 +465,8 @@ export const BA_DAN_GROUND_SPEC: GroundSpec = {
       { x: 31, y: 10 },
     ]),
     groundMouth('river-path', 'south', [
-      { x: 18, y: 19 },
-      { x: 19, y: 19 },
+      { x: 18, y: 22 },
+      { x: 19, y: 22 },
     ]),
   ],
   mouthReach: 3,

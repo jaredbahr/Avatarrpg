@@ -86,14 +86,14 @@ export function connectAct1(map: MapDef): MapDef {
             mouth(31, [9, 10]),
           ),
           route(
-            { x: 18, y: 19 },
+            { x: 18, y: 22 },
             'ba_dan_riverside',
             { x: 10, y: 19 },
             'River path → Riverside',
             'south',
             // The path's mouth on the south rim, between the trees on both shoulders: the walkable
             // border cells are the exit.
-            [18, 19].map((x) => ({ x, y: 19 })),
+            [18, 19].map((x) => ({ x, y: 22 })),
           ),
         ],
         /*
@@ -110,7 +110,8 @@ export function connectAct1(map: MapDef): MapDef {
           {
             id: 'coast_road_sign',
             name: 'Coast road',
-            pos: { x: 13, y: 18 },
+            // On the south rim at the foot of the coast path, between Amri's and Senn's houses in the back row.
+            pos: { x: 12, y: 21 },
             sprite: 'world.route_sign',
             interaction: 'route-sign',
             when: ACT1_OVER,
@@ -169,7 +170,7 @@ export function connectAct1(map: MapDef): MapDef {
             { x: 10, y: 20 },
             'ba_dan_village',
             // One step inside the village's river-path mouth, never on it.
-            { x: 18, y: 18 },
+            { x: 18, y: 21 },
             'South path → Ba Dan Village',
             'south',
             // The south path from row 20 to the rim: it leaves with no tile to miss.
