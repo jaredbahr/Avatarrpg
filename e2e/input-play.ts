@@ -57,6 +57,8 @@ const BUTTONS: Readonly<Record<Press, number>> = {
 
 declare global {
   interface Window {
+    /** How many times the page has read the pads: one a frame while one is connected. */
+    fntPadReads?: number;
     fntPad?: {
       id: string;
       index: number;
@@ -86,31 +88,57 @@ export async function installGamepad(page: Page): Promise<void> {
       buttons: Array.from({ length: 17 }, () => ({ pressed: false, touched: false, value: 0 })),
     };
     window.fntPad = pad;
-    navigator.getGamepads = () => [pad as unknown as Gamepad, null, null, null];
+    window.fntPadReads = 0;
+    navigator.getGamepads = () => {
+      window.fntPadReads = (window.fntPadReads ?? 0) + 1;
+      return [pad as unknown as Gamepad, null, null, null];
+    };
   });
 }
 
 export function gamepadDriver(page: Page): Driver {
-  // Two frames, so the poll sees the button in one state before it changes again.
-  const set = (index: number, down: boolean) =>
+  /**
+   * Sets a button, then waits until the page has read the pads after the
+   * change (and one frame more, `hold`) so the poll has seen it. A press lets
+   * go on the first read that saw it down: a tap, which on a page that draws a
+   * frame in a few hundred ms (CI's GPU-less WebKit) is all a real thumb gets
+   * seen for. Holding it for a fixed count of frames instead holds it for
+   * however long those frames take, and past `HOLD_AFTER_MS` that is a held
+   * direction walking on, not a press.
+   */
+  const set = (index: number, down: boolean, tap: boolean) =>
     page.evaluate(
-      ([button, pressed]) =>
+      ([button, pressed, tap]) =>
         new Promise<void>((resolve) => {
           const target = window.fntPad?.buttons[button as number];
           if (!target) throw new Error('No synthetic gamepad is installed');
-          target.pressed = pressed as boolean;
-          target.value = pressed ? 1 : 0;
-          requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+          const reads = () => window.fntPadReads ?? 0;
+          const change = (value: boolean) => {
+            target.pressed = value;
+            target.value = value ? 1 : 0;
+          };
+          // Calls `then` in the first frame callback that follows a read since `from`.
+          const afterRead = (from: number, then: () => void) => {
+            const check = () => {
+              if (reads() > from) then();
+              else requestAnimationFrame(check);
+            };
+            requestAnimationFrame(check);
+          };
+          change(pressed as boolean);
+          afterRead(reads(), () => {
+            if (tap) {
+              change(false);
+              afterRead(reads(), resolve);
+            } else requestAnimationFrame(() => resolve());
+          });
         }),
-      [index, down] as const,
+      [index, down, tap] as const,
     );
   return {
     name: 'gamepad',
-    press: async (action) => {
-      await set(BUTTONS[action], true);
-      await set(BUTTONS[action], false);
-    },
-    hold: (way, down) => set(BUTTONS[way], down),
+    press: (action) => set(BUTTONS[action], true, true),
+    hold: (way, down) => set(BUTTONS[way], down, false),
   };
 }
 
