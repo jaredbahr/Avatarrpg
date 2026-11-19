@@ -1040,6 +1040,23 @@ function scene(
       }
     return n ? [{ x: (up.x + (sx / n + 0.5)) / 40, y: (up.y + (sy / n + 0.5)) / 40 }] : [];
   });
+  // Cooking smoke (the exploration ambience, ADR 0008): the Earth Kingdom houses have no chimney, so each
+  // house's wisp leaves by a vent on its roof ridge (owner, 2026-11-17), on the sprite's top edge at a
+  // column left or right of the ridge in turn, as the old board's vents did.
+  const houses = (layout?.objects ?? []).filter((o) => o.kind === 'house');
+  const chimneys = houses.flatMap((o, index) => {
+    const up = baked.uprights.find((u) => u.id === o.id);
+    if (!up) return [];
+    const col = Math.round((index % 2 ? 0.36 : 0.64) * (up.image.width - 1));
+    for (let y = 0; y < up.image.height; y++)
+      if (at(up.image.data, (y * up.image.width + col) * 4 + 3))
+        return [{ x: +((up.x + col) / 40).toFixed(3), y: +((up.y + y) / 40).toFixed(3) }];
+    return [];
+  });
+  // Leaves drift from each tree's crown, a cell above its base (the old board's canopies).
+  const canopies = (layout?.objects ?? [])
+    .filter((o) => o.kind === 'tree')
+    .map((o) => ({ x: o.depth.x, y: o.depth.y - 1 }));
   const scenery: SceneScenery[] = (layout?.objects ?? []).flatMap((o) => {
     const art = byId.get(o.id);
     if (!art) return [];
@@ -1077,6 +1094,8 @@ function scene(
       },
     ],
     scenery,
+    ...(chimneys.length > 0 && { chimneys }),
+    ...(canopies.length > 0 && { canopies }),
     ...(lanterns.length > 0 && { ambienceSources: { steam: [], lanterns } }),
   };
 }
