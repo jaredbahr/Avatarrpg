@@ -602,15 +602,24 @@ for (const renderer of ['canvas', 'webgl'] as const) {
           map = app.content.maps.get(state.location.mapId)!;
         const who = app.residents.figures().find((w) => w.npcId === 'guard_dorin');
         if (!who?.pos) throw Error('No canonical afternoon Dorin');
-        const target = who.pos,
-          pos = { x: target.x, y: target.y - 1 },
-          symbol = map.rows[pos.y]?.[pos.x];
-        if (
-          symbol === undefined ||
-          map.legend[symbol]?.blocked ||
-          app.residents.figures().some((w) => w.pos?.x === pos.x && w.pos?.y === pos.y)
-        )
-          throw Error('North neighbour is not clear legal ground');
+        const target = who.pos;
+        // Any clear neighbour will do: the party stands beside Dorin so Talk opens without a
+        // walk. North first, as on the old board; the rebuilt Ba Dan (#875) may block it.
+        const clear = (cell: { x: number; y: number }): boolean => {
+          const symbol = map.rows[cell.y]?.[cell.x];
+          return (
+            symbol !== undefined &&
+            !map.legend[symbol]?.blocked &&
+            !app.residents.figures().some((w) => w.pos?.x === cell.x && w.pos?.y === cell.y)
+          );
+        };
+        const pos = [
+          { x: target.x, y: target.y - 1 },
+          { x: target.x - 1, y: target.y },
+          { x: target.x + 1, y: target.y },
+          { x: target.x, y: target.y + 1 },
+        ].find(clear);
+        if (!pos) throw Error('Dorin has no clear legal neighbour');
         app.adoptSave({ ...state, location: { ...state.location, pos } }, app.session.toMeta());
         return {
           target,

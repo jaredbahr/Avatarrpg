@@ -43,8 +43,14 @@ declare global {
     quitAudioProbe: QuitProbe;
   }
 }
+/**
+ * Walks along the row the party arrives on (row 10 of the rebuilt Ba Dan, #875): open grass from x 2 to
+ * 17, so columns 3, 4 and 9 are all a clear walk apart.
+ */
+const ROW = 10;
+
 async function clickWalk(page: Page, x: number): Promise<void> {
-  const point = await paintedTileCentre(page, { x, y: 7 });
+  const point = await paintedTileCentre(page, { x, y: ROW });
   const box = await page.locator('.map-canvas').boundingBox();
   if (!point || !box) throw new Error('Missing painted village/canvas');
   expect(point.x).toBeGreaterThan(box.x);
@@ -58,7 +64,7 @@ async function walk(page: Page, x: number): Promise<void> {
   await clickWalk(page, x);
   await expect
     .poll(() => page.evaluate(() => window.fnt?.app.state?.location.pos))
-    .toEqual({ x, y: 7 });
+    .toEqual({ x, y: ROW });
 }
 
 for (const renderer of ['canvas', 'webgl'] as const) {
