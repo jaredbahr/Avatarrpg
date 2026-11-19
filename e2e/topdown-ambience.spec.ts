@@ -177,7 +177,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
   }) => {
     const errors: string[] = [];
     page.on('console', (message) => {
-      if (message.type() === 'error') errors.push(message.text());
+      if (message.type() === 'error') errors.push(`${message.text()} ${message.location().url}`);
     });
     page.on('pageerror', (error) => errors.push(error.message));
     await page.emulateMedia({ reducedMotion: 'no-preference' });
