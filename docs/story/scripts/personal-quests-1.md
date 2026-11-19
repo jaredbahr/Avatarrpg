@@ -1742,7 +1742,7 @@ remarks on it as a lesson, and it is not why she knows the channel. She knows th
 mended boats on it for two years.
 
 **Planted earlier:** Sura is the one who has been counting what the water says twice, since the culvert in
-Act I (`cutting_culvert`; Scenes 2.4, 3.3, 5.6).
+Act I (`cutting_culvert`; Scenes 2.4, 3.3, 5.7).
 
 > **The opening, already written (Act III, Scene 7.2):**
 >
