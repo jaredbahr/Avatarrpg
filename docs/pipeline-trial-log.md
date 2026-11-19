@@ -252,14 +252,15 @@ What was written, from or in agreement with the script (`docs/story/scripts/act2
 - **Sura and Wen (2.4) and Riko (2.6)**, once friction 3 was answered by `branchWhen` (ADR 0118): a `branchWhen` on
   `partyHas` before Veyra's "Odd." (Sura, after either driver's echo), after it (Wen) and after Veyra leaves (Riko).
   Sura's culvert line is a variant on `visited: cutting_culvert`. Three pass-through nodes and nine lines, no copies.
+- **Kaya's, Tenzo's and Jinu's copies folded** onto the one chain behind a `branchWhen` each. The NPC and sign routes
+  that picked a copy are gone, and the ten retired ids are aliased onto their plain twins (`idAliases.ts`), so a save
+  made mid-copy resumes on the same line. Every hero variant in MQ-02 is now one pass-through node and its lines.
 
 Still open, and why:
 
 - **"The party" speaker label.** The owner decided `Party:` lines are tappable choice text with no speaker. A
   dialogue node must name a speaker and a choice needs two options (friction 2), so the four `Party:` lines keep the
   narrator-framed "The party" label until a one-option tap exists.
-- **Tenzo's and Jinu's copied chains.** They still run as whole copies under their own ids. Folding them onto one
-  chain with a `branchWhen` renames ids a save can hold, so it needs `idAliases` rows and waits for its own change.
 
 ## Art production, by batch
 

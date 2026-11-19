@@ -20,39 +20,39 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 
 ```mermaid
 flowchart TD
-  n369["sq03_ask<br/>Gao the Shopkeeper: Rice, oil, a twist of salt. He has tied eve…"]
-  n370["sq03_choice<br/>Gao the Shopkeeper: Well? You’re still standing there."]
-  n371["sq03_counter<br/>Gao’s shop: An invoice is pinned under the scale weight. “Valle…"]
-  n372["sq03_deliver<br/>Past the canal: At the blue door, an old man takes his parcel a…"]
-  n373["sq03_extension<br/>Gao’s shop: Gao finds paper. You find the words, and he crosses…"]
-  n374["sq03_extension_after<br/>Gao the Shopkeeper: If they say no, they say no."]
-  n375["sq03_fund<br/>Around the square: You knock on doors and don’t say why. You as…"]
-  n376["sq03_fund_after<br/>Gao the Shopkeeper: The basket counts."]
-  n377["sq03_hook<br/>Gao the Shopkeeper: You’re not in a hurry? Good. Two parcels, f…"]:::entry
-  n378["sq03_jar<br/>Gao the Shopkeeper: Valley Wholesale gave me until harvest. Pol…"]:::entry
-  n379["sq03_jar_label<br/>Gao’s shop: A new jar stands beside the scale. The label, in Ga…"]
-  n380["sq03_praised<br/>Mira’s table: You stand by Mira’s table and tell the square abo…"]
-  n381["sq03_praised_after<br/>Gao the Shopkeeper: They gave. You were right about that."]
-  n382["sq03_truth<br/>Gao the Shopkeeper: No, they weren’t charged. Shut that drawer,…"]
-  n269["plant_chair_decline — exit to ba-dan-day / part 1"]:::external
-  n386["village_leave — exit to ba-dan-day / part 1"]:::external
-  n369 -->|"Carry the parcels"| n372
-  n369 -->|"Another time"| n269
-  n370 -->|"Write to the wholesaler together; set: sq03.ledger=#quot;extension#quot;"| n373
-  n370 -->|"Ask the neighbours about a food jar; set: sq03.ledger=#quot;fund#quot;"| n375
-  n370 -->|"Tell the square what Gao has done; set: sq03.ledger=#quot;praised#quot;"| n380
-  n371 -->|"Next"| n382
-  n372 -->|"Next"| n371
+  n362["sq03_ask<br/>Gao the Shopkeeper: Rice, oil, a twist of salt. He has tied eve…"]
+  n363["sq03_choice<br/>Gao the Shopkeeper: Well? You’re still standing there."]
+  n364["sq03_counter<br/>Gao’s shop: An invoice is pinned under the scale weight. “Valle…"]
+  n365["sq03_deliver<br/>Past the canal: At the blue door, an old man takes his parcel a…"]
+  n366["sq03_extension<br/>Gao’s shop: Gao finds paper. You find the words, and he crosses…"]
+  n367["sq03_extension_after<br/>Gao the Shopkeeper: If they say no, they say no."]
+  n368["sq03_fund<br/>Around the square: You knock on doors and don’t say why. You as…"]
+  n369["sq03_fund_after<br/>Gao the Shopkeeper: The basket counts."]
+  n370["sq03_hook<br/>Gao the Shopkeeper: You’re not in a hurry? Good. Two parcels, f…"]:::entry
+  n371["sq03_jar<br/>Gao the Shopkeeper: Valley Wholesale gave me until harvest. Pol…"]:::entry
+  n372["sq03_jar_label<br/>Gao’s shop: A new jar stands beside the scale. The label, in Ga…"]
+  n373["sq03_praised<br/>Mira’s table: You stand by Mira’s table and tell the square abo…"]
+  n374["sq03_praised_after<br/>Gao the Shopkeeper: They gave. You were right about that."]
+  n375["sq03_truth<br/>Gao the Shopkeeper: No, they weren’t charged. Shut that drawer,…"]
+  n262["plant_chair_decline — exit to ba-dan-day / part 1"]:::external
+  n379["village_leave — exit to ba-dan-day / part 1"]:::external
+  n362 -->|"Carry the parcels"| n365
+  n362 -->|"Another time"| n262
+  n363 -->|"Write to the wholesaler together; set: sq03.ledger=#quot;extension#quot;"| n366
+  n363 -->|"Ask the neighbours about a food jar; set: sq03.ledger=#quot;fund#quot;"| n368
+  n363 -->|"Tell the square what Gao has done; set: sq03.ledger=#quot;praised#quot;"| n373
+  n364 -->|"Next"| n375
+  n365 -->|"Next"| n364
+  n366 -->|"Next"| n367
+  n367 -->|"Next"| n379
+  n368 -->|"Next"| n369
+  n369 -->|"Next"| n379
+  n370 -->|"Next"| n362
+  n371 -->|"Next"| n372
+  n372 -->|"Next"| n379
   n373 -->|"Next"| n374
-  n374 -->|"Next"| n386
-  n375 -->|"Next"| n376
-  n376 -->|"Next"| n386
-  n377 -->|"Next"| n369
-  n378 -->|"Next"| n379
-  n379 -->|"Next"| n386
-  n380 -->|"Next"| n381
-  n381 -->|"Next"| n386
-  n382 -->|"Next"| n370
+  n374 -->|"Next"| n379
+  n375 -->|"Next"| n363
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

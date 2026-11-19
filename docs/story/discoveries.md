@@ -26,31 +26,31 @@ flowchart TD
   n68{"leave_duck_nest<br/>Branch: act1_complete"}
   n69{"leave_runoff_marker<br/>Branch: act1_complete"}
   n70{"leave_tea_station<br/>Branch: act1_complete"}
-  n301["remember_duck_nest<br/>Set flags"]
-  n302["remember_runoff_marker<br/>Set flags"]
-  n303["remember_tea_station<br/>Set flags"]
-  n317["revisit_duck_nest<br/>Turtle duck nest: The ducklings are asleep in the sock. Their m…"]:::entry
-  n318["revisit_runoff_marker<br/>Runoff measuring stone: Another thin layer of silt has caught a…"]:::entry
-  n319["revisit_tea_station<br/>Workers’ tea station: The mended cup is back in the washing bow…"]:::entry
+  n294["remember_duck_nest<br/>Set flags"]
+  n295["remember_runoff_marker<br/>Set flags"]
+  n296["remember_tea_station<br/>Set flags"]
+  n310["revisit_duck_nest<br/>Turtle duck nest: The ducklings are asleep in the sock. Their m…"]:::entry
+  n311["revisit_runoff_marker<br/>Runoff measuring stone: Another thin layer of silt has caught a…"]:::entry
+  n312["revisit_tea_station<br/>Workers’ tea station: The mended cup is back in the washing bow…"]:::entry
   n17["cutting_explore — exit to world / part 1"]:::external
   n18["cutting_return_explore — exit to return / part 1"]:::external
   n44["forest_explore — exit to world / part 1"]:::external
   n47["forest_return_explore — exit to return / part 1"]:::external
-  n34 -->|"Next"| n301
-  n35 -->|"Next"| n302
-  n36 -->|"Next"| n303
+  n34 -->|"Next"| n294
+  n35 -->|"Next"| n295
+  n36 -->|"Next"| n296
   n68 -->|"act1_complete: truthy (you have act1 complete)"| n47
   n68 -->|"act1_complete: falsy (you have not act1 complete)"| n44
   n69 -->|"act1_complete: truthy (you have act1 complete)"| n47
   n69 -->|"act1_complete: falsy (you have not act1 complete)"| n44
   n70 -->|"act1_complete: truthy (you have act1 complete)"| n18
   n70 -->|"act1_complete: falsy (you have not act1 complete)"| n17
-  n301 -->|"set: world.discovered.duck_nest=true"| n68
-  n302 -->|"set: world.discovered.runoff_marker=true"| n69
-  n303 -->|"set: world.discovered.tea_station=true"| n70
-  n317 -->|"Next"| n68
-  n318 -->|"Next"| n69
-  n319 -->|"Next"| n70
+  n294 -->|"set: world.discovered.duck_nest=true"| n68
+  n295 -->|"set: world.discovered.runoff_marker=true"| n69
+  n296 -->|"set: world.discovered.tea_station=true"| n70
+  n310 -->|"Next"| n68
+  n311 -->|"Next"| n69
+  n312 -->|"Next"| n70
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

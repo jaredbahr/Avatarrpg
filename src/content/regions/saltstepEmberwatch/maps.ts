@@ -64,14 +64,8 @@ const SPRITE = {
 } as const;
 
 const ARRIVED = { kind: 'visited', nodeId: 'mq02_saltstep_arrival' } as const;
-// Either way in to Scene 2.2: the bowl-seller's own chain, or the one that ends on Tenzo's exchange.
-const BOWL_CARRIED = {
-  kind: 'any',
-  of: [
-    { kind: 'visited', nodeId: 'mq02_bowl_seller' },
-    { kind: 'visited', nodeId: 'mq02_bowl_seller_tenzo' },
-  ],
-} as const;
+// The party has heard Scene 2.2 at the bowl stall.
+const BOWL_CARRIED = { kind: 'visited', nodeId: 'mq02_bowl_seller' } as const;
 const VOTED = {
   kind: 'any',
   of: [
@@ -164,10 +158,6 @@ export const SALTSTEP_MARKET: MapDef = {
       pos: { x: 5, y: 4 },
       sprite: SPRITE.bowlSeller,
       node: 'mq02_bowl_seller',
-      // Tenzo's moment (Scene 2.2): the same conversation, ending on his exchange with her.
-      routes: [
-        { when: { kind: 'partyHas', characterId: 'tenzo' }, node: 'mq02_bowl_seller_tenzo' },
-      ],
     },
     {
       id: 'mq02_tavi',
@@ -197,7 +187,6 @@ export const SALTSTEP_MARKET: MapDef = {
       sprite: SPRITE.crates,
       node: 'mq02_miri_crates',
       // Kaya's opening (the slice's first exchange only): the crates are her sister's shop's.
-      routes: [{ when: { kind: 'partyHas', characterId: 'kaya' }, node: 'mq02_miri_crates_kaya' }],
     },
     {
       // Scene 2.3 opens at the customs stall, once the party is carrying the second bowl (2.4

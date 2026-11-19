@@ -15,4 +15,18 @@
  */
 import type { IdAliases } from '../core/save/aliases';
 
-export const ID_ALIASES: IdAliases = {};
+export const ID_ALIASES: IdAliases = {
+  story: {
+    // MQ-02's hero chains folded onto the plain ones; the hero's lines now follow a `branchWhen`.
+    mq02_coast_road_jinu: 'mq02_coast_road',
+    mq02_coast_dorin_jinu: 'mq02_coast_dorin',
+    mq02_coast_receipt_jinu: 'mq02_coast_receipt',
+    mq02_coast_dorin_receipt_jinu: 'mq02_coast_dorin_receipt',
+    mq02_bowl_seller_tenzo: 'mq02_bowl_seller',
+    mq02_bowl_set_down_tenzo: 'mq02_bowl_set_down',
+    mq02_bowl_custom_tenzo: 'mq02_bowl_custom',
+    mq02_bowl_who_tenzo: 'mq02_bowl_who',
+    mq02_bowl_pump_woman_tenzo: 'mq02_bowl_pump_woman',
+    mq02_miri_crates_kaya: 'mq02_miri_crates',
+  },
+};
