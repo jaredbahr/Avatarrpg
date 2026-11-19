@@ -1778,7 +1778,7 @@ What changed in this file; the reasons and the proposals not applied are in the 
    Yenna's copy of memorandum fourteen has a source on both approaches (Neri gave her the shelf; it was her
    Tuesday). Fenn is seen to walk to the pool. The Keeper has kept the Halt's and the heights' echoes too,
    when those spokes came first. Hesra lost the pair of boots on both Act I branches (the loss branch had her
-   keep one), which the shipped welcome-home line does not yet say: see the report.
+   keep one), and the shipped welcome-home line now says so (owner, 2026-11-19).
 2. **Lines:** Veyra's reply to memorandum fourteen now defers the question instead of dismissing it ("We
    will find out why they are steady after the spring tide"), and Wen answers that. Auntie Silt's frog.
    Nima's reason for taking the rope is a real limit. Bo at the handcart. Four long turns split.

@@ -239,7 +239,8 @@ export const RETURN_STORY: readonly StoryNode[] = [
   /*
    * The supper, and the boot (saga outline, decision 23; story bible C-30): a
    * worker's lost boot comes back to a Ba Dan doorstep with a river shell in
-   * it, and nobody explains it. Latch returns the other boot in MQ-07. It is
+   * it, and nobody explains it. She lost the pair (owner, 2026-11-19): one
+   * comes back tonight and Latch returns the other in MQ-07. It is
    * Hesra's, which plants her outsider's background in passing (C-33): she is
    * a hill-farm girl lodging at the mason's yard as an apprentice. Pella's
    * lost shoe (`pella_home`) is a different story and stays one.
@@ -253,7 +254,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
       'Lamps come on along the canal. Gao carries out a pot of soup big enough to sit in, and the whole village squeezes around Mira’s table.',
       'At the end of the bench, Bo-shan has fallen asleep sitting up. Pella slides his bowl out from under his chin and keeps hold of his sleeve.',
       'Late that night, Hesra finds a boot on the step of the mason’s yard, where she lodges.',
-      'It is the one she lost in the galleries, hobnailed the hill-farm way. She walked home in the other boot and a sock.',
+      'It is one of the pair she lost in the galleries, hobnailed the hill-farm way. She walked home in sacking.',
       'She tips it up. A river shell drops into her palm, still wet, with sand in its ridges.',
       'She looks up the lane and down it. Then she sets the shell on the windowsill and the boot by the door.',
     ],
