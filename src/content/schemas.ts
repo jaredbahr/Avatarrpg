@@ -99,6 +99,7 @@ const statusId = z.enum([
   'chiBlocked',
   'guarded',
   'inspired',
+  'teetering',
 ]);
 const terrainId = z.enum([
   'grass',

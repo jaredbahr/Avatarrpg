@@ -177,6 +177,8 @@ function handleMove(
   const moved = draft.unit(unitId);
   if (moved) draft.replace({ ...moved, move: Math.max(0, moved.move - cost) });
   draft.emit({ type: 'unitMoved', unitId, path: walked, cost });
+  // Stepping off a bout's edge clears a teeter (ADR 0122 §2a).
+  if (walked.length > 0) draft.cleanseFrom(unitId, ['teetering']);
 
   finishAction(draft, unitId);
   return finish(content, state, draft.toBattle(), rng, draft.events);

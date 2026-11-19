@@ -176,6 +176,16 @@ export const STATUSES: readonly StatusDef[] = [
     defaultDuration: 2,
     modifiers: { power: 2, accuracy: 10, focus: 5 },
   }),
+  status({
+    // Sparring bouts only (ADR 0122 §2a): never applied by an ability, only by a shove that
+    // would have carried the fighter into the water. Walking clears it.
+    id: 'teetering',
+    name: 'Teetering',
+    description:
+      'On the edge of the platform. The next shove toward the water puts them in and out of the bout. Walking clears it.',
+    kind: 'debuff',
+    defaultDuration: 2,
+  }),
 ];
 
 export const STATUS_BY_ID: ReadonlyMap<StatusId, StatusDef> = new Map(
