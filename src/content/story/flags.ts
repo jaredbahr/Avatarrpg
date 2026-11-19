@@ -201,6 +201,11 @@ export const LATE_SCENES: Readonly<Record<string, OldSavesAnswer>> = {
     answer: 'open',
     why: 'Read only by Tolma’s own once-only gate in the Cutting. A side fight no release had, so no older save has had it, and it waits on the road for any save past Act I.',
   },
+  sf22_rules: {
+    upTo: '2026-11-19-roads',
+    answer: 'open',
+    why: 'Read only by the ferry apprentices’ own once-only gate in the market. A side fight no release had, so no older save has had it, and it waits by the ferry landing.',
+  },
   look_hesra_boot: {
     upTo: '2026-11-15-demo',
     answer: 'open',

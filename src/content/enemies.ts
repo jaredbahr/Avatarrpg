@@ -240,6 +240,38 @@ export const ENEMIES: readonly EnemyDef[] = [
     description:
       'One of Sabi’s crew, laid off when the line was finished. Not sturdy, but Rush closes four tiles, though not every turn.',
   },
+  /*
+   * SF-2.2, the tipping platform (ADR 0122): sparring partners, not enemies. Both carry Shove, the
+   * whole point of a bout, and pay their XP through the encounter's `xpPerHead`, so their own `xp`
+   * is a token that never pays. Stats are first guesses at level-1 figures; names are the
+   * script's; the descriptions wait for the writing pass.
+   */
+  {
+    id: 'ferry_apprentice',
+    name: 'Ferry Apprentice',
+    shortName: 'Apprentice',
+    element: 'nonbender',
+    size: 1,
+    stats: { maxHp: 24, maxAp: 4, maxMove: 4, power: 4, defense: 1, speed: 7, focus: 5 },
+    abilities: ['shove', 'club_swing'],
+    ai: 'aggressive',
+    xp: 1,
+    sprite: 'unit.enemy.rigger',
+    description: 'PLACEHOLDER (story): one of Tavi’s ferry apprentices, quick on a moving deck.',
+  },
+  {
+    id: 'channel_hand',
+    name: 'Channel Hand',
+    shortName: 'Hand',
+    element: 'nonbender',
+    size: 1,
+    stats: { maxHp: 34, maxAp: 4, maxMove: 3, power: 5, defense: 2, speed: 5, focus: 5 },
+    abilities: ['shove', 'club_swing'],
+    ai: 'aggressive',
+    xp: 1,
+    sprite: 'unit.enemy.freighthandler',
+    description: 'PLACEHOLDER (story): a channel hand, heavy and hard to move.',
+  },
   {
     /*
      * Veyra (AN-01) as a guest ally (ADR 0116), built from an enemy record because a character
