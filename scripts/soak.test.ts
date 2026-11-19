@@ -88,9 +88,10 @@ function waitingFixture(): ContentIndex {
 
 /**
  * Encounter, roster and table-size cells in the shipped game: Act I's 48, plus RG-02's two fights
- * (the winch and SF-2.1, one roster each) at six table sizes.
+ * (the winch and SF-2.1) and Act I's two side fights (SF-1.1, SF-1.2), one roster each, at six
+ * table sizes.
  */
-const CELLS = 60;
+const CELLS = 72;
 
 describe('combat soak report', () => {
   it('defaults to 200 attempts for every pinned roster and size with balance parties and seeds', () => {
@@ -134,6 +135,8 @@ describe('combat soak report', () => {
         ['enc_ambush', null],
         ['enc_grumbler', null],
         ['enc_grumbler', 'jins_people'],
+        ['enc_sf11_the_bend', null],
+        ['enc_sf12_edge_on', null],
         ['enc_mq02_winch', null],
         ['enc_sf21_wet_ground', null],
       ]);

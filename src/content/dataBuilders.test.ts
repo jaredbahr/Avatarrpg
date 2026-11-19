@@ -181,7 +181,6 @@ describe('content builders preserve their authored values', () => {
         ['bandit_thug', 17, 3],
         ['bandit_thug', 17, 8],
         ['bandit_bruiser', 18, 5],
-        ['bandit_thug', 14, 8],
       ].map(([enemyId, x, y]) => ({ enemyId, pos: { x, y } })),
     );
   });

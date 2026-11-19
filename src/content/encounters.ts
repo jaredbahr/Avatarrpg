@@ -317,11 +317,11 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     allies: [],
     conditionalEnemies: [],
     baselinePartySize: 3,
-    reinforcements: [
-      at(17, 8, 'bandit_thug'),
-      at(18, 5, 'bandit_bruiser'),
-      at(14, 8, 'bandit_thug'),
-    ],
+    /*
+     * Two, not three: a table of six meets seven, one fewer than the Cutting's ambush, the largest
+     * roster in the game, which `scripts/perf/core-bench.ts` measures and freezes.
+     */
+    reinforcements: [at(17, 8, 'bandit_thug'), at(18, 5, 'bandit_bruiser')],
     variants: [],
     intro: 'PLACEHOLDER (story): the fight intro at Tolma’s slab across the Cutting.',
     tip: 'PLACEHOLDER (story): a fight tip for a table of 7-to-12-year-olds (one earthbender behind three bruisers).',

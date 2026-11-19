@@ -295,7 +295,7 @@ Names are shown in authored content order within each entry; sections and record
 - Conditional enemies: —
 - Variants: —
 - Allies: —
-- Reinforcements: Quarry Worker; Quarry Hauler; Quarry Worker
+- Reinforcements: Quarry Worker; Quarry Hauler
 
 ### The Cutting
 
