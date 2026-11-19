@@ -80,7 +80,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
   test(`${renderer}: shipped scenes boot top-down and remain playable`, async ({ page }) => {
     const errors: string[] = [];
     page.on('console', (message) => {
-      if (message.type() === 'error') errors.push(message.text());
+      if (message.type() === 'error') errors.push(`${message.text()} ${message.location().url}`);
     });
     page.on('pageerror', (error) => errors.push(error.message));
     const loaded = await forestRoad(page, renderer);
@@ -105,7 +105,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       const pageErrors: string[] = [];
       let responses = 0;
       page.on('console', (message) => {
-        if (message.type() === 'error') errors.push(message.text());
+        if (message.type() === 'error') errors.push(`${message.text()} ${message.location().url}`);
       });
       page.on('pageerror', (error) => pageErrors.push(error.message));
       const malformed = structuredClone(shipped);

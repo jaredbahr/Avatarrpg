@@ -24,7 +24,7 @@ const FOLDERS: Readonly<Record<string, string>> = {
 function collectErrors(page: Page): string[] {
   const errors: string[] = [];
   page.on('console', (message) => {
-    if (message.type() === 'error') errors.push(message.text());
+    if (message.type() === 'error') errors.push(`${message.text()} ${message.location().url}`);
   });
   page.on('pageerror', (error) => errors.push(error.message));
   return errors;

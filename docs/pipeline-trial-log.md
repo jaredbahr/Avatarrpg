@@ -249,16 +249,17 @@ What was written, from or in agreement with the script (`docs/story/scripts/act2
   Each is the scene's chain again under its own ids, entered by an NPC route on `partyHas` and ending on the hero's
   lines (the way Kaya's crates were wired). That is 13 extra node ids for four hero lines; friction 3's `branch` on a
   `Condition` would have needed four.
+- **Sura and Wen (2.4) and Riko (2.6)**, once friction 3 was answered by `branchWhen` (ADR 0118): a `branchWhen` on
+  `partyHas` before Veyra's "Odd." (Sura, after either driver's echo), after it (Wen) and after Veyra leaves (Riko).
+  Sura's culvert line is a variant on `visited: cutting_culvert`. Three pass-through nodes and nine lines, no copies.
 
 Still open, and why:
 
 - **"The party" speaker label.** The owner decided `Party:` lines are tappable choice text with no speaker. A
   dialogue node must name a speaker and a choice needs two options (friction 2), so the four `Party:` lines keep the
   narrator-framed "The party" label until a one-option tap exists.
-- **Sura and Wen (2.4) and Riko (2.6).** Their lines sit in the middle of the one chain that runs from the customs
-  stall through the choice, the fight and the vote. No NPC route starts there, and copying that whole chain for
-  every mix of the three is not sensible. They wait for friction 3 (a `branch`, or a dialogue node, that takes a
-  `Condition`).
+- **Tenzo's and Jinu's copied chains.** They still run as whole copies under their own ids. Folding them onto one
+  chain with a `branchWhen` renames ids a save can hold, so it needs `idAliases` rows and waits for its own change.
 
 ## Art production, by batch
 

@@ -58,3 +58,10 @@ own, and carry a separate one-time capture on it: the same policy (three warmups
 a batch), the ceiling exactly four times the calibration median, recorded as a second supplemental calibration in
 `core-bench-baseline.json` with its source commit, tree, report, harness and driver hashes and the 24 x 16 limits it
 replaces. The eleven original cases and their provenance are unchanged.
+
+## Amendment: Ba Dan's back row, 32 x 23 (2026-11-19)
+
+Ba Dan grew three rows south for its back row (owner, 2026-11-19; the place brief). Its two cases now measure the
+32 x 23 board against the 32 x 20 calibration above, not a new capture: the board is about 15 percent larger, well
+inside the ceiling of four times the calibration median, and the bench test pins the new size. Recalibrate if a case
+comes near its ceiling.

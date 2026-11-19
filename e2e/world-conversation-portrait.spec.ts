@@ -1,5 +1,12 @@
 import { expect, test, type Page } from '@playwright/test';
-import { enterNode, resetStorage, setLargeText, startGame, waitForIdle } from './helpers';
+import {
+  enterNode,
+  resetStorage,
+  setLargeText,
+  startGame,
+  waitForIdle,
+  walkBeside,
+} from './helpers';
 
 test.use({ serviceWorkers: 'block' });
 
@@ -13,7 +20,7 @@ test.use({ serviceWorkers: 'block' });
 async function openGao(page: Page): Promise<void> {
   await enterNode(page, 'village_explore');
   await waitForIdle(page);
-  await page.evaluate(() => window.fnt!.app.dispatch({ type: 'walkTo', pos: { x: 10, y: 4 } }));
+  await walkBeside(page, 'shopkeeper_gao');
   await waitForIdle(page);
   const talk = page.getByRole('button', { name: /^Talk/ });
   await expect(talk).toContainText('Gao');

@@ -100,8 +100,8 @@ suite('the conversation pin', () => {
   it('pins nobody when an unbound NpcDef opens a conversation', () => {
     // The riverside path sign is a plain NpcDef: its tap opens a dialogue,
     // but there is no resident to hold in place.
-    const state = { ...besideMira(), location: { mapId: 'ba_dan_village', pos: { x: 19, y: 18 } } };
-    const result = apply(CONTENT, state, { type: 'walkTo', pos: { x: 20, y: 18 } });
+    const state = { ...besideMira(), location: { mapId: 'ba_dan_village', pos: { x: 19, y: 21 } } };
+    const result = apply(CONTENT, state, { type: 'walkTo', pos: { x: 20, y: 21 } });
     expect(result.state.screen).toBe('dialogue');
     expect(result.state.story.nodeId).toBe('riverside_invitation');
     expect(result.state.world.talk).toBeNull();

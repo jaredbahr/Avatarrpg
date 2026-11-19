@@ -530,3 +530,33 @@ export async function useOrthographicBackdropFixture(page: Page, mapId: string):
     });
   }, mapId);
 }
+
+/**
+ * Walks the party to a clear cell beside a resident, wherever the board puts them (Ba Dan's
+ * rebuild moved most of them, #875), so a spec can Talk as a player would.
+ */
+export async function walkBeside(page: Page, npcId: string): Promise<void> {
+  await page.evaluate((npcId) => {
+    const app = window.fnt!.app,
+      state = app.state!,
+      map = app.content.maps.get(state.location.mapId)!;
+    const at = app.residents.figures().find((figure) => figure.npcId === npcId)?.pos;
+    if (!at) throw new Error(`${npcId} is not on the map`);
+    const pos = [
+      { x: at.x, y: at.y + 1 },
+      { x: at.x - 1, y: at.y },
+      { x: at.x + 1, y: at.y },
+      { x: at.x, y: at.y - 1 },
+    ].find((cell) => {
+      const symbol = map.rows[cell.y]?.[cell.x];
+      return (
+        symbol !== undefined &&
+        !map.legend[symbol]?.blocked &&
+        !app.residents.figures().some((w) => w.pos?.x === cell.x && w.pos?.y === cell.y)
+      );
+    });
+    if (!pos) throw new Error(`${npcId} has no clear neighbour`);
+    app.dispatch({ type: 'walkTo', pos });
+  }, npcId);
+  await waitForIdle(page);
+}

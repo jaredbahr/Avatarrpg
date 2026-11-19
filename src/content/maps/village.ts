@@ -26,7 +26,7 @@ export const BA_DAN_VILLAGE: MapDef = {
   name: 'Ba Dan Village',
   kind: 'explore',
   width: 32,
-  height: 20,
+  height: 23,
   ambience: 'village',
   // The courtyard's open air, with a pond tone that swells near the canal's water.
   soundscape: 'courtyard',
@@ -57,8 +57,9 @@ export const BA_DAN_VILLAGE: MapDef = {
    * stands at the crossing of the routes: the east road comes in through the gate gap in the east wall (x 29,
    * rows 9-10) past Gao's shop (x 19-22, rows 4-6, storeroom 23-24) to the square, where Mira's table is the
    * two `l` cells (13..14, 9), seated from the rest spot below it at (13,10). The canal runs along rows 12-13
-   * west of x 16 and rows 13-14 east of it, with the bridge at (13..14, 12..13), and leaves the board east under the wall. Past it lie the quarry houses
-   * and the river path (mouth at (18..19, 19)). The terrace `^` under the north cliff is reached by the steps
+   * west of x 16 and rows 13-14 east of it, with the bridge at (13..14, 12..13), and leaves the board east under the wall. Past it lie the quarry houses,
+   * a back lane on row 18 with a back row of two houses on rows 19-20 facing it (owner, 2026-11-19), and the river
+   * path running down between them to its mouth at (18..19, 22). The terrace `^` under the north cliff is reached by the steps
    * `S` at (9,4); the mason's yard (blocks at (5,6), (6,6), (5,8)) lies west of the square; the garden fence
    * `F` has its side gate gap at (25,3). The west road ends at the ford, `W` at (0,9), flooded this season;
    * a future west region opens there behind a `Condition`. Every blocked cell comes from the brief's plan.
@@ -82,7 +83,10 @@ export const BA_DAN_VILLAGE: MapDef = {
     'TT,,,,,,BBBB,................#TT',
     'TT,BBB,,BBBB,,,BBB..BBBB,,BB,#TT',
     'TT,BBB,,BBBB,,,BBB..BBBB,,BB,#TT',
-    'TTTT,,,,,,,,,,,,,,..,,,B,,,,T#TT',
+    'TT,,,,,,,,,,,,,,,,..,,,B,,,,T#TT',
+    'TT,,,,,,BBB,,BBB,,..,,,,,,,,T#TT',
+    'TT,,,,,,BBB,,BBB,,..,,,,,,,,T#TT',
+    'TTTT,,,,,,,,,,,,,,..,,,,,,,TTTTT',
     'TTTTTTTTTTTTTTTTTT..TTTTTTTTTTTT',
   ],
   partySpawns: [{ x: 11, y: 10 }],
@@ -95,7 +99,8 @@ export const BA_DAN_VILLAGE: MapDef = {
     {
       id: 'riverside_sign',
       name: 'Riverside path',
-      pos: { x: 20, y: 18 },
+      // Beside the river path one cell short of its mouth on the south rim.
+      pos: { x: 20, y: 21 },
       // A marker post, not Pella's figure: she is a resident placed elsewhere.
       sprite: 'world.route_sign',
       interaction: 'route-sign',

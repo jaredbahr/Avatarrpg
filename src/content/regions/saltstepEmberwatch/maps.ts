@@ -135,8 +135,8 @@ export const SALTSTEP_MARKET: MapDef = {
     {
       pos: { x: 0, y: 5 },
       toMapId: 'ba_dan_village',
-      // Beside the coast-road sign on Ba Dan's south lawn.
-      toPos: { x: 13, y: 17 },
+      // Beside the coast-road sign on Ba Dan's south lawn, the cell north of it.
+      toPos: { x: 12, y: 20 },
       label: 'Coast road → Ba Dan Village',
       direction: 'west',
       area: mouth(0, [5, 6]),
