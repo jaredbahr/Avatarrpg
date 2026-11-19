@@ -4,7 +4,7 @@
 
 Read this before drafting a scene that depends on something that happened earlier. It is generated from the content, the flag registry (`src/content/story/flags.ts`) and the release fixtures (`src/core/save/fixtures/releases/`); ADR 0112 has the rules. Regenerate with `npm run docs:saves`.
 
-Content is at history revision **1**. Releases frozen so far: `2026-11-08-golden-v5` (2026-11-08), `2026-11-15-demo` (2026-11-15).
+Content is at history revision **1**. Releases frozen so far: `2026-11-08-golden-v5` (2026-11-08), `2026-11-15-demo` (2026-11-15), `2026-11-19-roads` (2026-11-19).
 
 ## Before you read the past
 
@@ -201,7 +201,7 @@ Frozen 2026-11-08 from commit `982e5e65`, history revision 0. The story as the c
 | flag `sq01.cabbages`               | `story:sq01_choice`                                           | `map:ba_dan_village`, `map:forest_road`, `story:cart_departure`, `story:demo_complete` and 3 more            | **Stays unset.** The side story is offered before the rescue. A save already past it answers as a player who walked by, and every reader has a line for that.                                              |
 | flag `sq02.gate`                   | `story:sq02_choice`                                           | `map:ba_dan_village`, `story:demo_complete`, `story:sq02_after`, `story:sq02_return` and 1 more              | **Stays unset.** The side story is offered before the rescue. A save already past it answers as a player who walked by, and every reader has a line for that.                                              |
 | flag `sq03.ledger`                 | `story:sq03_choice`                                           | `map:ba_dan_village`, `story:demo_complete`, `story:sq03_jar`, `story:sq03_jar_label`                        | **Stays unset.** The side story is offered before the rescue. A save already past it answers as a player who walked by, and every reader has a line for that.                                              |
-| scene `cutting_culvert`            | `story:cutting_culvert`                                       | `map:ambush_road`                                                                                            | **Still open.** The culvert is a crossing in the Cutting that waits until it has been seen, and the Cutting stays open.                                                                                    |
+| scene `cutting_culvert`            | `story:cutting_culvert`                                       | `map:ambush_road`, `story:mq02_sura_under_boards`                                                            | **Still open.** The culvert is a crossing in the Cutting that waits until it has been seen, and the Cutting stays open.                                                                                    |
 | scene `demo_complete`              | `story:demo_complete`                                         | `follower:follower.ruon`, `map:ba_dan_village`, `resident:lw.npc.amri`, `resident:lw.npc.bo_shan` and 1 more | **Still open.** The welcome home waits at the village gate for any save that has walked home and not yet seen it.                                                                                          |
 | scene `gao_lost`                   | `story:gao_lost`                                              | `map:ba_dan_village`                                                                                         | **Still open.** Read only by its own once-only gate on Gao after a Driller loss. A release save that lost sat on the terminal card, so it has not heard it and hears it first when it carries on.          |
 | scene `look_hesra_boot`            | `story:look_hesra_boot`                                       | `journal:hesra_boot`                                                                                         | **Still open.** Read only by the journal note for the boot by the mason’s yard door. The boot stays there after the supper, so an older save looks at it and gets the note then.                           |
@@ -218,6 +218,12 @@ Frozen 2026-11-15 from commit `19340085`, history revision 1. Frozen with ADR 01
 | ----------------------- | ----------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | scene `gao_lost`        | `story:gao_lost`        | `map:ba_dan_village` | **Still open.** Read only by its own once-only gate on Gao after a Driller loss. A release save that lost sat on the terminal card, so it has not heard it and hears it first when it carries on. |
 | scene `look_hesra_boot` | `story:look_hesra_boot` | `journal:hesra_boot` | **Still open.** Read only by the journal note for the boot by the mason’s yard door. The boot stays there after the supper, so an older save looks at it and gets the note then.                  |
+
+### Release `2026-11-19-roads`
+
+Frozen 2026-11-19 from commit `3b6897bd`, history revision 1. A test fixture, like 2026-11-15-demo: the first release in snapshot format 2 (roads recorded, options named by where they lead), frozen with #813 so a road rerouted from here on is asked about.
+
+Nothing has been added under this release.
 
 ## Backfill rules
 

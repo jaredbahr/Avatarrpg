@@ -44,7 +44,7 @@ import type { IdAliases, SavedIdKind } from '../../core/save/aliases';
 import type { Condition, FlagValue, GameState } from '../../core/types';
 import { STANDING_PREFIX } from '../../core/story/conditions';
 import type { FlagUse } from './flagUsage';
-import { keyMatches, registryEntryFor } from './flagUsage';
+import { itemNames, keyMatches, registryEntryFor } from './flagUsage';
 import type { FlagDef, FlagType, OldSavesAnswer } from './flags';
 
 /** One place a flag is written. */
@@ -60,10 +60,16 @@ export interface WriteSite {
   readonly how: 'entry' | 'option' | 'app';
   /**
    * Every write the site makes, sorted: where inside the record and what
-   * (`set=true`, `options[1].setFlags="crew"`, `options[0].adjust=1`). App
-   * sites list none: the registry names the module, not the line.
+   * (`set=true`, `options[→gate_talked].setFlags="crew"`, `options[→home].adjust=1`). An
+   * option is named by where it leads, so inserting one leaves the others alone. App sites
+   * list none: the registry names the module, not the line.
    */
   readonly values: readonly string[];
+  /**
+   * The same writes with each option named by its position (`options[1].setFlags="crew"`),
+   * only where that differs: how the releases frozen before option identity recorded them.
+   */
+  readonly positional?: readonly string[];
 }
 
 /** The parts of the story a save's history depends on, as content has them today. */
@@ -73,10 +79,23 @@ export interface StoryHistory {
   /** Region id to every area it owns (story nodes, maps, encounters, residents). */
   readonly regions: Readonly<Record<string, readonly string[]>>;
   readonly writes: readonly WriteSite[];
+  /**
+   * Area to every road it opens into a story scene, sorted (`next=gate_talked_through`,
+   * `options[→home].next=home`, `npcs[2].node=mira_intro`). A road rerouted to a scene that
+   * already existed changes no write site, so only this shows it (#813).
+   */
+  readonly edges?: Readonly<Record<string, readonly string[]>>;
 }
+
+/**
+ * The snapshot format. Absent (1): options named by position, no edges. 2: options named by
+ * where they lead (`WriteSite.values`), and `edges` recorded.
+ */
+export const SNAPSHOT_FORMAT = 2;
 
 /** `StoryHistory` as one release shipped it, frozen beside that release's saves. */
 export interface HistorySnapshot extends StoryHistory {
+  readonly format?: number;
   readonly release: string;
   /** The date the release was frozen, and the commit its content came from. */
   readonly frozen: string;
@@ -116,7 +135,10 @@ export function currentArea(aliases: IdAliases, area: string): string {
 
 /** Every write site in a list of flag uses. */
 export function writeSites(uses: readonly FlagUse[]): WriteSite[] {
-  const sites = new Map<string, { site: WriteSite; values: Set<string> }>();
+  const sites = new Map<
+    string,
+    { site: WriteSite; values: Set<string>; positional: Set<string> }
+  >();
   for (const use of uses) {
     if (use.role !== 'write') continue;
     const id = `${use.key}\n${use.area}`;
@@ -128,18 +150,84 @@ export function writeSites(uses: readonly FlagUse[]): WriteSite[] {
     const held = sites.get(id) ?? {
       site: { key: use.key, area: use.area, how, values: [] },
       values: new Set<string>(),
+      positional: new Set<string>(),
     };
-    // Each write keeps its place inside the record (`options[1].setFlags=true`), so a flag added
-    // to one more option of a choice changes the site.
-    if (how !== 'app')
-      held.values.add(`${use.at}=${use.value === undefined ? '' : JSON.stringify(use.value)}`);
+    // Each write keeps its place inside the record (`options[→home].setFlags=true`), so a flag
+    // added to one more option of a choice changes the site.
+    if (how !== 'app') {
+      const written = `=${use.value === undefined ? '' : JSON.stringify(use.value)}`;
+      held.values.add(`${use.at}${written}`);
+      held.positional.add(`${use.positionalAt ?? use.at}${written}`);
+    }
     // A node is one kind, so a site cannot be both; if it ever is, `entry` is the stronger claim.
     if (how === 'entry' && held.site.how !== 'entry') held.site = { ...held.site, how };
     sites.set(id, held);
   }
   return [...sites.values()]
-    .map(({ site, values }) => ({ ...site, values: [...values].sort() }))
+    .map(({ site, values, positional }) => {
+      const named = [...values].sort();
+      const placed = [...positional].sort();
+      return {
+        ...site,
+        values: named,
+        ...(placed.join() !== named.join() && { positional: placed }),
+      };
+    })
     .sort((a, b) => a.key.localeCompare(b.key) || a.area.localeCompare(b.area));
+}
+
+/**
+ * The fields that lead somewhere: a scene's `next` (and each option's), a battle's `onDefeat`,
+ * the two arms of a branch, and the `node` an NPC, a route or a trigger opens. Other fields can
+ * hold a scene's id by coincidence (a flag key, an NPC id, a camera target) and are no road.
+ */
+const ROAD_FIELDS: ReadonlySet<string> = new Set([
+  'next',
+  'onDefeat',
+  'ifSet',
+  'ifUnset',
+  'ifTrue',
+  'ifFalse',
+  'node',
+]);
+
+/**
+ * Every road each record opens into a story scene: a road field (`ROAD_FIELDS`) naming a story
+ * node. Options are named by where they lead, as in `WriteSite.values`.
+ */
+export function storyEdges(
+  sources: readonly { readonly name: string; readonly records: readonly unknown[] }[],
+  nodes: ReadonlySet<string>,
+): Record<string, string[]> {
+  const out: Record<string, string[]> = {};
+  for (const source of sources) {
+    source.records.forEach((record, index) => {
+      const id = (record as { id?: unknown } | null)?.id;
+      const area = `${source.name}:${typeof id === 'string' ? id : String(index)}`;
+      const edges = new Set<string>();
+      const seen = new Set<unknown>();
+      const walk = (value: unknown, path: string): void => {
+        if (typeof value !== 'object' || value === null || seen.has(value)) return;
+        seen.add(value);
+        if (Array.isArray(value)) {
+          const names = itemNames(value);
+          value.forEach((item, at) => walk(item, `${path}[${names[at] ?? at}]`));
+          return;
+        }
+        const node = value as Record<string, unknown>;
+        if (node.kind === 'visited') return;
+        for (const [key, item] of Object.entries(node)) {
+          const where = path ? `${path}.${key}` : key;
+          if (typeof item === 'string') {
+            if (ROAD_FIELDS.has(key) && nodes.has(item)) edges.add(`${where}=${item}`);
+          } else walk(item, where);
+        }
+      };
+      walk(record, '');
+      if (edges.size > 0) out[area] = [...edges].sort();
+    });
+  }
+  return out;
 }
 
 /** Flag key to the areas that read it. */
@@ -243,6 +331,8 @@ export interface HistoryInput {
   readonly visitedReaders: ReadonlyMap<string, readonly string[]>;
   /** How old saves answer for a scene added under them (`LATE_SCENES`). */
   readonly scenes: Readonly<Record<string, OldSavesAnswer>>;
+  /** How old saves answer for a road opened under them into an old scene (`LATE_EDGES`). */
+  readonly edges: Readonly<Record<string, OldSavesAnswer>>;
   /** Every release snapshot, oldest first. */
   readonly releases: readonly HistorySnapshot[];
   readonly registry: readonly FlagDef[];
@@ -265,6 +355,9 @@ export function lateWrites(input: HistoryInput): LateWrite[] {
   const out: LateWrite[] = [];
   for (const release of input.releases) {
     const shipped = new Map<string, WriteSite>();
+    // A release frozen before option identity named options by position: compare in that form.
+    const valuesOf = (site: WriteSite): readonly string[] =>
+      (release.format ?? 1) >= 2 ? site.values : (site.positional ?? site.values);
     for (const site of release.writes) {
       const key = resolveAlias(input.aliases, 'flags', site.key);
       shipped.set(`${key}\n${currentArea(input.aliases, site.area)}`, site);
@@ -278,7 +371,7 @@ export function lateWrites(input: HistoryInput): LateWrite[] {
       const before = shipped.get(`${site.key}\n${site.area}`);
       if (!before) {
         out.push({ release: release.release, site, change: 'new', readers });
-      } else if (before.values.join() !== site.values.join()) {
+      } else if (before.values.join() !== valuesOf(site).join()) {
         out.push({
           release: release.release,
           site,
@@ -312,6 +405,50 @@ export function lateScenes(input: HistoryInput): LateScene[] {
   return out;
 }
 
+/**
+ * A road a release did not have, opened from an area it did have into a scene it also had.
+ * A save of that release went the old way, so it never passed that scene from here: if the
+ * scene (or anything after it) records something a later scene reads, the save lacks it, and
+ * no write site has changed. A road into a new scene needs nothing here: whatever the new
+ * scene records is a new write site, which `lateWrites` asks about.
+ */
+export interface LateEdge {
+  readonly release: string;
+  readonly area: string;
+  readonly edge: string;
+}
+
+export function lateEdges(input: HistoryInput): LateEdge[] {
+  const out: LateEdge[] = [];
+  const nowEdges = input.now.edges ?? {};
+  for (const release of input.releases) {
+    if (!release.edges) continue; // frozen before edges were recorded
+    const shipped = shippedAreas(release, input.aliases);
+    const before = new Map<string, Set<string>>();
+    for (const [area, edges] of Object.entries(release.edges))
+      before.set(
+        currentArea(input.aliases, area),
+        new Set(
+          edges.map((edge) => {
+            const at = edge.lastIndexOf('=');
+            return `${edge.slice(0, at)}=${resolveAlias(input.aliases, 'story', edge.slice(at + 1))}`;
+          }),
+        ),
+      );
+    for (const [area, edges] of Object.entries(nowEdges)) {
+      if (!shipped.has(area)) continue; // a new area: its roads into old scenes are new writes' business
+      const had = before.get(area) ?? new Set<string>();
+      for (const edge of edges) {
+        if (had.has(edge)) continue;
+        const target = edge.slice(edge.lastIndexOf('=') + 1);
+        if (!shipped.has(`story:${target}`)) continue;
+        out.push({ release: release.release, area, edge });
+      }
+    }
+  }
+  return out;
+}
+
 function describeLate(late: LateWrite): string {
   const what =
     late.change === 'new'
@@ -327,6 +464,10 @@ function declareFlag(release: string, area: string): string {
 
 function declareScene(release: string): string {
   return `Say how that release's saves answer in LATE_SCENES (src/content/story/flags.ts): { upTo: '${release}', answer: 'backfill' | 'open' | 'unset', why: '...' }.`;
+}
+
+function declareEdge(release: string, area: string, edge: string): string {
+  return `Say how that release's saves answer in LATE_EDGES (src/content/story/flags.ts): '${area}': { upTo: '${release}', sites: ['${edge}'], answer: 'backfill' | 'open' | 'unset', why: '...' }.`;
 }
 
 /**
@@ -348,10 +489,23 @@ export function checkReleases(input: HistoryInput): string[] {
     answer: OldSavesAnswer | undefined,
     ruled: (rule: BackfillRule) => boolean,
     site?: string,
+    readers?: readonly string[],
   ): void => {
     if (!answer) {
       problems.push(`${said} ${declare}`);
       return;
+    }
+    // "Never happened" was decided for the readers there were. A new reader may need the
+    // other road, so it is asked about afresh (#813).
+    if (answer.answer === 'unset' && readers !== undefined) {
+      const known = new Set(answer.readers ?? []);
+      const added = readers.filter((reader) => !known.has(reader));
+      if (added.length > 0) {
+        problems.push(
+          `${said} Its oldSaves answer is "unset" for the readers it names (${(answer.readers ?? []).join(', ') || 'none'}), and ${shortList(added)} now ${added.length === 1 ? 'reads' : 'read'} it too: read the answer again with ${added.length === 1 ? 'that reader' : 'those readers'} in mind, then add ${added.length === 1 ? 'it' : 'them'} to "readers".`,
+        );
+        return;
+      }
     }
     // An answer is for the writes it names: one written for a new talk does not cover a
     // write added to an old scene later.
@@ -391,6 +545,7 @@ export function checkReleases(input: HistoryInput): string[] {
       registryEntryFor(input.registry, late.site.key)?.oldSaves,
       (rule) => 'key' in rule && rule.key === late.site.key,
       late.site.area,
+      late.readers,
     );
   for (const late of lateScenes(input))
     hold(
@@ -400,6 +555,19 @@ export function checkReleases(input: HistoryInput): string[] {
       declareScene(late.release),
       Object.hasOwn(input.scenes, late.node) ? input.scenes[late.node] : undefined,
       (rule) => 'node' in rule && rule.node === late.node,
+      undefined,
+      late.readers,
+    );
+  for (const late of lateEdges(input))
+    hold(
+      `road "${late.edge}" in ${late.area}`,
+      late.release,
+      `${late.area} now opens a road "${late.edge}" into a scene release ${late.release} already had, which that release did not open from there. A save of that release went the old way, so it never passed that scene from here: anything the scene (or a scene after it) records, the save lacks.`,
+      declareEdge(late.release, late.area, late.edge),
+      Object.hasOwn(input.edges, late.area) ? input.edges[late.area] : undefined,
+      // A backfill for a road answers for what the scenes past it record: any newer rule may.
+      () => true,
+      late.edge,
     );
   return [...new Set(problems)];
 }
@@ -576,6 +744,20 @@ export function checkRules(input: HistoryInput): string[] {
   for (const node of Object.keys(input.scenes))
     if (!nodesNow.has(node))
       problems.push(`LATE_SCENES names "${node}", which is not a story node`);
+  // A road's answer: it names the roads it answers for, and the area still has each of them.
+  for (const [area, answer] of Object.entries(input.edges)) {
+    const name = `LATE_EDGES "${area}"`;
+    if (!answer.why.trim()) problems.push(`${name}: its answer for old saves needs a "why"`);
+    if (!releases.some((release) => release.release === answer.upTo))
+      problems.push(`${name}: its answer names "${answer.upTo}", which is not a release`);
+    if ((answer.sites ?? []).length === 0)
+      problems.push(`${name}: name the roads it answers for in "sites"`);
+    const roads = new Set(input.now.edges?.[area] ?? []);
+    for (const road of answer.sites ?? [])
+      if (!roads.has(road)) problems.push(`${name}: "${road}" is not a road this area opens today`);
+    if (answer.answer === 'backfill' && rules.length === 0)
+      problems.push(`${name} answers "backfill", but flagBackfills.ts has no rules`);
+  }
 
   // A released rule is part of every save loaded since: it never changes or goes away.
   for (const release of releases) {

@@ -21,6 +21,8 @@
  */
 
 import type { Condition, StoryNode } from '../../core/types';
+import type { StoryGroup } from '../regions/types';
+import { inWorld } from './storyGroup';
 
 const DORIN = 'Gate Guard Dorin';
 const DORIN_FACE = 'portrait.dorin';
@@ -39,7 +41,7 @@ export const SQ02_RESOLVED: Condition = { kind: 'flag', key: SQ02_FLAG, op: 'set
 const MOCKED = outcome('mocked');
 const DRILLED: Condition = { kind: 'flag', key: 'riverside_drill', op: 'set' };
 
-export const SQ02_STORY: readonly StoryNode[] = [
+export const SQ02_STORY: readonly StoryNode[] = inWorld('ba_dan_village', [
   /* --------------------------------------------------------- The hook */
   {
     id: 'sq02_hook',
@@ -266,4 +268,12 @@ export const SQ02_STORY: readonly StoryNode[] = [
     ],
     next: 'village_leave',
   },
-];
+]);
+
+/** This story's entry in its region's list (`regions/baDanValley/content.ts`) and the story docs. */
+export const SQ02_GROUP: StoryGroup = {
+  slug: 'sq02-official-gate',
+  title: 'SQ-02 A Very Official Gate',
+  source: 'sq02OfficialGate.ts',
+  nodes: SQ02_STORY,
+};

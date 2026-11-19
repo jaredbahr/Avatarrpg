@@ -13,6 +13,8 @@
  */
 
 import type { Condition, StoryNode } from '../../core/types';
+import type { StoryGroup } from '../regions/types';
+import { inWorld } from './storyGroup';
 
 const SLED = 'Overturned sled';
 const NARRATOR = 'portrait.narrator';
@@ -31,10 +33,12 @@ export const SQ01_RESOLVED: Condition = { kind: 'flag', key: SQ01_FLAG, op: 'set
 /** Pella's list, which the sled needs: only the party that heard her can sort the load. */
 export const SQ01_HAS_LIST: Condition = { kind: 'visited', nodeId: 'sq01_packing_list' };
 
-export const SQ01_STORY: readonly StoryNode[] = [
+export const SQ01_STORY: readonly StoryNode[] = inWorld('forest_road', [
   /* -------------------------------------------------- Pella's packing list */
   {
     id: 'sq01_packing_list',
+    // Pella's list is handed over in the village, not on the road.
+    presentation: { mapId: 'ba_dan_village' },
     kind: 'dialogue',
     speaker: PELLA,
     portrait: 'portrait.pella',
@@ -173,6 +177,8 @@ export const SQ01_STORY: readonly StoryNode[] = [
   {
     // Pella's corrected list. Opened from Pella once her homecoming has been heard.
     id: 'sq01_pella_list',
+    // Pella's list is handed over in the village, not on the road.
+    presentation: { mapId: 'ba_dan_village' },
     kind: 'dialogue',
     speaker: PELLA,
     portrait: 'portrait.pella',
@@ -203,4 +209,12 @@ export const SQ01_STORY: readonly StoryNode[] = [
     ],
     next: 'village_return_explore',
   },
-];
+]);
+
+/** This story's entry in its region's list (`regions/baDanValley/content.ts`) and the story docs. */
+export const SQ01_GROUP: StoryGroup = {
+  slug: 'sq01-cabbages',
+  title: 'SQ-01 Too Many Cabbages',
+  source: 'sq01Cabbages.ts',
+  nodes: SQ01_STORY,
+};
