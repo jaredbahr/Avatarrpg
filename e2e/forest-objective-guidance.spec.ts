@@ -87,7 +87,8 @@ function outbound(source: 'map' | 'legacy'): Fixture {
       'Serialized setup fixture, not a browser-earned campaign or physical-input acceptance.',
   };
   fixture = finishDialogue(fixture);
-  const mira: Command = { type: 'walkTo', pos: { x: 11, y: 5 } };
+  // Mira's invitation on the rebuilt 32 x 20 Ba Dan (#875): the open cell beside her table.
+  const mira: Command = { type: 'walkTo', pos: { x: 12, y: 9 } };
   fixture = {
     ...fixture,
     state: issue(fixture.state, mira),
