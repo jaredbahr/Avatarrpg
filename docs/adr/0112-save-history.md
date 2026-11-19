@@ -174,9 +174,8 @@ release with its answer, and the rules. Writers read it before drafting.
 
 ## Open decisions for the owner
 
-1. **What counts as a release?** The check is exact for saves written by a released build. Recommended:
-   freeze one whenever a build reaches the family's tablet (the deploy), so no real save falls between
-   two snapshots.
+1. **What counts as a release?** Decided 2026-11-19: **every deploy** whose story differs from the
+   newest release (amendment below).
 2. **Is 2026-11-08 a release worth answering for?** It is the only frozen corpus, so it is used. If no
    real save from before today matters, the 21 answers can be dropped by freezing a release today and
    retiring the first one. Keeping it costs nothing and is the stricter choice.
@@ -217,3 +216,20 @@ Still open:
   the app to write flags through one helper that can be listed, and that is a code change of its
   own.
 - Roads opened by content outside the story bundle's records (none today) are not recorded.
+
+## Amendment 2026-11-19: a release for every deploy
+
+The owner decided that every deploy is a release (open decision 1). The deploy cannot commit to `main`, and a
+release is fully determined by its commit, so it is frozen after the fact:
+
+- The deploy's build job runs `npm run saves:release -- --due` at the commit it ships: the story (snapshot
+  format, history revision, rules, regions, write sites, roads) compared with the newest release's. The
+  release's own name, date, commit and note are not compared.
+- When it is due, and the deploy succeeded, a job opens one `codex-ready` issue per deployed commit: freeze it
+  with `npm run saves:release -- <date>-deploy-<sha8> --at <sha>`, which runs that commit's own freezer in a
+  temporary worktree and copies the folder and index entry here. It refuses a commit that does not come after
+  the newest release's, so releases stay oldest first.
+- Story questions the new release raises are not Codex's to answer: the issue says to stop and hand them back.
+
+Saves written between a deploy and the merge of its freeze are covered as soon as it merges, because the
+snapshot describes the deployed commit, not the day it was frozen.

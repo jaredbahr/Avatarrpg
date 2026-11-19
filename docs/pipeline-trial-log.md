@@ -110,23 +110,31 @@ Region data: 1,930 lines across the region folder, of which the MQ-02 story is 1
 ## Registration points hit
 
 The SQ-01 trial counted nine per side story (`flags.ts`, `FLAG_ARCS`, `STORY_GROUPS`, NpcDef routes,
-`presentations.ts`, the recap, and two places in the story-graph test). A whole region, after ADR 0111:
+`presentations.ts`, the recap, and two places in the story-graph test).
 
-| #   | Point                                                       | Inside the region folder? | Notes                                                                                                                                               |
-| --- | ----------------------------------------------------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | `REGIONS`, `REGION_CONTENT`, `REGION_LAYOUTS`               | no (one line each)        | Written by `npm run new:region`; zero effort.                                                                                                       |
-| 2   | `bands.test.ts`'s placeholder-band list                     | no                        | One id; intended, so a placeholder band cannot ship silently.                                                                                       |
-| 3   | The region's `STORY_GROUPS`                                 | yes                       |                                                                                                                                                     |
-| 4   | Node presentations                                          | yes                       | Declared on the nodes (`stage.ts`), not in `presentations.ts`: ADR 0111 removed this one.                                                           |
-| 5   | `flags.ts`: entries, `FLAG_ARCS`, and readers of old flags  | no                        | 3 new flags, a new arc, and `act1_lost`/`ruon_traded` readers (the test prints them).                                                               |
-| 6   | `ids.ledger.json`                                           | no                        | `npm run ids:ledger`; zero effort.                                                                                                                  |
-| 7   | `enemies.ts`                                                | no                        | A region cannot carry its own enemies; they ship in the boot chunk.                                                                                 |
-| 8   | The neighbour's link (`maps/world.ts`) and both manifests   | no                        | Expected: a link has two ends.                                                                                                                      |
-| 9   | `scripts/art/map-pack.ts` and `docs/art/prompts/maps/`      | no                        | `prompts.test.ts` asks every map for an orthographic painting pack (see friction).                                                                  |
-| 10  | Music: the region waits in `music.test.ts`'s list           | no                        | Every map must name a track and a track belongs to one region, so a region with no track yet is named in the test.                                  |
-| 12  | Script tests pinned to the demo's world                     | no                        | Soak cell count and roster list, story-graph document list and count, scaffolder list test, region assets, region cache, core bench (see friction). |
-| 13  | `scripts/balance/baseline.json`                             | no                        | 12 new rows; the writer could not run as shipped here (see friction).                                                                               |
-| 11  | Generated docs (`docs:story`, `docs:saves`, `docs:content`) | no                        | Commands; zero effort.                                                                                                                              |
+**2026-11-19:** five remain, every one of them the story's own data. A side story keeps its conversations on
+their map with `inWorld(mapId, nodes)` (`story/storyGroup.ts`) and exports its own `StoryGroup`, so
+`presentations.ts` needs no rows and the region's list takes one entry. The story-graph test derives its
+document list and count from the groups. What is left: the flags and their arc line in `flags.ts`, the region
+entry, the NpcDef routes that open it, and the recap lines (the writing pass).
+
+A whole region, after ADR 0111:
+
+| #   | Point                                                       | Inside the region folder? | Notes                                                                                                                                                                       |
+| --- | ----------------------------------------------------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `REGIONS`, `REGION_CONTENT`, `REGION_LAYOUTS`               | no (one line each)        | Written by `npm run new:region`; zero effort.                                                                                                                               |
+| 2   | `bands.test.ts`'s placeholder-band list                     | no                        | One id; intended, so a placeholder band cannot ship silently.                                                                                                               |
+| 3   | The region's `STORY_GROUPS`                                 | yes                       |                                                                                                                                                                             |
+| 4   | Node presentations                                          | yes                       | Declared on the nodes (`stage.ts`), not in `presentations.ts`: ADR 0111 removed this one.                                                                                   |
+| 5   | `flags.ts`: entries, `FLAG_ARCS`, and readers of old flags  | no                        | 3 new flags, a new arc, and `act1_lost`/`ruon_traded` readers (the test prints them).                                                                                       |
+| 6   | `ids.ledger.json`                                           | no                        | `npm run ids:ledger`; zero effort.                                                                                                                                          |
+| 7   | `enemies.ts`                                                | no                        | A region cannot carry its own enemies; they ship in the boot chunk.                                                                                                         |
+| 8   | The neighbour's link (`maps/world.ts`) and both manifests   | no                        | Expected: a link has two ends.                                                                                                                                              |
+| 9   | `scripts/art/map-pack.ts` and `docs/art/prompts/maps/`      | no                        | `prompts.test.ts` asks every map for an orthographic painting pack (see friction).                                                                                          |
+| 10  | Music: the region waits in `music.test.ts`'s list           | no                        | Every map must name a track and a track belongs to one region, so a region with no track yet is named in the test.                                                          |
+| 12  | Script tests pinned to the demo's world                     | no                        | Soak cell count and roster list, scaffolder list test, region assets, region cache, core bench (see friction). The story-graph list and count are derived since 2026-11-19. |
+| 13  | `scripts/balance/baseline.json`                             | no                        | 12 new rows; the writer could not run as shipped here (see friction).                                                                                                       |
+| 11  | Generated docs (`docs:story`, `docs:saves`, `docs:content`) | no                        | Commands; zero effort.                                                                                                                                                      |
 
 Thirteen touches, of which five are commands or one-liners. The ones that cost thinking were 5, 7, 8, 9, 12 and 13.
 
