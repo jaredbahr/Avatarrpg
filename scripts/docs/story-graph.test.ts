@@ -93,22 +93,10 @@ describe('runtime story graph', () => {
       [...CONTENT.story.keys()].sort(),
     );
     const documents = await generateStoryDocs();
-    expect([...documents.keys()].sort()).toEqual([
-      'README.md',
-      'act1.md',
-      'ba-dan-day.md',
-      'discoveries.md',
-      'emberwatch.md',
-      'lost.md',
-      'mq02-paper-and-stone.md',
-      'reasons.md',
-      'return.md',
-      'riverside.md',
-      'sq01-cabbages.md',
-      'sq02-official-gate.md',
-      'sq03-gaos-ledger.md',
-      'world.md',
-    ]);
+    // One document per story group and the index: a new story adds its own, with no edit here.
+    expect([...documents.keys()].sort()).toEqual(
+      ['README.md', ...STORY_GROUPS.map((group) => `${group.slug}.md`)].sort(),
+    );
     expect([...documents.values()].join('\n').match(/ -->\|/g)).toHaveLength(graph.edges.length);
     expect(documents.get('README.md')).toContain(`${ALL_STORY.length} nodes;`);
     for (const group of STORY_GROUPS) {
@@ -475,14 +463,14 @@ describe('runtime story graph', () => {
 });
 
 describe('story documentation check and CLI', () => {
-  it('checks missing and stale files without writing, and the CLI regenerates all fourteen documents', async () => {
+  it('checks missing and stale files without writing, and the CLI regenerates every document', async () => {
     const directory = await temporaryDirectory();
     const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     expect(await runCli(['--check'], directory)).toBe(1);
     expect(error).toHaveBeenCalledWith(expect.stringContaining('missing or stale'));
     expect(await readdir(directory)).toEqual([]);
     expect(await runCli([], directory)).toBe(0);
-    expect(await readdir(directory)).toHaveLength(14);
+    expect(await readdir(directory)).toHaveLength(STORY_GROUPS.length + 1);
     expect(await runCli(['--check'], directory)).toBe(0);
     await writeFile(join(directory, 'act1.md'), 'stale\n', 'utf8');
     await rm(join(directory, 'world.md'));
