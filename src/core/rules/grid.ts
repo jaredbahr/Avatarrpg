@@ -248,6 +248,11 @@ export interface MoveContext {
    */
   readonly squareFootprints?: boolean;
   /**
+   * A sparring bout's out-of-bounds terrains (ADR 0122): a forced move onto one puts the fighter
+   * out. Absent outside a bout. Walking is unaffected: those cells stay blocked.
+   */
+  readonly outOn?: ReadonlySet<string>;
+  /**
    * Extra move points a one-tier climb costs, from
    * `content.tuning.climbCost`. Every shipped context carries it, combat and
    * explore alike. A context that omits it declares no climb rule at all, and

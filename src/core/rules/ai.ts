@@ -593,6 +593,8 @@ export function scoreAbility(
    * state is untouched.
    */
   let ledgeByUnit: Map<string, number> | null = null;
+  // Fighters the same forecast puts out of a sparring bout (ADR 0122 §4).
+  const outOfBout = new Set<string>();
   const ledgeDropFor = (victimId: string): number => {
     if (!ledgeByUnit) {
       const battle = battleWithHypotheticalCaster(draft.toBattle(), caster);
@@ -614,6 +616,7 @@ export function scoreAbility(
       for (const shove of forecast.shoves) {
         if (shove.kind !== 'unit' || shove.cause !== 'ability') continue;
         ledgeByUnit.set(shove.id, (ledgeByUnit.get(shove.id) ?? 0) + shove.ledgeDropDamage);
+        if (shove.out) outOfBout.add(shove.id);
       }
     }
     return ledgeByUnit.get(victimId) ?? 0;
@@ -712,6 +715,13 @@ export function scoreAbility(
         case 'push':
         case 'pull': {
           const fall = fallPriced ? 0 : Math.min(ledgeDropFor(victim.id), fallCap);
+          // Into a bout's water is a knockout, whatever the HP (ADR 0122 §4), priced once.
+          if (!fallPriced && outOfBout.has(victim.id)) {
+            fallPriced = true;
+            if (friendly) score -= victim.hp * weights.friendlyFire + weights.kill;
+            else score += victim.hp * weights.damage + weights.kill;
+            break;
+          }
           fallPriced = true;
           if (friendly) {
             // A friendly unit thrown over a lip still takes the fall. The direct

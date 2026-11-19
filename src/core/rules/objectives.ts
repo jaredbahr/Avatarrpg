@@ -47,8 +47,9 @@ export function objectiveDistance(
 }
 
 /**
- * The living party member or guest holding a `holdAtRoundEnd` objective, if any.
- * The first in roster order, so the message that names them is deterministic.
+ * The living party member or guest holding a `holdAtRoundEnd` objective, if any: the first in
+ * roster order, so the message that names them is deterministic. With `minHeld`, only once at
+ * least that many of the objective's cells are held.
  */
 export function objectiveHolder(
   units: readonly Unit[],
@@ -56,12 +57,21 @@ export function objectiveHolder(
   square: boolean = SQUARE_FOOTPRINTS,
 ): Unit | undefined {
   if (objective?.kind !== 'holdAtRoundEnd') return undefined;
-  return units.find(
+  const holders = units.filter(
     (unit) =>
       unit.faction !== 'enemy' &&
       isAlive(unit) &&
       standsOnObjective(objective, unit, unit.pos, square),
   );
+  // `minHeld` (ADR 0122 §5): that many distinct objective cells must be covered at once.
+  const held = new Set(
+    holders.flatMap((unit) =>
+      occupiedCells(unit, square)
+        .filter((cell) => isObjectiveCell(objective, cell))
+        .map((cell) => `${cell.x},${cell.y}`),
+    ),
+  );
+  return held.size >= (objective.minHeld ?? 1) ? holders[0] : undefined;
 }
 
 /** True once the round count has passed the encounter's limit without a win. */

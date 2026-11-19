@@ -326,6 +326,10 @@ function downedTargetCheck(
       occupiedCells(u, squareFootprints).some((c) => samePos(c, target)),
   );
   if (!fallen) return { ok: false, reason: 'Nobody is down there.' };
+  // A sparring bout helps nobody up (ADR 0122 §2).
+  if (battle.boutOut?.includes(fallen.id)) {
+    return { ok: false, reason: `${fallen.name} is out of the bout.` };
+  }
   if (unitsOnTiles(battle.units, [target], squareFootprints).length > 0) {
     return { ok: false, reason: 'Somebody is standing there.' };
   }

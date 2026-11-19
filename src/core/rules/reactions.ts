@@ -155,6 +155,8 @@ export interface ShoveForecast {
   /** Defense-ignoring damage from the largest tier drop across the footprint. */
   readonly ledgeDropDamage: number;
   readonly landingStatuses: readonly { readonly id: StatusId; readonly chance: number }[];
+  /** A sparring bout's forced move into the water: the fighter is out (ADR 0122 §4). */
+  readonly out?: boolean;
 }
 
 /** One unit contact recorded by the shared surface resolver. */
@@ -598,8 +600,10 @@ function shoveUnitForecast(
   }
   const eventStart = draft.events.length;
   const slide = draft.slideFrom(draft.moveContext(before), before.pos, origin, distance, mode);
+  const outBefore = draft.boutOut.includes(unitId);
   const ledgeDropTiers = draft.shove(unitId, origin, distance, mode);
   const after = draft.unit(unitId) ?? before;
+  const out = !outBefore && draft.boutOut.includes(unitId);
   const movedDistance = Math.max(
     Math.abs(after.pos.x - before.pos.x),
     Math.abs(after.pos.y - before.pos.y),
@@ -639,6 +643,7 @@ function shoveUnitForecast(
     ...landingInfo(content, draft, after),
     ledgeDropTiers,
     ledgeDropDamage,
+    ...(out ? { out } : {}),
   };
 }
 
@@ -745,7 +750,7 @@ function shovePropForecast(
 
 /** Maps the movement rule's mechanical stop to the preview's player-facing reason. */
 function displayStopReason(
-  reason: 'none' | 'centre' | 'origin' | 'obstacle',
+  reason: 'none' | 'centre' | 'origin' | 'obstacle' | 'out',
   from: Vec2,
   to: Vec2,
   origin: Vec2,
@@ -754,7 +759,8 @@ function displayStopReason(
   caster: Unit | undefined,
   square: boolean,
 ): ShoveForecast['stopReason'] {
-  if (reason === 'none') return null;
+  // Into a bout's water is a slide that ended where it meant to (ADR 0122 §4); `out` says why.
+  if (reason === 'none' || reason === 'out') return null;
   if (reason === 'centre') return 'centre';
   if (reason === 'origin') return 'adjacent';
   // The slide keeps the direction it started with (BattleDraft.slideFrom), so

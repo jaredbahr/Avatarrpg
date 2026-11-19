@@ -2120,6 +2120,8 @@ export function overlayColors(kind: OverlayKind): [string, string | null] {
       return [OVERLAY.hover, null];
     case 'objective':
       return [OVERLAY.objective, OVERLAY.objectiveEdge];
+    case 'tip':
+      return [OVERLAY.tip, OVERLAY.tipEdge];
   }
 }
 
