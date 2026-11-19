@@ -529,9 +529,33 @@ export type EncounterObjective = {
   readonly kind: 'holdAtRoundEnd';
   /** The cells to hold. Walkable, and never a party spawn or a prop. */
   readonly cells: readonly Vec2[];
+  /**
+   * How many distinct `cells` must be held at once when a round ends (SF-3.3: two of three flags;
+   * ADR 0122 §5). Absent means 1.
+   */
+  readonly minHeld?: number;
   /** The top-bar line ("Stop the winch"). Written by the writing pass. */
   readonly label: string;
 };
+
+/**
+ * A platform that tips (ADR 0122 §3): the line between its two halves. On `axis` 'x' the halves are
+ * the columns either side of column `pivot`; on 'y' the rows either side of row `pivot`. A fighter
+ * on the pivot line counts for neither half.
+ */
+export interface BoutTipping {
+  readonly axis: 'x' | 'y';
+  readonly pivot: number;
+}
+
+/**
+ * A friendly sparring bout (ADR 0122): nobody is helped up, and a forced move onto an `outOn`
+ * terrain puts a fighter out at once, whatever their HP.
+ */
+export interface EncounterBout {
+  readonly outOn: readonly TerrainId[];
+  readonly tipping?: BoutTipping;
+}
 
 export interface EncounterDef {
   readonly id: string;
@@ -552,6 +576,8 @@ export interface EncounterDef {
   readonly loseIfGuestFalls?: boolean;
   /** A goal that wins the fight without defeating every enemy. Defeating them all still wins. */
   readonly objective?: EncounterObjective;
+  /** A sparring bout rather than a fight (ADR 0122). */
+  readonly bout?: EncounterBout;
   /**
    * The fight is lost if it is not won by the end of this round (Scene 2.5: the crate
    * reaches the barge after six). Absent: only the engine's `MAX_BATTLE_ROUNDS` ceiling.
@@ -1448,6 +1474,11 @@ export interface BattleState {
    * carry no key at all.
    */
   readonly helpedUp?: readonly string[];
+  /**
+   * Fighters out of a sparring bout (ADR 0122 §2), in the order they went out. Absent outside a
+   * bout and until somebody is out.
+   */
+  readonly boutOut?: readonly string[];
 }
 
 /**

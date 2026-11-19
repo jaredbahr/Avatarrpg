@@ -868,6 +868,7 @@ const encounterObjective = z.discriminatedUnion('kind', [
     .object({
       kind: z.literal('holdAtRoundEnd'),
       cells: z.array(vec2).min(1),
+      minHeld: z.number().int().min(1).max(10).optional(),
       label: z.string().min(1),
     })
     .strict(),
@@ -882,6 +883,16 @@ export const encounterSchema = z.object({
   guests: z.array(guestAlly).optional(),
   loseIfGuestFalls: z.boolean().optional(),
   objective: encounterObjective.optional(),
+  bout: z
+    .object({
+      outOn: z.array(terrainId).min(1),
+      tipping: z
+        .object({ axis: z.enum(['x', 'y']), pivot: z.number().int().min(0) })
+        .strict()
+        .optional(),
+    })
+    .strict()
+    .optional(),
   /** Lost if not won by the end of this round. Below the engine's 50-round ceiling. */
   loseAfterRound: z.number().int().min(1).max(50).optional(),
   conditionalEnemies: z.array(
@@ -2629,6 +2640,12 @@ export function validateContent(
         ) {
           problems.push(`encounter "${e.id}" objective cell (${key}) holds a prop`);
         }
+      }
+      // `minHeld` (ADR 0122 §5) can never ask for more cells than there are, or it is unwinnable.
+      if ((e.objective.minHeld ?? 1) > seen.size) {
+        problems.push(
+          `encounter "${e.id}" must hold ${e.objective.minHeld} objective cells but has ${seen.size}`,
+        );
       }
       for (const friend of [...e.allies, ...(e.guests ?? [])]) {
         if (seen.has(`${friend.pos.x},${friend.pos.y}`)) {

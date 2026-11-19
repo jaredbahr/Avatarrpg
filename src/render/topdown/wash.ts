@@ -17,6 +17,9 @@
  * - **Objective**: the encounter's objective cells (ADR 0116's 2026-11-15 amendment) as a mint wash
  *   under every other overlay, all fight long, with a ring at each cell's foot (it still reads with a
  *   figure standing there) and a small pennant in its upper corner.
+ * - **Tip**: on a sparring platform that tips (ADR 0122 §3), the cells its heavier half will slide
+ *   into when the round ends, as a sea-blue wash with a ring at each, over the objective and under
+ *   everything that is armed.
  * - **Cover**: a shield pip by the aimed target's ring when it is in cover (`hasCover` with the
  *   board's roster), struck through when the ability ignores cover (`requiresLineOfSight: false`).
  *
@@ -43,6 +46,8 @@ export const PARTY_RGB: Rgb = [242, 212, 122];
 export const ENEMY_RGB: Rgb = [242, 120, 96];
 /** The objective's mint: no other overlay, surface or faction uses it. */
 export const OBJECTIVE_RGB: Rgb = [120, 220, 160];
+/** The tipping platform's slide: a sea blue no other overlay, surface or faction uses. */
+export const TIP_RGB: Rgb = [90, 160, 235];
 /** The shadow colour, for the footprints' print and the pips' outline. */
 const INK: Rgb = [50, 33, 37];
 
@@ -320,7 +325,8 @@ export function washSpec(view: MapView, square = SQUARE_FOOTPRINTS): WashSpec {
     targets = layer('target'),
     area = layer('area'),
     bonus = layer('rangeBonus'),
-    objective = layer('objective');
+    objective = layer('objective'),
+    tip = layer('tip');
   const cells = (u: MapView['units'][number]) => footprintCells(u.pos, u.size, square);
   const living = view.units.filter((u) => !u.fallen);
   const washes: WashArea[] = [];
@@ -333,6 +339,11 @@ export function washSpec(view: MapView, square = SQUARE_FOOTPRINTS): WashSpec {
       rings.push({ ...footOf([cell]), color: OBJECTIVE_RGB, w: 12, h: 5 });
       pennants.push({ x: cell.x * CS + CS - 9, y: cell.y * CS + 2 });
     }
+  }
+  // Where the platform will slide its fighters: over the objective, under whatever is armed.
+  if (tip.length) {
+    washes.push({ cells: tip, color: TIP_RGB });
+    for (const cell of tip) rings.push({ ...footOf([cell]), color: TIP_RGB, w: 12, h: 5 });
   }
   if (reachArea.length || targets.length || area.length) {
     // The range first, so the area and the rings lie over it.

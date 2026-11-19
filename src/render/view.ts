@@ -87,9 +87,11 @@ export function unitMarkerGroundPoint(base: Vec2, tileSize: number, contactOffse
 /**
  * `objective`: the encounter's objective cells (ADR 0116's 2026-11-15 amendment), shown all fight
  * long under every other overlay. A rule the board must show, so both backends draw it.
+ * `tip`: where the fighters on a sparring platform's heavier half will slide when the round ends
+ * (ADR 0122 §3), recomputed after every action. Also a rule, so both backends draw it.
  */
 export type OverlayKind =
-  'move' | 'reach' | 'target' | 'area' | 'rangeBonus' | 'hover' | 'objective';
+  'move' | 'reach' | 'target' | 'area' | 'rangeBonus' | 'hover' | 'objective' | 'tip';
 
 export interface OverlayLayer {
   readonly kind: OverlayKind;
