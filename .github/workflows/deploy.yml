@@ -102,6 +102,8 @@ jobs:
     outputs:
       tree: ${{ steps.revision.outputs.tree }}
       artifact_id: ${{ steps.upload.outputs.artifact_id }}
+      release_due: ${{ steps.release.outputs.due }}
+      release_newest: ${{ steps.release.outputs.newest }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -136,6 +138,16 @@ jobs:
           cache: npm
 
       - run: npm ci
+
+      - name: Is a save release due for this story?
+        id: release
+        # Every deploy freezes a save release when its story differs from the newest one
+        # (owner, 2026-11-19; ADR 0112). This only reports; the job after the deploy asks for it.
+        run: |
+          result="$(npm run -s saves:release -- --due)"
+          echo "$result"
+          echo "due=$(node -e 'process.stdout.write(String(JSON.parse(process.argv[1]).due))' "$result")" >> "$GITHUB_OUTPUT"
+          echo "newest=$(node -e 'process.stdout.write(String(JSON.parse(process.argv[1]).newest))' "$result")" >> "$GITHUB_OUTPUT"
 
       - name: Install Chromium for Playwright
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_gallery }}
@@ -265,3 +277,53 @@ jobs:
             echo "- Published URL: $PAGE_URL"
             echo "- Main was rechecked immediately before publication; an advance after that read cannot substitute the frozen artifact."
           } >> "$GITHUB_STEP_SUMMARY"
+
+  release-issue:
+    name: Ask for a save release of what shipped
+    # A deployed story that differs from the newest frozen release gets one: the saves the family
+    # writes with this build are then covered exactly (owner, 2026-11-19; ADR 0112). CI cannot
+    # commit to main, so this opens one Codex issue to freeze the deployed commit with
+    # `saves:release --at`; a release is fully determined by its commit.
+    needs: [freshness, build, deploy]
+    if: ${{ needs.build.outputs.release_due == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      issues: write
+    steps:
+      - name: Open the freeze issue, once per deployed commit
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          SHA: ${{ needs.freshness.outputs.sha }}
+          NEWEST: ${{ needs.build.outputs.release_newest }}
+        run: |
+          short="${SHA:0:8}"
+          title="Freeze a save release for deploy $short"
+          open="$(gh issue list --state all --search "\"$title\" in:title" --json number --jq 'length')"
+          if [ "$open" != "0" ]; then echo "Already asked for $short."; exit 0; fi
+          id="$(date -u +%F)-deploy-$short"
+          body="$(cat <<BODY
+          The site was deployed at \`$SHA\`, and its story differs from the newest frozen save release (\`$NEWEST\`). Freeze that commit as a release so the saves written by this build are covered exactly (owner, 2026-11-19; ADR 0112).
+
+          ## Read
+          - \`docs/adr/0112-save-history.md\` (§3 and the 2026-11-19 amendments)
+          - \`scripts/saves/releases.ts\` (\`freezeAt\`)
+
+          ## Do
+          1. Branch from \`main\`. Fetch full history first (\`git fetch --unshallow\` if the clone is shallow).
+             Releases stay oldest first: if an older "Freeze a save release for deploy" issue is still open, do that one first.
+          2. \`npm ci\`, then \`npm run saves:release -- $id "Deployed at $short." --at $SHA\`
+          3. Add \`'$id'\` to the end of \`FROZEN\` in \`src/content/story/saveHistory.test.ts\`.
+          4. \`npm run docs:saves\`, then \`npm run ci:local\`.
+          5. Open a PR that closes this issue, and turn on auto-merge (merge commit).
+
+          ## Don't
+          - Don't edit or regenerate any other release, or anything under \`src/core/save/fixtures/\` by hand.
+          - Don't answer any \`oldSaves\`, \`LATE_SCENES\` or \`LATE_EDGES\` question \`saveHistory.test.ts\` raises. Those are story calls: stop, comment on this issue with the failing lines, and relabel it \`agent:claude\`.
+
+          ## Done when
+          The release folder and its \`index.json\` entry are on \`main\`, and CI is green.
+          BODY
+          )"
+          gh issue create --title "$title" --body "$body" --label codex-ready --label agent:codex
