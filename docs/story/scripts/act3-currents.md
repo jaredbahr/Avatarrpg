@@ -1851,6 +1851,13 @@ record of what was accepted ("Recommend" lines are now decisions). Later correct
    | `lost_emberwatch`                         | set in Act II, 3.4                                 | read: whether the hand is also known from the order                |
    | `veyra_letter_read`                       | set in C.1 when the envelope is opened             | read in 9.3 (one narrator line)                                    |
 
+2. **Hesra lost both boots.** In the galleries, on both Act I branches. After a victory the right one is on
+   the mason's yard step the night of the homecoming, with a river shell in it, and Latch returns the left
+   one in MQ-07 (Scene 7.3). After a loss Latch leaves the left one in 7.3, Dorin keeps it under the seat,
+   and the right one is on her step the night the galleries open (Act IV, 11.3). Acts III and IV already say
+   this in every line that touches it; nothing here changed. The shipped supper line is being brought into
+   line on its own branch.
+
 ## Open, for the owner
 
 1. **The side fights** (SF-3.1 to SF-3.3) are mine: the Pear Halt porters, the eel traps and Sena's three
@@ -1867,7 +1874,7 @@ What changed in this file; the reasons and the proposals not applied are in the 
    Yenna's copy of memorandum fourteen has a source on both approaches (Neri gave her the shelf; it was her
    Tuesday). Fenn is seen to walk to the pool. The Keeper has kept the Halt's and the heights' echoes too,
    when those spokes came first. Hesra lost the pair of boots on both Act I branches (the loss branch had her
-   keep one), which the shipped welcome-home line does not yet say: see the report.
+   keep one). _Decided (owner, 2026-11-19): she lost both; see "Decided" above._
 2. **Lines:** Veyra's reply to memorandum fourteen now defers the question instead of dismissing it ("We
    will find out why they are steady after the spring tide"), and Wen answers that. Auntie Silt's frog.
    Nima's reason for taking the rope is a real limit. Bo at the handcart. Four long turns split.
