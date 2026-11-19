@@ -286,6 +286,17 @@ Names are shown in authored content order within each entry; sections and record
 - Allies: —
 - Reinforcements: Quarry Worker; Slinger
 
+### Edge-on
+
+- Map: The Cutting
+- Expected level: 3
+- Baseline party size: 3
+- Authored roster: Quarry Bender; Quarry Hauler; Quarry Worker; Quarry Hauler; Quarry Worker (750 XP)
+- Conditional enemies: —
+- Variants: —
+- Allies: —
+- Reinforcements: Quarry Worker; Quarry Hauler
+
 ### The Cutting
 
 - Map: The Cutting
@@ -318,3 +329,14 @@ Names are shown in authored content order within each entry; sections and record
 - Variants: bluffed: Quarry Hauler; Quarry Bender; Quarry Hauler (450 XP, 0.0% vs authored roster)
 - Allies: —
 - Reinforcements: Quarry Worker; Slinger
+
+### The bend, again
+
+- Map: The Forest Road
+- Expected level: 3
+- Baseline party size: 3
+- Authored roster: Quarry Worker; Quarry Worker; Slinger; Slinger (600 XP)
+- Conditional enemies: —
+- Variants: —
+- Allies: —
+- Reinforcements: Quarry Worker; Slinger; Quarry Worker

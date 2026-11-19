@@ -892,6 +892,7 @@ export const encounterSchema = z.object({
     }),
   ),
   baselinePartySize: z.number().int().min(1).max(6),
+  xpPerHead: z.number().int().min(1).max(1000).optional(),
   variants: z.array(
     z.object({
       id,

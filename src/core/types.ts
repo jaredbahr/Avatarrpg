@@ -586,6 +586,11 @@ export interface EncounterDef {
    */
   readonly guidance?: 'firstFight';
   readonly expectedLevel: number;
+  /**
+   * XP a victory pays each party member, in place of the roster's XP over the baseline. For an
+   * optional side fight, sized against the act's level curve (`xpPerHead` in `createGame.ts`).
+   */
+  readonly xpPerHead?: number;
   readonly intro: string;
   /** Shown under the objective banner — a hint aimed at an 8-year-old. */
   readonly tip: string;

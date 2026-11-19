@@ -254,6 +254,16 @@ export function connectAct1(map: MapDef): MapDef {
           ...map.npcs,
           ...discoveryMarkers('forest_road'),
           {
+            // SF-1.1, optional (`story/sideFightsAct1.ts`): Bessa's crew loading the handcart at the
+            // bend, once Act I is over either way, until the conversation has started.
+            id: 'sf11_bessa',
+            name: 'Bessa',
+            pos: { x: 9, y: 3 },
+            sprite: 'unit.enemy.slinger',
+            node: 'sf11_the_bend',
+            when: { kind: 'all', of: [ACT1_OVER, unvisited('sf11_the_bend')] },
+          },
+          {
             // SQ-01: Bo-shan's tipped sled in the south ditch, for a party carrying Pella's list,
             // until the workers are home. The cabbage cart stands in for a sled until art exists.
             id: 'sq01_sled',
@@ -425,6 +435,16 @@ export function connectAct1(map: MapDef): MapDef {
         npcs: [
           ...map.npcs,
           ...discoveryMarkers('ambush_road'),
+          {
+            // SF-1.2, optional (`story/sideFightsAct1.ts`): Tolma's picket at the slab, once Act I
+            // is over either way, until the conversation has started.
+            id: 'sf12_tolma',
+            name: 'Tolma',
+            pos: { x: 14, y: 5 },
+            sprite: 'unit.enemy.quarrybender',
+            node: 'sf12_the_slab',
+            when: { kind: 'all', of: [ACT1_OVER, unvisited('sf12_the_slab')] },
+          },
           {
             // Ruon stands where the ambush broke while he speaks (#628), and
             // waits there until the party goes down to the quarry floor.

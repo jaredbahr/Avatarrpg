@@ -34,7 +34,7 @@ import type {
 import { BattleDraft } from './battleDraft';
 import { appendLog } from './log';
 import { advanceToNextTurn, settleOutcome } from './turnFlow';
-import { absorbBattleResults, restAfterVictory, reviveParty, xpRoster } from './createGame';
+import { absorbBattleResults, restAfterVictory, reviveParty, xpPerHead } from './createGame';
 import { canUseAbility, isValidTarget, resolveAbility } from '../rules/abilities';
 import {
   buildGrid,
@@ -295,13 +295,9 @@ function handleResolveBattle(content: ContentIndex, state: GameState): StepResul
      * a table of three and arriving at the boss under-levelled. Every table
      * should reach the quarry floor at about level 4.
      */
-    const roster = encounter ? xpRoster(encounter, state.flags) : [];
-    const authoredXp = roster.reduce(
-      (sum, placement) => sum + (content.enemies.get(placement.enemyId)?.xp ?? 0),
-      0,
-    );
-    const baseline = Math.max(1, encounter?.baselinePartySize ?? 3);
-    const perMember = Math.max(1, Math.round(authoredXp / baseline));
+    const perMember = encounter
+      ? xpPerHead(encounter, state.flags, (id) => content.enemies.get(id)?.xp ?? 0)
+      : 1;
 
     const absorbed = absorbBattleResults(state, battle);
     const shares = absorbed.map(() => perMember);
