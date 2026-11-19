@@ -9,12 +9,12 @@ import { JOURNAL_NOTES } from '../journal';
 import { REGION_CONTENT } from '../regions/content';
 import type { RegionContent } from '../regions/types';
 import { FLAG_BACKFILLS, HISTORY_REV } from './flagBackfills';
-import { FLAG_REGISTRY, LATE_SCENES } from './flags';
+import { FLAG_REGISTRY, LATE_EDGES, LATE_SCENES } from './flags';
 import type { FlagDef } from './flags';
 import { collectFlagUses } from './flagUsage';
 import type { FlagSource, FlagUse } from './flagUsage';
 import { FOLLOWERS } from './followers';
-import { readersOf, visitedReaders, writeSites } from './saveHistory';
+import { readersOf, storyEdges, visitedReaders, writeSites } from './saveHistory';
 import type { HistoryInput, HistorySnapshot, StoryHistory } from './saveHistory';
 
 /** Bundle collection to area prefix, as `flags.test.ts` names them. */
@@ -95,6 +95,7 @@ export const HISTORY_NOW: StoryHistory = {
   historyRev: HISTORY_REV,
   regions: regionAreas(REGION_CONTENT),
   writes: writeSites(USES_NOW),
+  edges: storyEdges(SOURCES_NOW, new Set(CONTENT_BUNDLE.story.map((node) => node.id))),
 };
 
 /** The check's whole input, against the given release snapshots (oldest first). */
@@ -104,6 +105,7 @@ export function historyInput(releases: readonly HistorySnapshot[]): HistoryInput
     readers: readersOf(USES_NOW),
     visitedReaders: VISITED_READERS_NOW,
     scenes: LATE_SCENES,
+    edges: LATE_EDGES,
     releases,
     registry: FLAG_REGISTRY,
     rules: FLAG_BACKFILLS,
