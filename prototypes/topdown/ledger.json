@@ -42188,6 +42188,322 @@
     "source_image_id": "9a8f77d3-3d46-5fd0-8d20-2a8dca9b52ff"
    },
    "region": "ba_dan_valley"
+  },
+  {
+   "name": "bd20_trough_ek_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "73164205-f94b-46b8-97f9-de72ef296118",
+   "status": "completed",
+   "settings": {
+    "description": "a long low stone water trough for cart animals, carved from one block of pale li...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 56,
+     "height": 40
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 40,
+      "height": 25
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view, front face square to the viewer, its top a shallow slanted band. Match its pixel density, one-pixel outline in a darker tone of the material, flat shading with light from the upper left, and palette. Do not copy its colours or design."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 4417.0654640625,
+   "balance_after": 4412.0654640625,
+   "secs": 31,
+   "notes": "",
+   "ids": {
+    "background_job_id": "73164205-f94b-46b8-97f9-de72ef296118",
+    "object_id": "ea534701-0082-4bb1-85fc-bdee4916aa47"
+   },
+   "region": "ba_dan_valley"
+  },
+  {
+   "name": "bd20_sacks_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "ded87b40-aa65-41d6-b63a-84b613469ba2",
+   "status": "completed",
+   "settings": {
+    "description": "two plain hemp grain sacks leaning together, tied at the neck with rope, one ful...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 22,
+      "height": 28
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view, front face square to the viewer, its top a shallow slanted band. Match its pixel density, one-pixel outline in a darker tone of the material, flat shading with light from the upper left, and palette. Do not copy its colours or design."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 4412.0654640625,
+   "balance_after": 4407.0654640625,
+   "secs": 31,
+   "notes": "",
+   "ids": {
+    "background_job_id": "ded87b40-aa65-41d6-b63a-84b613469ba2",
+    "object_id": "dcd3b4b8-f80f-451f-9e11-f12ab345ea3d"
+   },
+   "region": "ba_dan_valley"
+  },
+  {
+   "name": "bd20_crew_bench_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "5d30c26a-c18e-4d74-b2eb-8444931c7ebc",
+   "status": "completed",
+   "settings": {
+    "description": "a long low bench the quarry crews built from offcuts: a thick slab of worked pal...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 80,
+     "height": 40
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 36,
+      "height": 23
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view, front face square to the viewer, its top a shallow slanted band. Match its pixel density, one-pixel outline in a darker tone of the material, flat shading with light from the upper left, and palette. Do not copy its colours or design."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 4407.0654640625,
+   "balance_after": 4402.0654640625,
+   "secs": 25,
+   "notes": "",
+   "ids": {
+    "background_job_id": "5d30c26a-c18e-4d74-b2eb-8444931c7ebc",
+    "object_id": "59ff825d-a2b1-4398-b439-96e4136646ac"
+   },
+   "region": "ba_dan_valley"
+  },
+  {
+   "name": "bd20_crew_bench_4",
+   "endpoint": "/create-object-pro-flash",
+   "job": "da887b52-5e98-4676-85ad-362dbc09316a",
+   "status": "completed",
+   "settings": {
+    "description": "a long low outdoor bench built from quarry offcuts: one thick flat slab of pale ...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 80,
+     "height": 40
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 36,
+      "height": 23
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view, front face square to the viewer, its top a shallow slanted band. Match its pixel density, one-pixel outline in a darker tone of the material, flat shading with light from the upper left, and palette. Do not copy its colours or design."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 4
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 4402.0654640625,
+   "balance_after": 4397.0654640625,
+   "secs": 19,
+   "notes": "",
+   "ids": {
+    "background_job_id": "da887b52-5e98-4676-85ad-362dbc09316a",
+    "object_id": "4e9c485f-79bd-4a96-b22e-f1cd874462f6"
+   },
+   "region": "ba_dan_valley"
   }
  ],
  "end_balance": 16728.0,

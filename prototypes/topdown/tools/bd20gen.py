@@ -9,7 +9,7 @@ import os, sys, json
 sys.path.insert(0, 'tools'); import pl
 from PIL import Image
 
-CAP = 210.0   # 162 (owner, 2026-11-18) + about 18 for three trees + 30 for the stage 7 later-state props, one retake each (owner, 2026-11-18)
+CAP = 230.0   # + up to 20 for the leftover props (trough, sacks, crew bench; owner, 2026-11-18) | 162 (owner, 2026-11-18) + about 18 for three trees + 30 for the stage 7 later-state props, one retake each (owner, 2026-11-18)
 RAW = os.environ.get('BD20_RAW', 'bd20/raw')
 os.environ.setdefault('PIXELLAB_REGION', 'ba_dan_valley')
 S = json.load(open('style.json'))
@@ -57,6 +57,9 @@ IT = {
 
  'gao_jar': ("a round glazed earthenware storage jar with a wooden lid and a little folded paper tag tied round its neck with string, plain warm brown clay with a green glaze band, sitting on its base. " + LOOK, 16, 20, 48, 48, 'barrel', 's'),
  'hesra_boot': ("one single worn leather work boot standing upright, hobnailed sole, laced up the front, dusty brown leather, with a small pale river shell resting just inside its open top. " + LOOK, 14, 16, 48, 48, 'crate', 's'),
+ 'trough_ek': ("a long low stone water trough for cart animals, carved from one block of pale limestone, a rounded rim, a little water inside, worn smooth at the lip, a small timber spout block at one end. " + LOOK, 44, 24, 56, 40, 'planter', 'a'),
+ 'sacks': ("two plain hemp grain sacks leaning together, tied at the neck with rope, one fuller than the other, dusty pale brown cloth. " + LOOK, 22, 22, 48, 48, 'barrel', 's'),
+ 'crew_bench': ("a long low bench the quarry crews built from offcuts: a thick slab of worked pale limestone laid across two rough stone blocks, a weathered timber plank lashed along its front edge as a seat lip. " + LOOK, 72, 26, 80, 40, 'mason_bench', 'a'),
  'peg': ("a short carved pale limestone boundary peg, a squat rounded stone post with a simple notched ring carved round its head. " + LOOK, 12, 14, 48, 48, 'crate', 's'),
 }
 # Retakes (a corrected prompt, the key and seed they replace): the first takes came back narrower or wider than asked, because the
@@ -72,6 +75,9 @@ RETAKE = {
 }
 RETAKE[('hesra_boot', 4)] = ("one single worn brown leather work boot lying on its sole, seen from the side with the toe pointing to the right: a low ankle-high shaft at the left, laces, a thick hobnailed sole along the bottom, "
     "wider than it is tall (about 20 px wide and 14 px tall); a small pale cream river shell pokes out of the open top of the shaft. Not a lantern, not a cage, not standing upright. " + LOOK, 20, 14, 48, 48, 'crate_wide', 's')
+RETAKE[('crew_bench', 4)] = ("a long low outdoor bench built from quarry offcuts: one thick flat slab of pale cream limestone resting on two squat rough stone blocks, with a plain weathered brown timber plank along its front edge. "
+    "Nothing on the seat: no tiles, no plants, no moss, no green at all, no roof, no decoration. Plain stone and plain wood only, seen front-on in low top-down, about 72 px wide and 26 px tall. "
+    "One-pixel outline in a darker tone of each material, light from the upper left.", 72, 26, 80, 40, 'mason_bench', 'a')
 RETAKE[('gao_store', 5)] = (IT['gao_store'][0], 80, 76, 88, 80, 'pella', 'b')   # the reference's own drawn size sets the result: pella scaled to fit 84 x 76 is about 84 x 75
 RETAKE[('awning', 4)] = ("a free-standing patched awning ONLY: four slim bare wooden posts, one at each corner, and a sagging patched cloth stretched across their tops, patches of faded red, ochre and indigo stitched together. "
     "The space under the cloth is completely empty and open: no counter, no table, no crates, no goods, no stall, no benches; just four thin posts standing on the ground and the cloth above, seen from the front, the cloth a wide shallow slanted band. "

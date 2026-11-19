@@ -298,5 +298,35 @@
   "job_id": "5551a43b-3784-49c5-b8b3-c5b6cde86007",
   "takes": 2,
   "prompt": "Remove the open plank door on the right completely, nothing left hanging outside..."
+ },
+ "trough_ek": {
+  "w": 46,
+  "h": 23,
+  "seed": 3,
+  "ledger_job": "bd20_trough_ek_3",
+  "credits": 5.0,
+  "job_id": "73164205-f94b-46b8-97f9-de72ef296118",
+  "takes": 1,
+  "prompt": "a long low stone water trough for cart animals, carved from one block of pale li..."
+ },
+ "sacks": {
+  "w": 29,
+  "h": 26,
+  "seed": 3,
+  "ledger_job": "bd20_sacks_3",
+  "credits": 5.0,
+  "job_id": "ded87b40-aa65-41d6-b63a-84b613469ba2",
+  "takes": 1,
+  "prompt": "two plain hemp grain sacks leaning together, tied at the neck with rope, one ful..."
+ },
+ "crew_bench": {
+  "w": 46,
+  "h": 21,
+  "seed": 4,
+  "ledger_job": "bd20_crew_bench_4",
+  "credits": 10.0,
+  "job_id": "da887b52-5e98-4676-85ad-362dbc09316a",
+  "takes": 2,
+  "prompt": "a long low outdoor bench built from quarry offcuts: one thick flat slab of pale ..."
  }
 }
