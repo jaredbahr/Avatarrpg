@@ -321,7 +321,7 @@ const PIECES: readonly PlannedSetPiece[] = [
       building('amri-row-house', "Amri's house", 8, 19, 3, 2, 1.35),
       flat('amri-doorstep', 'doorstep', 9, 18),
       flat('amri-free-step', 'free doorstep', 10, 18),
-      small('amri-pot', 'pot', 7.3, 19.3, 0.5, 0.4),
+      small('amri-pot', 'pot', 7.45, 20.3, 0.5, 0.4),
     ],
   },
   {
@@ -333,7 +333,7 @@ const PIECES: readonly PlannedSetPiece[] = [
       building('senn-row-house', "Senn's house", 13, 19, 3, 2, 1.35),
       flat('senn-doorstep', 'doorstep', 14, 18),
       flat('senn-free-step', 'free doorstep', 15, 18),
-      small('senn-logs', 'log pile', 16.1, 19.2, 0.7, 0.65),
+      small('senn-logs', 'log pile', 16.05, 20.1, 0.7, 0.65),
     ],
   },
   {
