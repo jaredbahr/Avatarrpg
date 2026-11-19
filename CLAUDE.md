@@ -8,7 +8,8 @@ when improving a line.
 
 Story, dialogue and scene planning have one owner, the writing pass (owner, 2026-11-14; `AGENTS.md`,
 `docs/story-bible.md`). A session that is not the writing pass does not draft story text: it leaves a marked
-placeholder and says so in its PR.
+placeholder and says so in its PR. `docs/story-requests.md` says when to file a story issue or message the
+writing pass.
 
 For camera, interface, environment and character presentation work, also read
 `docs/player-view-target.md`: it records Jared's approved long-term player views,
