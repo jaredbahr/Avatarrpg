@@ -167,12 +167,23 @@ export function rimSprite(x: number, y: number, before: string | undefined): str
 
 const footprint = (cells: readonly Vec2[]): Vec2[] => cells.map((c) => ({ x: c.x, y: c.y }));
 
-/** What `validateTopDownLayout` asks of a foot: no water or kerb under it, and a tree's roots on soil, not paving. */
-function footOk(tree: boolean, cells: readonly Vec2[], cx: number, baseY: number): boolean {
+/**
+ * What `validateTopDownLayout` asks of a foot: no water or kerb under it, and a tree's roots on soil, not paving. A
+ * building may also stand on a plinth: where another building's blocked cells adjoin its south row (the bent-shutter
+ * house's annex), the plinth runs on under its foot and that is still a house standing on its own ground.
+ */
+function footOk(
+  tree: boolean,
+  cells: readonly Vec2[],
+  cx: number,
+  baseY: number,
+  building = false,
+): boolean {
   const xs = cells.map((c) => c.x);
   const y = baseY - 1;
   const bad = (x: number): boolean => {
     const at = BA_DAN_GROUND.classify(x, y);
+    if (building && at.ground === 'rock') return false;
     return at.ground !== 'ground' || at.kerb === true || (tree && at.terrain === 'C');
   };
   for (let x = Math.min(...xs) * CELL + 4; x <= (Math.max(...xs) + 1) * CELL - 4; x += 4)
@@ -187,8 +198,10 @@ function liftedBase(
   cx: number,
   baseY: number,
   reach: number,
+  building = false,
 ): number | undefined {
-  for (let up = 0; up <= reach; up++) if (footOk(tree, cells, cx, baseY - up)) return baseY - up;
+  for (let up = 0; up <= reach; up++)
+    if (footOk(tree, cells, cx, baseY - up, building)) return baseY - up;
   // a rim tree on the canal's end may instead stand a little lower, on the bank below
   if (tree)
     for (let down = 1; down <= 36; down++)
@@ -214,6 +227,7 @@ function object(
     x,
     Math.round(baseY * CELL),
     m.id.includes('lamp') ? 60 : tree ? 44 : 12,
+    m.kind === 'building',
   );
   if (lifted === undefined) return undefined;
   const base = lifted;
