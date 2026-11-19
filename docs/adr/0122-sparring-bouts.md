@@ -41,6 +41,22 @@ on a loss) is the ordinary encounter. A bout is data, so a later sparring match 
 - The unit keeps its cell for the drawing (the splash, the figure sitting in the water) but, like a downed
   unit, blocks nothing and is never targeted.
 
+### 2a. Teetering first (amendment, owner 2026-11-19)
+
+Measured on SF-2.2's blockout, the rule above ended every bout in its first round: a fighter with
+4 AP walks up and shoves anyone into the water, so the side that moves first wins. The owner chose
+**teeter first**:
+
+- A forced move that would carry a fighter into an `outOn` terrain instead leaves them on the last
+  cell before it, **Teetering** (a status, shown on the board like any other).
+- Teetering lasts two and ticks at its owner's turn start. Only once it reads one, so the fighter
+  has had a turn to react, does a forced move toward the water put them in and out of the bout. A
+  second shove in the same turn only keeps them teetering.
+- Walking clears it. Life Tide clears it ("every harmful status").
+- The forecast says "Teetering" for the first shove and "Out of the bout" for one that puts them
+  in; the AI prices a teeter as a strong debuff and the water as a knockout.
+- A tip (§3) is a forced move, so it teeters a fighter at the edge first too.
+
 ### 3. The tipping platform (owner: "At each round's end")
 
 `Tipping = { axis: 'x' | 'y'; pivot: number }`: the line between the platform's two halves.
