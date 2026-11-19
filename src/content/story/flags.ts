@@ -550,6 +550,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'story:hanru_watch',
       'story:sf11_driver',
       'story:sf11_wheels',
+      'story:sf11_wheels_won',
       'story:sf11_back',
       'story:sf12_driver',
       'story:sf12_won',

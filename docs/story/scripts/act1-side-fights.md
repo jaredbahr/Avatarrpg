@@ -43,8 +43,8 @@ from the coast myself. You can't boast about a crate that small, so I never have
 > **Loss branch.** **Driver (Dorin):** Those are my wheels. Forty, lime wood, for the lantern float. I entered
 > them as lost on the fourth. I would like to correct the entry.
 
-> **If the party lost the first fight here (`lost_forest_road`).** **Narrator:** The party's supply sack is on
-> the handcart too, near the top, still tied with their own knot. **Bessa:** Oh. It's you. ...I did say sorry at the time. You were lying
+> **If the party lost the first fight here (`lost_forest_road`).** **Narrator:** The party's food sack is on
+> the handcart too, near the top. It is a good deal lighter than it was. **Bessa:** Oh. It's you. ...I did say sorry at the time. You were lying
 > down.
 
 **Win:** the four of them pull the handcart back to Ba Dan themselves. **Lanfen:** The province pays me for
@@ -55,8 +55,15 @@ stream. A bowl at noon and a wage on the first. Bring my line back before you st
 roll back down the road. **Narrator:** The ducklings find the last of them by evening. **Lanfen:** Thirty-nine.
 The duck can keep whichever one it took.
 
-_(Loss branch, after either ending:_ **Driver (Dorin):** "Thirty-nine wheels is nine axles and a spare. I will
-redesign the float.")
+_(Loss branch, after a win:_ **Driver (Dorin):** "Forty wheels. I have counted them twice. I am going to count
+them again at home." _After Carry on:_ **Driver (Dorin):** "Thirty-nine wheels is nineteen axles and a spare. I
+will redesign the float.")
+
+**Fight intro (The East Road):** Mist in the trees at the bend. A handcart stands across the road, loaded higher
+than the people loading it. Lanfen is standing in front of it with her arms folded.
+
+**Fight tip:** The two with slings stay back and throw. The other two run straight at you. Don't stand in a row
+for the slings.
 
 ### SF-1.2 — Edge-on (the Cutting)
 
@@ -91,6 +98,12 @@ One of these, by what the table did with Ruon:
 Cabbages through, stone stays. I can hold that all winter, and feed my lot while I do it. _(Loss branch, her
 last sentence instead:_ "I can hold that until the company comes down here and talks.")
 
+**Fight intro (The Cutting):** A slab of stone stands across the Cutting, taller than the cart. Five people sit
+in its shade round a soup pot. One of them gets up.
+
+**Fight tip:** The haulers hit hard and walk slowly. Tolma stays behind them and throws stone. Don't let them
+walk you into a corner.
+
 **Carry on:** the driver backs the cart down the road and the party sleeps beside it. **Narrator:** In the
 morning the slab is standing edge-on. Nobody on the picket will say who turned it. **Tolma:** Wind.
 
@@ -111,5 +124,5 @@ flour got through, one way or the other). Nothing falls. Later acts do not read 
 
 - A new speaker can use an existing sprite: Bessa a slinger, Tolma the bandit earthbender.
 - Lanfen speaks in SF-1.1 on both branches; she keeps her portrait.
-- What the party lost at the bend on `lost_forest_road` is its supply sack (shipped text: "They took our
-  supplies"); the narrator names it before Bessa speaks (the writing pass, 2026-11-19).
+- What the party lost at the bend on `lost_forest_road` is its food sack (Act I: they took the food and left
+  the wrapping); the narrator names it before Bessa speaks (the writing pass, 2026-11-19).

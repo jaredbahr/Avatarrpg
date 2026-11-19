@@ -297,8 +297,9 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
       at(16, 8, 'bandit_thug'),
     ],
     variants: [],
-    intro: 'PLACEHOLDER (story): the fight intro at the bend, with the handcart and the mist.',
-    tip: 'PLACEHOLDER (story): a fight tip for a table of 7-to-12-year-olds (two slingers stay back).',
+    intro:
+      'Mist in the trees at the bend. A handcart stands across the road, loaded higher than the people loading it. Lanfen is standing in front of it with her arms folded.',
+    tip: 'The two with slings stay back and throw. The other two run straight at you. Don’t stand in a row for the slings.',
   },
   {
     id: 'enc_sf12_edge_on',
@@ -323,7 +324,8 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
      */
     reinforcements: [at(17, 8, 'bandit_thug'), at(18, 5, 'bandit_bruiser')],
     variants: [],
-    intro: 'PLACEHOLDER (story): the fight intro at Tolma’s slab across the Cutting.',
-    tip: 'PLACEHOLDER (story): a fight tip for a table of 7-to-12-year-olds (one earthbender behind three bruisers).',
+    intro:
+      'A slab of stone stands across the Cutting, taller than the cart. Five people sit in its shade round a soup pot. One of them gets up.',
+    tip: 'The haulers hit hard and walk slowly. Tolma stays behind them and throws stone. Don’t let them walk you into a corner.',
   },
 ];

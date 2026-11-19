@@ -127,11 +127,11 @@ Flags read in one part and written in another. A reader in a later region depend
 
 ### Ba Dan valley: Act I side fights
 
-| Flag               | Means                                                                                                                               | Written in           | Read here by                                                                                                          |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------- | -------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `act1_lost`        | The party lost to the Driller and carried on: the quarry stays occupied, the five stay held, and Dorin drives the cart until MQ-11. | Ba Dan valley: Act 1 | `story:sf11_back`, `story:sf11_driver`, `story:sf11_wheels`, `story:sf12_back`, `story:sf12_driver`, `story:sf12_won` |
-| `lost_forest_road` | The party lost the Forest Road ambush and was robbed of its provisions.                                                             | Ba Dan valley: Act 1 | `story:sf11_recognised`                                                                                               |
-| `ruon_traded`      | The table traded Captain Ruon to Jin for the inner gate key (branch B).                                                             | Ba Dan valley: Act 1 | `story:sf12_ruon`                                                                                                     |
+| Flag               | Means                                                                                                                               | Written in           | Read here by                                                                                                                            |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `act1_lost`        | The party lost to the Driller and carried on: the quarry stays occupied, the five stay held, and Dorin drives the cart until MQ-11. | Ba Dan valley: Act 1 | `story:sf11_back`, `story:sf11_driver`, `story:sf11_wheels`, `story:sf11_wheels_won`, `story:sf12_back`, `story:sf12_driver` and 1 more |
+| `lost_forest_road` | The party lost the Forest Road ambush and was robbed of its provisions.                                                             | Ba Dan valley: Act 1 | `story:sf11_recognised`                                                                                                                 |
+| `ruon_traded`      | The table traded Captain Ruon to Jin for the inner gate key (branch B).                                                             | Ba Dan valley: Act 1 | `story:sf12_ruon`                                                                                                                       |
 
 ### Saltstep and Emberwatch: maps, people and fights
 

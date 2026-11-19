@@ -12,7 +12,7 @@
  * encounter's `xpPerHead`) and on "Carry on" (`grantXp`) alike, so a table that plays both reaches
  * level 5 before Saltstep, inside RG-02's band.
  *
- * On `lost_forest_road` the party's own supply sack is on the handcart (the writing pass, 2026-11-19,
+ * On `lost_forest_road` the party's own food sack is on the handcart (the writing pass, 2026-11-19,
  * added to the script). Not built yet: Ba Dan's trust rising after either fight (community trust,
  * C-25, has no mechanism yet).
  */
@@ -121,7 +121,7 @@ const NODES: readonly StoryNode[] = [
     'The East Road',
     NARRATOR,
     [
-      'The party’s supply sack is on the handcart too, near the top, still tied with their own knot.',
+      'The party’s food sack is on the handcart too, near the top. It is a good deal lighter than it was.',
     ],
     'sf11_bessa_sorry',
   ),
@@ -153,7 +153,7 @@ const NODES: readonly StoryNode[] = [
     [
       'The province pays me for four hands on this road every spring. I have had two, and both of them are mine. Ditches, from the bend to the stream. A bowl at noon and a wage on the first. Bring my line back before you start.',
     ],
-    'sf11_wheels',
+    'sf11_wheels_won',
   ),
   {
     // Carry on: a side fight pays its XP on a loss too (the script's rule for every side fight).
@@ -181,7 +181,7 @@ const NODES: readonly StoryNode[] = [
     'sf11_wheels',
   ),
   {
-    // The script's loss branch, after either ending: Dorin's line about the float.
+    // The script's loss branch (Dorin drives only then), after Carry on: thirty-nine wheels.
     id: 'sf11_wheels',
     kind: 'branchWhen',
     when: LOST,
@@ -192,7 +192,22 @@ const NODES: readonly StoryNode[] = [
     'sf11_redesign',
     DORIN,
     DORIN_PORTRAIT,
-    ['Thirty-nine wheels is nine axles and a spare. I will redesign the float.'],
+    ['Thirty-nine wheels is nineteen axles and a spare. I will redesign the float.'],
+    'sf11_back',
+  ),
+  {
+    // The script's loss branch, after a win: all forty came home.
+    id: 'sf11_wheels_won',
+    kind: 'branchWhen',
+    when: LOST,
+    ifTrue: 'sf11_forty',
+    ifFalse: 'sf11_back',
+  },
+  say(
+    'sf11_forty',
+    DORIN,
+    DORIN_PORTRAIT,
+    ['Forty wheels. I have counted them twice. I am going to count them again at home.'],
     'sf11_back',
   ),
   backTo('sf11_back', 'forest_return_explore', 'forest_explore'),
