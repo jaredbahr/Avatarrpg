@@ -24,14 +24,14 @@ describe('nearby exploration guidance', () => {
     const map = CONTENT.maps.get('ba_dan_village');
     if (!map) throw new Error('Missing Ba Dan village');
 
-    const atPortal = nearbyExploreTarget(CONTENT, map, villageAt({ x: 18, y: 19 }));
+    const atPortal = nearbyExploreTarget(CONTENT, map, villageAt({ x: 18, y: 22 }));
     expect(atPortal).toMatchObject({
       kind: 'exit',
       destination: 'Riverside',
       exit: { toMapId: 'ba_dan_riverside' },
     });
 
-    const bySign = nearbyExploreTarget(CONTENT, map, villageAt({ x: 21, y: 18 }));
+    const bySign = nearbyExploreTarget(CONTENT, map, villageAt({ x: 21, y: 21 }));
     expect(bySign).toMatchObject({ kind: 'npc', npc: { id: 'riverside_sign' } });
   });
 

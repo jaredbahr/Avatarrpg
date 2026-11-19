@@ -11,7 +11,7 @@ test('the top-down village walks from the spawn out of the east exit', async ({ 
   test.setTimeout(120_000);
   const errors: string[] = [];
   page.on('console', (message) => {
-    if (message.type() === 'error') errors.push(message.text());
+    if (message.type() === 'error') errors.push(`${message.text()} ${message.location().url}`);
   });
   page.on('pageerror', (error) => errors.push(error.message));
 

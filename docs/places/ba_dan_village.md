@@ -7,6 +7,10 @@ quarry hillside along the north rim. On 2026-11-18 the owner approved the blocko
 props; 197 spent of the 210 cap), and the dressed board ("love it, finish it"). Story facts are the writing
 pass's; every gap is a marked placeholder or a question.
 
+**Back row (2026-11-19):** the owner settled a clash with SQ-03: the house with the blue door and the house with the
+bent shutter are the two households on Gao's ledger, unnamed on purpose, so Amri and Senn move to two new houses in a
+back row and the board grows to **32 by 23** (section "Back row" at the end).
+
 **One line:** a quarry village built from its own hill's pale stone, where everyone eats at one table in the square
 and every road ends at the east gate.
 
@@ -33,7 +37,8 @@ resident or dressing data states.
   behind, "my trough" where the stone carts water their animals (`act1.ts`; `baDanDay.ts`; `sq03GaosLedger.ts`;
   `lost.ts:187`).
 - **The canal:** "lamps come on along the canal" (`return.ts:253`; `lost.ts:47`). Gao's parcels go to "the houses
-  past the canal": the blue door and the house with the bent shutter (`sq03GaosLedger.ts:50`).
+  past the canal": the blue door and the house with the bent shutter (`sq03GaosLedger.ts:50`). Both households are
+  left unnamed on purpose (SQ-03; owner, 2026-11-19).
 - **The side gate:** a path "behind the houses to the vegetable gardens. It is quicker than going round by the
   square." "The map has no side gate yet." (`sq02OfficialGate.ts:13-14`, `:187`)
 - **Named with no place yet:** the mason's yard where Hesra lodges, with a step and a windowsill (`return.ts:255`);
@@ -79,17 +84,17 @@ mason's yard, the side gate, the houses past the canal) are either missing or a 
 
 Roles and story names only; lines belong to the writing pass. Anchor ids stay; their cells move with the plan.
 
-| Who                     | Lives                                           | Works / stands                        | Why talk to them                                 |
-| ----------------------- | ----------------------------------------------- | ------------------------------------- | ------------------------------------------------ |
-| Mira (`elder_mira`)     | Her house on the square                         | The table under the awning            | Mira's table; the epilogue; the rubbing          |
-| Gao (`shopkeeper_gao`)  | Behind his shop                                 | Shop front, the trough, the storeroom | Supplies; the plant chair; SQ-03                 |
-| Pella (`kid_pella`)     | Her house past the canal (with Bo-shan)         | The court; the table bench            | Tips; SQ-01; the reunion                         |
-| Dorin (`guard_dorin`)   | `PLACEHOLDER (story)`: which house              | The gate post; the handover           | Directions; SQ-02; the watch book                |
-| Hanru (`guard_hanru`)   | `PLACEHOLDER (story)`: which house              | The gate at night; the hut            | The night watch; the fish prints                 |
-| Bo-shan, Leto, Amri     | Past the canal (`home.*` anchors)               | The welcome crowd; recovery spots     | The return                                       |
-| Hesra                   | **The mason's yard** (story) - today a rim door | The yard                              | The boot (C-30)                                  |
-| Pella's household adult | With Pella                                      | The court and yard                    | `PLACEHOLDER (story)`: stand-in until Nala comes |
-| Relief watch            | -                                               | The gate at midday                    | Colour                                           |
+| Who                     | Lives                                                              | Works / stands                        | Why talk to them                                 |
+| ----------------------- | ------------------------------------------------------------------ | ------------------------------------- | ------------------------------------------------ |
+| Mira (`elder_mira`)     | Her house on the square                                            | The table under the awning            | Mira's table; the epilogue; the rubbing          |
+| Gao (`shopkeeper_gao`)  | Behind his shop                                                    | Shop front, the trough, the storeroom | Supplies; the plant chair; SQ-03                 |
+| Pella (`kid_pella`)     | Her house past the canal (with Bo-shan)                            | The court; the table bench            | Tips; SQ-01; the reunion                         |
+| Dorin (`guard_dorin`)   | `PLACEHOLDER (story)`: which house                                 | The gate post; the handover           | Directions; SQ-02; the watch book                |
+| Hanru (`guard_hanru`)   | `PLACEHOLDER (story)`: which house                                 | The gate at night; the hut            | The night watch; the fish prints                 |
+| Bo-shan, Leto, Amri     | Past the canal (`home.*` anchors); Amri's house is in the back row | The welcome crowd; recovery spots     | The return                                       |
+| Hesra                   | **The mason's yard** (story) - today a rim door                    | The yard                              | The boot (C-30)                                  |
+| Pella's household adult | With Pella                                                         | The court and yard                    | `PLACEHOLDER (story)`: stand-in until Nala comes |
+| Relief watch            | -                                                                  | The gate at midday                    | Colour                                           |
 
 ## Daily life
 
@@ -138,6 +143,8 @@ keeps plan 3's lamps along the canal.
    flooded road                          |
                        [PAST THE CANAL: the quarry houses, blue door, bent shutter, Pella's house]
                                          |
+                       [BACK LANE + BACK ROW: Amri's and Senn's houses]  --  river path runs on south
+                                         |
                          [RIVER PATH mouth, south]   [coast road sign, after Act I]
 ```
 
@@ -151,7 +158,8 @@ keeps plan 3's lamps along the canal.
   2. _The road in:_ Gao's shop and the trough where carts stop.
   3. _The square:_ the table.
   4. _The bridge:_ the wash steps and the lamps on the canal.
-  5. _Past the canal:_ the quarry houses' doorsteps, the blue door, the bent shutter.
+  5. _Past the canal:_ the quarry houses' doorsteps, the blue door, the bent shutter, and behind them the back lane
+     with Amri's and Senn's doors.
   6. _The mason's yard:_ pale stone being cut.
   7. _The back path:_ the side gate in a wall behind the house backs.
   8. _The gardens:_ the vegetable beds (whose: `PLACEHOLDER (story)`).
@@ -169,7 +177,7 @@ keeps plan 3's lamps along the canal.
   No side is a straight run.
 - **Exits:** the east gate (all three cues: the gate is the break, the road runs through it, and the road beyond is
   the lightest ground); the river path mouth (south); the coast road sign (south, after Act I).
-- **Size:** eleven views, about **32 by 20** cells, up from 24 by 16. Ba Dan is the hub players return to across the
+- **Size:** eleven views, about **32 by 20** cells, up from 24 by 16 (32 by 23 since the back row, 2026-11-19). Ba Dan is the hub players return to across the
   whole saga, so it earns the room; it would be the largest top-down board, so the perf bench and the region's
   board budget need checking before the blockout lands.
 
@@ -264,9 +272,9 @@ tileset 15, `docs/level-design.md` section 7) for a first take, and 0 where exis
 | 5   | Pella's house                                    | `pella_house`                                | 160 x 72        | EK `house_pella` 242 x 216 (#865): taller and wider than the plan                                          |       9 |
 | 6   | Guard hut                                        | `guard_hut`                                  | 80 x 63         | quarry `gatehouse` 85 x 55 (objects13): reuse if it reads on Ba Dan's palette                              |   0 (5) |
 | 7   | Quarry row house, base style (Leto's)            | `quarry_leto`                                | 120 x 68        | none                                                                                                       |       9 |
-| 8   | Quarry row house, blue door (Amri's)             | `quarry_amri`                                | 120 x 68        | an edit of #7 (door colour)                                                                                |       5 |
-| 9   | Quarry row house, long with the bent shutter     | `quarry_senn`                                | 160 x 68        | none                                                                                                       |       9 |
-| 10  | Senn's annex, the L's corner                     | `quarry_senn`                                | 40 x 68         | an edit of #9                                                                                              |       5 |
+| 8   | Quarry row house, blue door (unnamed, SQ-03)     | `quarry_blue_door`                           | 120 x 68        | an edit of #7 (door colour)                                                                                |       5 |
+| 9   | Quarry row house, long with the bent shutter     | `quarry_bent_shutter`                        | 160 x 68        | none                                                                                                       |       9 |
+| 10  | The bent-shutter house's annex, the L's corner   | `quarry_bent_shutter`                        | 40 x 68         | an edit of #9                                                                                              |       5 |
 | 11  | Quarry row house, shutters closed (Hanru's)      | `hanru_house`                                | 80 x 68         | an edit of #7 (shutters)                                                                                   |       5 |
 | 12  | Mira's table, with bowls and the covered bowl    | `mira_table`                                 | 80 x 30         | `mira_table` 73 x 30 (objects7), the old board's table                                                     |       0 |
 | 13  | The patched awning: cloth over four posts        | `mira_table` (cloth and 4 posts)             | 128 x 96        | none; the one strong colour in Ba Dan                                                                      |       5 |
@@ -297,8 +305,8 @@ tileset 15, `docs/level-design.md` section 7) for a first take, and 0 where exis
 | 38  | Tea tray                                         | `tea_terrace`                                | 12 x 14         | `teapot` 27 x 26 (objects_rg02)                                                                            |       0 |
 | 39  | Bo-shan's handcart                               | `pella_house`                                | 32 x 40         | `handcart` 32 x 41 (objects12)                                                                             |       0 |
 | 40  | Bench by Leto's door                             | `quarry_leto`                                | 32 x 18         | `bench` 36 x 26 (objects7)                                                                                 |       0 |
-| 41  | Pot by Amri's door                               | `quarry_amri`                                | 20 x 22         | `pots` 26 x 19 (objects12)                                                                                 |       0 |
-| 42  | Log pile by Senn's door                          | `quarry_senn`                                | 28 x 22         | `firewood` 39 x 29 (objects12)                                                                             |       0 |
+| 41  | Pot by Amri's door (back row)                    | `quarry_amri`                                | 20 x 22         | `pots` 26 x 19 (objects12)                                                                                 |       0 |
+| 42  | Log pile by Senn's door (back row)               | `quarry_senn`                                | 28 x 22         | `firewood` 39 x 29 (objects12)                                                                             |       0 |
 | 43  | Drying rack                                      | `hanru_house`                                | 40 x 50         | `drying_rack` 35 x 41 (objects_rg02)                                                                       |       0 |
 | 44  | Rim trees: tree, blossom tree, bush              | `rim_trees` x98                              | 40 x 85         | `tree` 101 x 121, `tree_blossom` 56 x 89, `bush` 36 x 42 (the old board's)                                 |       0 |
 | 45  | Doorsteps and free doorsteps (10), treads        | house pieces, `wash_steps`, `mason_yard`     | 40 x 40         | none needed: baked into the plate as ground (aprons)                                                       |       0 |
@@ -366,3 +374,44 @@ The later states that need a prop now have one, shown by a condition and drawn a
   existing exploration ambience, not this board; making it stronger is a follow-up.
 - **Known weak spots kept for later:** the old trough, sacks and crew-bench props; the lamps stand about 1.8 figures
   tall; the gate corner is busy; the houses run a little short of the scale chart; the notice-board decal is not placed.
+
+## Back row (2026-11-19)
+
+**Why:** SQ-03 (`sq03GaosLedger.ts`) says the house with the blue door and the house with the bent shutter belong to
+two households left unnamed on purpose, but the board labelled them Amri's and Senn's. The owner chose to keep both
+houses where they stand, art untouched, as the unnamed households (a plain doorstep each, no `home.*` anchor, no name
+in the label), and to give Amri and Senn two new plain houses in Leto's art (`quarry_row`, 0 credits) in a back row.
+
+**Blockout:** the board grows three rows south, from 20 to 23. Row 18, the grass behind the front row, becomes the
+back lane; the new houses stand on rows 19-20 facing north onto it; row 21 is grass; row 22 is the tree border. The
+river path carries on south between the rows to its mouth at (18..19, 22). The east wall runs on to row 20.
+
+```
+   0         1         2         3
+   01234567890123456789012345678901
+15 TT,,,,,,BBBB,................#TT
+16 TT,BBB,,BBBB,,,BBB..BBBB,,BB,#TT   Leto, Pella, blue door, bent shutter, Hanru
+17 TT,BBB,,BBBB,,,BBB..BBBB,,BB,#TT
+18 TT,,,,,,,,,,,,,,,,..,,,B,,,,T#TT   the back lane and the doorsteps; the annex at (23,18)
+19 TT,,,,,,BBB,,BBB,,..,,,,,,,,T#TT   Amri (8..10), Senn (13..15)
+20 TT,,,,,,BBB,,BBB,,..,,,,,,,,T#TT
+21 TTTT,,,,,,,,,,,,,,..,,,,,,,TTTTT
+22 TTTTTTTTTTTTTTTTTT..TTTTTTTTTTTT   the river path's mouth (18..19, 22)
+```
+
+**What moved:**
+
+- `home.amri` (16,15) -> (9,18) and `home.senn` (24,17) -> (14,18), on the back lane; their aprons `amri_door` and
+  `senn_door` move with them. Amri's free doorstep is (10,18) and her pot stands against the west wall; Senn's free
+  doorstep is (15,18) and his log pile stands against the east end wall.
+- The unnamed houses keep a plain doorstep apron: `blue_door` at (16,15), `bent_shutter_door` at (24,17), with the old
+  door stub track as `bent_shutter_door`. The `senn_door` track is now Senn's door east along the back lane to the
+  river path; a short `back_lane` track takes Amri's door to the coast path.
+- The riverside exit and its mouth move to (18..19, 22); the riverside's arrival is (18,21). The riverside sign
+  stands at (20,21), beside the path one cell short of the mouth.
+- The coast road sign moves from (13,18) to the new south rim at (12,21), between the two new houses, with its
+  `coast_sign` track running on down from the bridge; Saltstep's coast-road arrival is (12,20), north of it.
+- The `past_canal` zone runs to row 22; Pella's house stays its one focal piece.
+
+**Not settled:** Amri's and Senn's houses share a row and a size, which the layout rules ask against; the owner's
+sketch puts them so.

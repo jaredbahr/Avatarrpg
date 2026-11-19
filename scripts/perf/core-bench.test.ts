@@ -122,9 +122,10 @@ describe('core benchmark coverage and frozen calibration', () => {
         .filter((map) => map.width * map.height === maximum)
         .sort((a, b) => a.id.localeCompare(b.id)),
     );
-    // Ba Dan's 32 x 20 board is the largest registered on its own (ADR 0120); its cases carry their own calibration
+    // Ba Dan's board (32 x 23 since the back row, 2026-11-19) is the largest registered on its own (ADR 0120); its
+    // cases carry their own calibration, made on the 32 x 20 board
     expect(suite.coverage.topDown.largestMaps).toEqual([
-      { id: 'ba_dan_village', width: 32, height: 20 },
+      { id: 'ba_dan_village', width: 32, height: 23 },
     ]);
     expect(suite.coverage.topDown.benchmarkedMap).toBe('ba_dan_village');
     const supplemental = createTopDownBenchSuite();
@@ -141,7 +142,7 @@ describe('core benchmark coverage and frozen calibration', () => {
     for (const entry of supplemental.cases) {
       expect(entry.detail).toMatchObject({
         width: 32,
-        height: 20,
+        height: 23,
         reachableBudget: 6,
         props: 0,
         footprintSize: 1,

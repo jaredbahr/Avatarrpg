@@ -6,7 +6,7 @@
 
 Source: [../regions/saltstepEmberwatch/mq02.ts](../../src/content/story/../regions/saltstepEmberwatch/mq02.ts).
 
-133 nodes; 1 fights; 5 branches; 2 choices
+145 nodes; 1 fights; 8 branches; 2 choices
 
 Green nodes are story entry points (new game, map interactions, cross-file targets, or roots). Hexagons are fights; diamonds are flag branches. Purple placeholders exit this file; dashed placeholders continue in another part. Counts include owned story nodes only.
 
@@ -50,18 +50,18 @@ flowchart TD
   n116["mq02_bowl_custom_tenzo<br/>Bowl-seller: That one’s not yours. First bowl you eat. Second b…"]
   n125["mq02_bowl_who_tenzo<br/>The party: Carry it to who?"]
   n119["mq02_bowl_pump_woman_tenzo<br/>Bowl-seller: Anybody who hasn’t eaten. Today, the pump woman ou…"]
-  n216["mq02_tenzo_broth<br/>Tenzo: Pepper, river fish, and something sour right at the end.…"]
+  n222["mq02_tenzo_broth<br/>Tenzo: Pepper, river fish, and something sour right at the end.…"]
   n117["mq02_bowl_plum_skin<br/>Bowl-seller: Pickled plum skin. The plum I eat myself."]
-  n215["mq02_tenzo_both_bowls<br/>Tenzo: I’ll wash both bowls."]
+  n221["mq02_tenzo_both_bowls<br/>Tenzo: I’ll wash both bowls."]
   n177["mq02_market_explore — continue / part 1"]:::continuation
   n116 -->|"Next"| n125
-  n117 -->|"Next"| n215
-  n119 -->|"Next"| n216
+  n117 -->|"Next"| n221
+  n119 -->|"Next"| n222
   n121 -->|"Next"| n123
   n123 -->|"Next"| n116
   n125 -->|"Next"| n119
-  n215 -->|"Next"| n177
-  n216 -->|"Next"| n117
+  n221 -->|"Next"| n177
+  n222 -->|"Next"| n117
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5
@@ -177,11 +177,11 @@ flowchart TD
   n154["mq02_ferry_dorin<br/>Gate Guard Dorin: Fourteen. No. Fifteen. I’ll count again on th…"]
   n152["mq02_ferry_boshan<br/>Bo-shan: Pella would count them."]
   n153["mq02_ferry_counts<br/>The Ferry: He counts them."]
-  n245["mq03_parade_ground — exit to emberwatch / part 1"]:::external
+  n257["mq03_parade_ground — exit to emberwatch / part 1"]:::external
   n150 -->|"Next"| n157
   n152 -->|"Next"| n153
-  n153 -->|"Next"| n245
-  n154 -->|"Next"| n245
+  n153 -->|"Next"| n257
+  n154 -->|"Next"| n257
   n155 -->|"act1_lost: truthy (you have act1 lost)"| n154
   n155 -->|"act1_lost: falsy (you have not act1 lost)"| n152
   n156 -->|"Next"| n176
@@ -313,9 +313,9 @@ Continuations:
 
 ```mermaid
 flowchart TD
-  n195["mq02_saltstep_arrival<br/>Saltstep: Saltstep is a market on the water. Stalls sit on plat…"]:::entry
+  n198["mq02_saltstep_arrival<br/>Saltstep: Saltstep is a market on the water. Stalls sit on plat…"]:::entry
   n177["mq02_market_explore — continue / part 1"]:::continuation
-  n195 -->|"Next"| n177
+  n198 -->|"Next"| n177
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5
@@ -333,77 +333,197 @@ Continuations:
 
 ```mermaid
 flowchart TD
-  n203["mq02_stall_drifts<br/>The Customs Stall: The customs office is a floating stall with …"]:::entry
-  n201["mq02_stall_count<br/>Customs clerk: It says nine crates. I count ten. I can count to…"]
-  n204["mq02_stall_handler<br/>Freight handler: Nine are freight. The tenth is safety material…"]
-  n212["mq02_stall_stool<br/>Customs clerk: Everything gets counted. That’s why they gave me…"]
-  n209["mq02_stall_rope<br/>The Customs Stall: The handler slaps the mooring post to make h…"]
+  n206["mq02_stall_drifts<br/>The Customs Stall: The customs office is a floating stall with …"]:::entry
+  n204["mq02_stall_count<br/>Customs clerk: It says nine crates. I count ten. I can count to…"]
+  n207["mq02_stall_handler<br/>Freight handler: Nine are freight. The tenth is safety material…"]
+  n215["mq02_stall_stool<br/>Customs clerk: Everything gets counted. That’s why they gave me…"]
+  n212["mq02_stall_rope<br/>The Customs Stall: The handler slaps the mooring post to make h…"]
   n108["mq02_approach<br/>Customs clerk: This happens. Keep talking, I can still hear you!"]
   n109["mq02_approach_jump<br/>The Customs Stall: You land on the stall. It dips, the seal swi…"]
   n111["mq02_approach_walk<br/>The Customs Stall: You run the plank walk beside the level pole…"]
   n110["mq02_approach_tow<br/>Tavi Ren: Again? That’s the third time this month. Get in. Sit …"]
-  n207{"mq02_stall_reads<br/>Branch: act1_lost"}
-  n208["mq02_stall_receipt<br/>The Customs Stall: However you get there, the clerk reads Gao’s…"]
-  n210["mq02_stall_rubbing<br/>The Customs Stall: However you get there, the clerk reads the r…"]
-  n205["mq02_stall_match<br/>Customs clerk: They match. Six sealed crates, landed here on a …"]
-  n206["mq02_stall_plate<br/>Customs clerk: A Republic City plate. Came in four months back,…"]
-  n202["mq02_stall_dorin_lamps<br/>Gate Guard Dorin: Commonworks put the lamps in at the Saltstep …"]
-  n199["mq02_stall_boshan_lamps<br/>Bo-shan: Commonworks. They put the lamps in at the Saltstep fer…"]
-  n211["mq02_stall_stamp<br/>Customs clerk: I stamp what the paper says. If the paper said “…"]
-  n200["mq02_stall_bumps<br/>The Customs Stall: The stall bumps to a stop against the freigh…"]
+  n210{"mq02_stall_reads<br/>Branch: act1_lost"}
+  n211["mq02_stall_receipt<br/>The Customs Stall: However you get there, the clerk reads Gao’s…"]
+  n213["mq02_stall_rubbing<br/>The Customs Stall: However you get there, the clerk reads the r…"]
+  n208["mq02_stall_match<br/>Customs clerk: They match. Six sealed crates, landed here on a …"]
+  n209["mq02_stall_plate<br/>Customs clerk: A Republic City plate. Came in four months back,…"]
+  n205["mq02_stall_dorin_lamps<br/>Gate Guard Dorin: Commonworks put the lamps in at the Saltstep …"]
+  n202["mq02_stall_boshan_lamps<br/>Bo-shan: Commonworks. They put the lamps in at the Saltstep fer…"]
+  n214["mq02_stall_stamp<br/>Customs clerk: I stamp what the paper says. If the paper said “…"]
+  n203["mq02_stall_bumps<br/>The Customs Stall: The stall bumps to a stop against the freigh…"]
   n191["mq02_pump_woman<br/>The Freight Pontoon: A woman in a dark blue work coat is kneeli…"]
-  n219["mq02_veyra_bollard<br/>Veyra: If that’s for me, put it on the bollard. If you’re with …"]
+  n225["mq02_veyra_bollard<br/>Veyra: If that’s for me, put it on the bollard. If you’re with …"]
   n183["mq02_party_broth<br/>The party: It’s a bowl of broth. The seller sent it."]
-  n220["mq02_veyra_bowl_back<br/>Veyra: Did she say to bring the bowl back?"]
+  n226["mq02_veyra_bowl_back<br/>Veyra: Did she say to bring the bowl back?"]
   n185["mq02_party_twice<br/>The party: Twice."]
-  n224["mq02_veyra_laughs<br/>The Freight Pontoon: She laughs. It is a good laugh, and a slig…"]
-  n222["mq02_veyra_corner<br/>Veyra: Then I’d better eat it. Veyra. Take that corner, would y…"]
+  n232["mq02_veyra_laughs<br/>The Freight Pontoon: She laughs. It is a good laugh, and a slig…"]
+  n229["mq02_veyra_corner<br/>Veyra: Then I’d better eat it. Veyra. Take that corner, would y…"]
   n143["mq02_corner_heavier<br/>The Freight Pontoon: You take the corner. It is heavier."]
-  n229["mq02_veyra_pump<br/>Veyra: This goes to the low end of Saltstep. Hand pump. One per…"]
+  n237["mq02_veyra_pump<br/>Veyra: This goes to the low end of Saltstep. Hand pump. One per…"]
   n190{"mq02_pump_driver<br/>Branch: act1_lost"}
   n147["mq02_dorin_good_morning<br/>Gate Guard Dorin: Good morning. Dorin, gate guard, Ba Dan. I am…"]
   n114["mq02_boshan_tipping<br/>Bo-shan: You’ve got the rope the wrong way round. It’ll tip. I …"]
-  n228["mq02_veyra_other_corner<br/>Veyra: Good morning, Dorin, gate guard. Take the other corner."]
-  n230["mq02_veyra_show_me<br/>Veyra: Show me."]
+  n236["mq02_veyra_other_corner<br/>Veyra: Good morning, Dorin, gate guard. Take the other corner."]
+  n239["mq02_veyra_show_me<br/>Veyra: Show me."]
   n146["mq02_dorin_echo<br/>The Freight Pontoon: Dorin takes the corner. The crate goes ont…"]
   n144["mq02_crate_tips<br/>The Freight Pontoon: Bo-shan shows her. The crate tips anyway, …"]
   n148["mq02_dorin_heard<br/>Gate Guard Dorin: I heard that. I am not going to write it down."]
   n113["mq02_boshan_on_purpose<br/>Bo-shan: That was on purpose."]
-  n227["mq02_veyra_odd<br/>Veyra: Odd. The piles do that some days. I keep meaning to look…"]
+  n216{"mq02_sura_heard<br/>Branch when: Sura is with you"}
   n175["mq02_laugh_echo<br/>The Freight Pontoon: He laughs. It carries across the flat wate…"]
-  n233["mq02_veyra_tea<br/>The Freight Pontoon: She pours the last of her tea into the pot…"]
-  n198["mq02_sling<br/>The Freight Pontoon: Across the pontoon, the freight handlers h…"]
+  n218["mq02_sura_under_boards<br/>Sura: There. Under the boards. Did nobody else hear that?"]
+  n235["mq02_veyra_odd<br/>Veyra: Odd. The piles do that some days. I keep meaning to look…"]
+  n231["mq02_veyra_hear_what<br/>Veyra: Hear what?"]
+  n249{"mq02_wen_pump<br/>Branch when: Wen is with you"}
+  n217["mq02_sura_twice<br/>Sura: It said it twice."]
+  n247["mq02_wen_long_throw<br/>Wen: That’s a lift-and-force pump with the handle on a long thr…"]
+  n242["mq02_veyra_tea<br/>The Freight Pontoon: She pours the last of her tea into the pot…"]
+  n238["mq02_veyra_short_person<br/>Veyra: Somebody who watched a short person fail to reach it. Yo…"]
+  n201["mq02_sling<br/>The Freight Pontoon: Across the pontoon, the freight handlers h…"]
+  n248["mq02_wen_napkins<br/>Wen: Regulators. Smaller. Mostly on napkins."]
   n127["mq02_clerk_put_down<br/>Customs clerk: That’s the one! Put it down! I haven’t counted i…"]
+  n227["mq02_veyra_causeway<br/>Veyra: Napkins are where it starts. Come and find me if you’re …"]
   n165["mq02_handler_paid<br/>Freight handler: We’re paid by the crate and the tide’s going. …"]
   n126["mq02_clerk_overboard<br/>The Freight Pontoon: The clerk grabs the sling rope. A handler …"]
-  n235["mq02_veyra_winch<br/>Veyra: Stop that winch. That strap is going. There are people u…"]
+  n244["mq02_veyra_winch<br/>Veyra: Stop that winch. That strap is going. There are people u…"]
   n166["mq02_handler_who<br/>Freight handler: Who are you to say?"]
-  n232["mq02_veyra_strap<br/>Veyra: Somebody who can see a strap."]
+  n241["mq02_veyra_strap<br/>Veyra: Somebody who can see a strap."]
   n174["mq02_lance<br/>The Freight Pontoon: They do not stop the winch. Two more handl…"]
-  n221["mq02_veyra_coming<br/>Veyra: I’d rather not. Are you coming?"]
-  n238{{"mq02_winch_battle<br/>Fight: enc_mq02_winch (expected level 4)"}}
-  n240["mq02_winch_won<br/>The Freight Pontoon: The handlers lower the sling. Tavi poles t…"]
-  n239["mq02_winch_lost<br/>Set flags"]
+  n228["mq02_veyra_coming<br/>Veyra: I’d rather not. Are you coming?"]
+  n250{{"mq02_winch_battle<br/>Fight: enc_mq02_winch (expected level 4)"}}
+  n252["mq02_winch_won<br/>The Freight Pontoon: The handlers lower the sling. Tavi poles t…"]
+  n251["mq02_winch_lost<br/>Set flags"]
   n164["mq02_handler_docked<br/>Freight handler: We get docked for every crate that misses the …"]
   n112["mq02_barge_leaves<br/>The Freight Pontoon: The winch does not stop. The handlers swin…"]
-  n234["mq02_veyra_who_docks<br/>Veyra: I do now. Who docks you?"]
+  n243["mq02_veyra_who_docks<br/>Veyra: I do now. Who docks you?"]
   n149["mq02_duplicate_manifest<br/>Customs clerk: I’ll write you a duplicate manifest. Nine crates…"]
   n163["mq02_handler_contract<br/>Freight handler: The contract. Nobody. It just comes out."]
-  n194["mq02_safety_materials<br/>The Freight Pontoon: The tenth crate has split along one corner…"]
+  n197["mq02_safety_materials<br/>The Freight Pontoon: The tenth crate has split along one corner…"]
   n186["mq02_pay_packet<br/>Customs clerk: That’s a pay packet. I know a pay packet. I get …"]
   n128["mq02_clerk_reads<br/>The Freight Pontoon: The clerk reads the front out loud, slowly."]
-  n237["mq02_wages<br/>Customs clerk: “Stoneback Quarry. Lower galleries crew. Wages, …"]
-  n193["mq02_rope_creaks<br/>The Freight Pontoon: Nobody says anything. A rope creaks."]
+  n246["mq02_wages<br/>Customs clerk: “Stoneback Quarry. Lower galleries crew. Wages, …"]
+  n196["mq02_rope_creaks<br/>The Freight Pontoon: Nobody says anything. A rope creaks."]
   n162["mq02_galleries<br/>Bo-shan: I was in those galleries. We were told the pay was lat…"]
-  n231["mq02_veyra_somebodys_pay<br/>Veyra: That shouldn’t be in there. That’s somebody’s pay."]
-  n223["mq02_veyra_hands_packet<br/>The Freight Pontoon: She turns the packet over, reads the back,…"]
-  n226["mq02_veyra_log_it<br/>Veyra: Log it. Properly. Date and weight. Whoever packed that c…"]
+  n240["mq02_veyra_somebodys_pay<br/>Veyra: That shouldn’t be in there. That’s somebody’s pay."]
+  n230["mq02_veyra_hands_packet<br/>The Freight Pontoon: She turns the packet over, reads the back,…"]
+  n234["mq02_veyra_log_it<br/>Veyra: Log it. Properly. Date and weight. Whoever packed that c…"]
   n151["mq02_ferry_bell<br/>The Freight Pontoon: Across the harbour, the ferry bell rings. …"]
-  n218["mq02_veyra_before_dark<br/>Veyra: I have to get this fitted before dark or forty household…"]
-  n225["mq02_veyra_leaves<br/>The Freight Pontoon: She wheels the handcart away along the pon…"]
-  n217["mq02_two_ways<br/>Customs clerk: I can do this two ways. I can read that packet o…"]
-  n214["mq02_tavi_how_it_goes<br/>Tavi Ren: Loud, and my crews will talk to you. Half of them hav…"]
-  n236["mq02_vote<br/>The Customs Stall: How does Ba Dan’s complaint start?"]
+  n224["mq02_veyra_before_dark<br/>Veyra: I have to get this fitted before dark or forty household…"]
+  n233["mq02_veyra_leaves<br/>The Freight Pontoon: She wheels the handcart away along the pon…"]
+  n194{"mq02_riko_stamp<br/>Branch when: Riko is with you"}
+  n193["mq02_riko_packet<br/>Riko: She gave the packet to the man with the stamp."]
+  n223["mq02_two_ways<br/>Customs clerk: I can do this two ways. I can read that packet o…"]
+  n195["mq02_riko_watches — continue / part 14"]:::continuation
+  n220["mq02_tavi_how_it_goes — continue / part 14"]:::continuation
+  n108 -->|"Jump aboard now."| n109
+  n108 -->|"Follow along the pole walk."| n111
+  n108 -->|"Ask Tavi for a tow."| n110
+  n109 -->|"Next"| n210
+  n110 -->|"Next"| n210
+  n111 -->|"Next"| n210
+  n112 -->|"Next"| n149
+  n113 -->|"Next"| n175
+  n114 -->|"Next"| n239
+  n126 -->|"Next"| n244
+  n127 -->|"Next"| n165
+  n128 -->|"Next"| n246
+  n143 -->|"Next"| n237
+  n144 -->|"Next"| n113
+  n146 -->|"Next"| n148
+  n147 -->|"Next"| n236
+  n148 -->|"Next"| n216
+  n149 -->|"Next"| n197
+  n151 -->|"Next"| n224
+  n162 -->|"Next"| n240
+  n163 -->|"Next"| n197
+  n164 -->|"Next"| n243
+  n165 -->|"Next"| n126
+  n166 -->|"Next"| n241
+  n174 -->|"Next"| n228
+  n175 -->|"Next"| n216
+  n183 -->|"Next"| n226
+  n185 -->|"Next"| n232
+  n186 -->|"Next"| n128
+  n190 -->|"act1_lost: truthy (you have act1 lost)"| n147
+  n190 -->|"act1_lost: falsy (you have not act1 lost)"| n114
+  n191 -->|"Next"| n225
+  n193 -->|"Next"| n195
+  n194 -->|"when: Riko is with you"| n193
+  n194 -->|"otherwise (not: Riko is with you)"| n223
+  n196 -->|"Next"| n162
+  n197 -->|"Next"| n186
+  n201 -->|"Next"| n127
+  n202 -->|"Next"| n214
+  n203 -->|"Next"| n191
+  n204 -->|"Next"| n207
+  n205 -->|"Next"| n214
+  n206 -->|"Next"| n204
+  n207 -->|"Next"| n215
+  n208 -->|"Next"| n205
+  n209 -->|"Next"| n202
+  n210 -->|"act1_lost: truthy (you have act1 lost)"| n211
+  n210 -->|"act1_lost: falsy (you have not act1 lost)"| n213
+  n211 -->|"Next"| n208
+  n212 -->|"Next"| n108
+  n213 -->|"Next"| n209
+  n214 -->|"Next"| n203
+  n215 -->|"Next"| n212
+  n216 -->|"when: Sura is with you"| n218
+  n216 -->|"otherwise (not: Sura is with you)"| n235
+  n217 -->|"Next"| n235
+  n218 -->|"Next"| n231
+  n223 -->|"Next"| n220
+  n224 -->|"Next"| n233
+  n225 -->|"Next"| n183
+  n226 -->|"Next"| n185
+  n227 -->|"Next"| n242
+  n228 -->|"Next"| n250
+  n229 -->|"Next"| n143
+  n230 -->|"Next"| n234
+  n231 -->|"Next"| n217
+  n232 -->|"Next"| n229
+  n233 -->|"Next"| n194
+  n234 -->|"Next"| n151
+  n235 -->|"Next"| n249
+  n236 -->|"Next"| n146
+  n237 -->|"Next"| n190
+  n238 -->|"Next"| n248
+  n239 -->|"Next"| n144
+  n240 -->|"Next"| n230
+  n241 -->|"Next"| n174
+  n242 -->|"Next"| n201
+  n243 -->|"Next"| n163
+  n244 -->|"Next"| n166
+  n246 -->|"Next"| n196
+  n247 -->|"Next"| n238
+  n248 -->|"Next"| n227
+  n249 -->|"when: Wen is with you"| n247
+  n249 -->|"otherwise (not: Wen is with you)"| n242
+  n250 -->|"Victory"| n252
+  n250 -->|"Defeat"| n251
+  n251 -->|"set: lost_saltstep_docks=true; grant XP: 150"| n112
+  n252 -->|"Next"| n164
+  classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
+  classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
+  classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5
+```
+
+Continuations:
+
+- `mq02_riko_watches` → [mq02-paper-and-stone, part 14](./mq02-paper-and-stone.md#part-14)
+- `mq02_tavi_how_it_goes` → [mq02-paper-and-stone, part 14](./mq02-paper-and-stone.md#part-14)
+
+<a id="part-14"></a>
+
+## Part 14: entry `mq02_riko_watches`
+
+14 owned nodes.
+
+```mermaid
+flowchart TD
+  n195["mq02_riko_watches<br/>The Freight Pontoon: Riko watches the handcart all the way to t…"]
+  n220["mq02_tavi_how_it_goes<br/>Tavi Ren: Loud, and my crews will talk to you. Half of them hav…"]
+  n245["mq02_vote<br/>The Customs Stall: How does Ba Dan’s complaint start?"]
   n187["mq02_public<br/>Saltstep: At noon the clerk stands on his stool at the level po…"]
   n192["mq02_quiet<br/>Saltstep: The clerk folds the copy small and seals it. A fish-s…"]
   n189{"mq02_public_witnesses<br/>Branch: lost_saltstep_docks"}
@@ -411,98 +531,28 @@ flowchart TD
   n188["mq02_public_two_sign<br/>Saltstep: The handlers have gone with the barge. The clerk sign…"]
   n145["mq02_dock_worker<br/>Dock worker: I loaded one of those. “Safety materials.” It clin…"]
   n184["mq02_party_rest_of_it<br/>The party: We want to see who’s holding the rest of it."]
-  n196["mq02_second_dock_worker<br/>Second dock worker: Mine didn’t clink. Mine was light as bread.…"]
+  n199["mq02_second_dock_worker<br/>Second dock worker: Mine didn’t clink. Mine was light as bread.…"]
   n159["mq02_fish_seller_mm<br/>Fish-seller: Mm. Well. You’d know."]
+  n200["mq02_six_names<br/>Saltstep: By the time the clerk gets down, six people are waiti…"]
+  n181["mq02_no_second_bowl<br/>Saltstep: She goes back to her fish. She does not offer a secon…"]
   n177["mq02_market_explore — continue / part 1"]:::continuation
-  n181["mq02_no_second_bowl — continue / part 14"]:::continuation
-  n197["mq02_six_names — continue / part 14"]:::continuation
-  n108 -->|"Jump aboard now."| n109
-  n108 -->|"Follow along the pole walk."| n111
-  n108 -->|"Ask Tavi for a tow."| n110
-  n109 -->|"Next"| n207
-  n110 -->|"Next"| n207
-  n111 -->|"Next"| n207
-  n112 -->|"Next"| n149
-  n113 -->|"Next"| n175
-  n114 -->|"Next"| n230
-  n126 -->|"Next"| n235
-  n127 -->|"Next"| n165
-  n128 -->|"Next"| n237
-  n143 -->|"Next"| n229
-  n144 -->|"Next"| n113
-  n145 -->|"Next"| n196
-  n146 -->|"Next"| n148
-  n147 -->|"Next"| n228
-  n148 -->|"Next"| n227
-  n149 -->|"Next"| n194
-  n151 -->|"Next"| n218
+  n223["mq02_two_ways — continue / part 13"]:::continuation
+  n145 -->|"Next"| n199
   n158 -->|"Next"| n184
   n159 -->|"Next"| n181
-  n162 -->|"Next"| n231
-  n163 -->|"Next"| n194
-  n164 -->|"Next"| n234
-  n165 -->|"Next"| n126
-  n166 -->|"Next"| n232
-  n174 -->|"Next"| n221
-  n175 -->|"Next"| n227
-  n183 -->|"Next"| n220
+  n181 -->|"Next"| n177
   n184 -->|"Next"| n159
-  n185 -->|"Next"| n224
-  n186 -->|"Next"| n128
   n187 -->|"Next"| n189
   n188 -->|"Next"| n177
   n189 -->|"lost_saltstep_docks: truthy (you have lost saltstep docks)"| n188
   n189 -->|"lost_saltstep_docks: falsy (you have not lost saltstep docks)"| n145
-  n190 -->|"act1_lost: truthy (you have act1 lost)"| n147
-  n190 -->|"act1_lost: falsy (you have not act1 lost)"| n114
-  n191 -->|"Next"| n219
   n192 -->|"Next"| n158
-  n193 -->|"Next"| n162
-  n194 -->|"Next"| n186
-  n196 -->|"Next"| n197
-  n198 -->|"Next"| n127
-  n199 -->|"Next"| n211
-  n200 -->|"Next"| n191
-  n201 -->|"Next"| n204
-  n202 -->|"Next"| n211
-  n203 -->|"Next"| n201
-  n204 -->|"Next"| n212
-  n205 -->|"Next"| n202
-  n206 -->|"Next"| n199
-  n207 -->|"act1_lost: truthy (you have act1 lost)"| n208
-  n207 -->|"act1_lost: falsy (you have not act1 lost)"| n210
-  n208 -->|"Next"| n205
-  n209 -->|"Next"| n108
-  n210 -->|"Next"| n206
-  n211 -->|"Next"| n200
-  n212 -->|"Next"| n209
-  n214 -->|"Next"| n236
-  n217 -->|"Next"| n214
-  n218 -->|"Next"| n225
-  n219 -->|"Next"| n183
-  n220 -->|"Next"| n185
-  n221 -->|"Next"| n238
-  n222 -->|"Next"| n143
-  n223 -->|"Next"| n226
-  n224 -->|"Next"| n222
-  n225 -->|"Next"| n217
-  n226 -->|"Next"| n151
-  n227 -->|"Next"| n233
-  n228 -->|"Next"| n146
-  n229 -->|"Next"| n190
-  n230 -->|"Next"| n144
-  n231 -->|"Next"| n223
-  n232 -->|"Next"| n174
-  n233 -->|"Next"| n198
-  n234 -->|"Next"| n163
-  n235 -->|"Next"| n166
-  n236 -->|"Read it out at the level pole.; set: inquiry_public=true"| n187
-  n236 -->|"Seal a copy and carry it quietly.; set: inquiry_quiet=true"| n192
-  n237 -->|"Next"| n193
-  n238 -->|"Victory"| n240
-  n238 -->|"Defeat"| n239
-  n239 -->|"set: lost_saltstep_docks=true; grant XP: 150"| n112
-  n240 -->|"Next"| n164
+  n195 -->|"Next"| n223
+  n199 -->|"Next"| n200
+  n200 -->|"Next"| n177
+  n220 -->|"Next"| n245
+  n245 -->|"Read it out at the level pole.; set: inquiry_public=true"| n187
+  n245 -->|"Seal a copy and carry it quietly.; set: inquiry_quiet=true"| n192
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5
@@ -511,30 +561,7 @@ flowchart TD
 Continuations:
 
 - `mq02_market_explore` → [mq02-paper-and-stone, part 1](./mq02-paper-and-stone.md#part-1)
-- `mq02_no_second_bowl` → [mq02-paper-and-stone, part 14](./mq02-paper-and-stone.md#part-14)
-- `mq02_six_names` → [mq02-paper-and-stone, part 14](./mq02-paper-and-stone.md#part-14)
-
-<a id="part-14"></a>
-
-## Part 14: entry `mq02_six_names`
-
-2 owned nodes.
-
-```mermaid
-flowchart TD
-  n197["mq02_six_names<br/>Saltstep: By the time the clerk gets down, six people are waiti…"]
-  n181["mq02_no_second_bowl<br/>Saltstep: She goes back to her fish. She does not offer a secon…"]
-  n177["mq02_market_explore — continue / part 1"]:::continuation
-  n181 -->|"Next"| n177
-  n197 -->|"Next"| n177
-  classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
-  classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
-  classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5
-```
-
-Continuations:
-
-- `mq02_market_explore` → [mq02-paper-and-stone, part 1](./mq02-paper-and-stone.md#part-1)
+- `mq02_two_ways` → [mq02-paper-and-stone, part 13](./mq02-paper-and-stone.md#part-13)
 
 <a id="part-15"></a>
 
@@ -544,9 +571,9 @@ Continuations:
 
 ```mermaid
 flowchart TD
-  n213["mq02_tavi<br/>Tavi Ren: Ferry goes when the tide says. The company wants it t…"]:::entry
+  n219["mq02_tavi<br/>Tavi Ren: Ferry goes when the tide says. The company wants it t…"]:::entry
   n177["mq02_market_explore — continue / part 1"]:::continuation
-  n213 -->|"Next"| n177
+  n219 -->|"Next"| n177
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

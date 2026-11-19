@@ -92,7 +92,7 @@ test('rescued riverside return keeps the shrine discovery and party health', asy
       battle: null,
       flags: { ...app.state.flags, act1_complete: true },
       story: { ...app.state.story, nodeId: 'village_explore', lineIndex: 0 },
-      location: { mapId: 'ba_dan_village', pos: { x: 18, y: 19 } },
+      location: { mapId: 'ba_dan_village', pos: { x: 18, y: 22 } },
     };
     app.resync();
     return party.map((unit) => ({ id: unit.id, hp: unit.hp }));

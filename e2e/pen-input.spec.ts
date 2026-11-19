@@ -95,7 +95,8 @@ async function visibleExploreTarget(page: Page): Promise<Point> {
   const candidates = map.rows
     .flatMap((row, y) =>
       [...row].flatMap((symbol, x) => {
-        if (symbol !== '=') return [];
+        // Any open ground: on the rebuilt Ba Dan (#875) the road starts eight cells from the spawn.
+        if (map.legend[symbol]?.blocked) return [];
         const pos = { x, y };
         const distance =
           Math.abs(x - current.location.pos.x) + Math.abs(y - current.location.pos.y);
@@ -118,7 +119,7 @@ async function visibleExploreTarget(page: Page): Promise<Point> {
       }),
     )
     .sort((a, b) => a.distance - b.distance);
-  // A projected road tile can still sit behind the objective or dock in
+  // A projected ground tile can still sit behind the objective or dock in
   // portrait. Pick a legal short walk whose actual page point hits the canvas.
   const target = await page.evaluate((candidates) => {
     const canvas = document.querySelector('.map-canvas');
@@ -127,7 +128,7 @@ async function visibleExploreTarget(page: Page): Promise<Point> {
       null
     );
   }, candidates);
-  expect(target, 'an authored reachable road tile must be visible').not.toBeNull();
+  expect(target, 'an authored reachable ground tile must be visible').not.toBeNull();
   if (!target) throw new Error('No visible legal exploration destination');
   return target;
 }
@@ -189,10 +190,9 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       // refits through the ResizeObserver; project road tiles only once the
       // camera holds still and the backing store matches the canvas box.
       await settleMapCanvas(page);
-      expect(await page.evaluate(() => window.fnt!.app.state?.location.pos)).toEqual({
-        x: 3,
-        y: 7,
-      });
+      expect(await page.evaluate(() => window.fnt!.app.state?.location.pos)).toEqual(
+        CONTENT.maps.get('ba_dan_village')?.partySpawns?.[0],
+      );
       const target = await visibleExploreTarget(page);
       const before = await state(page);
 

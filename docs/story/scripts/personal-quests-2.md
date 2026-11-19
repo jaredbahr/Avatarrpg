@@ -2774,6 +2774,14 @@ The owner read the edit pass's proposals on 2026-11-17. What he decided for this
    [cutscenes.md](cutscenes.md): the map with no way home on it (L.1, CS-PQ06) and Ruda's capitals in Wen's
    card (W.4, CS-PQ10). Both wait on the trial in issue #810.
 
+## Decided (owner, 2026-11-19)
+
+1. **PQ-07 stays as written.** The vote in Scene M.3 and its two responsible routes are final. If Nima hands
+   the watch over, he sees nothing: the east face is the wrong side of the ridge. If he keeps it, he sees the
+   sky bison go at first light, the size of his thumbnail, and it costs something: Kip is turned away
+   believing the watch is for the seven, and Hobb is back on nights. The wild sky bison stays (open item 4
+   below is closed with it).
+
 ## Open, for the owner
 
 Everything below is written into the scripts as recommended, per the standing instruction.
@@ -2794,7 +2802,8 @@ Everything below is written into the scripts as recommended, per the standing in
    landing meadow, since the bible lists visiting sky bison at Bellweather and the companion has one
    (Brindle) in a side story. Mine is unnamed and wild, so it does not use up Brindle's scene. Recommend:
    approve; if you would rather keep bison for that side story alone, the rumour can be a lantern-kite
-   launch from the ridge with one line changed.
+   launch from the ridge with one line changed. _Decided (owner, 2026-11-19):_ the bison stays; PQ-07 is final as
+   written.
 5. **Nima's Act I crate was the east shelter's roofing felt.** The outline says the ribbon pays off at
    Bellweather but not how. I made the diverted crate the felt for the roof he walked off, so what he brings
    back is news about the very thing he left. Recommend: approve.
