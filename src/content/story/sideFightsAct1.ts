@@ -12,9 +12,9 @@
  * encounter's `xpPerHead`) and on "Carry on" (`grantXp`) alike, so a table that plays both reaches
  * level 5 before Saltstep, inside RG-02's band.
  *
- * Not built yet: what the bend took from the party on `lost_forest_road` (the script leaves it to
- * the build to name; a story issue asks the writing pass), and Ba Dan's trust rising after either
- * fight (community trust, C-25, has no mechanism yet).
+ * On `lost_forest_road` the party's own supply sack is on the handcart (the writing pass, 2026-11-19,
+ * added to the script). Not built yet: Ba Dan's trust rising after either fight (community trust,
+ * C-25, has no mechanism yet).
  */
 import type { Condition, DialogueVariant, StoryNode } from '../../core/types';
 import type { StoryGroup } from '../regions/types';
@@ -113,9 +113,18 @@ const NODES: readonly StoryNode[] = [
     id: 'sf11_recognised',
     kind: 'branchWhen',
     when: { kind: 'flag', key: 'lost_forest_road', op: 'set' },
-    ifTrue: 'sf11_bessa_sorry',
+    ifTrue: 'sf11_supply_sack',
     ifFalse: 'sf11_battle',
   },
+  say(
+    'sf11_supply_sack',
+    'The East Road',
+    NARRATOR,
+    [
+      'The party’s supply sack is on the handcart too, near the top, still tied with their own knot.',
+    ],
+    'sf11_bessa_sorry',
+  ),
   say(
     'sf11_bessa_sorry',
     BESSA,
@@ -312,6 +321,7 @@ const STAGED: Readonly<Record<string, { mapId: string; npc: string }>> = {
   sf11_lanfen: { mapId: 'forest_road', npc: 'sf11_bessa' },
   sf11_bessa_else: { mapId: 'forest_road', npc: 'sf11_bessa' },
   sf11_driver: { mapId: 'forest_road', npc: 'sf11_bessa' },
+  sf11_supply_sack: { mapId: 'forest_road', npc: 'sf11_bessa' },
   sf11_bessa_sorry: { mapId: 'forest_road', npc: 'sf11_bessa' },
   sf12_the_slab: { mapId: 'ambush_road', npc: 'sf12_tolma' },
   sf12_driver: { mapId: 'ambush_road', npc: 'sf12_tolma' },

@@ -29,15 +29,15 @@ flowchart TD
   n252["mq03_retired_cook<br/>Retired cook: Mind the edge. Those are the red ones and they ro…"]:::entry
   n253["mq03_slogans<br/>Emberwatch: Someone has painted over the slogans on the barrack…"]
   n254["mq03_tavi<br/>Tavi Ren: Come and meet the two people who’ll actually tell you…"]:::entry
-  n360{{"sf21_battle<br/>Fight: enc_sf21_wet_ground (expected level 4)"}}
-  n361["sf21_cutters_down<br/>The Power Yard: The riggers put down their cutters."]
-  n362["sf21_driver<br/>Bo-shan: Lightning goes straight across a puddle. I told Pella.…"]
-  n363["sf21_lost<br/>Set flags"]
-  n364["sf21_lost_luli<br/>Luli: I’d have given them the scrap. They only had to ask in da…"]
-  n365["sf21_over_the_wall<br/>The Power Yard: The riggers get away over the wall with one coi…"]
-  n366["sf21_sabi<br/>Sabi: We strung that spur. Nine weeks. Then they said the job w…"]
-  n367["sf21_wet_ground<br/>Luli: Off the wet! All of you! That line is live, and I am not …"]:::entry
-  n368["sf21_won<br/>Luli: I’m owed nine days off and nobody to cover them. Two of y…"]
+  n361{{"sf21_battle<br/>Fight: enc_sf21_wet_ground (expected level 4)"}}
+  n362["sf21_cutters_down<br/>The Power Yard: The riggers put down their cutters."]
+  n363["sf21_driver<br/>Bo-shan: Lightning goes straight across a puddle. I told Pella.…"]
+  n364["sf21_lost<br/>Set flags"]
+  n365["sf21_lost_luli<br/>Luli: I’d have given them the scrap. They only had to ask in da…"]
+  n366["sf21_over_the_wall<br/>The Power Yard: The riggers get away over the wall with one coi…"]
+  n367["sf21_sabi<br/>Sabi: We strung that spur. Nine weeks. Then they said the job w…"]
+  n368["sf21_wet_ground<br/>Luli: Off the wet! All of you! That line is live, and I am not …"]:::entry
+  n369["sf21_won<br/>Luli: I’m owed nine days off and nobody to cover them. Two of y…"]
   n246 -->|"Legacy/audit exit (live map exits differ)"| n246
   n247 -->|"Next"| n248
   n248 -->|"Next"| n249
@@ -47,16 +47,16 @@ flowchart TD
   n252 -->|"Next"| n253
   n253 -->|"Next"| n246
   n254 -->|"Next"| n246
-  n360 -->|"Victory"| n361
-  n360 -->|"Defeat"| n363
-  n361 -->|"Next"| n368
-  n362 -->|"Next"| n360
-  n363 -->|"set: (none); grant XP: 133"| n365
-  n364 -->|"Next"| n251
-  n365 -->|"Next"| n364
-  n366 -->|"Next"| n362
-  n367 -->|"Next"| n366
-  n368 -->|"Next"| n251
+  n361 -->|"Victory"| n362
+  n361 -->|"Defeat"| n364
+  n362 -->|"Next"| n369
+  n363 -->|"Next"| n361
+  n364 -->|"set: (none); grant XP: 133"| n366
+  n365 -->|"Next"| n251
+  n366 -->|"Next"| n365
+  n367 -->|"Next"| n363
+  n368 -->|"Next"| n367
+  n369 -->|"Next"| n251
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

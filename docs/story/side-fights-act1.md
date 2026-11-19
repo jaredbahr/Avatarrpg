@@ -6,7 +6,7 @@
 
 Source: [sideFightsAct1.ts](../../src/content/story/sideFightsAct1.ts).
 
-31 nodes; 2 fights; 6 branches; 0 choices
+32 nodes; 2 fights; 6 branches; 0 choices
 
 Green nodes are story entry points (new game, map interactions, cross-file targets, or roots). Hexagons are fights; diamonds are flag branches. Purple placeholders exit this file; dashed placeholders continue in another part. Counts include owned story nodes only.
 
@@ -16,7 +16,7 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 
 ## Part 1: entry `sf11_the_bend`
 
-31 owned nodes.
+32 owned nodes.
 
 ```mermaid
 flowchart TD
@@ -32,25 +32,26 @@ flowchart TD
   n338["sf11_over_the_hill<br/>The East Road: They get the handcart over the hill, but the whe…"]
   n339{"sf11_recognised<br/>Branch when: you have lost forest road"}
   n340["sf11_redesign<br/>Gate Guard Dorin: Thirty-nine wheels is nine axles and a spare.…"]
-  n341["sf11_the_bend<br/>Lanfen: That is my washing line on your cart. I know it is mine…"]:::entry
-  n342["sf11_thirty_nine<br/>Lanfen: Thirty-nine. The duck can keep whichever one it took."]
-  n343{"sf11_wheels<br/>Branch when: you have act1 lost"}
-  n344["sf11_won<br/>Lanfen: The province pays me for four hands on this road every …"]
-  n345{"sf12_back<br/>Branch when: you have act1 lost"}
-  n346["sf12_backs_the_cart<br/>The Cutting: The driver backs the cart down the road and the pa…"]
-  n347{{"sf12_battle<br/>Fight: enc_sf12_edge_on (expected level 3)"}}
-  n348{"sf12_bo<br/>Branch when: Bo is with you"}
-  n349["sf12_bo_crew<br/>Bo: I ran a crew of nine. I got to seven weeks before I stopped…"]
-  n350["sf12_driver<br/>Bo-shan: That’s a good trick. I’d have thought of that."]
-  n351["sf12_edge_on<br/>The Cutting: The slab is turned edge-on. A farm cart fits past …"]
-  n352["sf12_lost<br/>Set flags"]
-  n353{"sf12_ruon<br/>Branch when: you have ruon traded"}
-  n354["sf12_ruon_spared<br/>Tolma: Ruon held that gate two months for the same money we did…"]
-  n355["sf12_ruon_traded<br/>Tolma: You sold Ruon for a key. He was owed the same as us. I’l…"]
-  n356["sf12_sets_her_feet<br/>The Cutting: She sets her feet. The slab doesn’t move. Everythi…"]
-  n357["sf12_the_slab<br/>Tolma: Nothing with wheels. If I let the cabbages through today…"]:::entry
-  n358["sf12_wind<br/>Tolma: Wind."]
-  n359["sf12_won<br/>Tolma: Edge-on. Huh. Cabbages through, stone stays. I can hold …"]
+  n341["sf11_supply_sack<br/>The East Road: The party’s supply sack is on the handcart too, …"]
+  n342["sf11_the_bend<br/>Lanfen: That is my washing line on your cart. I know it is mine…"]:::entry
+  n343["sf11_thirty_nine<br/>Lanfen: Thirty-nine. The duck can keep whichever one it took."]
+  n344{"sf11_wheels<br/>Branch when: you have act1 lost"}
+  n345["sf11_won<br/>Lanfen: The province pays me for four hands on this road every …"]
+  n346{"sf12_back<br/>Branch when: you have act1 lost"}
+  n347["sf12_backs_the_cart<br/>The Cutting: The driver backs the cart down the road and the pa…"]
+  n348{{"sf12_battle<br/>Fight: enc_sf12_edge_on (expected level 3)"}}
+  n349{"sf12_bo<br/>Branch when: Bo is with you"}
+  n350["sf12_bo_crew<br/>Bo: I ran a crew of nine. I got to seven weeks before I stopped…"]
+  n351["sf12_driver<br/>Bo-shan: That’s a good trick. I’d have thought of that."]
+  n352["sf12_edge_on<br/>The Cutting: The slab is turned edge-on. A farm cart fits past …"]
+  n353["sf12_lost<br/>Set flags"]
+  n354{"sf12_ruon<br/>Branch when: you have ruon traded"}
+  n355["sf12_ruon_spared<br/>Tolma: Ruon held that gate two months for the same money we did…"]
+  n356["sf12_ruon_traded<br/>Tolma: You sold Ruon for a key. He was owed the same as us. I’l…"]
+  n357["sf12_sets_her_feet<br/>The Cutting: She sets her feet. The slab doesn’t move. Everythi…"]
+  n358["sf12_the_slab<br/>Tolma: Nothing with wheels. If I let the cabbages through today…"]:::entry
+  n359["sf12_wind<br/>Tolma: Wind."]
+  n360["sf12_won<br/>Tolma: Edge-on. Huh. Cabbages through, stone stays. I can hold …"]
   n14["cutting_after_explore — exit to world / part 1"]:::external
   n18["cutting_return_explore — exit to return / part 1"]:::external
   n44["forest_explore — exit to world / part 1"]:::external
@@ -63,37 +64,38 @@ flowchart TD
   n332 -->|"Next"| n334
   n333 -->|"Next"| n330
   n334 -->|"Next"| n339
-  n335 -->|"Next"| n344
+  n335 -->|"Next"| n345
   n336 -->|"Next"| n332
   n337 -->|"set: (none); grant XP: 65"| n338
-  n338 -->|"Next"| n342
-  n339 -->|"when: you have lost forest road"| n333
+  n338 -->|"Next"| n343
+  n339 -->|"when: you have lost forest road"| n341
   n339 -->|"otherwise (not: you have lost forest road)"| n330
   n340 -->|"Next"| n329
-  n341 -->|"Next"| n331
-  n342 -->|"Next"| n343
-  n343 -->|"when: you have act1 lost"| n340
-  n343 -->|"otherwise (not: you have act1 lost)"| n329
-  n344 -->|"Next"| n343
-  n345 -->|"when: you have act1 lost"| n14
-  n345 -->|"otherwise (not: you have act1 lost)"| n18
-  n346 -->|"Next"| n358
-  n347 -->|"Victory"| n351
-  n347 -->|"Defeat"| n352
-  n348 -->|"when: Bo is with you"| n349
-  n348 -->|"otherwise (not: Bo is with you)"| n356
-  n349 -->|"Next"| n356
-  n350 -->|"Next"| n353
-  n351 -->|"Next"| n359
-  n352 -->|"set: (none); grant XP: 65"| n346
-  n353 -->|"when: you have ruon traded"| n355
-  n353 -->|"otherwise (not: you have ruon traded)"| n354
-  n354 -->|"Next"| n348
-  n355 -->|"Next"| n348
-  n356 -->|"Next"| n347
-  n357 -->|"Next"| n350
-  n358 -->|"Next"| n345
-  n359 -->|"Next"| n345
+  n341 -->|"Next"| n333
+  n342 -->|"Next"| n331
+  n343 -->|"Next"| n344
+  n344 -->|"when: you have act1 lost"| n340
+  n344 -->|"otherwise (not: you have act1 lost)"| n329
+  n345 -->|"Next"| n344
+  n346 -->|"when: you have act1 lost"| n14
+  n346 -->|"otherwise (not: you have act1 lost)"| n18
+  n347 -->|"Next"| n359
+  n348 -->|"Victory"| n352
+  n348 -->|"Defeat"| n353
+  n349 -->|"when: Bo is with you"| n350
+  n349 -->|"otherwise (not: Bo is with you)"| n357
+  n350 -->|"Next"| n357
+  n351 -->|"Next"| n354
+  n352 -->|"Next"| n360
+  n353 -->|"set: (none); grant XP: 65"| n347
+  n354 -->|"when: you have ruon traded"| n356
+  n354 -->|"otherwise (not: you have ruon traded)"| n355
+  n355 -->|"Next"| n349
+  n356 -->|"Next"| n349
+  n357 -->|"Next"| n348
+  n358 -->|"Next"| n351
+  n359 -->|"Next"| n346
+  n360 -->|"Next"| n346
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

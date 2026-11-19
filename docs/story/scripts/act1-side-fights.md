@@ -43,8 +43,8 @@ from the coast myself. You can't boast about a crate that small, so I never have
 > **Loss branch.** **Driver (Dorin):** Those are my wheels. Forty, lime wood, for the lantern float. I entered
 > them as lost on the fourth. I would like to correct the entry.
 
-> **If the party lost the first fight here (`lost_forest_road`).** What the bend took from the party that day
-> is on the handcart too, near the top. **Bessa:** Oh. It's you. ...I did say sorry at the time. You were lying
+> **If the party lost the first fight here (`lost_forest_road`).** **Narrator:** The party's supply sack is on
+> the handcart too, near the top, still tied with their own knot. **Bessa:** Oh. It's you. ...I did say sorry at the time. You were lying
 > down.
 
 **Win:** the four of them pull the handcart back to Ba Dan themselves. **Lanfen:** The province pays me for
@@ -111,5 +111,5 @@ flour got through, one way or the other). Nothing falls. Later acts do not read 
 
 - A new speaker can use an existing sprite: Bessa a slinger, Tolma the bandit earthbender.
 - Lanfen speaks in SF-1.1 on both branches; she keeps her portrait.
-- What the party lost at the bend on `lost_forest_road` is the build's to name; the script only says it is on
-  the handcart.
+- What the party lost at the bend on `lost_forest_road` is its supply sack (shipped text: "They took our
+  supplies"); the narrator names it before Bessa speaks (the writing pass, 2026-11-19).
