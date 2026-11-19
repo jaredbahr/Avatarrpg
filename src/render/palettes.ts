@@ -318,6 +318,7 @@ export const STATUS_BADGE: Record<StatusId, { letter: string; color: string }> =
   chiBlocked: { letter: 'X', color: '#c3a8d8' },
   guarded: { letter: '■', color: '#6fbf73' },
   inspired: { letter: '★', color: '#f0c674' },
+  teetering: { letter: '~', color: '#5aa0eb' },
 };
 
 /** A friendly bar turns `mid` at or below the first, `low` at or below the second. */

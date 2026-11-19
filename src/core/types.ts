@@ -123,7 +123,9 @@ export type StatusId =
   | 'rooted'
   | 'chiBlocked'
   | 'guarded'
-  | 'inspired';
+  | 'inspired'
+  /** On a bout's edge after a shove toward the water: the next one puts them in (ADR 0122 §2a). */
+  | 'teetering';
 
 export interface StatusInstance {
   readonly id: StatusId;

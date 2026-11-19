@@ -59,6 +59,27 @@ function placed(content: ContentIndex, cells: readonly Vec2[]): BattleState {
   return { ...battle, units: battle.units.map((unit, i) => ({ ...unit, pos: cells[i]! })) };
 }
 
+/**
+ * `battle` with these units teetering on the edge and past their own turn since (duration 1), so the
+ * next shove puts them in (ADR 0122 §2a).
+ */
+function teetering(battle: BattleState, ...indexes: number[]): BattleState {
+  const ids = new Set(indexes.map((i) => battle.units[i]!.id));
+  return {
+    ...battle,
+    units: battle.units.map((unit) =>
+      ids.has(unit.id)
+        ? {
+            ...unit,
+            statuses: [...unit.statuses, { id: 'teetering' as const, duration: 1, stacks: 1 }],
+          }
+        : unit,
+    ),
+  };
+}
+
+const isTeetering = (unit: Unit) => unit.statuses.some((s) => s.id === 'teetering');
+
 const draftOf = (content: ContentIndex, battle: BattleState) =>
   new BattleDraft(content, battle, new RngCursor(0));
 
@@ -78,8 +99,19 @@ const CALM: readonly Vec2[] = [{ x: 4, y: 9 }, { x: 8, y: 9 }, BO, WORKER, SLING
 describe('out of the bout (ADR 0122 §2)', () => {
   const content = contentWith(boutEncounter({ bout: { outOn: ['water_deep'] } }));
 
-  it('a shove into the water puts a fighter out at full HP', () => {
+  it('a first shove toward the water leaves a fighter teetering on the edge, not in', () => {
     const battle = placed(content, CALM);
+    const kaya = battle.units[0]!;
+    const draft = draftOf(content, battle);
+    draft.shove(kaya.id, { x: 4, y: 8 }, 2, 'push');
+    const after = draft.toBattle();
+    expect(byId(after, kaya.id)).toMatchObject({ pos: { x: 4, y: 9 }, hp: kaya.hp });
+    expect(isTeetering(byId(after, kaya.id))).toBe(true);
+    expect(after.boutOut).toBeUndefined();
+  });
+
+  it('a shove while teetering puts a fighter out at full HP', () => {
+    const battle = teetering(placed(content, CALM), 0);
     const kaya = battle.units[0]!;
     expect(kaya.hp).toBe(kaya.base.maxHp);
     const draft = draftOf(content, battle);
@@ -113,8 +145,34 @@ describe('out of the bout (ADR 0122 §2)', () => {
     expect(check).toMatchObject({ ok: false, reason: expect.stringContaining('out of the bout') });
   });
 
-  it('the forecast says "out" and the AI prices it as a knockout', () => {
-    const battle = placed(content, [{ x: 4, y: 8 }, { x: 4, y: 9 }, BO, WORKER, SLINGER]);
+  it('a second shove in the same turn only keeps them teetering: they get a turn to step back', () => {
+    const battle = placed(content, CALM);
+    const kaya = battle.units[0]!;
+    const draft = draftOf(content, battle);
+    draft.shove(kaya.id, { x: 4, y: 8 }, 1, 'push');
+    draft.shove(kaya.id, { x: 4, y: 8 }, 1, 'push');
+    const after = draft.toBattle();
+    expect(byId(after, kaya.id)).toMatchObject({ pos: { x: 4, y: 9 }, hp: kaya.hp });
+    expect(after.boutOut).toBeUndefined();
+  });
+
+  it('walking off the edge clears a teeter', () => {
+    const battle = teetering(placed(content, CALM), 0);
+    const kaya = battle.units[0]!;
+    const draft = draftOf(content, battle);
+    draft.cleanseFrom(kaya.id, ['teetering']);
+    expect(isTeetering(byId(draft.toBattle(), kaya.id))).toBe(false);
+  });
+
+  it('the forecast says "teetering" first, then "out", and the AI prices them', () => {
+    const fresh = placed(content, [{ x: 4, y: 8 }, { x: 4, y: 9 }, BO, WORKER, SLINGER]);
+    const shoveAbility = CONTENT.abilities.get('shove');
+    if (!shoveAbility) throw new Error('shove is missing');
+    const [k0, r0] = fresh.units;
+    const first = forecastReactions(content, fresh, k0!, shoveAbility, r0!.pos, [r0!.pos], k0!.pos);
+    expect(first.shoves.find((s) => s.id === r0!.id)).toMatchObject({ teeters: true });
+    expect(first.shoves.find((s) => s.id === r0!.id)?.out).toBeUndefined();
+    const battle = teetering(fresh, 1);
     const [kaya, riko] = battle.units;
     const shove = CONTENT.abilities.get('shove');
     if (!shove) throw new Error('shove is missing');
@@ -139,8 +197,13 @@ describe('the tipping platform (ADR 0122 §3)', () => {
   const content = contentWith(boutEncounter());
 
   it('slides the heavier half one cell toward its edge, into the water and out', () => {
-    // Kaya and Riko below the pivot, the slinger above it, Bo and the worker on the pivot row.
-    const battle = placed(content, [{ x: 4, y: 9 }, { x: 5, y: 9 }, BO, WORKER, SLINGER]);
+    // Kaya and Riko below the pivot, already teetering; the slinger above it; Bo and the worker
+    // on the pivot row.
+    const battle = teetering(
+      placed(content, [{ x: 4, y: 9 }, { x: 5, y: 9 }, BO, WORKER, SLINGER]),
+      0,
+      1,
+    );
     const draft = draftOf(content, battle);
     draft.tipPlatform();
     const after = draft.toBattle();
@@ -154,13 +217,10 @@ describe('the tipping platform (ADR 0122 §3)', () => {
   });
 
   it('moves a line together, the fighter nearest the edge first', () => {
-    const battle = placed(content, [
-      { x: 4, y: 7 },
-      { x: 4, y: 8 },
-      { x: 4, y: 9 },
-      WORKER,
-      SLINGER,
-    ]);
+    const battle = teetering(
+      placed(content, [{ x: 4, y: 7 }, { x: 4, y: 8 }, { x: 4, y: 9 }, WORKER, SLINGER]),
+      2,
+    );
     const draft = draftOf(content, battle);
     draft.tipPlatform();
     const after = draft.toBattle();
@@ -174,6 +234,15 @@ describe('the tipping platform (ADR 0122 §3)', () => {
     expect(after.boutOut).toEqual([battle.units[2]!.id]);
   });
 
+  it('a tip at the edge leaves a fighter teetering, not in the water', () => {
+    const battle = placed(content, [{ x: 4, y: 9 }, { x: 5, y: 9 }, BO, WORKER, SLINGER]);
+    const draft = draftOf(content, battle);
+    draft.tipPlatform();
+    const after = draft.toBattle();
+    expect(after.boutOut).toBeUndefined();
+    expect(after.units.slice(0, 2).every(isTeetering)).toBe(true);
+  });
+
   it('does not tip when the halves are even, and ignores the pivot row', () => {
     // One fighter each side; three on the pivot row.
     const battle = placed(content, [{ x: 4, y: 9 }, { x: 4, y: 5 }, BO, WORKER, SLINGER]);
@@ -184,13 +253,10 @@ describe('the tipping platform (ADR 0122 §3)', () => {
   });
 
   it('the board shows the round end’s own tip, and the round end makes it', () => {
-    const battle = placed(content, [
-      { x: 4, y: 7 },
-      { x: 4, y: 8 },
-      { x: 4, y: 9 },
-      WORKER,
-      SLINGER,
-    ]);
+    const battle = teetering(
+      placed(content, [{ x: 4, y: 7 }, { x: 4, y: 8 }, { x: 4, y: 9 }, WORKER, SLINGER]),
+      2,
+    );
     const forecast = forecastTip(content, battle);
     expect(forecast.map((slide) => slide.to)).toEqual([
       { x: 4, y: 8 },
@@ -206,12 +272,12 @@ describe('the tipping platform (ADR 0122 §3)', () => {
   });
 
   it('a bout lost to the water ends the fight', () => {
-    // Bo is already out; Kaya and Riko go in; the enemies stay dry.
+    // Bo is already out; Kaya and Riko are teetering and go in; the enemies stay dry.
     const placedBattle = placed(content, [{ x: 4, y: 9 }, { x: 5, y: 9 }, BO, WORKER, SLINGER]);
     const bo = placedBattle.units[2]!;
     const battle: BattleState = {
       ...placedBattle,
-      units: placedBattle.units.map((u) => (u.id === bo.id ? { ...u, hp: 0 } : u)),
+      units: teetering(placedBattle, 0, 1).units.map((u) => (u.id === bo.id ? { ...u, hp: 0 } : u)),
       boutOut: [bo.id],
     };
     const draft = draftOf(content, { ...battle, turnIndex: battle.order.length - 1 });
@@ -224,7 +290,7 @@ describe('a mid-bout save', () => {
   it('keeps who is out', () => {
     const content = contentWith(boutEncounter());
     const start = gameState(content);
-    const battle = placed(content, CALM);
+    const battle = teetering(placed(content, CALM), 0);
     const draft = draftOf(content, battle);
     draft.shove(battle.units[0]!.id, { x: 4, y: 8 }, 1, 'push');
     const state: GameState = { ...start, battle: draft.toBattle() };

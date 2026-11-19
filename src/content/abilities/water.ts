@@ -219,6 +219,8 @@ export const WATER_ABILITIES: readonly Ability[] = [
           'blinded',
           'rooted',
           'chiBlocked',
+          // "Every harmful status": a friend pulled back from a bout's edge (ADR 0122 §2a).
+          'teetering',
         ],
       },
       { kind: 'status', status: 'inspired', duration: 2, chance: 1, to: 'allies' },

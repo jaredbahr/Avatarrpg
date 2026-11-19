@@ -511,6 +511,8 @@ export class BattleDraft {
     readonly pos: Vec2;
     readonly ledgeDropTiers: number;
     readonly stopReason: 'none' | 'centre' | 'origin' | 'obstacle' | 'out';
+    /** With `'out'`: the last deck cell before the water, where a first shove leaves them. */
+    readonly brink?: Vec2;
   } {
     // Direction comes from `shoveStep`, shared with the confirm-step forecast.
     const square = ctx.squareFootprints ?? SQUARE_FOOTPRINTS;
@@ -553,7 +555,7 @@ export class BattleDraft {
       // A bout's water (ADR 0122 §2): the slide goes in, and the fighter is out. A single-cell
       // fighter only; no bout has a block.
       if (ctx.outOn && ctx.size === 1 && this.isOutCell(ctx.outOn, next)) {
-        return { pos: next, ledgeDropTiers, stopReason: 'out' };
+        return { pos: next, ledgeDropTiers, stopReason: 'out', brink: current };
       }
       if (!this.canShoveStep(ctx, current, next)) {
         stopReason = 'obstacle';
@@ -651,7 +653,20 @@ export class BattleDraft {
     const current = slide.pos;
     if (samePos(current, unit.pos)) return 0;
     if (slide.stopReason === 'out') {
-      // Into the water: no contact, no ledge damage, just out (ADR 0122 §2).
+      // A first shove toward the water leaves them teetering on the brink; a shove once they
+      // have had a turn to step back puts them in and out (ADR 0122 §2a). Teetering lasts 2 and
+      // ticks at its owner's turn start, so at 1 they have had that turn. No contact, no ledge
+      // damage.
+      const teeter = unit.statuses.find((s) => s.id === 'teetering');
+      if (!teeter || teeter.duration > 1) {
+        const brink = slide.brink ?? unit.pos;
+        if (!samePos(brink, unit.pos)) {
+          this.placeUnit(unitId, brink);
+          this.emit({ type: 'unitPushed', unitId, to: brink });
+        }
+        this.applyStatusTo(unitId, 'teetering');
+        return 0;
+      }
       this.replace({ ...unit, pos: current });
       this.emit({ type: 'unitPushed', unitId, to: current });
       this.putOut(unitId);
