@@ -146,10 +146,10 @@ release with its answer, and the rules. Writers read it before drafting.
 | Saves written between releases                    | no                         | A snapshot exists per release. Between two releases a flag could be added, saved without, and read later only if a write was removed and re-added.                                                                                                                                                                 |
 | An older build loading a newer save               | partly                     | A build from this ADR on stamps the higher of the file's revision and its own, so it never lowers a file. A build from before this ADR drops `history`, as it already drops `difficulty`; the next load then offers every rule again (`set` and `node` rules are harmless then, an `adjust` rule would add twice). |
 | An unreadable revision in the file                | yes                        | Loaded as revision 0 with a warning, never refused: the campaign is worth more than the stamp. The same cost as the row above applies.                                                                                                                                                                             |
-| An edge rerouted to an existing setter            | no                         | Pointing `lost_quarry_gate.next` at the existing `gate_talked_through` gives a save that lost at the gate no flag its readers expect, and the write sites have not changed. Only the played-forward check sees an edge change, and only on its route. Edges are not snapshotted.                                   |
+| An edge rerouted to an existing setter            | yes, from 2026-11-19-roads | A release in snapshot format 2 records every road into a scene (`edges`). A road opened, in shipped territory, into a scene the release already had is asked about in `LATE_EDGES`. Releases frozen before format 2 recorded no roads, so against them it is still not seen (amendment below).                     |
 | A later write at a site already answered          | no, until the next release | An answer names sites, not the values written there. A fourth option on an answered choice passes until a release is frozen with the three; after that it is a changed write. This is why a release is frozen with this ADR.                                                                                       |
-| A new reader of a flag answered `unset`           | no                         | The answer was written for the readers that existed. Nothing asks again when one is added.                                                                                                                                                                                                                         |
-| An option inserted in the middle of a choice      | noisy                      | Option writes are compared by position, so the options after it read as changed writes. The check asks; it does not miss.                                                                                                                                                                                          |
+| A new reader of a flag answered `unset`           | yes                        | An `unset` answer names the readers it was decided for (`readers`); a new reader is asked about again.                                                                                                                                                                                                             |
+| An option inserted in the middle of a choice      | yes, from 2026-11-19-roads | Options are named by where they lead (`options[→home]`) and records with ids by id (`npcs[#mira]`). Against the two releases frozen before, the old positional form is compared, which still asks.                                                                                                                 |
 
 ## Consequences
 
@@ -182,3 +182,38 @@ release with its answer, and the rules. Writers read it before drafting.
    retiring the first one. Keeping it costs nothing and is the stricter choice.
 3. **Rule 1 (Pella's list)** changes what an old save can do. It is small and follows the story, but it
    is a story decision.
+
+## Amendment 2026-11-19: roads, option identity and new readers (#813)
+
+The independent review of #801 found four things the check could not see. Three are closed here;
+the fourth is open.
+
+- **Roads.** A release snapshot in format 2 (`SNAPSHOT_FORMAT`) records `edges`: area to every road
+  it opens into a story scene, read from the road fields only (`next`, `onDefeat`, `ifSet`,
+  `ifUnset`, `ifTrue`, `ifFalse`, and the `node` an NPC, route or trigger opens). Other fields can
+  hold a scene's id by coincidence (a flag key, an NPC id, a camera target) and are not roads.
+  `lateEdges` reports a road that is new in an area the release had and leads into a scene the
+  release also had: a save of that release went the old way, so whatever that scene (or one after
+  it) records, the save lacks, and no write site changed. A road into a new scene needs nothing,
+  because whatever the new scene records is a new write site. The writer answers in `LATE_EDGES`
+  (`flags.ts`), with `sites` naming the roads. A `backfill` answer accepts any newer rule: the
+  rules answer for the flags past the road, and the flags' own entries name them.
+- **Option identity.** A choice's option is named by where it leads (`options[→home]`, `#2` for a
+  shared destination), and records with their own ids by id (`npcs[#mira]`), in write sites and in
+  roads. Every write keeps its old positional form (`WriteSite.positional`), which is what the two
+  releases frozen before format 2 are compared in. Those still ask on an inserted option.
+- **New readers.** `OldSavesAnswer.readers` names the readers an `unset` answer was decided for. A
+  reader added since is asked about again. The six existing `unset` answers name today's readers.
+  The newest of them, #875's later-state props in Ba Dan, show nothing for a save without the side
+  story, which is the "never happened" line the answers claim.
+- **Release `2026-11-19-roads`** is frozen with this change, as a test fixture like
+  `2026-11-15-demo`, so roads and option names are pinned from today.
+
+Still open:
+
+- **A second app write in a module already listed, or a changed value.** App code writes flags in
+  several shapes (literals, constants such as `FIRST_FIGHT_GUIDANCE.stage`, computed keys such as
+  `guidance.tip.${feature}`, object spreads), so a text scan would be a guess. The answer needs
+  the app to write flags through one helper that can be listed, and that is a code change of its
+  own.
+- Roads opened by content outside the story bundle's records (none today) are not recorded.

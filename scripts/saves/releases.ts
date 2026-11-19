@@ -23,6 +23,7 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { format, resolveConfig } from 'prettier';
 import { FLAG_BACKFILLS, HISTORY_REV } from '../../src/content/story/flagBackfills';
+import { SNAPSHOT_FORMAT } from '../../src/content/story/saveHistory';
 import type { HistorySnapshot } from '../../src/content/story/saveHistory';
 import { HISTORY_NOW } from '../../src/content/story/saveHistoryNow';
 import { generateGoldenSaves, GOLDEN_CHECKPOINTS } from './make-golden';
@@ -137,6 +138,7 @@ export function snapshotNow(
   note: string,
 ): HistorySnapshot {
   return {
+    format: SNAPSHOT_FORMAT,
     release,
     frozen,
     commit,
@@ -144,7 +146,9 @@ export function snapshotNow(
     historyRev: HISTORY_REV,
     rules: FLAG_BACKFILLS,
     regions: HISTORY_NOW.regions,
-    writes: HISTORY_NOW.writes,
+    // Options are named by where they lead; the positional copy only serves older releases.
+    writes: HISTORY_NOW.writes.map(({ positional: _positional, ...site }) => site),
+    edges: HISTORY_NOW.edges ?? {},
   };
 }
 

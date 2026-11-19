@@ -445,6 +445,39 @@ describe('flag registry checks', () => {
 });
 
 describe('finding flag uses', () => {
+  it('names an option by where it leads, and keeps its position for older releases', () => {
+    const uses = flagUsesIn(
+      {
+        id: 'c',
+        kind: 'choice',
+        options: [
+          { next: 'home', setFlags: { a: 1 } },
+          { next: 'gate', setFlags: { a: 2 } },
+          { next: 'home', setFlags: { a: 3 } },
+        ],
+      },
+      'story:c',
+    );
+    expect(uses.map((use) => [use.at, use.positionalAt])).toEqual([
+      ['options[→home].setFlags', 'options[0].setFlags'],
+      ['options[→gate].setFlags', 'options[1].setFlags'],
+      ['options[→home#2].setFlags', 'options[2].setFlags'],
+    ]);
+    // Records with their own ids are named by id.
+    const npcs = flagUsesIn(
+      { npcs: [{ id: 'gao' }, { id: 'mira', setFlags: { c: true } }] },
+      'map:m',
+    );
+    expect(npcs.map((use) => [use.at, use.positionalAt])).toEqual([
+      ['npcs[#mira].setFlags', 'npcs[1].setFlags'],
+    ]);
+    // Anything else: positions, and no second path.
+    const plain = flagUsesIn({ list: [{ setFlags: { b: true } }] }, 'test:x');
+    expect(plain.map((use) => [use.at, use.positionalAt])).toEqual([
+      ['list[0].setFlags', undefined],
+    ]);
+  });
+
   it('finds every shape that carries a flag', () => {
     const uses = flagUsesIn(
       [
@@ -511,7 +544,8 @@ describe('finding flag uses', () => {
     );
     expect(problems).toContain(
       `flag "audit.new_flag" is not in the flag registry (src/content/story/flags.ts): ` +
-        `write at story:${node.id} › options[0].setFlags.`,
+        // An option is named by where it leads, not by its position (#813).
+        `write at story:${node.id} › options[→${node.options[0]?.next ?? ''}].setFlags.`,
     );
   });
 

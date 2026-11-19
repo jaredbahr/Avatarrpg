@@ -27,7 +27,12 @@ import {
   ROUTE_ENDING,
 } from '../../../scripts/saves/make-golden';
 import type { RouteStop } from '../../../scripts/saves/make-golden';
-import { freezeRelease, frozenProblems, loadReleases } from '../../../scripts/saves/releases';
+import {
+  freezeRelease,
+  frozenProblems,
+  loadReleases,
+  snapshotNow,
+} from '../../../scripts/saves/releases';
 import { FLAG_BACKFILLS, HISTORY_REV } from './flagBackfills';
 import { FLAG_REGISTRY, LATE_SCENES } from './flags';
 import type { FlagDef } from './flags';
@@ -38,8 +43,10 @@ import {
   checkRules,
   checkSave,
   currentArea,
+  lateEdges,
   lateScenes,
   lateWrites,
+  SNAPSHOT_FORMAT,
 } from './saveHistory';
 import type { HistoryInput, HistorySnapshot, WriteSite } from './saveHistory';
 import { historyInput, HISTORY_NOW, USES_NOW, VISITED_READERS_NOW } from './saveHistoryNow';
@@ -76,7 +83,7 @@ describe('the release fixtures (ADR 0112)', () => {
   it('are never dropped or reordered: the index only grows', () => {
     // The hashes guard each file; this guards the index itself. Freezing a release
     // (`npm run saves:release`) appends its id here, and nothing is ever taken out.
-    const FROZEN = ['2026-11-08-golden-v5', '2026-11-15-demo'];
+    const FROZEN = ['2026-11-08-golden-v5', '2026-11-15-demo', '2026-11-19-roads'];
     expect(RELEASES.map((release) => release.entry.id)).toEqual(FROZEN);
   });
 
@@ -345,6 +352,129 @@ describe('a flag added to an early scene and read by a later one (#773)', () => 
   });
 });
 
+describe('a release that records roads and names options by destination (#813)', () => {
+  /** Today's story frozen as a release: nothing differs until a test edits `now`. */
+  const TODAY = snapshotNow('test-today', '2026-11-19', 'abc1234', 'A test.');
+  const AGAINST_TODAY: HistoryInput = { ...LIVE, releases: [TODAY] };
+  const withNow = (now: Partial<HistoryInput['now']>): HistoryInput => ({
+    ...AGAINST_TODAY,
+    now: { ...AGAINST_TODAY.now, ...now },
+  });
+
+  it('finds nothing late against itself', () => {
+    expect(lateWrites(AGAINST_TODAY)).toEqual([]);
+    expect(lateEdges(AGAINST_TODAY)).toEqual([]);
+  });
+
+  it('records the roads into scenes, and not the reads', () => {
+    const edges = HISTORY_NOW.edges ?? {};
+    expect(edges['story:lost_quarry_gate']).toContain(
+      `next=${CONTENT.story.get('lost_quarry_gate')?.kind === 'flags' ? (CONTENT.story.get('lost_quarry_gate') as { next: string }).next : ''}`,
+    );
+    // A `visited` condition reads a scene; it is no road into it.
+    for (const roads of Object.values(edges))
+      for (const road of roads) expect(road).not.toMatch(/\.nodeId=/);
+  });
+
+  it('asks about a road rerouted to a scene that already set something', () => {
+    // The issue's case: the loss at the gate now leads through the talk that sets the gate's
+    // outcome. No write site changed, and a save that lost there never passed the talk.
+    const edges = HISTORY_NOW.edges ?? {};
+    const rerouted = withNow({
+      edges: {
+        ...edges,
+        'story:lost_quarry_gate': ['next=gate_talked_through'],
+      },
+    });
+    expect(lateEdges(rerouted)).toEqual([
+      { release: 'test-today', area: 'story:lost_quarry_gate', edge: 'next=gate_talked_through' },
+    ]);
+    const problems = checkReleases(rerouted).filter((line) => line.includes('lost_quarry_gate'));
+    expect(problems.join('\n')).toContain('LATE_EDGES');
+
+    // Answered for that road, it passes; the answer must name the road.
+    const answered = {
+      ...rerouted,
+      edges: {
+        'story:lost_quarry_gate': {
+          upTo: 'test-today',
+          sites: ['next=gate_talked_through'],
+          answer: 'open' as const,
+          why: 'A test.',
+        },
+      },
+    };
+    expect(checkReleases(answered).filter((line) => line.includes('lost_quarry_gate'))).toEqual([]);
+  });
+
+  it('needs nothing for a road into a scene the release did not have', () => {
+    const edges = HISTORY_NOW.edges ?? {};
+    const fresh = withNow({
+      edges: { ...edges, 'story:lost_quarry_gate': ['next=a_brand_new_scene'] },
+    });
+    expect(lateEdges(fresh)).toEqual([]);
+  });
+
+  it('does not count an NPC inserted before another as a new road', () => {
+    const edges = HISTORY_NOW.edges ?? {};
+    const village = edges['map:ba_dan_village'] ?? [];
+    expect(village.some((road) => road.startsWith('npcs[#'))).toBe(true);
+    expect(village.some((road) => /npcs\[\d/.test(road))).toBe(false);
+  });
+
+  it('does not count an option moved to another position as a change', () => {
+    // Inserting an option shifts every later one; named by destination, none of them changed.
+    const shifted = withNow({
+      writes: HISTORY_NOW.writes.map((write) =>
+        write.positional
+          ? {
+              ...write,
+              positional: write.positional.map((value) =>
+                value.replace(/\[(\d+)\]/, (_, n: string) => `[${Number(n) + 1}]`),
+              ),
+            }
+          : write,
+      ),
+    });
+    expect(lateWrites(shifted)).toEqual([]);
+  });
+
+  it('still sees a write added to one more option', () => {
+    const added = withNow({
+      writes: HISTORY_NOW.writes.map((write) =>
+        write.key === 'sq01.cabbages'
+          ? { ...write, values: [...write.values, 'options[→sq01_burn].setFlags="burned"'] }
+          : write,
+      ),
+    });
+    expect(lateWrites(added).map((late) => [late.site.key, late.change])).toEqual([
+      ['sq01.cabbages', 'changed'],
+    ]);
+  });
+});
+
+describe('an "unset" answer and the readers it was decided for (#813)', () => {
+  it('asks again when a flag answered "unset" gains a reader', () => {
+    const more: HistoryInput = {
+      ...LIVE,
+      readers: new Map([
+        ...LIVE.readers,
+        ['sq02.gate', [...(LIVE.readers.get('sq02.gate') ?? []), 'story:a_new_reader']],
+      ]),
+    };
+    expect(checkReleases(LIVE).filter((line) => line.includes('"sq02.gate"'))).toEqual([]);
+    const problems = checkReleases(more).filter((line) => line.includes('"sq02.gate"'));
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toContain('story:a_new_reader now reads it too');
+  });
+
+  it('names its readers wherever the check asks', () => {
+    for (const flag of FLAG_REGISTRY)
+      if (flag.oldSaves?.answer === 'unset')
+        expect(flag.oldSaves.readers ?? [], flag.key).not.toEqual([]);
+  });
+});
+
 describe('what counts as a late write', () => {
   const read = { test_flag: ['story:mira_epilogue'] };
 
@@ -484,7 +614,11 @@ describe('what counts as a late write', () => {
         ...INPUT.now,
         writes: INPUT.now.writes.map((write) =>
           write.key === 'ruon_spared'
-            ? { ...write, values: [...write.values, 'options[1].setFlags=true'] }
+            ? {
+                ...write,
+                // This release names options by position, so it compares that form.
+                positional: [...(write.positional ?? write.values), 'options[1].setFlags=true'],
+              }
             : write,
         ),
       },
@@ -505,7 +639,11 @@ describe('what counts as a late write', () => {
         ...LIVE.now,
         writes: LIVE.now.writes.map((write) =>
           write.key === 'sq01.cabbages'
-            ? { ...write, values: [...write.values, 'options[3].setFlags="burned"'] }
+            ? {
+                ...write,
+                values: [...write.values, 'options[→sq01_burn].setFlags="burned"'],
+                positional: [...(write.positional ?? write.values), 'options[3].setFlags="burned"'],
+              }
             : write,
         ),
       },
@@ -729,7 +867,12 @@ describe('freezing a release', () => {
     expect(Object.keys(entry.files)).toHaveLength(19);
     expect(frozenProblems(root)).toEqual([]);
     const [release] = loadReleases(root);
-    expect(release?.snapshot.writes).toEqual(HISTORY_NOW.writes);
+    // A release names options by where they lead; the positional copy serves only older ones.
+    expect(release?.snapshot.format).toBe(SNAPSHOT_FORMAT);
+    expect(release?.snapshot.writes).toEqual(
+      HISTORY_NOW.writes.map(({ positional: _positional, ...site }) => site),
+    );
+    expect(release?.snapshot.edges).toEqual(HISTORY_NOW.edges);
     expect(release?.snapshot.historyRev).toBe(HISTORY_REV);
     expect(release?.saves).toHaveLength(18);
     // Today's story against a release frozen from it: nothing is late.
