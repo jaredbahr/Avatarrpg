@@ -291,7 +291,7 @@ Names are shown in authored content order within each entry; sections and record
 - Map: The Cutting
 - Expected level: 3
 - Baseline party size: 3
-- Authored roster: Quarry Bender; Quarry Hauler; Quarry Hauler; Quarry Hauler; Quarry Worker (750 XP)
+- Authored roster: Quarry Bender; Quarry Hauler; Quarry Worker; Quarry Hauler; Quarry Worker (750 XP)
 - Conditional enemies: —
 - Variants: —
 - Allies: —

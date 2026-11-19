@@ -176,7 +176,7 @@ describe('content builders preserve their authored values', () => {
         ['bandit_thug', 16, 8],
         ['bandit_earthbender', 16, 4],
         ['bandit_bruiser', 15, 5],
-        ['bandit_bruiser', 15, 6],
+        ['bandit_thug', 15, 6],
         ['bandit_bruiser', 16, 7],
         ['bandit_thug', 17, 3],
         ['bandit_thug', 17, 8],

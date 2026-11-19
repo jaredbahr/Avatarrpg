@@ -307,11 +307,11 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     mapId: 'ambush_road',
     expectedLevel: 3,
     xpPerHead: SIDE_FIGHT_XP,
-    // Tolma, three of her crew, and one more who came for the soup.
+    // Tolma, three of her crew (two haulers and a worker), and one more who came for the soup.
     enemies: [
       at(16, 4, 'bandit_earthbender'),
       at(15, 5, 'bandit_bruiser'),
-      at(15, 6, 'bandit_bruiser'),
+      at(15, 6, 'bandit_thug'),
       at(16, 7, 'bandit_bruiser'),
       at(17, 3, 'bandit_thug'),
     ],
@@ -323,6 +323,14 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
      * roster in the game, which `scripts/perf/core-bench.ts` measures and freezes.
      */
     reinforcements: [at(17, 8, 'bandit_thug'), at(18, 5, 'bandit_bruiser')],
+    /*
+     * Hard keeps its extra AP off here. With the shared Hard profile (+5 power, +2 AP) two
+     * haulers and a bender that raises cover won 0% at one and three players and 90% at six
+     * (60 trials each, party level 3). +3 power and no extra AP: 88 / 93 / 100%, in about seven
+     * rounds, beside the Cutting's Hard numbers. Three haulers and one worker read 0 / 3 / 90%
+     * even so, so the crew is two of each.
+     */
+    hard: { power: 3, ap: 0 },
     variants: [],
     intro:
       'A slab of stone stands across the Cutting, taller than the cart. Five people sit in its shade round a soup pot. One of them gets up.',
