@@ -110,6 +110,7 @@ export class InputRouter {
   private heldSince = 0;
   private readonly pads = new Map<number, PadReader>();
   private padHeld: Direction | null = null;
+  private padHeldFor = 0;
   private padPanVector = { x: 0, y: 0 };
   private padZoomRate = 0;
   private polling = 0;
@@ -146,12 +147,18 @@ export class InputRouter {
   heldDirection(now = performance.now()): Direction | null {
     if (topDialog()) return null;
     const code = this.heldMoves[this.heldMoves.length - 1];
-    const direction = (code ? this.moveByCode.get(code) : undefined) ?? this.padHeld;
+    const key = code ? this.moveByCode.get(code) : undefined;
+    const direction = key ?? this.padHeld;
     if (direction !== this.heldWay) {
       this.heldWay = direction;
       this.heldSince = now;
     }
-    return direction && now - this.heldSince >= HOLD_AFTER_MS ? direction : null;
+    if (!direction) return null;
+    // A key says when it comes up, so it is held until now. A pad is only read
+    // once a frame: it is held for as long as the reads have seen it, never for
+    // the time a slow frame took to come round (a tap is still one step there).
+    const heldFor = key ? now - this.heldSince : this.padHeldFor;
+    return heldFor >= HOLD_AFTER_MS ? direction : null;
   }
 
   /** Look-around, each axis -1 to 1: Shift + arrows, I J K L, or the right stick. */
@@ -379,6 +386,7 @@ export class InputRouter {
     if (connected.length === 0) {
       this.pads.clear();
       this.padHeld = null;
+      this.padHeldFor = 0;
       this.padPanVector = { x: 0, y: 0 };
       this.padZoomRate = 0;
       return;
@@ -387,6 +395,7 @@ export class InputRouter {
 
     const now = performance.now();
     let held: Direction | null = null;
+    let heldFor = 0;
     let pan = { x: 0, y: 0 };
     let zoom = 0;
     for (const pad of connected) {
@@ -404,11 +413,15 @@ export class InputRouter {
       // A press says a pad is in use; a stick at rest can drift, so an axis alone does not.
       if (actions.length > 0) this.setDevice('gamepad', padFamily(pad.id));
       for (const { action, repeat } of actions) this.route({ action, device: 'gamepad', repeat });
-      held ??= reader.held;
+      if (!held && reader.held) {
+        held = reader.held;
+        heldFor = reader.heldFor;
+      }
       if (Math.abs(look.x) + Math.abs(look.y) > Math.abs(pan.x) + Math.abs(pan.y)) pan = look;
       if (Math.abs(trigger) > Math.abs(zoom)) zoom = trigger;
     }
     this.padHeld = held;
+    this.padHeldFor = heldFor;
     this.padPanVector = pan;
     this.padZoomRate = zoom;
     this.heldDirection(now);

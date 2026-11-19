@@ -67,6 +67,11 @@ async function advanceLines(page: Page, control: Locator, count: number): Promis
 test('the opening route uses the keyboard from title to a conversation on the Forest Road', async ({
   page,
 }) => {
+  // The route is long by design: the prologue, Ba Dan's seat and its walk to Gao (#875), the
+  // village exit walk and the Forest Road. It takes 48-52 s on unthrottled Chromium and about 55 s
+  // to reach the exit walk on CI's GPU-less WebKit, where every step still moved one tile. Its
+  // budget is sized to the route, as the gamepad route and the sibling test below are.
+  test.setTimeout(180_000);
   await resetStorage(page, '?renderer=canvas&titleArtHold=0');
   await pressControl(page, button(page, 'New game'));
   await expectVisibleFocus(button(page, '1 player'));

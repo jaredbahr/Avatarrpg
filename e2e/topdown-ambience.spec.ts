@@ -1,3 +1,4 @@
+import { allowSoftwareWebgl } from './budget';
 import { readFileSync } from 'node:fs';
 import { PNG } from 'pngjs';
 import { expect, test } from '@playwright/test';
@@ -175,6 +176,9 @@ for (const renderer of ['canvas', 'webgl'] as const) {
   test(`${renderer}: the frozen top-down chimney is frozen under reduce motion and moves otherwise`, async ({
     page,
   }) => {
+    // Four clipped screenshots on a GPU-less runner cost about 14 s each under forced WebGL
+    // (e2e/budget.ts), more than the suite default allows for the whole case.
+    allowSoftwareWebgl(test, renderer);
     const errors: string[] = [];
     page.on('console', (message) => {
       if (message.type() === 'error') errors.push(`${message.text()} ${message.location().url}`);
