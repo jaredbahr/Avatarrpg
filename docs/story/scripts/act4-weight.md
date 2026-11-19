@@ -1837,6 +1837,14 @@ record of what was accepted ("Recommend" lines are now decisions). Later correct
     - Bible MQ-12 says "the first rain begins after the player commits"; the fall in MQ-09 already has rain in
       Causeway. I kept both: it rains at the fall, clears for MQ-11, and the tide's rain starts on the commit.
 
+## Decided (owner, 2026-11-19)
+
+1. **Hesra lost both boots** in the galleries, on both Act I branches. This act already says so and nothing
+   here changed: after a victory she is "in two boots" at the east gate (11.2), one come home by itself and
+   one returned by Latch in MQ-07; after a loss she walks out with both feet in sacking, Dorin hands her the
+   left one from under the seat with the shell in it, and the right one is on her step that night (11.3). The
+   shell she gives Latch in 11.9 came out of a boot on both.
+
 ## Open, for the owner
 
 1. **The side fights** (SF-4.1 to SF-4.3) are mine: the poster patrol, Jin's two unpaid men at Kuan's bench

@@ -1601,10 +1601,11 @@ itself at Saltstep).
 - **Edda** (non-benders; if not already offered at Emberwatch): **Edda:** The stop button's still out of reach.
   It's been waiting for you.
 
-### Scene 5.6 — The meal, and a letter
+### Scene 5.6 — The meal, and VOTE: which road first
 
-**Shown:** played. **Where:** the cart, drawn up by the river road outside Causeway. This is the act's quiet
-close: a meal and a view.
+**Shown:** played. **Where:** the cart, drawn up by the river road outside Causeway. This and Scene 5.7 are one
+evening and the act's quiet close: a meal and a view, the road chosen while the food is hot, and then a letter
+(owner, 2026-11-19: the vote comes before the courier, and the act ends on the letter).
 
 **Narrator:** Evening. The cart is pulled off the river road where you can see all three valleys at once:
 rust-red hills to the left, a silver flatness of marsh to the right, and straight ahead, the heights, with
@@ -1618,6 +1619,34 @@ has his own heap and is guarding it from nobody.
 > first sauce.
 >
 > **Tenzo:** Try both. Tell me which. Don't be kind.
+
+**Narrator:** Three pins from the dispatch office are lying on the tailgate, between the rice and the river
+cakes.
+
+**Driver (Bo-shan):** Three stops left in the book. I'll take them in any order. You're the ones who've been
+right about things. Mostly. Pick.
+
+> **Loss branch.** **Driver (Dorin):** Three places. My permit says "the coast road and wherever it leads". I
+> wrote it loosely on purpose. Choose.
+
+**VOTE — Where does the cart go first?**
+
+- **West, to Copper Orchard and Pear Halt** (MQ-06).
+- **East, to Reedglass and the Slow Channel** (MQ-07).
+- **North, to Bellweather and the weather bell** (MQ-08).
+
+_Sets `first_spoke` (`orchard`, `marsh` or `heights`). All three are played in the end; this is only the order.
+Nothing in Scene 5.7 reads it. Act III's first camp (C.1) does._
+
+**Narrator:** You push a pin into the tailgate. Parcel lifts his head from his heap and looks down the road you
+chose for some time before he agrees to it.
+
+> **If the first spoke is Copper Orchard —** _Narrator:_ He agrees to this one very quickly. He seems to know
+> where it goes.
+
+### Scene 5.7 — A letter
+
+**Shown:** played. **Where:** the same meal, a little later. Ends the act.
 
 **Narrator:** A courier comes up the road at a trot, with a long bundle on one shoulder and a letter held out
 in front like something hot.
@@ -1710,32 +1739,6 @@ is not rated for standing. G.
 >
 > **Gao's note (with the canopy):** This was my awning. I want it back, with the cart, and the boy, and you. In
 > that order if you have to choose. Don't let Dorin fit it alone. He'll measure it till dark.
-
-### Scene 5.7 — VOTE: which road first
-
-**Shown:** played. Ends the act.
-
-**Narrator:** Three pins from the dispatch office are lying on the tailgate.
-
-**Driver (Bo-shan):** Three stops left in the book. I'll take them in any order. You're the ones who've been
-right about things. Mostly. Pick.
-
-> **Loss branch.** **Driver (Dorin):** Three places. My permit says "the coast road and wherever it leads". I
-> wrote it loosely on purpose. Choose.
-
-**VOTE — Where does the cart go first?**
-
-- **West, to Copper Orchard and Pear Halt** (MQ-06).
-- **East, to Reedglass and the Slow Channel** (MQ-07).
-- **North, to Bellweather and the weather bell** (MQ-08).
-
-_Sets `first_spoke`. All three are played in the end; this is only the order._
-
-**Narrator:** You push a pin into the tailgate. In the morning, Parcel looks at the road you chose for some
-time before he agrees to it.
-
-> **If the first spoke is Copper Orchard —** _Narrator:_ He agrees to this one very quickly. He seems to know
-> where it goes.
 
 _End of Act II._
 
@@ -1836,7 +1839,7 @@ culvert in the Cutting only if the party saw it (`cutting_culvert`); otherwise i
 
 ## Pella's letter for this act
 
-Scene 5.6, with a loss-branch version addressed to Dorin.
+Scene 5.7, with a loss-branch version addressed to Dorin.
 
 ## Hero moments in this act
 
@@ -1845,11 +1848,11 @@ Scene 5.6, with a loss-branch version addressed to Dorin.
 | Kaya    | 2.2 Miri's crates (PQ-01 planted; opens at Saltstep after MQ-03); 4.3 the chain |
 | Tenzo   | 2.2 the bowl-seller; 4.1 Dema (PQ-02 opens); 5.6 the second sauce               |
 | Nilak   | 3.1 the supply room; 5.5 Aru's table (PQ-03 opens, with the bible's line)       |
-| Sura    | 2.4, 3.3, 5.6: she is the one counting the echoes                               |
+| Sura    | 2.4, 3.3, 5.7: she is the one counting the echoes                               |
 | Bo      | 4.3 moving the crowd                                                            |
 | Lin Mei | 3.5 the careful order; 5.3 her own phrase on the back of the map                |
 | Nima    | 4.1 the towel basket; 4.1 Oru's offer                                           |
-| Jinu    | 2.1 the courier-office copy (loss branch); 5.6 she carries Pella's letter       |
+| Jinu    | 2.1 the courier-office copy (loss branch); 5.7 she carries Pella's letter       |
 | Riko    | 2.6 the packet and the stamp; 3.5 "suspended"; 4.5 "Who gets the key?" (DLG-04) |
 | Wen     | 2.4 the pump; 3.1 her regulator (PQ-10 opens); 4.2 "napkins"                    |
 
@@ -1975,6 +1978,24 @@ record of what was accepted ("Recommend" lines are now decisions). Later correct
     at Saltstep; the room stays there, and Aru visits with a folding table).
 17. **Veyra keeps Rusk; she still sees the wage packet in MQ-02; MQ-03 has three approaches; Jin has both Act
     II beats; DLG-04's choice and the commission vote both stand; Pella's extra sealed letters are kept.**
+
+## Decided (owner, 2026-11-19)
+
+1. **The act ends on the letter home.** The road vote is taken during the meal (Scene 5.6), before the
+   courier arrives, and the act's last scene is Pella's letter, the river's "...come home." and the canopy
+   going up (Scene 5.7). The events and the lines are the ones the owner approved on 2026-11-15, in a new
+   order. What moved with them:
+   - `first_spoke` is now set before the letter is read. Nothing in 5.7 reads it; its three values are named
+     (`orchard`, `marsh`, `heights`) because Act III's first camp reads them.
+   - One line was reworded. Parcel used to consider the chosen road "in the morning", which would now jump
+     past the letter; he looks down it from his heap that evening instead. Scene 6.1 already plays the
+     morning for the Orchard, and the other two spokes open on the road.
+   - The pins lie "between the rice and the river cakes", so the vote is at the meal.
+   - Scene numbers: Tenzo's second sauce stays in 5.6; Sura's echo count, Jinu's delivery and Pella's letter
+     are 5.7 (the tables below, and PQ-04's note in `personal-quests-1.md`).
+   - Nothing else reads the old order: Bo-shan's "three more stops in the book" answers the letter either
+     way, Pella's second letter quotes it, and Act III opens on whichever road was pinned. No cutscene is
+     touched (CS-2A and CS-2B are in MQ-02 and MQ-04). MQ-05 is not built, so the build changes nothing.
 
 ## Open, for the owner
 
