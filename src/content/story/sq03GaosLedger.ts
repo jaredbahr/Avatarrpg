@@ -20,6 +20,8 @@
  */
 
 import type { Condition, StoryNode } from '../../core/types';
+import type { StoryGroup } from '../regions/types';
+import { inWorld } from './storyGroup';
 
 const GAO = 'Gao the Shopkeeper';
 const GAO_FACE = 'portrait.gao';
@@ -39,7 +41,7 @@ const outcome = (value: 'extension' | 'fund' | 'praised'): Condition => ({
 export const SQ03_RESOLVED: Condition = { kind: 'flag', key: SQ03_FLAG, op: 'set' };
 const TRADED: Condition = { kind: 'flag', key: 'ruon_traded', op: 'set' };
 
-export const SQ03_STORY: readonly StoryNode[] = [
+export const SQ03_STORY: readonly StoryNode[] = inWorld('ba_dan_village', [
   /* --------------------------------------------------------- The hook */
   {
     id: 'sq03_hook',
@@ -252,4 +254,12 @@ export const SQ03_STORY: readonly StoryNode[] = [
     ],
     next: 'village_leave',
   },
-];
+]);
+
+/** This story's entry in its region's list (`regions/baDanValley/content.ts`) and the story docs. */
+export const SQ03_GROUP: StoryGroup = {
+  slug: 'sq03-gaos-ledger',
+  title: 'SQ-03 Gao’s Other Ledger',
+  source: 'sq03GaosLedger.ts',
+  nodes: SQ03_STORY,
+};
