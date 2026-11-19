@@ -27,8 +27,9 @@ the bible gives exact dialogue (DLG-04), it is used word for word and marked.
 - **What is already in the game.** Scenes 2.1 to 2.9, the arrival half of 3.1 (the cook, Tavi, Luli and her
   offer) and SF-2.1 are built word for word from this script (`src/content/regions/saltstepEmberwatch/`). The
   2026-11-17 edit pass left those lines alone; what it would change there is listed as proposals in the
-  pass's report. Not yet wired, and so edited here: Sura's and Wen's lines in 2.4, Riko's in 2.6, Veyra's
-  fight barks.
+  pass's report. Sura's and Wen's lines in 2.4 and Riko's in 2.6 are wired too (#900, 2026-11-19), each behind
+  a `branchWhen` gate on the hero being in the party; Sura's culvert ending is a variant for a table that saw
+  the culvert. Not yet wired, and so still edited here: Veyra's fight barks.
 
 ## What Act II may reveal
 

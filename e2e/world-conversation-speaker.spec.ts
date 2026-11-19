@@ -1,5 +1,12 @@
 import { expect, test } from '@playwright/test';
-import { enterNode, resetStorage, setLargeText, startGame, waitForIdle } from './helpers';
+import {
+  enterNode,
+  resetStorage,
+  setLargeText,
+  startGame,
+  waitForIdle,
+  walkBeside,
+} from './helpers';
 
 test.use({ serviceWorkers: 'block' });
 
@@ -20,8 +27,7 @@ for (const layout of [
     await waitForIdle(page);
     // Use the live world Talk flow: enterNode('gao_home') would open the
     // separate full-stage DialogueScene and miss the compact speaker layout.
-    await page.evaluate(() => window.fnt!.app.dispatch({ type: 'walkTo', pos: { x: 10, y: 4 } }));
-    await waitForIdle(page);
+    await walkBeside(page, 'shopkeeper_gao');
     const talk = page.getByRole('button', { name: /^Talk/ });
     await expect(talk).toContainText('Gao');
     await talk.tap();
