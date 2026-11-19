@@ -119,16 +119,8 @@ export function connectAct1(map: MapDef): MapDef {
             routes: [
               // Later trips replay only the road's last beat, Parcel at the trough, then the market.
               {
-                when: {
-                  kind: 'any',
-                  of: [visited('mq02_coast_road'), visited('mq02_coast_road_jinu')],
-                },
+                when: visited('mq02_coast_road'),
                 node: 'mq02_coast_parcel',
-              },
-              // Jinu's moment (Scene 2.1, loss branch): the same road, ending on her line.
-              {
-                when: { kind: 'all', of: [lost, { kind: 'partyHas', characterId: 'jinu' }] },
-                node: 'mq02_coast_road_jinu',
               },
             ],
           },
