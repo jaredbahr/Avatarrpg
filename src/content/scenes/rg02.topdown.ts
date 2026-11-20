@@ -9,6 +9,7 @@ import {
   EMBERWATCH_POWER_YARD,
   SALTSTEP_MARKET,
   SALTSTEP_PLATFORM,
+  RIVER_ROAD,
   SALTSTEP_PONTOON,
 } from '../regions/saltstepEmberwatch/maps';
 import { MOUTH_REACH, RG, Rg02Terrain, mouth } from './rg02.topdown.terrain';
@@ -663,5 +664,104 @@ export const EMBERWATCH_POWER_YARD_TOPDOWN_LAYOUT: TopDownLayout = {
     mouthReach: MOUTH_REACH,
   },
   objects: EMBERWATCH_POWER_YARD_OBJECTS,
+  slots: [],
+};
+
+/* ------------------------------------------------------------------ */
+/* The river road (`docs/places/river_road.md`), stage 4: the ground   */
+/* ------------------------------------------------------------------ */
+
+export const RIVER_ROAD_TERRAIN = new Rg02Terrain({
+  mapId: 'river_road',
+  rows: RIVER_ROAD.rows,
+  // Open countryside: grass under the trees (`T`) and the bank's boulders (`U`), the packed-earth road (`=`) and its
+  // pull-offs (`.`, and the camp's crates `F`), the gravel bars and the ford (`:`, `~`), the plank bridge and the
+  // landing (`w`), and the cliff at the bend and the lookout's rise (`X`, `^`, `S`) as bare stone. Past the grid the
+  // rows carry on: the wooded hills to the north, the river to the south, the road out of each end.
+  chars: {
+    ',': RG.grass,
+    T: RG.grass,
+    U: RG.grass,
+    '.': RG.earth,
+    '=': RG.earth,
+    F: RG.earth,
+    ':': RG.sand,
+    '~': RG.sand,
+    W: RG.water,
+    w: RG.deck,
+    X: RG.stone,
+    '^': RG.stone,
+    S: RG.stone,
+  },
+  beyond: RG.grass,
+  earthTerrain: 'D',
+  mouths: [
+    mouth('emberwatch', 'west', [
+      { x: 0, y: 5 },
+      { x: 0, y: 6 },
+    ]),
+  ],
+});
+
+/** The cells the river road's walkers wear: every road and pull-off cell, the lookout's ramp, and the landing's path. */
+export const RIVER_ROAD_WORN: readonly (readonly [number, number])[] = [
+  ...RIVER_ROAD.rows.flatMap((row, y) =>
+    [...row].flatMap((ch, x): [number, number][] => ('=.FS'.includes(ch) ? [[x, y]] : [])),
+  ),
+  // the footpath down the bank from the shade stop to the landing
+  [7, 7],
+  [7, 8],
+  [7, 9],
+  // the worn track off the bend up to the lookout
+  [34, 2],
+  [35, 2],
+];
+
+/** A small stable hash of a cell, for the stand-ins' flip and nudge. */
+const cellHash = (x: number, y: number): number => ((x * 73856093) ^ (y * 19349663)) >>> 0;
+
+/**
+ * Stand-ins, not the set-piece plan (stage 5): every blocked cell must be a solid piece's footprint, so the region's
+ * own art covers them for now. A pine on each tree cell (`T`), boulders on the bank's (`U`), rock spurs along the cliff at
+ * the bend (`X`, two cells a spur), and a crate stack on each of the camp's and the shade stop's crates (`F`). Stage 5
+ * replaces them with the brief's pieces (the shade stop's big tree, the bridge's rails and pole, the camp).
+ */
+export const RIVER_ROAD_OBJECTS: readonly TopDownObject[] = RIVER_ROAD.rows.flatMap((row, y) =>
+  [...row].flatMap((ch, x): TopDownObject[] => {
+    const h = cellHash(x, y);
+    const turn = (o: TopDownObject): TopDownObject => (h % 2 ? flip(o) : o);
+    if (ch === 'T')
+      return [
+        turn(
+          piece(`pine_${x}_${y}`, 'harbour_tree', 'tree', [[x, y]], true, {
+            // a pine beside the stream leans its trunk away from the water, where its roots are
+            x: row[x - 1] === 'W' ? 8 : row[x + 1] === 'W' ? -8 : (h % 9) - 4,
+            base: -((h >> 4) % 5),
+          }),
+        ),
+      ];
+    if (ch === 'U') return [turn(piece(`boulders_${x}_${y}`, 'boulders', 'prop', [[x, y]], true))];
+    if (ch === 'F') return [piece(`crates_${x}_${y}`, 'crate_stack', 'prop', [[x, y]], true)];
+    if (ch !== 'X' || (row[x - 1] === 'X' && (x - row.indexOf('X')) % 2 === 1)) return [];
+    const cells: [number, number][] =
+      row[x + 1] === 'X'
+        ? [
+            [x, y],
+            [x + 1, y],
+          ]
+        : [[x, y]];
+    return [turn(piece(`spur_${x}_${y}`, 'rock_spur', 'prop', cells, true))];
+  }),
+);
+
+export const RIVER_ROAD_TOPDOWN_LAYOUT: TopDownLayout = {
+  mapId: 'river_road',
+  terrain: {
+    kind: 'classified',
+    classify: RIVER_ROAD_TERRAIN.classify,
+    mouths: RIVER_ROAD_TERRAIN.config.mouths,
+    mouthReach: MOUTH_REACH,
+  },
+  objects: RIVER_ROAD_OBJECTS,
   slots: [],
 };

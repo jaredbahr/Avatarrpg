@@ -97,6 +97,7 @@ export function shippedFiles(): string[] {
             'saltstep-platform',
             'emberwatch-parade',
             'emberwatch-power-yard',
+            'river-road',
             'props',
           ].includes(f),
       )
