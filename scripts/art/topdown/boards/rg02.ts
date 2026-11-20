@@ -20,6 +20,7 @@ import type { MapScene, SceneScenery } from '../../../../src/core/types';
 import type { TopDownLayout } from '../../../../src/content/topdownLayout';
 import {
   CELL,
+  FACE_TIER,
   GRID,
   RG,
   hash2,
@@ -364,9 +365,12 @@ export function bake(cfg: Rg02BoardConfig): Baked {
       }
   }
 
+  // 2d. raised rock (`terrain.raised`): the cliff and the lookout's rise
+  const faces = tr.config.raised ? paintMasses(tr, tiles, c, set, mix, PW, PH) : null;
+
   const classes = new Uint8Array(PW * PH);
   for (let i = 0; i < classes.length; i++)
-    classes[i] = CLASS_OF[(cls[i] ?? 0) as RgClass] ?? CLASS.void;
+    classes[i] = faces?.[i] ? CLASS.face : (CLASS_OF[(cls[i] ?? 0) as RgClass] ?? CLASS.void);
   const clean: RgbaImage = { width: PW, height: PH, data: new Uint8ClampedArray(d) };
   const bare: RgbaImage = { width: PW, height: PH, data: new Uint8ClampedArray(d) };
 
@@ -404,7 +408,7 @@ export function bake(cfg: Rg02BoardConfig): Baked {
   // The edge check's key. A deck's side over the harbour is built timber, ruled as straight as its boards, so it is
   // left out as the canal's kerbs are (`terrainEdge`): the planks and the water share a key, and every other
   // boundary counts.
-  const edges = cls.map((k) => (k === RG.deck ? RG.water : k));
+  const edges = cls.map((k, i) => (faces?.[i] ? 250 : k === RG.deck ? RG.water : k));
   return {
     origin: tr.origin,
     ground: g,
@@ -419,6 +423,235 @@ export function bake(cfg: Rg02BoardConfig): Baked {
     placed,
   };
 }
+
+/** The terrace's cut face as one strip, 42 px from its lit lip to its foot (`q_terrace32`, as the quarry's and Ba Dan's). */
+function faceStrip(): (x: number, row: number) => Rgb {
+  const top = wang('q_terrace32', 'UUTT'),
+    foot = wang('q_terrace32', 'TTLL');
+  return (x, row) => {
+    const r = Math.max(0, Math.min(41, row));
+    const img = r < 18 ? top : foot;
+    const ty = r < 18 ? 14 + r : r - 18;
+    const tx = ((x % T) + T) % T;
+    const i = (ty * img.width + tx) * 4;
+    return [at(img.data, i), at(img.data, i + 1), at(img.data, i + 2)];
+  };
+}
+
+/** The mean colour of a tile. */
+function meanOf(tile: RgbaImage): Rgb {
+  const m = [0, 0, 0];
+  const n = tile.width * tile.height;
+  for (let i = 0; i < n; i++)
+    for (let k = 0; k < 3; k++) m[k] = (m[k] ?? 0) + at(tile.data, i * 4 + k) / n;
+  return [m[0] ?? 0, m[1] ?? 0, m[2] ?? 0];
+}
+
+/**
+ * The raised rock (`Rg02Terrain.massAt`): each mass's top keeps the stone it was drawn with, ringed by a 1 px outline
+ * in a darker tone of the rock, lit along its left side and shaded along its right (the light comes from the upper
+ * left); its cut face is the terrace's strip, tinted to the rock and stratified, lit at the lip and darkening to a foot
+ * that meets the ground in the hard shadow tone; and it casts a short hard band on the ground to its lower right, a
+ * tier at a time. A ramp's stone (a raised character's flat neighbour, the lookout's `S`) falls gently to the road in
+ * three worn steps. Returns which plate pixels are face.
+ */
+function paintMasses(
+  tr: Rg02Terrain,
+  tiles: Rg02Tiles,
+  c: (x: number, y: number) => number,
+  set: (i: number, col: Rgb) => void,
+  mix: (i: number, col: Rgb, a: number) => void,
+  PW: number,
+  PH: number,
+): Uint8Array {
+  const rock = tiles[RG.stone];
+  const strip = faceStrip();
+  // the strip's grey is the quarry's; scale it to the rock's own, so the face is the same stone as the top
+  const want = rock ? meanOf(rock) : ([150, 145, 135] as Rgb);
+  const have = meanOf(wang('q_terrace32', 'UUTT'));
+  const tint = [0, 1, 2].map((k) => (want[k] ?? 1) / Math.max(1, have[k] ?? 1));
+  const DARK: Rgb = [0x4a, 0x44, 0x40];
+  const LIGHT: Rgb = [0xe2, 0xdc, 0xcc];
+  const faces = new Uint8Array(PW * PH);
+  const mass = (x: number, y: number): number =>
+    x < 0 || y < 0 || x >= PW || y >= PH ? 0 : tr.massAt(x, y).tiers;
+  const top = (x: number, y: number): boolean => {
+    const m = x < 0 || y < 0 || x >= PW || y >= PH ? null : tr.massAt(x, y);
+    return !!m && m.tiers > 0 && !m.face;
+  };
+  // the top or a ramp running up onto it: the lit and shaded rims follow where the rock drops, not the ramp's seam
+  const level = (x: number, y: number): boolean =>
+    top(x, y) || (!mass(x, y) && c(x, y) === RG.stone);
+  const ramp = new Set(
+    tr.config.rows.flatMap((row, y) =>
+      [...row].flatMap((ch, x) =>
+        tr.config.chars[ch] === RG.stone && !(tr.config.raised ?? {})[ch] ? [`${x},${y}`] : [],
+      ),
+    ),
+  );
+  for (let y = 0; y < PH; y++)
+    for (let x = 0; x < PW; x++) {
+      const i = y * PW + x;
+      const m = tr.massAt(x, y);
+      if (m.face) {
+        faces[i] = 1;
+        const H = m.faceH,
+          row = m.face;
+        const s = strip(x + Math.floor(hash2(Math.floor(x / 23), H, 151) * 32), 42 - (H - row) - 1);
+        // the face is turned from the light: a step darker than the top at its lip, darker still to its foot
+        const sh = 0.8 - (0.26 * row) / H;
+        let col: Rgb = [
+          Math.min(255, s[0] * (tint[0] ?? 1) * sh),
+          Math.min(255, s[1] * (tint[1] ?? 1) * sh),
+          Math.min(255, s[2] * (tint[2] ?? 1) * sh),
+        ];
+        // vertical cracks: a dark seam down part of the face, lit on its left
+        const seam = hash2(x, 0, 153) < 0.07 && row > 2 && row < H - 1;
+        const seamL = hash2(x + 1, 0, 153) < 0.07 && row > 2 && row < H - 1;
+        if (seam) col = mixRgb(col, SHADE, 0.45);
+        else if (seamL) col = mixRgb(col, LIGHT, 0.18);
+        // a ledge at each tier of a tall face: a lit line with its shadow under it
+        for (let k = 1; H - k * FACE_TIER > 6; k++) {
+          const ledge = H - k * FACE_TIER;
+          if (row === ledge) col = mixRgb(col, LIGHT, 0.3);
+          else if (row === ledge + 1) col = mixRgb(col, SHADE, 0.35);
+        }
+        if (row === 1) col = mixRgb(col, LIGHT, 0.55);
+        else if (row === 2) col = mixRgb(col, LIGHT, 0.15);
+        if (row >= H - 1) col = mixRgb(col, SHADE, row === H ? 0.6 : 0.35);
+        // the face's ends: lit on the left, dark on the right
+        if (!mass(x - 1, y) && c(x - 1, y) !== RG.stone) col = mixRgb(col, LIGHT, 0.25);
+        else if (!mass(x + 1, y) && c(x + 1, y) !== RG.stone) col = mixRgb(col, DARK, 0.5);
+        set(i, col);
+        continue;
+      }
+      if (m.tiers) {
+        // the smoothing's added pixels: the rock, not the ground the noise had there
+        if (c(x, y) !== RG.stone && rock) set(i, quilt(rock, x, y, 31 + RG.stone * 13));
+        // the top: a 1 px outline of darker rock where it meets lower ground, lit inside its left and top edges
+        // (a ramp's stone runs up onto the top with no edge)
+        const low = (X: number, Y: number): boolean => !mass(X, Y) && c(X, Y) !== RG.stone;
+        const edgeL = low(x - 1, y),
+          edgeR = low(x + 1, y),
+          edgeT = low(x, y - 1);
+        if (edgeL || edgeR || edgeT) {
+          mix(i, DARK, 0.6);
+          continue;
+        }
+        if (!level(x - 1, y - 1) || !level(x - 2, y)) mix(i, LIGHT, 0.3);
+        else if (!level(x + 2, y) || !level(x + 1, y + 1)) mix(i, SHADE, 0.2);
+        continue;
+      }
+      if (c(x, y) === RG.stone) {
+        // a ramp: three worn steps falling to the south
+        const cx = Math.floor((x - GRID.x) / CELL),
+          cy = Math.floor((y - GRID.y) / CELL);
+        if (ramp.has(`${cx},${cy}`)) {
+          const ly = y - (GRID.y + cy * CELL) + Math.round(vnoise(x, y, 155, 7) * 1.5);
+          const step = [11, 23, 34].find((v) => ly === v || ly === v + 1);
+          if (step !== undefined) mix(i, ly === step ? LIGHT : SHADE, ly === step ? 0.22 : 0.3);
+          else mix(i, SHADE, Math.max(0, (ly - 6) / 40) * 0.12);
+        }
+      }
+      // the mass's cast: a short hard band on the ground to its lower right, a tier at a time
+      if (c(x, y) === RG.water || c(x, y) === RG.void) continue;
+      for (let s = 1; s <= 7; s++) {
+        const t = mass(x - Math.floor(s / 2), y - s);
+        if (t && s <= 3 + t * 2) {
+          mix(i, SHADE, s <= 2 ? 0.5 : 0.36);
+          break;
+        }
+      }
+    }
+  // the tops: sparse dry tufts on both, and on the cliff low outcrops of its own stone, lit on the upper left and
+  // casting to the lower right, clear of the edges
+  const clearOf = (x: number, y: number, r: number): boolean => {
+    for (let oy = -r; oy <= r; oy++)
+      for (let ox = -r; ox <= r; ox++) if (!top(x + ox, y + oy)) return false;
+    return true;
+  };
+  const DRY: readonly Rgb[] = [
+    [0x6b, 0x6a, 0x3a],
+    [0x8d, 0x88, 0x4a],
+    [0xb4, 0xa8, 0x62],
+  ];
+  const box = tr.massBox();
+  if (!box) return faces;
+  // the cliff's top is high ground gone to grass in patches, the rock showing between; a patch keeps clear of the
+  // rim and thins to a 1 px soil edge on its lower right
+  const grass = tiles[RG.grass];
+  const sod = (x: number, y: number): boolean =>
+    mass(x, y) >= 2 &&
+    top(x, y) &&
+    vnoise(x, y, 181, 26) + vnoise(x, y, 182, 7) * 0.35 + (hash2(x, y, 183) - 0.5) * 0.12 > 0.38 &&
+    clearOf(x, y, 5);
+  const sodded = new Uint8Array(PW * PH);
+  if (grass)
+    for (let y = box.y0; y < box.y1; y++)
+      for (let x = box.x0; x < box.x1; x++) {
+        if (!sod(x, y)) continue;
+        const i = y * PW + x;
+        sodded[i] = 1;
+        set(i, quilt(grass, x, y, 31 + RG.grass * 13));
+        if (!sod(x + 1, y) || !sod(x, y + 1)) mix(i, BANK, 0.55);
+        else if (!sod(x - 1, y) || !sod(x, y - 1)) mix(i, LIGHT, 0.12);
+      }
+  for (let y = box.y0; y < box.y1; y++)
+    for (let x = box.x0; x < box.x1; x++) {
+      if (!top(x, y) || sodded[y * PW + x] || hash2(x, y, 161) > 0.004 || !clearOf(x, y, 3))
+        continue;
+      const len = 2 + Math.floor(hash2(x, y, 162) * 2);
+      for (let b = 0; b < 3; b++)
+        for (let st = 0; st < len; st++) {
+          const X = x + Math.round((b - 1) * st * 0.5),
+            Y = y - st;
+          if (top(X, Y)) set(Y * PW + X, DRY[st >= len - 1 ? 2 : st ? 1 : 0] ?? SHADE);
+        }
+    }
+  for (let cy = Math.floor(box.y0 / 24); cy <= box.y1 / 24; cy++)
+    for (let cx = Math.floor(box.x0 / 24); cx <= box.x1 / 24; cx++) {
+      if (hash2(cx, cy, 171) > 0.22) continue;
+      const ox = (cx + 0.2 + hash2(cx, cy, 172) * 0.6) * 24,
+        oy = (cy + 0.2 + hash2(cx, cy, 173) * 0.6) * 24;
+      const rx = 6 + hash2(cx, cy, 174) * 12,
+        ry = 4 + hash2(cx, cy, 175) * 6;
+      if (mass(Math.round(ox), Math.round(oy)) < 2) continue;
+      const inside = (x: number, y: number): boolean =>
+        Math.hypot((x - ox) / rx, (y - oy) / ry) +
+          vnoise(x, y, 176, 5) * 0.35 +
+          vnoise(x, y, 177, 2) * 0.1 <
+        1;
+      let clear = true;
+      for (let y = Math.floor(oy - ry - 3); y <= oy + ry + 9 && clear; y++)
+        for (let x = Math.floor(ox - rx - 3); x <= ox + rx + 6; x++)
+          if (!top(x, y) || sodded[y * PW + x]) {
+            clear = false;
+            break;
+          }
+      if (!clear) continue;
+      for (let y = Math.floor(oy - ry - 1); y <= oy + ry + 4; y++)
+        for (let x = Math.floor(ox - rx - 1); x <= ox + rx + 4; x++) {
+          const i = y * PW + x;
+          if (inside(x, y)) {
+            const lit = !inside(x - 1, y - 1),
+              dark = !inside(x + 1, y + 1);
+            const edge =
+              !inside(x - 1, y) || !inside(x + 1, y) || !inside(x, y - 1) || !inside(x, y + 1);
+            if (edge && !lit) mix(i, DARK, 0.55);
+            else if (lit) mix(i, LIGHT, 0.4);
+            else if (dark) mix(i, SHADE, 0.3);
+            else mix(i, LIGHT, 0.08);
+          } else if (inside(x - 2, y - 2) || inside(x - 1, y - 3)) mix(i, SHADE, 0.3);
+        }
+    }
+  return faces;
+}
+
+const mixRgb = (a: Rgb, b: Rgb, t: number): Rgb => [
+  a[0] * (1 - t) + b[0] * t,
+  a[1] * (1 - t) + b[1] * t,
+  a[2] * (1 - t) + b[2] * t,
+];
 
 /** The cells whose foot point is on the planks or the flagstones: their feet blob is drawn at paving's strength. */
 function pavedCells(cfg: Rg02BoardConfig, baked: Baked): { x: number; y: number }[] {
