@@ -92,6 +92,69 @@ export async function resetStorage(page: Page, query = ''): Promise<void> {
   await page.waitForFunction(() => Boolean(window.fnt?.app));
 }
 
+/**
+ * Whether this browser can create a WebGL context at all, asked on a page that
+ * does not boot the game.
+ *
+ * The probe used to load `/`. That starts the game's boot fetches (the region
+ * and its top-down scenes), and the caller's next step is `resetStorage`, which
+ * navigates away while they are in flight. WebKit reports a fetch aborted by
+ * navigation as `TypeError: Load failed`, the game logs it, and a spec that
+ * collects console errors then failed on an error from the page it had already
+ * left (topdown-quarry on the iPad project, intermittently).
+ */
+export async function webglAvailable(page: Page): Promise<boolean> {
+  await page.goto('/robots.txt');
+  return page.evaluate(() => {
+    const probe = document.createElement('canvas');
+    const gl = probe.getContext('webgl2') ?? probe.getContext('webgl');
+    gl?.getExtension('WEBGL_lose_context')?.loseContext();
+    return gl !== null;
+  });
+}
+
+/**
+ * Turns the wheel over `target`, as a mouse or trackpad would.
+ *
+ * Playwright has no wheel input for mobile WebKit (the iPad projects): there
+ * `mouse.wheel` throws. A finger scrolls the same box a wheel would, the
+ * nearest one under the pointer that can still move that way, so on that
+ * engine the helper moves that box by the same distance. A spec that scrolls to
+ * read or reach something keeps its own checks on what is then visible and
+ * hit-testable; this only supplies the scroll. Four specs each grew their own
+ * copy of this fallback, one failure at a time, and `reward-card-layout` had
+ * none.
+ *
+ * `at` is a page point for the pointer; the default is the middle of `target`.
+ */
+export async function wheelOver(
+  page: Page,
+  target: Locator,
+  deltaY: number,
+  at?: { x: number; y: number },
+): Promise<void> {
+  if (at) await page.mouse.move(at.x, at.y);
+  else await target.hover();
+  try {
+    await page.mouse.wheel(0, deltaY);
+    return;
+  } catch (error) {
+    if (!(error instanceof Error) || !/not supported in mobile WebKit/i.test(error.message))
+      throw error;
+  }
+  await target.evaluate((element, dy) => {
+    const canMove = (box: Element): boolean => {
+      const overflow = getComputedStyle(box).overflowY;
+      if (overflow !== 'auto' && overflow !== 'scroll') return false;
+      const room = box.scrollHeight - box.clientHeight;
+      return dy > 0 ? box.scrollTop < room - 1 : box.scrollTop > 0;
+    };
+    let box: Element | null = element;
+    while (box && !canMove(box)) box = box.parentElement;
+    (box ?? document.scrollingElement ?? document.documentElement).scrollBy(0, dy);
+  }, deltaY);
+}
+
 export interface StartOptions {
   /**
    * Reduce motion is on by default here: the suite tests rules and UI, not
@@ -149,6 +212,23 @@ export async function enterNode(page: Page, nodeId: string): Promise<void> {
   await page.evaluate((id) => {
     window.fnt?.app.dispatch({ type: 'enterNode', nodeId: id });
   }, nodeId);
+}
+
+/**
+ * Plays a conversation to its end with the real controls, taking the first open
+ * option at any choice (Mira's table asks one question, DLG-01).
+ */
+export async function finishConversation(page: Page): Promise<void> {
+  for (let step = 0; step < 80; step++) {
+    const open = await page.evaluate(() => ({
+      screen: window.fnt?.app.state?.screen,
+      choices: document.querySelectorAll('.choice-option:not([disabled])').length,
+    }));
+    if (open.screen !== 'dialogue') return;
+    if (open.choices) await page.locator('.choice-option:not([disabled])').first().click();
+    else await page.locator('[data-conversation-control="next"]').click();
+  }
+  throw new Error('The conversation did not end');
 }
 
 /**
@@ -449,4 +529,34 @@ export async function useOrthographicBackdropFixture(page: Page, mapId: string):
       scene: { value: undefined, configurable: true },
     });
   }, mapId);
+}
+
+/**
+ * Walks the party to a clear cell beside a resident, wherever the board puts them (Ba Dan's
+ * rebuild moved most of them, #875), so a spec can Talk as a player would.
+ */
+export async function walkBeside(page: Page, npcId: string): Promise<void> {
+  await page.evaluate((npcId) => {
+    const app = window.fnt!.app,
+      state = app.state!,
+      map = app.content.maps.get(state.location.mapId)!;
+    const at = app.residents.figures().find((figure) => figure.npcId === npcId)?.pos;
+    if (!at) throw new Error(`${npcId} is not on the map`);
+    const pos = [
+      { x: at.x, y: at.y + 1 },
+      { x: at.x - 1, y: at.y },
+      { x: at.x + 1, y: at.y },
+      { x: at.x, y: at.y - 1 },
+    ].find((cell) => {
+      const symbol = map.rows[cell.y]?.[cell.x];
+      return (
+        symbol !== undefined &&
+        !map.legend[symbol]?.blocked &&
+        !app.residents.figures().some((w) => w.pos?.x === cell.x && w.pos?.y === cell.y)
+      );
+    });
+    if (!pos) throw new Error(`${npcId} has no clear neighbour`);
+    app.dispatch({ type: 'walkTo', pos });
+  }, npcId);
+  await waitForIdle(page);
 }

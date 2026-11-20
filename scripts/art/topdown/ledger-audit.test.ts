@@ -299,12 +299,16 @@ describe('PixelLab ledger audit CLI', () => {
       }
     });
 
-    it('tags every job in the shipped ledger with the demo region', () => {
+    it('tags every job in the shipped ledger with its region', () => {
       const result = run(['--json']);
       expect(result.status, result.stderr).toBe(0);
       const report = JSON.parse(result.stdout) as RegionReport;
       expect(report.untagged_jobs).toEqual([]);
-      expect(report.regions.map((region) => region.region)).toEqual(['ba_dan_valley']);
+      // The demo's jobs take the ledger's default; RG-02's carry their own tag (`tools/rg02chars.py`).
+      expect(report.regions.map((region) => region.region)).toEqual([
+        'ba_dan_valley',
+        'saltstep_emberwatch',
+      ]);
     });
   });
 });

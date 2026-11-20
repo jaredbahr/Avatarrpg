@@ -73,10 +73,47 @@ const SCENES: Readonly<Record<string, Scene>> = {
     light: 'Hard afternoon light into the pit; the terraces cast no shadow onto the floor.',
   },
   ba_dan_village: {
-    place: 'Ba Dan, the small village the party sets out from: a clearing in the woods.',
+    place: 'Ba Dan, a quarry village built from the pale stone of its own hill.',
     scene:
-      'A village clearing ringed by trees, thickest in the corners. A road of flagstones crosses the whole picture left to right through the middle, two tiles deep, and runs out through the east gate at the right edge where the flagstones give way to bare earth. At the west edge the road enters through a shallow flooded ford and pond. Four timber houses, two above the road and two below, each an open cutaway rectangle of timber walls round a visible floor of planks with a doorway opening onto a paved path that leads to the road. Between the houses above the road a paved yard opens off the road. One shallow canal enters from the west edge along row 6: nine water cells, a dry stone footbridge, then three more water cells at its east end. There is no canal along the south edge; below the road the matching paved yard has small market and garden edges, and its south lawn continues into meadow. Grass everywhere else, worn to paths near the doors.',
-    light: 'Soft mid-morning light, no long shadows.',
+      'A village on a hillside under a quarry. Cliff and trees close the top edge, with a dry-stone terrace on the left reached by a short flight of steps, and trees close the left and bottom edges. A road of flagstones runs in from the east edge through a gap in a low stone wall, past a shop with a storeroom and a stone trough on the road, and opens into a square at the middle of the picture. A long patched awning over a table stands at the near side of the square, in front of the largest house. A lane leaves the square to the left past a yard of cut stone blocks and a small house, and a path runs behind the house backs along the top, through a side gate in a garden fence on the right. A canal crosses the lower third from the left edge to the right, with a two-tile-wide stone bridge a little left of centre and washing steps on its near bank, and runs out under the east wall. South of the canal a row of small houses with doorsteps faces a lane, and a path leaves the bottom edge at the middle. A flooded ford closes the left edge of the road.',
+    light: 'Soft midday light, pale dust on the square, no long shadows.',
+  },
+  /*
+   * RG-02, the pipeline-trial slice. Written from the script's build list
+   * (`docs/story/scripts/act2-sparks.md`) for the map rows as they stand; the region's real art
+   * is top-down PixelLab boards (ADR 0103, 0104), so these packs are the composition record, not
+   * the art route.
+   */
+  saltstep_market: {
+    place: 'Saltstep, a market town built out over a grey bay.',
+    scene:
+      'A packed-sand quay crosses the picture left to right just above the middle, with a road of flagstones coming in at the left edge. North of it a strip of grass holds two timber warehouses, the right one a freight office with a clean brass plate. South of the quay the bay is deep, still water, and plank platforms stand out in it on piles: three near the quay, one further out on a narrow walk, and a ferry landing on the right. Tall painted level poles stand along the platform edges. Trees close the top corners and edges.',
+    light: 'Flat grey coastal daylight; the water darker than the planks.',
+  },
+  saltstep_pontoon: {
+    place: 'The freight pontoon at Saltstep, where the handlers load the barges.',
+    scene:
+      'A broad deck of weathered planks on the water, ragged at its edges, with deep harbour water all round it. A cast-iron hand pump in its crate stands near the left end, in two places. A short two-plank-wide gangway, its brake lever at its far end, joins the deck to a smaller platform on the right, where a heavy timber winch with a crane arm stands; the platform runs on to the right edge as a gangway toward a barge beyond the picture.',
+    light: 'Grey afternoon light off the water, the tide on the turn.',
+  },
+  saltstep_platform: {
+    place:
+      'A spare market platform at Saltstep, floating loose in the harbour, where the ferry apprentices spar.',
+    scene:
+      'A small square deck of market planking alone on the water, with deep harbour water all round it. Down its middle runs the short stub of an old stall counter, open at both ends. A low step of planks runs along the top edge, sloping down at each end. Two mooring bollards with looped rope stand at the top-left and bottom-right corners of the deck.',
+    light: 'Bright midday light, calm water.',
+  },
+  emberwatch_parade: {
+    place: 'Emberwatch, an old military outpost across the bay, reopened for civilians.',
+    scene:
+      'A long barracks wall of grey stone runs the whole width along the top, its old slogans painted over. Below it a wide parade ground of packed sand is covered in beans drying on old tent canvas, with a spear rack used as a bean trellis. Grass rims the ground. A timber jetty juts into deep water at the lower left, where the ferry lands. A gap in the right edge leads on to the power yard.',
+    light: 'Early evening, the outpost lamps not yet lit.',
+  },
+  emberwatch_power_yard: {
+    place: 'The power yard at Emberwatch, where the live line comes in.',
+    scene:
+      'A walled yard of bare earth. Along the top edge a line of timber poles carries a live cable, a fence you can see over. At the top right a rain cistern of stone has overflowed, and standing water spreads across the yard in two broad puddles, one beside the line and one lower down. Down the right side a second row of poles holds a dead copper spur. A gate in the left wall leads back to the parade ground.',
+    light: 'Night after rain, lit by the yard lamps; the puddles catch the light.',
   },
 };
 

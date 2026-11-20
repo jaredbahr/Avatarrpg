@@ -30,7 +30,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     stats: { maxHp: 28, maxAp: 4, maxMove: 4, power: 5, defense: 1, speed: 5, focus: 5 },
     abilities: ['club_swing', 'bandit_rush'],
     ai: 'aggressive',
-    xp: 100,
+    xp: 150,
     sprite: 'unit.enemy.thug',
     description:
       'Quarry labour that stopped getting paid and started taking. Walks straight in with a club; Rush closes four tiles, though not every turn.',
@@ -43,7 +43,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     stats: { maxHp: 22, maxAp: 4, maxMove: 4, power: 4, defense: 0, speed: 7, focus: 10 },
     abilities: ['sling_stone'],
     ai: 'cautious',
-    xp: 100,
+    xp: 150,
     sprite: 'unit.enemy.slinger',
     description:
       'Throws stones from up to six tiles and backs away from a fight. Frail once caught, and cover makes its stones miss more often.',
@@ -100,7 +100,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     stats: { maxHp: 34, maxAp: 3, maxMove: 4, power: 6, defense: 2, speed: 6, focus: 10 },
     abilities: ['fire_blast', 'oil_flask', 'torch_toss'],
     ai: 'cautious',
-    xp: 200,
+    xp: 300,
     sprite: 'unit.enemy.deserter',
     description:
       'Spills oil, then lights it with a thrown torch. Keep clear of the spill; water douses flames but leaves unburned oil in place.',
@@ -201,6 +201,97 @@ export const ENEMIES: readonly EnemyDef[] = [
     sprite: 'unit.ally.ruon',
     description:
       'Fights beside you on the road to his trial. His sabre hits hard, and his barked orders make a hero hit harder and truer.',
+  },
+
+  /*
+   * RG-02, the pipeline-trial slice (Saltstep and Emberwatch). PLACEHOLDERS: the stat blocks are
+   * first guesses at level-1 figures, not yet swept by the balance simulator; the descriptions
+   * wait for the writing pass. The sprites are the region's own (`tools/rg02chars.py`).
+   * Shared content, not region content: a region cannot carry its own enemies yet (ADR 0111 §1),
+   * so these ship in the boot chunk (see `docs/pipeline-trial-log.md`, friction).
+   */
+  {
+    id: 'freight_handler',
+    name: 'Freight Handler',
+    shortName: 'Handler',
+    element: 'nonbender',
+    size: 1,
+    // Sturdier than a quarry worker and without Rush, so they hold the gangway and the winch
+    // brake instead of charging off it (tuned with the winch objective, 2026-11-15).
+    stats: { maxHp: 48, maxAp: 4, maxMove: 4, power: 5, defense: 1, speed: 5, focus: 5 },
+    abilities: ['club_swing'],
+    ai: 'aggressive',
+    xp: 120,
+    sprite: 'unit.enemy.freighthandler',
+    description:
+      'Loads freight at Saltstep, paid by the crate, and the tide is going out. Sturdy. Holds the gangway with a club and does not charge.',
+  },
+  {
+    id: 'line_rigger',
+    name: 'Line Rigger',
+    shortName: 'Rigger',
+    element: 'nonbender',
+    size: 1,
+    stats: { maxHp: 26, maxAp: 4, maxMove: 4, power: 5, defense: 1, speed: 6, focus: 5 },
+    abilities: ['club_swing', 'bandit_rush'],
+    ai: 'aggressive',
+    xp: 100,
+    sprite: 'unit.enemy.rigger',
+    description:
+      'One of Sabi’s crew, laid off when the line was finished. Not sturdy, but Rush closes four tiles, though not every turn.',
+  },
+  /*
+   * SF-2.2, the tipping platform (ADR 0122): sparring partners, not enemies. Both carry Shove, the
+   * whole point of a bout, and pay their XP through the encounter's `xpPerHead`, so their own `xp`
+   * is a token that never pays. Sturdy on purpose: at 24 and 34 HP the heroes' bending ended every
+   * bout in its first round, before the water mattered; at 50 and 70 a bout runs two to four rounds
+   * (sim, 2026-11-19). Names are the script's; the descriptions wait for the writing pass.
+   */
+  {
+    id: 'ferry_apprentice',
+    name: 'Ferry Apprentice',
+    shortName: 'Apprentice',
+    element: 'nonbender',
+    size: 1,
+    stats: { maxHp: 50, maxAp: 4, maxMove: 4, power: 4, defense: 3, speed: 7, focus: 5 },
+    abilities: ['shove', 'club_swing'],
+    ai: 'aggressive',
+    xp: 1,
+    sprite: 'unit.enemy.rigger',
+    description: 'PLACEHOLDER (story): one of Tavi’s ferry apprentices, quick on a moving deck.',
+  },
+  {
+    id: 'channel_hand',
+    name: 'Channel Hand',
+    shortName: 'Hand',
+    element: 'nonbender',
+    size: 1,
+    stats: { maxHp: 70, maxAp: 4, maxMove: 3, power: 5, defense: 4, speed: 5, focus: 5 },
+    abilities: ['shove', 'club_swing'],
+    ai: 'aggressive',
+    xp: 1,
+    sprite: 'unit.enemy.freighthandler',
+    description: 'PLACEHOLDER (story): a channel hand, heavy and hard to move.',
+  },
+  {
+    /*
+     * Veyra (AN-01) as a guest ally (ADR 0116), built from an enemy record because a character
+     * kit would put her on the party-setup roster. PLACEHOLDER KIT: the script gives her a
+     * pressure lance and a signal flare; until those abilities exist, Shield Bash stands in for
+     * the lance (it pushes) and Rally for the flare. Never an opponent, so `xp` is never paid; it
+     * is positive only because `progression.test.ts` allows a zero to the Cutting's Ruon alone.
+     */
+    id: 'veyra_guest',
+    name: 'Veyra',
+    element: 'nonbender',
+    size: 1,
+    stats: { maxHp: 36, maxAp: 4, maxMove: 4, power: 5, defense: 2, speed: 6, focus: 8 },
+    abilities: ['strike', 'shield_bash', 'rally'],
+    ai: 'aggressive',
+    xp: 1,
+    sprite: 'unit.ally.veyra',
+    description:
+      'The pump woman from the pontoon, fighting beside you. Her brass lance shoves a handler back a tile, and her call gives a hero an extra AP and a harder hit.',
   },
 ];
 

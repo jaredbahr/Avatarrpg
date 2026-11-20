@@ -36,12 +36,18 @@ function issue(state: GameState, command: Command): GameState {
 function finishDialogue(fixture: Fixture): Fixture {
   let { state } = fixture;
   const transcript = [...fixture.transcript];
-  for (let guard = 0; state.screen === 'dialogue' && guard < 20; guard++) {
+  for (let guard = 0; state.screen === 'dialogue' && guard < 60; guard++) {
     const node = CONTENT.story.get(state.story.nodeId ?? '');
-    if (!node || node.kind !== 'dialogue') throw new Error('Unexpected fixture conversation');
-    const command: Command = INTERLUDES[node.id]
-      ? { type: 'enterNode', nodeId: node.next }
-      : { type: 'advanceDialogue' };
+    if (!node || (node.kind !== 'dialogue' && node.kind !== 'choice'))
+      throw new Error('Unexpected fixture conversation');
+    // Mira's table asks the party one question (#805); any answer ends the
+    // same way, so the fixture takes the first.
+    const command: Command =
+      node.kind === 'choice'
+        ? { type: 'chooseOption', optionIndex: 0 }
+        : INTERLUDES[node.id]
+          ? { type: 'enterNode', nodeId: node.next }
+          : { type: 'advanceDialogue' };
     state = issue(state, command);
     transcript.push(command);
   }
@@ -81,7 +87,8 @@ function outbound(source: 'map' | 'legacy'): Fixture {
       'Serialized setup fixture, not a browser-earned campaign or physical-input acceptance.',
   };
   fixture = finishDialogue(fixture);
-  const mira: Command = { type: 'walkTo', pos: { x: 11, y: 5 } };
+  // Mira's invitation on the rebuilt 32 x 20 Ba Dan (#875): the open cell beside her table.
+  const mira: Command = { type: 'walkTo', pos: { x: 12, y: 9 } };
   fixture = {
     ...fixture,
     state: issue(fixture.state, mira),

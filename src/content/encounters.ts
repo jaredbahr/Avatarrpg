@@ -20,6 +20,7 @@
  */
 
 import type { EncounterDef, EncounterPlacement } from '../core/types';
+import { SIDE_FIGHT_XP } from './story/sideFightsAct1';
 
 const at = (x: number, y: number, enemyId: string): EncounterPlacement => ({
   enemyId,
@@ -34,7 +35,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     expectedLevel: 1,
     // The first fight a new table plays: the guide teaches Move, an attack and End turn here.
     guidance: 'firstFight',
-    enemies: [at(17, 5, 'bandit_thug'), at(17, 7, 'bandit_thug'), at(18, 3, 'bandit_slinger')],
+    enemies: [at(17, 5, 'bandit_thug'), at(18, 3, 'bandit_slinger')],
     allies: [],
     conditionalEnemies: [],
     baselinePartySize: 3,
@@ -43,9 +44,13 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
      * argument for XP-as-budget in one encounter: the same cost buys three
      * completely different lessons.
      *
-     *   thugs     100 + 100 + 100  two in your face, one throwing rocks
-     *   slingers  100 + 100 + 100  nothing melee at all; you have to close
+     *   thugs     150 + 150        one in your face, one throwing rocks
+     *   slingers  150 + 150        nothing melee at all; you have to close
      *   bruisers  150 + 150        two heavies; you have to focus fire
+     *
+     * Two bodies, not three (#846: the first fights felt slow, partly from the
+     * number of attacks). The worker and the slinger pay 150 XP each, so the
+     * fight still pays 300 and the party reaches the gate on level.
      *
      * Because `xpRoster` always scores the *authored* roster whatever spawned,
      * all three pay exactly the same and progression.test.ts never notices.
@@ -60,11 +65,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
       {
         id: 'slingers',
         weight: 1,
-        enemies: [
-          at(17, 5, 'bandit_slinger'),
-          at(18, 3, 'bandit_slinger'),
-          at(18, 7, 'bandit_slinger'),
-        ],
+        enemies: [at(17, 5, 'bandit_slinger'), at(18, 3, 'bandit_slinger')],
         intro:
           'Stones whip out of the pines before anyone shows a face. Whoever is throwing them means to stay out of reach.',
         tip: 'Nobody up there wants to come close. Get among them — a slinger with somebody in its face is not much use.',
@@ -90,7 +91,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     name: 'The Quarry Gate',
     mapId: 'quarry_gate',
     expectedLevel: 2,
-    enemies: [at(16, 3, 'fire_deserter'), at(17, 6, 'bandit_thug'), at(16, 8, 'bandit_bruiser')],
+    enemies: [at(16, 3, 'fire_deserter'), at(17, 6, 'bandit_thug')],
     allies: [],
     conditionalEnemies: [],
     baselinePartySize: 3,
@@ -101,9 +102,17 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
      * for that, and the quarry crew comes forward in his place, angrier for
      * having been left to it.
      *
-     * Same 450-XP cost as the authored roster (150 x 3 against 200 + 100 + 150),
-     * and a very different fight: no firebender on the field means the oil only
-     * lights if *you* light it.
+     * Same 450-XP cost as the authored roster (150 x 3 against 300 + 150), and a
+     * very different fight: no firebender on the field means the oil only lights
+     * if *you* light it.
+     *
+     * The authored roster went from three bodies to two (#846: the first fights
+     * felt slow, partly from the number of attacks): the quarry hauler left, and
+     * the deserter pays 300 XP, so the gate still pays 450 and the party still
+     * reaches the Cutting on level 3 (progression.test.ts needs exactly 750 XP
+     * from the first two fights). This variant stays at three: no two quarry
+     * bodies cost 450 XP within the 10% budget rule, and XP is paid per enemy
+     * kind, shared with the other fights.
      */
     variants: [
       {
@@ -258,8 +267,73 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
       'The driller grinds forward on its treads, oil dripping from a split hose. Grumbler hauls on a lever, and the drill arm swings towards you.',
     tip: 'Keep more than two tiles from the driller: its slam hits a cone and knocks people back, once a turn. It sprays oil and churns mud. Light its oil when your party is clear.',
   },
-];
 
-export const ENCOUNTER_BY_ID: ReadonlyMap<string, EncounterDef> = new Map(
-  ENCOUNTERS.map((e) => [e.id, e]),
-);
+  /*
+   * Act I's optional side fights (`story/sideFightsAct1.ts`, script #909). They open once Act I is
+   * over, when a table stands on level 4, but RG-01's band is 1-3 (owner, #784), so they are tuned
+   * for level 3 and play a little easy: an optional fight on the way to the next region. Each pays
+   * a flat `xpPerHead` on a win and the same on "Carry on", sized so a table that plays both
+   * reaches level 5 before Saltstep; a quarry worker's 150 XP would have lifted it past RG-02's band.
+   */
+  {
+    id: 'enc_sf11_the_bend',
+    name: 'The bend, again',
+    mapId: 'forest_road',
+    expectedLevel: 3,
+    xpPerHead: SIDE_FIGHT_XP,
+    // Four quarry hands, two with slings (Bessa is one) and two without.
+    enemies: [
+      at(16, 5, 'bandit_thug'),
+      at(15, 7, 'bandit_thug'),
+      at(18, 3, 'bandit_slinger'),
+      at(17, 6, 'bandit_slinger'),
+    ],
+    allies: [],
+    conditionalEnemies: [],
+    baselinePartySize: 3,
+    reinforcements: [
+      at(14, 6, 'bandit_thug'),
+      at(17, 9, 'bandit_slinger'),
+      at(16, 8, 'bandit_thug'),
+    ],
+    variants: [],
+    intro:
+      'Mist in the trees at the bend. A handcart stands across the road, loaded higher than the people loading it. Lanfen is standing in front of it with her arms folded.',
+    tip: 'The two with slings stay back and throw. The other two run straight at you. Don’t stand in a row for the slings.',
+  },
+  {
+    id: 'enc_sf12_edge_on',
+    name: 'Edge-on',
+    mapId: 'ambush_road',
+    expectedLevel: 3,
+    xpPerHead: SIDE_FIGHT_XP,
+    // Tolma, three of her crew (two haulers and a worker), and one more who came for the soup.
+    enemies: [
+      at(16, 4, 'bandit_earthbender'),
+      at(15, 5, 'bandit_bruiser'),
+      at(15, 6, 'bandit_thug'),
+      at(16, 7, 'bandit_bruiser'),
+      at(17, 3, 'bandit_thug'),
+    ],
+    allies: [],
+    conditionalEnemies: [],
+    baselinePartySize: 3,
+    /*
+     * Two, not three: a table of six meets seven, one fewer than the Cutting's ambush, the largest
+     * roster in the game, which `scripts/perf/core-bench.ts` measures and freezes.
+     */
+    reinforcements: [at(17, 8, 'bandit_thug'), at(18, 5, 'bandit_bruiser')],
+    /*
+     * Hard keeps its extra AP off here. With the shared Hard profile (+5 power, +2 AP) two
+     * haulers and a bender that raises cover won 0% at one and three players and 90% at six
+     * (60 trials each, party level 3). +3 power and no extra AP: 88 / 93 / 100%, in about seven
+     * rounds, beside the Cutting's Hard numbers. Three haulers and one worker read 0 / 3 / 90%
+     * even so, so the crew is two of each.
+     */
+    hard: { power: 3, ap: 0 },
+    variants: [],
+    intro:
+      'A slab of stone stands across the Cutting, taller than the cart. Five people sit in its shade round a soup pot. One of them gets up.',
+    tip: 'The haulers hit hard and walk slowly. Tolma stays behind them and throws stone. Don’t let them walk you into a corner.',
+  },
+];

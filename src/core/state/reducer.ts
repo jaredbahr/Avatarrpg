@@ -34,7 +34,7 @@ import type {
 import { BattleDraft } from './battleDraft';
 import { appendLog } from './log';
 import { advanceToNextTurn, settleOutcome } from './turnFlow';
-import { absorbBattleResults, restAfterVictory, reviveParty, xpRoster } from './createGame';
+import { absorbBattleResults, restAfterVictory, reviveParty, xpPerHead } from './createGame';
 import { canUseAbility, isValidTarget, resolveAbility } from '../rules/abilities';
 import {
   buildGrid,
@@ -56,6 +56,7 @@ import {
   enterStoryNode,
   exploreNodeFor,
   npcNode,
+  passLeadership,
 } from '../story/storyEngine';
 
 /** Convenience: state unchanged, one explanatory message. */
@@ -176,6 +177,8 @@ function handleMove(
   const moved = draft.unit(unitId);
   if (moved) draft.replace({ ...moved, move: Math.max(0, moved.move - cost) });
   draft.emit({ type: 'unitMoved', unitId, path: walked, cost });
+  // Stepping off a bout's edge clears a teeter (ADR 0122 §2a).
+  if (walked.length > 0) draft.cleanseFrom(unitId, ['teetering']);
 
   finishAction(draft, unitId);
   return finish(content, state, draft.toBattle(), rng, draft.events);
@@ -294,13 +297,9 @@ function handleResolveBattle(content: ContentIndex, state: GameState): StepResul
      * a table of three and arriving at the boss under-levelled. Every table
      * should reach the quarry floor at about level 4.
      */
-    const roster = encounter ? xpRoster(encounter, state.flags) : [];
-    const authoredXp = roster.reduce(
-      (sum, placement) => sum + (content.enemies.get(placement.enemyId)?.xp ?? 0),
-      0,
-    );
-    const baseline = Math.max(1, encounter?.baselinePartySize ?? 3);
-    const perMember = Math.max(1, Math.round(authoredXp / baseline));
+    const perMember = encounter
+      ? xpPerHead(encounter, state.flags, (id) => content.enemies.get(id)?.xp ?? 0)
+      : 1;
 
     const absorbed = absorbBattleResults(state, battle);
     const shares = absorbed.map(() => perMember);
@@ -508,17 +507,18 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
     if (!destination || tileAt(buildGrid(destination), exit.toPos)?.blocked !== false)
       return refuse(state, 'This route is unavailable.');
     // Arrive beside the return exit, never on it. Reciprocal routes are explicit.
+    const passed = passLeadership(content, moved, destination.id);
     return {
       state: {
         ...moved,
         location: { mapId: destination.id, pos: exit.toPos },
-        story: { ...moved.story, nodeId: null, lineIndex: 0 },
+        story: { ...passed.state.story, nodeId: null, lineIndex: 0 },
         world: {
           ...moved.world,
           returnPos: { ...moved.world.returnPos, [map.id]: pos, [destination.id]: exit.toPos },
         },
       },
-      events: [...walk, { type: 'screenChanged', screen: 'explore' }],
+      events: [...walk, ...passed.events, { type: 'screenChanged', screen: 'explore' }],
     };
   }
 
@@ -907,20 +907,4 @@ function discoverCombos(
     state: { ...state, discoveredCombos: [...state.discoveredCombos, ...found] },
     events: [...events, ...discovered],
   };
-}
-
-/** Applies a list of commands in order. Used by the simulator and by tests. */
-export function applyAll(
-  content: ContentIndex,
-  state: GameState,
-  commands: readonly Command[],
-): StepResult {
-  let current = state;
-  const events: GameEvent[] = [];
-  for (const command of commands) {
-    const result = apply(content, current, command);
-    current = result.state;
-    events.push(...result.events);
-  }
-  return { state: current, events };
 }

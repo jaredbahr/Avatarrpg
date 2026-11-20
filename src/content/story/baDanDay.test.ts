@@ -18,7 +18,7 @@ import { npcNode, resolveDialogue } from '../../core/story/storyEngine';
 import { visibleNpcs } from '../../core/story/world';
 import { DAY_PHASES } from '../../core/types';
 import type { DayPhase, FlagValue, GameState, MapDef, StoryNode } from '../../core/types';
-import { STORY_PRESENTATIONS } from './presentations';
+import { presentationOf } from './presentations';
 
 const VILLAGE = 'ba_dan_village';
 const RIVERSIDE = 'ba_dan_riverside';
@@ -237,6 +237,8 @@ describe('a Ba Dan day: where and when each new conversation opens', () => {
           return node.options.map((option) => option.next);
         case 'branch':
           return [node.ifSet, node.ifUnset];
+        case 'branchWhen':
+          return [node.ifTrue, node.ifFalse];
         default:
           return [];
       }
@@ -250,7 +252,7 @@ describe('a Ba Dan day: where and when each new conversation opens', () => {
           seen.add(id);
           const node = CONTENT.story.get(id);
           if (node?.kind === 'dialogue' || node?.kind === 'choice')
-            expect(STORY_PRESENTATIONS[id]?.mapId, `${npc.id} -> ${id}`).toBe(mapId);
+            expect(presentationOf(node)?.mapId, `${npc.id} -> ${id}`).toBe(mapId);
           queue.push(...next(node));
         }
       }
@@ -493,12 +495,17 @@ describe('existing lines that name the time of day', () => {
     return resolveDialogue(at(phase, { flags }), node).lines.join(' ');
   };
 
-  it('has Bo-shan asleep for the night only in the evening and at night', () => {
-    const flags = { act1_complete: true, pella_asked: true };
-    for (const phase of DAY_PHASES)
-      expect(lines('pella_home', phase, flags).includes('tomorrow'), phase).toBe(
-        phase === 'evening' || phase === 'night',
-      );
+  it('never has Bo-shan asleep at home after the card: he took the cart that morning', () => {
+    for (const flags of [
+      { act1_complete: true },
+      { act1_complete: true, pella_asked: true },
+      { act1_complete: true, pella_asked: true, 'sq01.cabbages': 'families' },
+    ] as GameState['flags'][])
+      for (const phase of DAY_PHASES) {
+        const text = lines('pella_home', phase, flags);
+        expect(text, phase).toMatch(/coast road|when he left/i);
+        expect(text, phase).not.toMatch(/asleep|tomorrow|resting/);
+      }
   });
 
   it('has Dorin keep the watch only in the phases he holds the post', () => {

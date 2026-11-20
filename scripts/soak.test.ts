@@ -93,6 +93,13 @@ function waitingFixture(): ContentIndex {
   };
 }
 
+/**
+ * Encounter, roster and table-size cells in the shipped game: Act I's 48, plus RG-02's two fights
+ * (the winch and SF-2.1) Act I's two side fights (SF-1.1, SF-1.2) and SF-2.2's bout, one roster each, at six
+ * table sizes.
+ */
+const CELLS = 78;
+
 describe('combat soak report', () => {
   it('defaults to 200 attempts for every pinned roster and size with balance parties and seeds', () => {
     const simulate = vi.fn((_content: ContentIndex, options: SimOptions) =>
@@ -101,12 +108,12 @@ describe('combat soak report', () => {
     const onRow = vi.fn();
     const report = runSoakReport(CONTENT, { onRow }, simulate);
     expect(DEFAULT_SOAK_TRIALS).toBe(200);
-    expect(report.rows).toHaveLength(48);
-    expect(report.summary.attempted).toBe(9600);
-    expect(report.summary.completed).toBe(9600);
+    expect(report.rows).toHaveLength(CELLS);
+    expect(report.summary.attempted).toBe(CELLS * 200);
+    expect(report.summary.completed).toBe(CELLS * 200);
     expect(report.summary.passed).toBe(true);
-    expect(onRow).toHaveBeenCalledTimes(48);
-    expect(simulate).toHaveBeenCalledTimes(9600);
+    expect(onRow).toHaveBeenCalledTimes(CELLS);
+    expect(simulate).toHaveBeenCalledTimes(CELLS * 200);
     for (const row of report.rows) {
       expect(row.attempted).toBe(200);
       expect(row.party).toEqual(partyOfSize(row.partySize).map((slot) => slot.characterId));
@@ -135,6 +142,11 @@ describe('combat soak report', () => {
         ['enc_ambush', null],
         ['enc_grumbler', null],
         ['enc_grumbler', 'jins_people'],
+        ['enc_sf11_the_bend', null],
+        ['enc_sf12_edge_on', null],
+        ['enc_mq02_winch', null],
+        ['enc_sf21_wet_ground', null],
+        ['enc_sf22_platform', null],
       ]);
     }
   });
@@ -156,10 +168,10 @@ describe('combat soak report', () => {
       if (attempt === 5) return successfulResult(options, { anomalies: ['non-finite HP witness'] });
       return successfulResult(options);
     });
-    expect(attempt).toBe(48);
+    expect(attempt).toBe(CELLS);
     expect(report.summary).toMatchObject({
-      attempted: 48,
-      completed: 46,
+      attempted: CELLS,
+      completed: CELLS - 2,
       throws: 2,
       failures: 5,
       passed: false,
@@ -216,9 +228,9 @@ describe('combat soak report', () => {
       passed: true,
       maxRoundsRate: 0.01,
       failures: 0,
-      maxRoundsReached: 48,
+      maxRoundsReached: CELLS,
     });
-    expect(atLimit.maxRoundsCases).toHaveLength(48);
+    expect(atLimit.maxRoundsCases).toHaveLength(CELLS);
     expect(atLimit.maxRoundsCases[0]).toMatchObject({
       seed: seedFor('enc_forest_road:thugs', 0),
       commandIndex: 7,
@@ -228,10 +240,10 @@ describe('combat soak report', () => {
     expect(overLimit.summary).toMatchObject({
       passed: false,
       maxRoundsRate: 0.02,
-      maxRoundsReached: 96,
+      maxRoundsReached: CELLS * 2,
     });
     expect(overLimit.rows.every((row) => !row.passed)).toBe(true);
-    expect(overLimit.violations).toHaveLength(48);
+    expect(overLimit.violations).toHaveLength(CELLS);
   });
 
   it.each([
@@ -263,7 +275,7 @@ describe('combat soak report', () => {
         diagnostics: { commandCount: 30, idleTurns, maxRoundsReached: false },
       }),
     );
-    expect(report.summary.idleTurns).toBe(48 * 2 * idleTurns.length);
+    expect(report.summary.idleTurns).toBe(CELLS * 2 * idleTurns.length);
     expect(report.summary.passed).toBe(true);
     for (const row of report.rows) {
       expect(row.idleTurns).toBe(2 * idleTurns.length);
@@ -405,7 +417,7 @@ describe('opt-in simulator diagnostics', () => {
 });
 
 /*
- * The matrix's cost guard counts the reducer commands its 96 battles apply (#796). A count is the
+ * The matrix's cost guard counts the reducer commands its battles apply, two a cell (#796). A count is the
  * same on every machine; the earlier guards were not: 30 s of wall time failed whenever other jobs
  * shared the machine, and its replacement, 45 s of CPU (#584), still measured the machine. A battle
  * that drags, an AI that dithers or a turn that never ends all show up as more commands. The bound
@@ -435,21 +447,21 @@ describe('the real soak matrix', () => {
 
   it('runs two real seeds in every encounter/variant/size cell within its work bound', () => {
     const report = matrix();
-    expect(report.rows).toHaveLength(48);
-    expect(report.summary.attempted).toBe(96);
-    expect(report.summary.completed).toBe(96);
+    expect(report.rows).toHaveLength(CELLS);
+    expect(report.summary.attempted).toBe(CELLS * 2);
+    expect(report.summary.completed).toBe(CELLS * 2);
     expect(report.failures).toEqual([]);
     expect(report.violations).toEqual([]);
     expect(report.summary.passed).toBe(true);
     expect(report.rows.every((row) => row.attempted === 2 && row.completed === 2)).toBe(true);
-    expect(commands).toBeGreaterThan(96);
+    expect(commands).toBeGreaterThan(CELLS * 2);
     // Measured 1,743 commands (one per activation: a party turn or an AI turn).
-    expectWorkWithin('reducer commands applied by the 96-battle soak matrix', commands, 2_700);
+    expectWorkWithin('reducer commands applied by the soak matrix', commands, 2_700);
   });
 
   // 45 s of CPU: the matrix measured about 30 s after #570 priced AI paths like a real move.
   it.runIf(TIME_BUDGETS)(`keeps the matrix inside its CPU budget ${TIME_BUDGET_TAG}`, () => {
     matrix();
-    expectTimeWithin('CPU time of the 96-battle soak matrix', cpu, 45_000);
+    expectTimeWithin('CPU time of the soak matrix', cpu, 45_000);
   });
 });

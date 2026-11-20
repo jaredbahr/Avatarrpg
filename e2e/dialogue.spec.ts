@@ -40,7 +40,11 @@ test('the panel advances once by click or keyboard and ignores held keys', async
   await panel.dispatchEvent('keydown', { key: 'Enter', repeat: true });
   await expect(page.locator('.line-count')).toHaveText(/^2 of /);
   await page.keyboard.press('Enter');
-  await expect(page.locator('.line-count')).toHaveText(/^3 of /);
+  // Mira's opening is two lines; one Enter moves on exactly one turn, to Pella (DLG-01).
+  await expect
+    .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
+    .toBe('mira_table_five');
+  await expect(page.locator('.line-count')).toHaveText('1 of 1');
 });
 
 test('huge text keeps keyboard focus on the compact panel', async ({ page }) => {
@@ -48,7 +52,7 @@ test('huge text keeps keyboard focus on the compact panel', async ({ page }) => 
   const next = page.locator('[data-conversation-control="next"]');
   await next.focus();
   await page.keyboard.press('Enter');
-  await expect(page.locator('.line-count')).toHaveText('2 of 4');
+  await expect(page.locator('.line-count')).toHaveText('2 of 2');
   await expect(page.locator('[data-conversation-control="next"]')).toBeFocused();
   await expect(page.locator('.explore-scene .map-canvas')).toBeVisible();
 });

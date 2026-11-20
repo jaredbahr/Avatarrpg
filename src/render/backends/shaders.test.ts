@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 import { RUBBLE_CHIP, TERRAIN_STYLES } from '../palettes';
-import { GROUND_FRAGMENT } from './shaders';
+import { GRADE_FRAGMENT, GROUND_FRAGMENT } from './shaders';
 
 const glsl = (hex: string): string =>
   `vec3(${[1, 3, 5].map((offset) => (parseInt(hex.slice(offset, offset + 2), 16) / 255).toFixed(5)).join(', ')})`;
@@ -51,4 +51,9 @@ it('keeps steam hatched and restores its ground wash outside steam regions', () 
   );
   expect(GROUND_FRAGMENT).toMatch(/if \(uHatch > 0\.5 && surface > 0\)/);
   expect(GROUND_FRAGMENT).not.toMatch(/surface > 0 && surface != 5/);
+});
+
+it('grades on WebGL as Canvas 2D does: GLSL ES 3.00, the lift weighted by premultiplied alpha (ADR 0121)', () => {
+  expect(GRADE_FRAGMENT.startsWith('#version 300 es')).toBe(true);
+  expect(GRADE_FRAGMENT).toContain('c.rgb * uMultiply + uLift * c.a');
 });

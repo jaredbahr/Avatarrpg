@@ -64,7 +64,7 @@ export type TerrainId =
  *  what happens when a second one is applied. */
 export type SurfaceId = 'water' | 'ice' | 'fire' | 'mud' | 'steam' | 'oil' | 'rubble';
 
-export interface SurfaceInstance {
+interface SurfaceInstance {
   readonly id: SurfaceId;
   /** Rounds remaining. -1 means permanent (map-authored water, for example). */
   readonly duration: number;
@@ -123,7 +123,9 @@ export type StatusId =
   | 'rooted'
   | 'chiBlocked'
   | 'guarded'
-  | 'inspired';
+  | 'inspired'
+  /** On a bout's edge after a shove toward the water: the next one puts them in (ADR 0122 §2a). */
+  | 'teetering';
 
 export interface StatusInstance {
   readonly id: StatusId;
@@ -251,8 +253,12 @@ export interface Unit {
   readonly cooldowns: Readonly<Record<string, number>>;
   readonly statuses: readonly StatusInstance[];
 
+  /**
+   * `none` means people take this unit's turns: every party member, and a
+   * guest whose encounter declares `control: 'table'` (ADR 0116).
+   */
   readonly ai: AiProfile;
-  /** Story allies (Ruon) leave the party when the battle ends. */
+  /** Story allies and guests (faction `ally`) leave when the battle ends. */
   readonly temporary: boolean;
   /** Asset manifest key for the unit's painter. */
   readonly sprite: string;
@@ -264,7 +270,11 @@ export interface Unit {
 
 export type Targeting =
   | { readonly shape: 'self' }
-  | { readonly shape: 'unit'; readonly allow: 'enemy' | 'ally' | 'any' }
+  /**
+   * `downed` aims at a fallen friend (hp 0), whom no other `unit` ability can see: a
+   * downed unit stays on the board, but only a revive effect looks for one.
+   */
+  | { readonly shape: 'unit'; readonly allow: 'enemy' | 'ally' | 'any' | 'downed' }
   | { readonly shape: 'tile' }
   | { readonly shape: 'blast'; readonly radius: number }
   | { readonly shape: 'line'; readonly length: number }
@@ -282,6 +292,12 @@ export type AbilityEffect =
       readonly includesCaster?: boolean;
     }
   | { readonly kind: 'heal'; readonly base: number; readonly scale: number }
+  /**
+   * Stands a downed friend back up with `fraction` of their maximum health (at
+   * least 1), AP spent, statuses cleared. Once per unit per fight
+   * (`BattleState.helpedUp`; ADR 0118). Only a `downed` target can receive it.
+   */
+  | { readonly kind: 'revive'; readonly fraction: number }
   | {
       readonly kind: 'status';
       readonly status: StatusId;
@@ -416,6 +432,44 @@ export interface EncounterPlacement {
 }
 
 /**
+ * How a guest ally's turns are taken (ADR 0116).
+ *
+ * - `ai`: the guest plays itself through the enemy AI, on the party's side. The default.
+ * - `table`: the people at the table take its turns, one person per round in rotation.
+ */
+type GuestControl = 'ai' | 'table';
+
+/** A guest's level: a fixed number, or an offset from the party's rounded mean level. */
+export type GuestLevel = number | { readonly partyOffset: number };
+
+/**
+ * A unit that fights on the party's side for one battle and is then gone
+ * (ADR 0116). It is never a party member: it earns no XP, never joins the
+ * roster, and nothing that happens to it in the fight is carried out of it.
+ *
+ * Exactly one of `characterId` (a playable character's kit, levelled like a
+ * party member) and `enemyId` (an enemy stat block and ability list) names
+ * what it fights with; `validateContent` holds that.
+ */
+export interface GuestAllyDef {
+  readonly characterId?: string;
+  readonly enemyId?: string;
+  /** Defaults to the encounter's `expectedLevel`, as story allies do. */
+  readonly level?: GuestLevel;
+  readonly pos: Vec2;
+  /** Defaults to `ai`. */
+  readonly control?: GuestControl;
+  /** The AI profile an `ai` guest plays with. Defaults to `aggressive`. */
+  readonly ai?: 'aggressive' | 'cautious' | 'support';
+  /** Shown instead of the character's or enemy's own name. */
+  readonly name?: string;
+  /** Character kits only: picks for the kit's `choose` entries; the first option otherwise. */
+  readonly chosen?: readonly string[];
+  /** Character kits only: the discipline past the gate; the first path otherwise. */
+  readonly discipline?: string;
+}
+
+/**
  * An alternative roster for an encounter.
  *
  * The point is that the fight you remember is not quite the fight you get: three
@@ -456,7 +510,7 @@ export type WeatherIntensity = 0 | 1 | 2;
  * whose `fromRound` is not after it, so the value is derived from the
  * encounter and the round rather than stored on `BattleState`.
  */
-export interface EncounterWeather {
+interface EncounterWeather {
   readonly id: 'sandstorm';
   readonly schedule: readonly {
     readonly fromRound: number;
@@ -464,13 +518,73 @@ export interface EncounterWeather {
   }[];
 }
 
+/**
+ * A goal on the board that wins the fight without defeating every enemy (ADR 0116's
+ * 2026-11-15 amendment). A union on `kind`, so a later goal (reaching an exit,
+ * protecting a unit) is a new member, not a new field.
+ *
+ * - `holdAtRoundEnd`: the fight is won when a round ends with a living party member
+ *   or guest standing on one of `cells` (the winch brake in Scene 2.5). Checked at the
+ *   end of a round, not when a unit stops there, so the enemy gets a turn to answer.
+ */
+export type EncounterObjective = {
+  readonly kind: 'holdAtRoundEnd';
+  /** The cells to hold. Walkable, and never a party spawn or a prop. */
+  readonly cells: readonly Vec2[];
+  /**
+   * How many distinct `cells` must be held at once when a round ends (SF-3.3: two of three flags;
+   * ADR 0122 §5). Absent means 1.
+   */
+  readonly minHeld?: number;
+  /** The top-bar line ("Stop the winch"). Written by the writing pass. */
+  readonly label: string;
+};
+
+/**
+ * A platform that tips (ADR 0122 §3): the line between its two halves. On `axis` 'x' the halves are
+ * the columns either side of column `pivot`; on 'y' the rows either side of row `pivot`. A fighter
+ * on the pivot line counts for neither half.
+ */
+export interface BoutTipping {
+  readonly axis: 'x' | 'y';
+  readonly pivot: number;
+}
+
+/**
+ * A friendly sparring bout (ADR 0122): nobody is helped up, and a forced move onto an `outOn`
+ * terrain puts a fighter out at once, whatever their HP.
+ */
+export interface EncounterBout {
+  readonly outOn: readonly TerrainId[];
+  readonly tipping?: BoutTipping;
+}
+
 export interface EncounterDef {
   readonly id: string;
   readonly name: string;
   readonly mapId: string;
   readonly enemies: readonly EncounterPlacement[];
-  /** Story allies that fight alongside the party for this battle only. */
+  /**
+   * Story allies that fight alongside the party for this battle only: the
+   * shorthand for an `ai` guest built from an enemy at the encounter's level.
+   */
   readonly allies: readonly EncounterPlacement[];
+  /** Guest allies (ADR 0116), placed after `allies` and before the enemies. */
+  readonly guests?: readonly GuestAllyDef[];
+  /**
+   * When true, the fight is lost the moment any guest or story ally falls.
+   * Absent or false: a fallen guest is only a fallen guest, and the fight goes on.
+   */
+  readonly loseIfGuestFalls?: boolean;
+  /** A goal that wins the fight without defeating every enemy. Defeating them all still wins. */
+  readonly objective?: EncounterObjective;
+  /** A sparring bout rather than a fight (ADR 0122). */
+  readonly bout?: EncounterBout;
+  /**
+   * The fight is lost if it is not won by the end of this round (Scene 2.5: the crate
+   * reaches the barge after six). Absent: only the engine's `MAX_BATTLE_ROUNDS` ceiling.
+   */
+  readonly loseAfterRound?: number;
   /** Enemies added only when a flag is set (Jin's mercenaries at the boss). */
   readonly conditionalEnemies: readonly {
     readonly flag: string;
@@ -500,6 +614,11 @@ export interface EncounterDef {
    */
   readonly guidance?: 'firstFight';
   readonly expectedLevel: number;
+  /**
+   * XP a victory pays each party member, in place of the roster's XP over the baseline. For an
+   * optional side fight, sized against the act's level curve (`xpPerHead` in `createGame.ts`).
+   */
+  readonly xpPerHead?: number;
   readonly intro: string;
   /** Shown under the objective banner — a hint aimed at an 8-year-old. */
   readonly tip: string;
@@ -552,7 +671,7 @@ export type PropEffect =
   | { readonly kind: 'push'; readonly distance: number; readonly radius: number };
 
 /** How readily fire crosses from one prop to the next. */
-export interface PropIgnite {
+interface PropIgnite {
   /** Tiles fire reaches out to when this prop ignites. */
   readonly radius: number;
   /** How many tiles the fire advances per round while it burns. */
@@ -563,7 +682,7 @@ export interface PropIgnite {
 export type DousingType = 'water' | 'cold' | 'earth';
 
 /** Short semantic labels the inspect card and future prop rules can read. */
-export type PropTag = 'container' | 'fuel' | 'iron' | 'stone' | 'cover';
+type PropTag = 'container' | 'fuel' | 'iron' | 'stone' | 'cover';
 
 /**
  * Something on the battlefield you can shove, break, or set on fire.
@@ -714,11 +833,11 @@ export interface ResidentSlot {
 /** Override tiers in precedence order; the resolver ranks them 1-5 (§2). */
 export const RESIDENT_TIERS = ['mission', 'hazard', 'presence', 'care', 'appointment'] as const;
 
-export type ResidentTier = (typeof RESIDENT_TIERS)[number];
+type ResidentTier = (typeof RESIDENT_TIERS)[number];
 
 export type ResidentSlotValue = ResidentSlot | 'home' | 'absent';
 
-export interface ResidentOverride {
+interface ResidentOverride {
   readonly id: string;
   readonly tier: ResidentTier;
   readonly when: Condition;
@@ -790,13 +909,13 @@ export type MapEdgeSide = 'north' | 'south' | 'east' | 'west';
  * records what the map author intends so the report-only edge-contract
  * validator can tell an intended boundary from an accidentally open one.
  */
-export type MapEdgeTreatment = 'barrier' | 'band' | 'exit';
+type MapEdgeTreatment = 'barrier' | 'band' | 'exit';
 
 /**
  * An authored claim about one run of a map border. `span` is an inclusive
  * `[from, to]` measured in x for north/south edges and in y for east/west.
  */
-export interface MapEdge {
+interface MapEdge {
   readonly side: MapEdgeSide;
   readonly span: readonly [number, number];
   readonly treatment: MapEdgeTreatment;
@@ -871,7 +990,7 @@ export interface MapDef {
   readonly arrivalShot?: MapArrivalShot;
 }
 
-export interface MapPractice {
+interface MapPractice {
   /** What the action calls the place. */
   readonly label: string;
   readonly anchor: Vec2;
@@ -881,7 +1000,7 @@ export interface MapPractice {
   readonly mark: Vec2;
 }
 
-export interface MapArrivalShot {
+interface MapArrivalShot {
   readonly at: Vec2;
   /** A story node; once visited the map frames as usual. */
   readonly unlessVisited: string;
@@ -1216,6 +1335,11 @@ export type StoryNode =
       readonly presentation?: NodePresentation;
       readonly options: readonly StoryOption[];
       readonly variants?: readonly DialogueVariant[];
+      /**
+       * A now-or-later prompt ("Sit down" / "Another time", rest or carry on): the
+       * player in charge answers it alone, with no table vote (owner, 2026-11-17, #846).
+       */
+      readonly routine?: boolean;
       /** Line under the options. Act-specific colour, so it lives in the data. */
       readonly footer?: string;
     }
@@ -1266,6 +1390,18 @@ export type StoryNode =
       readonly ifUnset: string;
     }
   | {
+      /**
+       * A pass-through node that takes `ifTrue` when `when` holds and `ifFalse`
+       * otherwise (ADR 0118). Unlike `branch` it reads any `Condition`: who is
+       * in the party, standing, scene memory, visited nodes, nested all/any/not.
+       */
+      readonly id: string;
+      readonly kind: 'branchWhen';
+      readonly when: Condition;
+      readonly ifTrue: string;
+      readonly ifFalse: string;
+    }
+  | {
       readonly id: string;
       readonly kind: 'end';
       readonly title: string;
@@ -1286,9 +1422,9 @@ export interface EndRecap {
   readonly choices: readonly { readonly when: Condition; readonly text: string }[];
 }
 
-export interface StoryState {
+interface StoryState {
   readonly nodeId: string | null;
-  /** Index into the app's player list; rotated after every choice. */
+  /** Index into the app's player list; rotated after every choice and at each map change. */
   readonly deciderIndex: number;
   readonly visited: readonly string[];
   /** Cursor into a dialogue node's lines. */
@@ -1334,6 +1470,17 @@ export interface BattleState {
    * exactly for "Try again". Null on a save written before it existed.
    */
   readonly openingRng: RngState | null;
+  /**
+   * Units already helped up this fight, so each gets one stand-up (ADR 0118).
+   * Absent until somebody is: an older save, and a fight where no one fell,
+   * carry no key at all.
+   */
+  readonly helpedUp?: readonly string[];
+  /**
+   * Fighters out of a sparring bout (ADR 0122 §2), in the order they went out. Absent outside a
+   * bout and until somebody is out.
+   */
+  readonly boutOut?: readonly string[];
 }
 
 /**
@@ -1353,7 +1500,7 @@ export interface PendingChoice {
   readonly options: readonly string[];
 }
 
-export type Screen = 'title' | 'setup' | 'explore' | 'dialogue' | 'combat' | 'ended';
+type Screen = 'title' | 'setup' | 'explore' | 'dialogue' | 'combat' | 'ended';
 
 /**
  * The one list of phases, in clock order. `clock.ts`'s `PHASE_ORDER`, the
@@ -1384,7 +1531,7 @@ export type ResidentProfile = (typeof RESIDENT_PROFILES)[number];
 /** How far the quarry runoff has been dealt with. Persisted, not yet acted on. */
 export const RUNOFF_STATES = ['unresolved', 'inspected', 'repaired'] as const;
 
-export type RunoffState = (typeof RUNOFF_STATES)[number];
+type RunoffState = (typeof RUNOFF_STATES)[number];
 
 /**
  * How hard the table asked the fights to be (ADR 0110). Story is the forgiving
@@ -1542,6 +1689,13 @@ export type GameEvent =
     }
   | { readonly type: 'unitPushed'; readonly unitId: string; readonly to: Vec2 }
   | { readonly type: 'unitDied'; readonly unitId: string }
+  /** A downed unit stood back up with `hp` health, helped by `helperId` (ADR 0118). */
+  | {
+      readonly type: 'unitRevived';
+      readonly unitId: string;
+      readonly helperId: string;
+      readonly hp: number;
+    }
   | {
       readonly type: 'propDamaged';
       readonly propId: string;
@@ -1607,6 +1761,11 @@ export type GameEvent =
       readonly unlocked: readonly string[];
     }
   | { readonly type: 'battleEnded'; readonly outcome: 'victory' | 'defeat' }
+  /**
+   * The party crossed from one explore map to another, and the player in charge
+   * moved on to the next person at the table (#846). `deciderIndex` is the new one.
+   */
+  | { readonly type: 'leaderPassed'; readonly deciderIndex: number }
   /** A combo rule fired for the first time in this save (#622). */
   | { readonly type: 'comboDiscovered'; readonly comboId: string }
   | { readonly type: 'screenChanged'; readonly screen: Screen }
@@ -1678,7 +1837,7 @@ export interface CombatTuning {
 }
 
 /** One authored weather intensity's obscurement curve. */
-export interface WeatherLevel {
+interface WeatherLevel {
   /** Accuracy removed per tile of distance past `minDistance - 1`. */
   readonly perTile: number;
   /** Attacks closer than this are unaffected. */

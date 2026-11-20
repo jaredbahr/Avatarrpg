@@ -1,10 +1,16 @@
-import { createHash } from 'node:crypto';
 import { describe, expect, it, vi } from 'vitest';
 import { grumblerAimCheckpoint } from '../../../scripts/e2e/grumbler-aim-checkpoint';
 import { loadQuarryCheckpoint } from '../../../scripts/e2e/quarry-checkpoints';
 import { CONTENT } from '../../content';
-import { isValidTarget, targetableTiles } from '../../core/rules/abilities';
+import {
+  aimReachTiles,
+  canUseAbility,
+  isValidTarget,
+  resolveAim,
+  targetableTiles,
+} from '../../core/rules/abilities';
 import { occupiedCells } from '../../core/rules/grid';
+import { activeUnit } from '../../core/rules/turnOrder';
 import type { GameState, Vec2 } from '../../core/types';
 import { Session } from '../session';
 import { CombatScene } from './CombatScene';
@@ -38,16 +44,17 @@ interface AimScene {
  */
 function tap(tile: Vec2, mode: Mode = { kind: 'aim', abilityId: checkpoint.abilityId }): AimScene {
   const scene = Object.create(CombatScene.prototype) as unknown as AimScene;
+  const session = Session.fromMeta(checkpoint.session);
   scene.app = {
     state: checkpoint.state,
     content: CONTENT,
-    session: Session.fromMeta(checkpoint.session),
+    session,
     animator: { busy: vi.fn(() => false) },
     dispatch: vi.fn(),
   };
   scene.renderer = {};
   scene.victoryBeat = null;
-  scene.handedOffTo = checkpoint.casterId;
+  scene.handedOffTo = session.participantForUnit(checkpoint.casterId)?.id ?? '';
   scene.pending = null;
   scene.mode = mode;
   scene.skipBattleOpening = vi.fn(() => false);
@@ -68,25 +75,29 @@ function tap(tile: Vec2, mode: Mode = { kind: 'aim', abilityId: checkpoint.abili
 }
 
 describe('combat tap aim acceptance', () => {
-  it('uses the earned Grumbler turn and exact reloadable save', () => {
-    expect(checkpoint.transcript).toHaveLength(81);
-    expect(createHash('sha256').update(checkpoint.json).digest('hex')).toBe(
-      '3fd8c38506b6d01f6e957f38d63b47e2fe630f11fbc4cb099407f5b5e280e374',
-    );
+  /*
+   * No digest, transcript length or exact square is pinned (#795): they moved
+   * with every AI change and said nothing a reviewer could read. What the
+   * taps below need from the earned turn is stated instead, as rules.
+   */
+  it('uses an earned, reloadable Grumbler turn with the boss highlighted out of range', () => {
+    expect(checkpoint.transcript.length).toBeGreaterThan(0);
     expect(loadQuarryCheckpoint(checkpoint.json)).toEqual(checkpoint.state);
-    expect(checkpoint.state.battle).toMatchObject({
-      encounterId: 'enc_grumbler',
-      phase: 'active',
-      round: 2,
-    });
+    expect(checkpoint.state.battle).toMatchObject({ encounterId: 'enc_grumbler', phase: 'active' });
     const battle = checkpoint.state.battle;
     if (!battle) throw new Error('Missing earned battle');
     const caster = battle.units.find((unit) => unit.id === checkpoint.casterId);
     const boss = battle.units.find((unit) => unit.id === checkpoint.targetId);
     const ability = CONTENT.abilities.get(checkpoint.abilityId);
     if (!caster || !boss || !ability) throw new Error('Missing earned aim participants');
-    expect(caster).toMatchObject({ pos: { x: 8, y: 1 }, ap: 5 });
-    expect(boss).toMatchObject({ pos: { x: 12, y: 7 }, hp: 88, size: 2 });
+    expect(activeUnit(battle)?.id).toBe(caster.id);
+    expect(caster).toMatchObject({ faction: 'party', characterId: 'kaya' });
+    expect(caster.hp).toBeGreaterThan(0);
+    expect(canUseAbility(CONTENT, caster, ability).ok).toBe(true);
+    expect(boss).toMatchObject({ faction: 'enemy', enemyId: 'grumbler', size: 2 });
+    expect(boss.hp).toBeGreaterThan(0);
+    expect(checkpoint.near).not.toEqual(checkpoint.far);
+    expect(resolveAim(CONTENT, battle, caster, ability, checkpoint.far)).toEqual(checkpoint.near);
     expect(occupiedCells(boss)).toContainEqual(checkpoint.far);
     expect(targetableTiles(CONTENT, battle, caster, ability)).toContainEqual(checkpoint.far);
     expect(isValidTarget(CONTENT, battle, caster, ability, checkpoint.far)).toEqual({
@@ -94,6 +105,22 @@ describe('combat tap aim acceptance', () => {
       reason: 'Out of range.',
     });
     expect(isValidTarget(CONTENT, battle, caster, ability, checkpoint.near).ok).toBe(true);
+  });
+
+  it('shows the range as every tile in reach, not just the ones with a target (#846)', () => {
+    const battle = checkpoint.state.battle;
+    if (!battle) throw new Error('Missing earned battle');
+    const caster = battle.units.find((unit) => unit.id === checkpoint.casterId);
+    const ability = CONTENT.abilities.get(checkpoint.abilityId);
+    if (!caster || !ability) throw new Error('Missing earned aim participants');
+    const reach = aimReachTiles(CONTENT, battle, caster, ability);
+    const key = (p: { x: number; y: number }) => `${p.x},${p.y}`;
+    const reachKeys = new Set(reach.map(key));
+    // The rule is the tap's: the range, the minimum range and sight (a big target's far cells
+    // are targetable through its near one, so they are not all in this set).
+    expect(reach.length).toBeGreaterThan(targetableTiles(CONTENT, battle, caster, ability).length);
+    expect(reachKeys.has(key(checkpoint.near))).toBe(true);
+    expect(reachKeys.has(key(caster.pos))).toBe(ability.minRange === 0);
   });
 
   it('accepts a highlighted far boss cell as the reachable aim cell before confirmation', () => {

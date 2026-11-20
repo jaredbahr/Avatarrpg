@@ -20,7 +20,7 @@ async function board(page: Page, node: string): Promise<{ projection?: string; g
   });
 }
 
-test('a fresh link boots top-down: Ba Dan and the Forest Road draw their top-down boards', async ({
+test('a fresh link boots top-down: Ba Dan draws its baked ground and set pieces and the Forest Road its baked board', async ({
   page,
 }) => {
   const errors: string[] = [];
@@ -52,5 +52,8 @@ test('an old link that names a style still boots top-down', async ({ page }) => 
     const village = await board(page, 'village_explore');
     expect(village.projection, style).toBe('topdown');
     expect(village.ground, style).toMatch(/^art\/topdown\/ba-dan\//);
+    const forest = await board(page, 'forest_explore');
+    expect(forest.projection, style).toBe('topdown');
+    expect(forest.ground, style).toMatch(/^art\/topdown\/forest-road\//);
   }
 });

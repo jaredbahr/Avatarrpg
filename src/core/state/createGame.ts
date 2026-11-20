@@ -21,6 +21,7 @@ import type {
   FlagValue,
   GameState,
   Grid,
+  GuestAllyDef,
   PropInstance,
   PropPlacement,
   Unit,
@@ -39,6 +40,7 @@ import {
   statsAtLevel,
 } from '../rules/leveling';
 import { rollInitiative } from '../rules/turnOrder';
+import { friendlyExtras, guestLevel } from '../rules/guests';
 
 /**
  * 2 added `Unit.disciplineId` and widened `PendingChoice`. 4 added `world.clock`
@@ -272,6 +274,46 @@ function createUnitFromPlacement(
 }
 
 /**
+ * Builds one guest ally (ADR 0116): faction `ally`, temporary, and never a
+ * party member. A character guest is levelled and kitted exactly as a party
+ * member of that level would be, taking the first option of any choice the
+ * data leaves open; an enemy guest is an enemy stat block on the party's side.
+ * `control: 'table'` gives it the `none` profile, so people take its turns.
+ */
+function createGuestUnit(
+  content: ContentIndex,
+  guest: GuestAllyDef,
+  serial: number,
+  pos: Vec2,
+  level: number,
+  table: Omit<ScaleContext, 'isBoss'>,
+): Unit | null {
+  const ai = guest.control === 'table' ? 'none' : (guest.ai ?? 'aggressive');
+  if (guest.characterId) {
+    const character = content.characters.get(guest.characterId);
+    if (!character) return null;
+    const unit = createPartyUnit(content, character, 0, level, guest.name, {
+      chosen: guest.chosen,
+      discipline: guest.discipline,
+      autoChoose: true,
+    });
+    return { ...unit, id: `a${serial}`, faction: 'ally', pos, ai, temporary: true };
+  }
+  if (!guest.enemyId) return null;
+  const unit = createUnitFromPlacement(
+    content,
+    { enemyId: guest.enemyId, pos, level },
+    'ally',
+    serial,
+    pos,
+    level,
+    table,
+  );
+  if (!unit) return null;
+  return { ...unit, ai, ...(guest.name ? { name: guest.name } : {}) };
+}
+
+/**
  * Placements an encounter contributes, given the story flags and how many
  * people are actually playing.
  *
@@ -286,8 +328,8 @@ export function encounterRoster(
   partySize: number,
   variant: EncounterVariant | null = null,
 ): { enemies: EncounterPlacement[]; allies: EncounterPlacement[] } {
-  // Story allies fight on the party's side, so they count toward the scaling.
-  const friendlyCount = partySize + encounter.allies.length;
+  // Story allies and guests fight on the party's side, so they count toward the scaling.
+  const friendlyCount = partySize + friendlyExtras(encounter);
   // A variant swaps the authored roster; everything after it — under-strength
   // trimming, flag-gated additions, reinforcements — still layers on top, so
   // CLAUDE.md's "difficulty scales in two places and only those two" holds.
@@ -326,6 +368,24 @@ export function xpRoster(
     if (Boolean(flags[group.flag]) === group.whenSet) enemies.push(...group.placements);
   }
   return enemies;
+}
+
+/**
+ * The XP a victory pays each party member.
+ *
+ * An encounter that names `xpPerHead` pays exactly that: an optional side fight is sized against
+ * the level curve of the act around it, not against what its enemies are worth in a main-line
+ * fight (a quarry worker pays 150, which would lift a table a level per side fight). Otherwise it
+ * is the base roster's XP (`xpRoster`) divided by the baseline party size, never by the table.
+ */
+export function xpPerHead(
+  encounter: EncounterDef,
+  flags: Readonly<Record<string, FlagValue>>,
+  xpOf: (enemyId: string) => number,
+): number {
+  if (encounter.xpPerHead !== undefined) return encounter.xpPerHead;
+  const total = xpRoster(encounter, flags).reduce((sum, p) => sum + xpOf(p.enemyId), 0);
+  return Math.max(1, Math.round(total / Math.max(1, encounter.baselinePartySize)));
 }
 
 /**
@@ -492,7 +552,7 @@ export function createBattle(
   const level = options.enemyLevel ?? encounter.expectedLevel;
   const table = {
     baselinePartySize: encounter.baselinePartySize,
-    partySize: state.party.length + encounter.allies.length,
+    partySize: state.party.length + friendlyExtras(encounter),
     difficulty: state.difficulty,
     hard: encounter.hard,
   };
@@ -501,6 +561,24 @@ export function createBattle(
     const def = content.enemies.get(placement.enemyId);
     const pos = placeAt(content, grid, taken, placement.pos, def?.size ?? 1);
     const unit = createUnitFromPlacement(content, placement, 'ally', serial++, pos, level, table);
+    if (!unit) continue;
+    for (const cell of occupiedCells(unit)) taken.add(posKey(cell));
+    units.push(unit);
+  }
+
+  // Guests after the story allies, so an encounter without guests numbers its
+  // units exactly as it did before they existed (ADR 0116).
+  for (const guest of encounter.guests ?? []) {
+    const size = guest.enemyId ? (content.enemies.get(guest.enemyId)?.size ?? 1) : 1;
+    const pos = placeAt(content, grid, taken, guest.pos, size);
+    const unit = createGuestUnit(
+      content,
+      guest,
+      serial++,
+      pos,
+      guestLevel(guest.level, state.party, level),
+      table,
+    );
     if (!unit) continue;
     for (const cell of occupiedCells(unit)) taken.add(posKey(cell));
     units.push(unit);
@@ -579,7 +657,7 @@ export function reviveParty(party: readonly Unit[]): Unit[] {
 }
 
 /** A quarter of max HP back after a won fight, so a party without a healer copes. */
-export const POST_VICTORY_HEAL = 0.25;
+const POST_VICTORY_HEAL = 0.25;
 
 export function restAfterVictory(party: readonly Unit[]): Unit[] {
   return party.map((member) => ({

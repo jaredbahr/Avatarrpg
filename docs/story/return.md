@@ -6,7 +6,7 @@
 
 Source: [return.ts](../../src/content/story/return.ts).
 
-20 nodes; 0 fights; 0 branches; 0 choices
+33 nodes; 0 fights; 0 branches; 0 choices
 
 Green nodes are story entry points (new game, map interactions, cross-file targets, or roots). Hexagons are fights; diamonds are flag branches. Purple placeholders exit this file; dashed placeholders continue in another part. Counts include owned story nodes only.
 
@@ -16,51 +16,77 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 
 ## Part 1: entry `cutting_return_explore`
 
-20 owned nodes.
+33 owned nodes.
 
 ```mermaid
 flowchart TD
   n13["cart_departure<br/>Ba Dan: Bo-shan’s cart comes down from the quarry floor with on…"]
   n18["cutting_return_explore<br/>Explore ambush_road: The workers are returning to Ba Dan. Ba Da…"]:::entry
-  n26["dema_home<br/>Lanfen: The crews came past. A few stopped to ask about the str…"]:::entry
-  n27(["demo_complete<br/>Home to Ba Dan"])
-  n32["dorin_home<br/>Gate Guard Dorin: I saw them coming round the bend. Pella was t…"]:::entry
-  n39["forest_return_arrival<br/>The West Road: The road bends, and Ba Dan is below: cooking smo…"]:::entry
-  n40["forest_return_arrived<br/>Set flags"]
-  n41["forest_return_explore<br/>Explore forest_road: The five workers are returning. Continue w…"]:::entry
-  n44["gao_home<br/>Gao the Shopkeeper: Leave your packs by the door. There is rice…"]:::entry
-  n45["gao_home_cold<br/>Gao the Shopkeeper: The workers are home. I am glad of that. Th…"]:::entry
-  n51["gate_return_explore<br/>Explore quarry_gate: The workers are returning. The gate is ope…"]:::entry
-  n74["pella_home<br/>Pella: My brother is home. Bo-shan. He came through the gate an…"]:::entry
-  n87["quarry_after_explore<br/>Explore quarry_floor: The five workers are returning with you. …"]:::entry
-  n119["riverside_mira_home<br/>Elder Mira: I spent the morning moving beds. Everyone wants the…"]:::entry
-  n128["sen_home<br/>Kuan: They came through just ahead of you. Filled this bench an…"]:::entry
-  n171["village_return_explore<br/>Explore ba_dan_village: The workers are home. Talk with Mira, P…"]:::entry
-  n172["welcome_home_dorin<br/>Gate Guard Dorin: The crew says you knocked on the quarry gate …"]
-  n173["welcome_home_gao<br/>Gao the Shopkeeper: Bowls are on the table, and there’s more in…"]
-  n174["welcome_home_mira<br/>Elder Mira: There you are! Dorin rang the gate bell so hard tha…"]:::entry
-  n175["welcome_home_supper<br/>Ba Dan: Lamps come on along the canal. Gao carries out a pot of…"]
-  n116["riverside_explore — exit to riverside / part 1"]:::external
-  n13 -->|"Next"| n27
-  n18 -->|"Legacy/audit exit (live map exits differ)"| n51
-  n26 -->|"Next"| n41
-  n27 -->|"Continue after ending"| n171
-  n32 -->|"Next"| n171
-  n39 -->|"Next"| n40
-  n40 -->|"set: (none); resident profiles: lw.npc.amri=#quot;resting#quot;, lw.npc.bo_shan=#quot;resting#quot;, lw.npc.hesra=#quot;resting#quot;, lw.npc.leto=#quot;resting#quot;, lw.npc.senn_messenger=#quot;resting#quot;"| n171
-  n41 -->|"Legacy/audit exit (live map exits differ)"| n39
-  n44 -->|"Next"| n171
-  n45 -->|"Next"| n171
-  n51 -->|"Legacy/audit exit (live map exits differ)"| n41
-  n74 -->|"Next"| n171
-  n87 -->|"Legacy/audit exit (live map exits differ)"| n18
-  n119 -->|"Next"| n116
-  n128 -->|"Next"| n18
-  n171 -->|"Legacy/audit exit (live map exits differ)"| n174
-  n172 -->|"Next"| n175
-  n173 -->|"Next"| n172
-  n174 -->|"Next"| n173
-  n175 -->|"Next"| n13
+  n31["dema_home<br/>Lanfen: The crews came past. A few stopped to ask about the str…"]:::entry
+  n33(["demo_complete<br/>Home to Ba Dan"])
+  n38["dorin_home<br/>Gate Guard Dorin: I saw them coming round the bend. Pella was t…"]:::entry
+  n45["forest_return_arrival<br/>The West Road: The road bends, and Ba Dan is below: cooking smo…"]:::entry
+  n46["forest_return_arrived<br/>Set flags"]
+  n47["forest_return_explore<br/>Explore forest_road: The five workers are returning. Continue w…"]:::entry
+  n50["gao_home<br/>Gao the Shopkeeper: Leave your packs by the door. There is rice…"]:::entry
+  n51["gao_home_cold<br/>Gao the Shopkeeper: The workers are home. I am glad of that. Th…"]:::entry
+  n58["gate_return_explore<br/>Explore quarry_gate: The workers are returning. The gate is ope…"]:::entry
+  n257["pella_home<br/>Pella: My brother came home. Bo-shan. He came through the gate …"]:::entry
+  n272["quarry_after_explore<br/>Explore quarry_floor: The five workers are returning with you. …"]:::entry
+  n297["reunion_all_right<br/>Bo-shan: I’m all right."]
+  n298["reunion_bowl<br/>Mira’s Table: Mira sets his covered bowl in front of him and li…"]
+  n299["reunion_hot<br/>Elder Mira: Careful. It’s hot."]
+  n300["reunion_i_did<br/>Bo-shan: I did."]
+  n301["reunion_kept<br/>Pella: She kept making it. In case you came back hungry."]
+  n302["reunion_run<br/>Mira’s Table: Pella comes down the lane at a run. She reaches B…"]
+  n303["reunion_shaking<br/>Pella: You’re shaking."]
+  n304["reunion_sit<br/>Bo-shan: I know. Let me sit down a minute."]
+  n305["reunion_sleeve<br/>Mira’s Table: She keeps hold of his sleeve all the way to the t…"]
+  n306["reunion_sorry<br/>Bo-shan: I’m sorry."]
+  n307["reunion_thanks<br/>Bo-shan: Thank you."]
+  n308["reunion_tuesday<br/>Pella: You said Tuesday."]
+  n309["reunion_waited<br/>Pella: I waited by the road."]
+  n317["riverside_mira_home<br/>Elder Mira: I spent the morning moving beds. Everyone wants the…"]:::entry
+  n327["sen_home<br/>Kuan: They came through just ahead of you. Filled this bench an…"]:::entry
+  n419["village_return_explore<br/>Explore ba_dan_village: The workers are home. Talk with Mira, P…"]:::entry
+  n420["welcome_home_dorin<br/>Gate Guard Dorin: The crew says you knocked on the quarry gate …"]
+  n421["welcome_home_gao<br/>Gao the Shopkeeper: Bowls are on the table, and there’s more in…"]
+  n422["welcome_home_mira<br/>Elder Mira: There you are! Dorin rang the gate bell so hard tha…"]:::entry
+  n423["welcome_home_supper<br/>Ba Dan: Lamps come on along the canal. Gao carries out a pot of…"]
+  n314["riverside_explore — exit to riverside / part 1"]:::external
+  n13 -->|"Next"| n33
+  n18 -->|"Legacy/audit exit (live map exits differ)"| n58
+  n31 -->|"Next"| n47
+  n33 -->|"Continue after ending"| n419
+  n38 -->|"Next"| n419
+  n45 -->|"Next"| n46
+  n46 -->|"set: (none); resident profiles: lw.npc.amri=#quot;resting#quot;, lw.npc.bo_shan=#quot;resting#quot;, lw.npc.hesra=#quot;resting#quot;, lw.npc.leto=#quot;resting#quot;, lw.npc.senn_messenger=#quot;resting#quot;"| n419
+  n47 -->|"Legacy/audit exit (live map exits differ)"| n45
+  n50 -->|"Next"| n419
+  n51 -->|"Next"| n419
+  n58 -->|"Legacy/audit exit (live map exits differ)"| n47
+  n257 -->|"Next"| n419
+  n272 -->|"Legacy/audit exit (live map exits differ)"| n18
+  n297 -->|"Next"| n303
+  n298 -->|"Next"| n299
+  n299 -->|"Next"| n307
+  n300 -->|"Next"| n309
+  n301 -->|"Next"| n421
+  n302 -->|"Next"| n297
+  n303 -->|"Next"| n304
+  n304 -->|"Next"| n305
+  n305 -->|"Next"| n308
+  n306 -->|"Next"| n298
+  n307 -->|"Next"| n301
+  n308 -->|"Next"| n300
+  n309 -->|"Next"| n306
+  n317 -->|"Next"| n314
+  n327 -->|"Next"| n18
+  n419 -->|"Legacy/audit exit (live map exits differ)"| n422
+  n420 -->|"Next"| n423
+  n421 -->|"Next"| n420
+  n422 -->|"Next"| n302
+  n423 -->|"Next"| n13
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

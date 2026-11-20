@@ -214,15 +214,17 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         deltaMode: 0,
       });
       await settleLayout(page);
+      // Row 10 is the row the party arrives on in the rebuilt Ba Dan (#875): open grass from x 2 to 17.
+      const ROW = 10;
       const walk = async (x: number) => {
-        const point = await paintedTileCentre(page, { x, y: 7 });
+        const point = await paintedTileCentre(page, { x, y: ROW });
         if (!point) throw new Error('Missing painted walk target');
         await page.mouse.click(point.x, point.y);
         await expect
           .poll(() => page.evaluate(() => window.fnt?.app.state?.location?.pos))
           .toEqual({
             x,
-            y: 7,
+            y: ROW,
           });
         await waitForIdle(page);
         await settleLayout(page);
@@ -230,7 +232,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       // Decode both native step variants through actual walks before measuring.
       await walk(9);
       await walk(3);
-      const target = await paintedTileCentre(page, { x: 9, y: 7 });
+      const target = await paintedTileCentre(page, { x: 9, y: ROW });
       if (!target) throw new Error('Missing long-walk target');
       await page.evaluate(() => {
         const probe = window.queuedVolumeProbe;
@@ -388,8 +390,17 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         click('Pause');
         click('Settings');
         click('Off');
-        await new Promise<void>((resolve) => setTimeout(resolve, 60));
-        return { volume: app.settings.volume, retired: audio.ctx === null, state: old?.state };
+        // Off retires the context at once and closes it after the 40 ms fade
+        // (bus.ts). `close()` settles when the engine has released the device,
+        // which WebKit does later than a fixed pause allows for, so wait for the
+        // context itself to say it has closed.
+        const state = await new Promise<AudioContextState | undefined>((resolve) => {
+          if (!old || old.state === 'closed') return resolve(old?.state);
+          old.addEventListener('statechange', () => {
+            if (old.state === 'closed') resolve(old.state);
+          });
+        });
+        return { volume: app.settings.volume, retired: audio.ctx === null, state };
       });
       evidence.push({ off });
       expect(off).toEqual({ volume: 0, retired: true, state: 'closed' });

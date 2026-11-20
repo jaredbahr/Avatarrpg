@@ -8,11 +8,16 @@ when improving a line.
 
 Story, dialogue and scene planning have one owner, the writing pass (owner, 2026-11-14; `AGENTS.md`,
 `docs/story-bible.md`). A session that is not the writing pass does not draft story text: it leaves a marked
-placeholder and says so in its PR.
+placeholder and says so in its PR. `docs/story-requests.md` says when to file a story issue or message the
+writing pass.
 
 For camera, interface, environment and character presentation work, also read
 `docs/player-view-target.md`: it records Jared's approved long-term player views,
 their interpretation and the staged delivery plan.
+
+For designing, building or dressing a map (explore or combat), read `docs/level-design-core.md` and then
+`docs/level-design.md`: the place brief comes first, then the blockout, then the ground, then set pieces, and
+art last. A map with no brief gets one before anything is added to it.
 
 ## Current goal: an internal technical demo, Ba Dan to the quarry and back (owner, 2026-11-11; reframed 2026-11-14)
 
@@ -99,6 +104,32 @@ pipelines, and then the older four-way hero sheets, the 128 px quarry and Cuttin
 - **Agents:** orchestrate and judge art with the strongest model. Spin up cheaper subagents (Sonnet or Haiku) for
   mechanical or well-briefed visual work.
 
+## Work routing: Claude, then Codex, then DeepSeek (Jared, 2026-11-15)
+
+Claude usage is the scarce resource across all four of Jared's games. Work goes to the cheapest tier that can do it
+well, so Claude's time goes to complex writing, hard problems and art. Any agent working here follows this.
+
+- **1. Claude** keeps complex writing, hard problems and art: architecture, deep bugs, story and dialogue, art
+  direction and judgment, design questions for Jared, reviews and merges. Claude also writes the issues for Codex and
+  calls DeepSeek directly for grunt work.
+- **2. Codex** takes the middle ground: well-specified, testable work that needs a real PR but no taste call. Codex
+  monitors this repo's issues and works only the ones assigned to it (labelled `codex-ready`); it never picks up
+  anything else. Keep its queue stocked with such issues, written with the files to read, Do, Don't and Done when,
+  and review its PRs like any other.
+- **3. DeepSeek** takes the grunt work, and is the default for anything trivial. Claude calls it directly, with no
+  issue or harness: boilerplate, test scaffolds, repetitive wiring, data and config edits, renames, log, diff and CI
+  summaries, first drafts of docs or comments. Run `python3 scripts/deepseek.py "<brief>" -f <files> [--code --out
+F]` (`--help` for the rest), briefed like an issue: the files, the rules, what done looks like. It never touches
+  the repo, so you read its output, apply it, run the checks and own the result. Never use it for art, story or
+  player-facing words, feel or design, or judgment calls, and never send it secrets. In cloud sessions the proxy adds
+  the key; elsewhere set `DEEPSEEK_API_KEY`. Prefer it over a Sonnet or Haiku subagent for anything it can do from
+  the files you send it.
+- **DeepSeek is Claude's tool, not Codex's** (Jared, 2026-11-15). Only Claude calls DeepSeek. Codex has no DeepSeek
+  access: it works its own Codex issues by itself, so never write a Codex issue that assumes DeepSeek.
+
+Rule of thumb: needs taste, the story or deep reasoning, Claude. Fully specified and needs a real PR, a Codex issue.
+Fits in a paragraph and can be checked by running something, DeepSeek.
+
 ## Non-negotiables
 
 1. **`src/core/` is pure.** No DOM, no `Math.random`, no `Date.now`, no imports
@@ -128,8 +159,9 @@ src/core/state/      createGame, the reducer (apply), the battle draft,
                      the combat log formatter
 src/core/story/      story graph traversal, flags, nation standing, the
                      condition predicate DSL, the rotating decider index
-src/core/save/       serialise / deserialise / migrate a save blob, and
-                     reconcile a loaded one against the current kits
+src/core/save/       serialise / deserialise / migrate a save blob, rename
+                     retired ids, backfill history, and reconcile a loaded
+                     one against the current kits
 src/core/sim/        headless combat runner used by tests and the balance report
 src/content/         all game data (see schemas.ts for the shapes); story
                      splits one file per region from Phase W5
@@ -149,7 +181,8 @@ npm run ci:local # the full CI verify job mirror (typecheck, lint, format,
 npm run verify   # the faster subset: typecheck + lint + format:check + tests.
                  # It is not the whole CI gate — use ci:local before a push.
 npm test         # vitest
-npm run balance  # simulator win-rate report
+npm run balance  # simulator report: win rate, HP left, rounds, deaths (Story and Hard)
+npm run balance:check    # the CI tripwire: a fixed sweep against the committed baseline
 npm run e2e      # Playwright (builds first; uses the preinstalled Chromium)
 ```
 
@@ -157,7 +190,32 @@ The balance report reads two environment variables: `BALANCE_SIZES=1,2,3,4,5,6`
 for the table sizes to sweep and `BALANCE_VARIANTS=1` to report every roster
 variant on its own line instead of averaging over whichever ones the seeds drew.
 Use the second one whenever you touch a variant — an unpinned run hides a variant
-that is budget-legal but win-rate-illegal inside the average.
+that is budget-legal but win-rate-illegal inside the average. `BALANCE_TRIALS` sets
+the trials a row, and `BALANCE_DIFFICULTY=story` or `=hard` narrows the report to one
+difficulty (it shows both by default). Every rate and mean is printed with a 95%
+interval.
+
+**The balance tripwire (ADR 0114).** `npm run balance:check` is the CI step. It runs a
+fixed sweep (set in `scripts/balance/gate.ts`: both difficulties, 1, 3 and 6 players,
+every roster variant on its own row) and compares the win rate, HP left, rounds and
+deaths of each row with `scripts/balance/baseline.json`. On Story every row wins every
+trial, so the win rate cannot show a change there; the other three measures can.
+
+- It fails only on a shift that is both statistically significant and at least the
+  measure's minimum size, so ordinary AI and content changes pass **without touching
+  the baseline**. Do not regenerate it to be tidy.
+- It also fails when the rows differ (a new encounter or variant, a removed one,
+  another trial count), and on an anomaly.
+- Every comparison is against the committed baseline, so small drifts add up and
+  eventually trip it.
+- When it fails and the change is intended, run `npm run balance:baseline`, commit the
+  file with the change, and paste the before/after table it prints into the PR
+  description with the reason. When the change is not intended, it is a regression.
+- It refuses `BALANCE_TRIALS`, `BALANCE_SIZES`, `BALANCE_VARIANTS`, `BALANCE_DIFFICULTY`
+  and `BALANCE_TUNING`, so a run is never compared with a baseline made at other
+  settings.
+- The old "70-85% for a full table" win-rate band is not a gate. Whether it still
+  applies is the owner's open decision (#777).
 
 Never run `npx playwright install` in the dev container — Chromium is already at
 `PLAYWRIGHT_BROWSERS_PATH`.
@@ -252,6 +310,11 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   budget gets an ADR in `docs/adr/`. The phase plan is `docs/roadmap.md`; art
   is generated against `docs/art-bible.md`; a new device is checked against
   `docs/device-matrix.md`.
+- **Size budgets scale as needed without the owner's OK** (owner, 2026-11-17: "Budget for size don't need my
+  okay. Scale as needed."). When a JS, art, audio or precache budget blocks real work, raise it in the same PR or a
+  small one of its own, with an ADR amendment saying the new number and why, and move on. Prefer a sensible step
+  with headroom over raising it a few KB at a time. Credit budgets (PixelLab, Suno) are not size budgets and still
+  go to the owner.
 - Backends: board-correctness parity is mandatory, fidelity parity is not
   (`src/render/backends/backend.ts`). Draw anything the rules care about on
   both backends; particles and shader effects are WebGL-only by design, with one
@@ -317,6 +380,21 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   hold is in `src/content/ids.ledger.json` for good. Run `npm run ids:ledger` after adding content; to rename or
   remove an id, leave the ledger alone and add a row to `src/content/idAliases.ts`, which `applyIdAliases` applies
   first on load. `savedIds.test.ts` fails on a shipped id that vanished without one.
+- **The quarry checkpoints are pinned by facts, never by a digest** (#795).
+  `scripts/e2e/quarry-checkpoints.facts.json` holds what an AI retune must not move: the story path, the party, the
+  flags, the world, the save's shape and the first fight's opening. A failing test lists the moved facts by path.
+  Re-pin with `npm run checkpoints -- --write` and paste its summary into the pull request; on a merge conflict in
+  that file, take either side and run the same command. How the fights play (transcript, RNG cursor, log) is not
+  pinned, only bounded: to see whether a change moved it, run `npm run checkpoints -- --dump before.json` on `main`
+  and `npm run checkpoints -- --diff before.json` on the branch. Never add a hash of a save or a transcript to a
+  test: nobody can review one, and every AI or content pull request then conflicts with every other.
+- **A save remembers only what the story recorded when it was written** (ADR 0112). A flag that something reads
+  and that gains a write in a region a release already shipped must say how that release's saves answer, in its
+  registry entry (`oldSaves`: a backfill rule in `src/content/story/flagBackfills.ts`, `open` or `unset`); a new scene
+  a `visited` condition reads does the same in `LATE_SCENES`. `saveHistory.test.ts` names the flag and plays every
+  frozen save forward to the ending. A backfill rule's `rev` only grows, a released rule is never edited, and
+  `fixtures/releases/` is never regenerated: freeze a new release with `npm run saves:release -- <id>`.
+  `docs/save-history.md` (`npm run docs:saves`) is the report writers read first.
 - **Shipped code validates with `src/core/schema.ts`, not zod** (ADR 0060). It
   is zod's v3 API for the combinators the save, fx, sound and tuning schemas use,
   and `schema.test.ts` holds it to zod's verdicts, data and issue paths. A shipped

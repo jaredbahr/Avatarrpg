@@ -12,6 +12,7 @@ import {
   POLICY,
   assertCoreBenchBudgets,
   caseBudgetIssues,
+  chooseTopDownBenchMap,
   createCoreBenchSuite,
   createTopDownBenchSuite,
   measureCoreBenchCase,
@@ -89,6 +90,26 @@ describe('core benchmark coverage and frozen calibration', () => {
     );
   });
 
+  it('measures one of the boards tied for the largest area: the frozen one, else the first registered', () => {
+    const frozen = Object.keys(BASELINE.cases);
+    expect(
+      chooseTopDownBenchMap(
+        ['ba_dan_village', 'saltstep_market'],
+        ['ba_dan_village', 'saltstep_market'],
+        frozen,
+      ),
+    ).toBe('ba_dan_village');
+    expect(
+      chooseTopDownBenchMap(
+        ['saltstep_market', 'ba_dan_village'],
+        ['saltstep_market', 'ba_dan_village'],
+        frozen,
+      ),
+    ).toBe('ba_dan_village');
+    expect(chooseTopDownBenchMap(['b', 'a'], ['x', 'b', 'a'], frozen)).toBe('b');
+    expect(() => chooseTopDownBenchMap([], ['a'], frozen)).toThrow();
+  });
+
   it('adds only the largest registered logical top-down board after the original eleven cases', () => {
     const registered = [...TOPDOWN_SCENES.keys()].map((id) => {
       const map = CONTENT.maps.get(id);
@@ -100,11 +121,16 @@ describe('core benchmark coverage and frozen calibration', () => {
     expect(suite.coverage.topDown.registeredMaps).toEqual(registered);
     expect(suite.coverage.topDown.maximumArea).toBe(maximum);
     expect(suite.coverage.topDown.largestMaps).toEqual(
-      registered.filter((map) => map.width * map.height === maximum),
+      registered
+        .filter((map) => map.width * map.height === maximum)
+        .sort((a, b) => a.id.localeCompare(b.id)),
     );
+    // Ba Dan's board (32 x 23 since the back row, 2026-11-19) is the largest registered on its own (ADR 0120); its
+    // cases carry their own calibration, made on the 32 x 20 board
     expect(suite.coverage.topDown.largestMaps).toEqual([
-      { id: 'ba_dan_village', width: 24, height: 16 },
+      { id: 'ba_dan_village', width: 32, height: 23 },
     ]);
+    expect(suite.coverage.topDown.benchmarkedMap).toBe('ba_dan_village');
     const supplemental = createTopDownBenchSuite();
     expect(supplemental.cases.map((entry) => entry.id)).toEqual([
       'reachable/topdown/ba_dan_village',
@@ -118,8 +144,8 @@ describe('core benchmark coverage and frozen calibration', () => {
     );
     for (const entry of supplemental.cases) {
       expect(entry.detail).toMatchObject({
-        width: 24,
-        height: 16,
+        width: 32,
+        height: 23,
         reachableBudget: 6,
         props: 0,
         footprintSize: 1,
@@ -172,19 +198,62 @@ describe('core benchmark coverage and frozen calibration', () => {
         calibrationDriverSha256: 'c1edb713399ff59cb5f7b3cc7938a3481cb8ed5dc201f15e8bb1a1562c253889',
         originalBaselineSha256: '780fe27936856fa5461d79b26ba16cd3fbd673a32e5fb5653911c40d33d4b22a',
       },
+      // the 32 x 20 board, calibrated once it was registered again (ADR 0106's 2026-11-18 amendment)
+      {
+        source: '385b57cb18a7b5f88d50d434b5e5650940036a82',
+        tree: '68ab7e8f29fd21cdc10185e6803efc0b57d88b96',
+        caseIds: ['reachable/topdown/ba_dan_village', 'findPath/topdown/ba_dan_village'],
+        calibrationReportSha256: '20a610cc4e03d0caabc243ef8b356487907f05db875c735da036ad33267d0c18',
+        calibrationHarnessSha256:
+          '56646a856f515dcca111ea9611e22cf96f9a2d0d05e2f7e25d3e13191dfd5180',
+        calibrationDriverSha256: '6d9c1700eb0bd1082fb2abca5271bc85d64f549cae03540727100af1fcb59e7b',
+        originalBaselineSha256: '4d38ea9d451f2b65f50c3641f66cef1e4120c0d2574604d849344bf393076992',
+        board: '32 x 20',
+        replaces: {
+          'reachable/topdown/ba_dan_village': {
+            normalizedMedian: 9.956649267866029,
+            ceiling: 39.826597071464114,
+          },
+          'findPath/topdown/ba_dan_village': {
+            normalizedMedian: 32.41192900675779,
+            ceiling: 129.64771602703115,
+          },
+        },
+      },
     ]);
     expect(
       createHash('sha256')
         .update(readFileSync(new URL('./core-bench.ts', import.meta.url)))
         .digest('hex'),
-    ).toBe(frozenBaseline.supplementalCalibrations[0]?.calibrationHarnessSha256);
+    ).toBe(frozenBaseline.harnessRevisions.at(-1)?.calibrationHarnessSha256);
+    // The harness that measured Ba Dan's cases keeps its historic hash; a later revision changed what is measured
+    // (the tie rule), never a measurement, so the file is held to the newest revision instead.
+    expect(frozenBaseline.harnessRevisions).toEqual([
+      {
+        source: expect.stringMatching(/^[0-9a-f]{40}$/),
+        calibrationHarnessSha256: expect.stringMatching(/^[0-9a-f]{64}$/),
+        reason: 'tied largest boards benchmark one map; no new measurement',
+      },
+      {
+        source: expect.stringMatching(/^[0-9a-f]{40}$/),
+        calibrationHarnessSha256: expect.stringMatching(/^[0-9a-f]{64}$/),
+        reason:
+          "Ba Dan's frozen cases keep measuring the 24 x 16 board while the village is a 32 x 20 blockout; no new measurement",
+      },
+      {
+        source: expect.stringMatching(/^[0-9a-f]{40}$/),
+        calibrationHarnessSha256: expect.stringMatching(/^[0-9a-f]{64}$/),
+        reason:
+          "Ba Dan's cases measure its registered 32 x 20 board, freshly calibrated (ADR 0106 amendment, 2026-11-18)",
+      },
+    ]);
     expect(BASELINE.cases['reachable/topdown/ba_dan_village']).toEqual({
-      normalizedMedian: 9.956649267866029,
-      ceiling: 39.826597071464114,
+      normalizedMedian: 38.43956295574626,
+      ceiling: 153.75825182298505,
     });
     expect(BASELINE.cases['findPath/topdown/ba_dan_village']).toEqual({
-      normalizedMedian: 32.41192900675779,
-      ceiling: 129.64771602703115,
+      normalizedMedian: 31.67944456962326,
+      ceiling: 126.71777827849304,
     });
   });
 

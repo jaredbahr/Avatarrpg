@@ -30,12 +30,12 @@ const TABLE: ResidentSlot = {
 };
 
 const ANCHORS: readonly WorldAnchor[] = [
-  { id: 'test.table', place: 'TEST', site: { kind: 'map', mapId: VILLAGE, pos: { x: 11, y: 5 } } },
-  { id: 'test.yard', place: 'TEST', site: { kind: 'map', mapId: VILLAGE, pos: { x: 3, y: 8 } } },
+  { id: 'test.table', place: 'TEST', site: { kind: 'map', mapId: VILLAGE, pos: { x: 12, y: 11 } } },
+  { id: 'test.yard', place: 'TEST', site: { kind: 'map', mapId: VILLAGE, pos: { x: 9, y: 11 } } },
   {
     id: 'test.home',
     place: 'TEST',
-    site: { kind: 'private', door: { mapId: VILLAGE, pos: { x: 12, y: 3 } } },
+    site: { kind: 'private', door: { mapId: VILLAGE, pos: { x: 15, y: 7 } } },
   },
 ];
 
@@ -347,10 +347,10 @@ describe('validateContent: resident records (ADR 0047 W4a)', () => {
 
     const wander: ResidentDef = {
       ...ELDER,
-      schedule: { ...ELDER.schedule, dawn: { ...TABLE, loop: [{ x: 14, y: 5 }] } },
+      schedule: { ...ELDER.schedule, dawn: { ...TABLE, loop: [{ x: 15, y: 11 }] } },
     };
     expect(problemsOf(bundle({ residents: [wander] }))).toContain(
-      'resident "test.elder" dawn: loop point 14,5 is over 2 tiles from its anchor',
+      'resident "test.elder" dawn: loop point 15,11 is over 2 tiles from its anchor',
     );
 
     const walled = ANCHORS.map((a) =>

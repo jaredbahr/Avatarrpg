@@ -4,6 +4,7 @@ import { CONTENT } from '../src/content';
 import { buildGrid, tileAt } from '../src/core/rules/grid';
 import {
   enterNode,
+  finishConversation,
   resetStorage,
   setLargeText,
   settleLayout,
@@ -221,11 +222,10 @@ test('objective hides during conversation, resumes, and starts expanded in a fre
   await expect(page.locator('.explore-conversation')).toBeVisible();
   await expect(objective).toBeHidden();
 
-  const next = page.locator('[data-conversation-control="next"]');
-  const total = Number((await page.locator('.line-count').textContent())?.split(' of ')[1]);
-  expect(Number.isFinite(total)).toBe(true);
-  expect(total).toBeGreaterThan(0);
-  for (let line = 0; line < total; line++) await next.click();
+  // Mira's table runs over several turns and one question (DLG-01); the objective
+  // stays hidden for all of it and comes back when the table is done.
+  await expect(page.locator('.line-count')).toHaveText(/^1 of \d+$/);
+  await finishConversation(page);
   await expect(page.locator('.explore-conversation')).toBeHidden();
   await expect(objective).toBeVisible();
 
@@ -437,13 +437,13 @@ test('resizing exploration keeps zoom and map focus while taps follow the painte
   expect(after.centreX).toBeCloseTo(before.centreX, 1);
   expect(after.centreY).toBeCloseTo(before.centreY, 1);
 
-  const target = await paintedTileCentre(page, { x: 6, y: 7 });
+  const target = await paintedTileCentre(page, { x: 8, y: 11 });
   if (!target) throw new Error('No exploration camera');
   await page.mouse.click(target.x, target.y);
   await expect
     .poll(() => page.evaluate(() => window.fnt?.app.state?.location.pos))
     .toEqual({
-      x: 6,
-      y: 7,
+      x: 8,
+      y: 11,
     });
 });

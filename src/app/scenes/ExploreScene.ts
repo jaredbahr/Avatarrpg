@@ -10,16 +10,22 @@
  */
 
 import { RIVERSIDE_ID } from '../../content/maps/riversideIds';
-import { npcPresentationScale, triggerPresentationScale } from './exploreMarkerScale';
+import {
+  npcCastsFootShadow,
+  npcPresentationScale,
+  triggerPresentationScale,
+} from './exploreMarkerScale';
 import { evaluate } from '../../core/story/conditions';
 import {
   activeTriggers,
   backgroundFigures,
+  exitAt,
   visibleNpcs,
   worldObjective,
   worldObjectiveTargetId,
 } from '../../core/story/world';
 import type { PlacedNpc } from '../../core/story/world';
+import type { BoxesOverlay } from './boxesOverlay';
 import { VillageLife } from '../village/VillageLife';
 import type { App, CameraInfo, Scene } from '../App';
 import type { GameEvent, GameState, Grid, MapDef, Unit, Vec2 } from '../../core/types';
@@ -37,7 +43,10 @@ import { npcClip } from '../../render/view';
 import { npcPipLift } from '../../render/npcPip';
 import type { RoutePreview } from '../../render/routePreview';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
+import type { ActionEvent, Direction, InputHint } from '../input/actions';
+import { directionVector, isDirection, slotIndex } from '../input/actions';
 import { ambienceFx } from '../../content/fx';
+import { boardLightFor } from '../dayLight';
 import { ambientEmitters, waterCells } from '../anim/ambience';
 import { PartyTrail, placeParty } from '../anim/trail';
 import type { FollowerRoute } from '../anim/trail';
@@ -83,6 +92,16 @@ import {
   practiceFrame,
   practiceUnits,
 } from '../world/practice';
+
+/** How fast a held look-around pans, in CSS px a second. */
+const LOOK_SPEED = 720;
+/**
+ * How far one stride of a held direction goes. The party finishes a stride
+ * once begun, so this is also how far it can overshoot a released key.
+ */
+const HELD_STRIDE = 3;
+/** The least time between strides: under Reduce motion a walk is instant, and a held key must not be. */
+const HELD_STRIDE_EVERY_MS = 250;
 
 export class ExploreScene implements Scene {
   readonly name = 'explore';
@@ -149,6 +168,9 @@ export class ExploreScene implements Scene {
   private objectiveButton: HTMLButtonElement | null = null;
   private objectivePointer: HTMLDivElement | null = null;
   private npcNames: HTMLDivElement | null = null;
+  /** The set-piece review overlay (`?boxes`): a dev build only, so a production build never holds it. */
+  private boxes: BoxesOverlay | null = null;
+  private boxesLoading = false;
   private mapCorner: HTMLDivElement | null = null;
   private pauseButton: HTMLButtonElement | null = null;
 
@@ -206,7 +228,11 @@ export class ExploreScene implements Scene {
       ),
     );
 
-    const canvas = el('canvas', { class: 'map-canvas', attrs: { 'aria-label': 'Village map' } });
+    // A tab stop: with focus here the arrow keys walk the party (ADR 0115 §4).
+    const canvas = el('canvas', {
+      class: 'map-canvas',
+      attrs: { 'aria-label': 'Village map', role: 'application', tabindex: '0' },
+    });
     this.canvas = canvas;
     scene.appendChild(
       el(
@@ -245,7 +271,6 @@ export class ExploreScene implements Scene {
     this.cancelNext = button('Cancel next walk', () => this.clearNextWalk());
     this.feedback = el('div', { class: 'walk-feedback' }, this.feedbackText, this.cancelNext);
     this.feedback.hidden = true;
-    document.addEventListener('keydown', this.onKeyDown);
     document.addEventListener('visibilitychange', this.onVisibility);
 
     this.setupRenderer();
@@ -255,7 +280,6 @@ export class ExploreScene implements Scene {
 
   unmount(): void {
     this.app.audio.clearEnvironment();
-    document.removeEventListener('keydown', this.onKeyDown);
     document.removeEventListener('visibilitychange', this.onVisibility);
     this.nextWalk.clear();
     this.walking = null;
@@ -274,6 +298,9 @@ export class ExploreScene implements Scene {
     this.objectiveButton = null;
     this.objectivePointer = null;
     this.npcNames = null;
+    this.boxes?.destroy();
+    this.boxes = null;
+    this.boxesLoading = false;
     this.mapCorner = null;
     this.pauseButton = null;
     this.objectivePresentation = createExploreObjectivePresentation();
@@ -358,6 +385,7 @@ export class ExploreScene implements Scene {
     const state = this.app.state;
     const grid = this.grid;
     if (!state || !grid || !events.some((event) => event.type === 'partyWalked')) return false;
+    if (state.screen !== 'explore') this.holdDock();
     const objective = worldObjective(this.app.content, state);
     this.objectivePresentation = walkExploreObjective(this.objectivePresentation, objective);
     this.renderObjective(objective);
@@ -624,12 +652,28 @@ export class ExploreScene implements Scene {
         canvas.removeAttribute('aria-disabled');
         canvas.removeAttribute('aria-hidden');
       }
+      // Hidden from readers while a conversation covers it, so not a tab stop either.
+      canvas.tabIndex = active ? -1 : 0;
     }
     const dock = this.host?.querySelector<HTMLElement>('.explore-dock');
     if (dock) {
       dock.hidden = active;
       dock.inert = active;
     }
+  }
+
+  /**
+   * The rules have already begun a conversation or a fight and the party is
+   * still walking up to it: the dock's actions belong to the screen being left,
+   * so they take no input until the next sync (which restores them). Without
+   * this, Enter on a focused Map button opens the map over the conversation.
+   */
+  private holdDock(): void {
+    const dock = this.host?.querySelector<HTMLElement>('.explore-dock');
+    if (!dock || dock.inert) return;
+    const focused = dock.contains(document.activeElement);
+    dock.inert = true;
+    if (focused) this.canvas?.focus({ preventScroll: true });
   }
 
   private clearWorldIntent(): void {
@@ -672,6 +716,13 @@ export class ExploreScene implements Scene {
         active !== document.body &&
         active.isConnected &&
         (!scene.contains(active) || usable(active))
+      )
+        return;
+      // The HUD is rebuilt before the conversation panel: wait for the panel
+      // rather than settle on a header button a moment before Next exists.
+      if (
+        this.conversationMode &&
+        !scene.querySelector('.explore-conversation .conversation-panel')
       )
         return;
       const controls = [...scene.querySelectorAll<HTMLElement>('button, [tabindex]')].filter(
@@ -1128,6 +1179,16 @@ export class ExploreScene implements Scene {
             : 'Drag to look around · Follow party to recenter'),
       }),
     );
+    // Whose say it is stays on screen, not only in the toast at a map change (#846).
+    const inCharge = this.app.session.solo ? undefined : this.app.session.decider(state);
+    if (inCharge)
+      context.appendChild(
+        el('span', {
+          class: 'tiny in-charge',
+          text: `In charge: ${inCharge.name}`,
+          attrs: { 'data-in-charge': inCharge.id },
+        }),
+      );
     if (moving && !this.practising) clear(context);
     if (this.practising)
       context.replaceChildren(
@@ -1231,6 +1292,8 @@ export class ExploreScene implements Scene {
       { class: 'action-button', title: 'Local map and routes' },
     );
     map.prepend(mark(UI_MARKS.recentre));
+    map.dataset.slot = 'map';
+    look.dataset.slot = 'look';
     row.insertBefore(map, look);
     bar.appendChild(row);
     hud.appendChild(bar);
@@ -1459,10 +1522,149 @@ export class ExploreScene implements Scene {
     this.updateWalkFeedback();
   }
 
-  private onKeyDown = (event: KeyboardEvent): void => {
-    if (this.conversationMode || this.app.state?.screen !== 'explore') return;
-    if (event.key === 'Escape' && !document.querySelector('[role="dialog"]')) this.clearNextWalk();
-  };
+  /* ---------------------------------------------------------------- */
+  /* Keyboard and gamepad (ADR 0115)                                   */
+  /* ---------------------------------------------------------------- */
+
+  private hudButtons(): HTMLButtonElement[] {
+    return [
+      ...(this.host?.querySelectorAll<HTMLButtonElement>('.explore-hud .action-row > button') ??
+        []),
+    ];
+  }
+
+  /**
+   * A step that way, by the same legal walk a tap asks for. A fresh press is
+   * one tile, and may walk into someone (to talk) or onto a gate (to leave). A
+   * held direction (`fresh` false) strides on up to `HELD_STRIDE` tiles of open
+   * ground at a time, so leaning on the stick crosses the village at a walk
+   * but never re-opens a conversation or leaves by a gate. Neither ever takes
+   * a detour: a direction into a fence does nothing rather than walk round it.
+   */
+  private stepWalk(direction: Direction, fresh: boolean): void {
+    const state = this.app.state;
+    const map = this.map;
+    const grid = this.grid;
+    if (!state || !map || !grid || state.screen !== 'explore' || state.location.mapId !== map.id)
+      return;
+    if (this.conversationMode || document.querySelector('[role="dialog"]')) return;
+    const step = directionVector(direction);
+    const { pos } = state.location;
+    const people = fresh ? [] : visibleNpcs(this.app.content, map, state);
+    let target: Vec2 | null = null;
+    for (let tiles = 1; tiles <= (fresh ? 1 : HELD_STRIDE); tiles++) {
+      const next = { x: pos.x + step.x * tiles, y: pos.y + step.y * tiles };
+      if (next.x < 0 || next.y < 0 || next.x >= grid.width || next.y >= grid.height) break;
+      const preview = previewWalk(this.app.content, state, next);
+      if (preview.refusal) break;
+      if (fresh) {
+        // Beside someone the path is empty and the rules open the conversation.
+        if (preview.path.length <= 1) target = next;
+        break;
+      }
+      const arrives =
+        preview.path.length === tiles && samePos(preview.path[tiles - 1] ?? pos, next);
+      if (!arrives || people.some((npc) => samePos(npc.pos, next)) || exitAt(map, next)) break;
+      target = next;
+    }
+    if (!target) return;
+    // Walking is the board's business: focus leaves whichever button had it.
+    if (this.app.input?.pointerless) this.canvas?.focus({ preventScroll: true });
+    this.requestWalk(target);
+  }
+
+  /** A keyboard or gamepad action: directions walk, confirm is the HUD's contextual action. */
+  handleAction(event: ActionEvent): boolean {
+    const state = this.app.state;
+    const { action } = event;
+    if (!state || this.suspended || this.conversationMode) return false;
+    // The party is still walking up to a conversation or a fight the rules have
+    // already begun: nothing acts until it arrives, as with taps.
+    if (state.screen !== 'explore') return true;
+    const camera = this.renderer?.camera;
+    if (isDirection(action)) {
+      // A held direction walks on from the frame loop, in step with the party.
+      if (!event.repeat) this.stepWalk(action, true);
+      return true;
+    }
+    if (action === 'zoomIn' || action === 'zoomOut') {
+      this.framingArrival = false;
+      if (camera)
+        camera.zoomAt(
+          { x: camera.viewport.width / 2, y: camera.viewport.height / 2 },
+          action === 'zoomIn' ? 1.25 : 0.8,
+        );
+      return true;
+    }
+    if (action === 'recentre') {
+      this.followParty();
+      return true;
+    }
+    if (event.repeat || action === 'menu' || action === 'next' || action === 'prev') return false;
+    if (action === 'endTurn') return true;
+    if (action === 'cancel') {
+      if (!this.nextWalk.preview(state)) return false;
+      this.clearNextWalk();
+      return true;
+    }
+    const buttons = this.hudButtons();
+    const press = (target: HTMLButtonElement | undefined): boolean => {
+      if (!target) return false;
+      if (target.disabled) this.app.toasts.show(target.title);
+      else target.click();
+      return true;
+    };
+    if (action === 'confirm') {
+      // A focused control answers for itself; from the board, confirm is Talk, Inspect or Walk.
+      const active = document.activeElement;
+      if (active instanceof HTMLElement && active !== document.body && active !== this.canvas)
+        return false;
+      return press(buttons[0]);
+    }
+    if (action === 'map') return press(buttons.find((button) => button.dataset.slot === 'map'));
+    if (action === 'inspect')
+      return press(buttons.find((button) => button.dataset.slot === 'look'));
+    return press(buttons[slotIndex(action) ?? -1]);
+  }
+
+  /** What the buttons do now, for the legend (ADR 0115 §6). */
+  inputHints(): readonly InputHint[] {
+    if (this.conversationMode || this.suspended || this.app.state?.screen !== 'explore') return [];
+    const primary = this.hudButtons()[0];
+    // The button's own word (Talk, Inspect, Walk), without its mark or its sub-line.
+    const label = [...(primary?.childNodes ?? [])].find(
+      (node) => node.nodeType === Node.TEXT_NODE,
+    )?.textContent;
+    return [
+      { key: 'move', label: 'Walk' },
+      ...(primary && !primary.disabled && label ? [{ key: 'confirm', label } as const] : []),
+      { key: 'map', label: 'Map' },
+      { key: 'menu', label: 'Pause' },
+    ];
+  }
+
+  /** The held look-around (Shift + arrows, the right stick) and the triggers' zoom, per frame. */
+  private lookAround(now: number, held: boolean): void {
+    const seconds = Math.min(0.1, Math.max(0, (now - (this.lastLookAt ?? now)) / 1000));
+    this.lastLookAt = now;
+    const camera = this.renderer?.camera;
+    const input = this.app.input;
+    if (!camera || !input || held) return;
+    const look = input.panVector();
+    const zoom = input.zoomRate();
+    if (look.x === 0 && look.y === 0 && zoom === 0) return;
+    this.framingArrival = false;
+    if (zoom !== 0)
+      camera.zoomAt(
+        { x: camera.viewport.width / 2, y: camera.viewport.height / 2 },
+        Math.exp(zoom * seconds * 1.5),
+      );
+    // Looking right moves the map left under the view, as a drag to the left does.
+    camera.panBy(-look.x * LOOK_SPEED * seconds, -look.y * LOOK_SPEED * seconds);
+  }
+
+  private lastLookAt: number | null = null;
+  private lastStrideAt = 0;
 
   private onVisibility = (): void => {
     if (document.hidden) {
@@ -1543,6 +1745,13 @@ export class ExploreScene implements Scene {
           this.requestWalk(next);
           return;
         }
+        // A direction still held walks on, a tile at a time, as each step lands.
+        const heldWay = held || !live ? null : (this.app.input?.heldDirection() ?? null);
+        if (heldWay && now - this.lastStrideAt >= HELD_STRIDE_EVERY_MS) {
+          this.lastStrideAt = now;
+          this.stepWalk(heldWay, false);
+          if (this.app.state !== state) return;
+        }
       }
       if (this.needsSettle && map.projection === 'topdown' && !this.departing && !dialogOpen) {
         this.needsSettle = false;
@@ -1566,6 +1775,7 @@ export class ExploreScene implements Scene {
     }
     if (this.hudMoving !== animator.busy(now)) this.renderHud();
     this.app.stats?.frame(now);
+    this.lookAround(now, held);
 
     // The whole party walks the village: the leader on the rules' tile, the
     // others in a line behind, each their own figure.
@@ -1651,6 +1861,7 @@ export class ExploreScene implements Scene {
           sprite: npc.sprite,
           name: npc.name,
           scale: npcPresentationScale(npc.sprite),
+          ...(npcCastsFootShadow(npc.sprite) ? {} : { footShadow: false as const }),
           // Someone at a post on a G sheet faces the camera on its idle loop,
           // or the way its NpcDef says it faces (the gate's watchers, the party).
           ...(sheetLocomotion(npc.sprite)?.headings === 8
@@ -1774,9 +1985,24 @@ export class ExploreScene implements Scene {
       scene: map.scene,
       time: now,
       reducedMotion: motionReduced(),
+      // The day's grade and the lit lamps (ADR 0121): static, so reduce motion keeps them.
+      light: boardLightFor(state.world.clock.phase, map.scene, 'explore'),
     };
 
     renderer.draw(view);
+    // `?boxes` on a dev build: the set pieces as labelled boxes over the board (`boxesOverlay.ts`). The import
+    // stays inside this guard so a production build drops the overlay and its chunk entirely.
+    if (import.meta.env.DEV) {
+      const wrap = this.canvas?.parentElement;
+      if (!this.boxes && !this.boxesLoading && wrap) {
+        this.boxesLoading = true;
+        void import('./boxesOverlay').then((m) => {
+          if (m.boxesRequested() && this.canvas?.parentElement === wrap)
+            this.boxes = new m.BoxesOverlay(wrap, map.width, map.height);
+        });
+      }
+      this.boxes?.draw(renderer.camera, map.id);
+    }
     this.lastLife = { units, now };
     this.life?.draw(units, renderer.camera, now);
     this.drawNpcNames(npcs, !held && live && !this.life ? state.location.pos : null);

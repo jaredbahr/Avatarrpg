@@ -155,12 +155,21 @@ describe('heading vocabulary is a declared sheet capability', () => {
       ['unit.enemy.sergeant', 'art/topdown/sergeant.json'],
       ['unit.enemy.driller', 'art/topdown/driller.json'],
       ['unit.ally.ruon', 'art/topdown/ruon.json'],
+      ['unit.enemy.freighthandler', 'art/topdown/freighthandler.json'],
+      ['unit.enemy.rigger', 'art/topdown/rigger.json'],
+      ['unit.ally.veyra', 'art/topdown/veyra.json'],
       ['npc.elder', 'art/topdown/mira.json'],
       ['npc.shopkeeper', 'art/topdown/gao.json'],
       ['npc.kid', 'art/topdown/pella.json'],
       ['npc.dorin', 'art/topdown/dorin.json'],
       ['npc.guard', 'art/topdown/guard.json'],
       ['npc.household', 'art/topdown/household.json'],
+      ['npc.tavi', 'art/topdown/tavi.json'],
+      ['npc.customsclerk', 'art/topdown/customsclerk.json'],
+      ['npc.luli', 'art/topdown/luli.json'],
+      ['npc.bowlseller', 'art/topdown/bowlseller.json'],
+      ['npc.freightclerk', 'art/topdown/freightclerk.json'],
+      ['npc.cook', 'art/topdown/cook.json'],
     ]);
   });
 

@@ -28,9 +28,13 @@ time, writes every scene, line and scene plan, in story PRs that carry a theme c
 other session builds from what is on `main` and does not draft story text. If your work needs words that do not
 exist yet, leave a clearly marked placeholder, say so in your PR, and stop there. Story decisions are recorded in
 [docs/story-bible.md](docs/story-bible.md); read its owner-decision sections before touching anything a player
-reads.
+reads. When to file a story issue, when to message the writing pass and what you may write yourself are in
+[docs/story-requests.md](docs/story-requests.md).
 
 ## Model routing and usage
+
+**DeepSeek is Claude's tool only** (Jared, 2026-11-15). Codex has no DeepSeek access and works only the
+issues assigned to it (`codex-ready`), by itself. See `CLAUDE.md`, "Work routing".
 
 Jared's standing routing policy:
 

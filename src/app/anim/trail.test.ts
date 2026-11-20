@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BA_DAN_VILLAGE } from '../../content/maps/village';
+import { OLD_VILLAGE_ROWS } from '../../content/maps/oldVillage.fixture';
 import { CONTENT } from '../../content';
 import { createGame } from '../../core/state/createGame';
 import { visibleNpcs } from '../../core/story/world';
@@ -19,10 +20,10 @@ import { strollTiming } from './stroll';
 import { smoothPath, sampleFraction } from '../../render/geometry/curve';
 
 const grid = buildGrid(BA_DAN_VILLAGE);
-const spawn = BA_DAN_VILLAGE.partySpawns[0] ?? { x: 3, y: 7 };
+const spawn = BA_DAN_VILLAGE.partySpawns[0] ?? { x: 11, y: 10 };
 
 describe('placeParty', () => {
-  const exit = BA_DAN_VILLAGE.exit?.pos ?? { x: 23, y: 7 };
+  const exit = BA_DAN_VILLAGE.exit?.pos ?? { x: 31, y: 9 };
 
   it('seats the leader on the spawn and the others in a line, each on a free tile beside the last', () => {
     const seats = placeParty(grid, spawn, 4);
@@ -37,17 +38,17 @@ describe('placeParty', () => {
   });
 
   it('leads the line straight away from the exit', () => {
-    // Straight west along the road until the ford at (0,7), then beside it.
+    // Straight west along the square's lawn from the spawn.
     expect(placeParty(grid, spawn, 4, { awayFrom: exit })).toEqual([
-      { x: 3, y: 7 },
-      { x: 2, y: 7 },
-      { x: 1, y: 7 },
-      { x: 1, y: 8 },
+      { x: 11, y: 10 },
+      { x: 10, y: 10 },
+      { x: 9, y: 10 },
+      { x: 8, y: 10 },
     ]);
   });
 
   it('keeps off the tiles it is told to avoid', () => {
-    const avoid = [{ x: 2, y: 7 }];
+    const avoid = [{ x: spawn.x - 1, y: spawn.y }];
     const seats = placeParty(grid, spawn, 3, { awayFrom: exit, avoid });
     expect(seats.map(posKey)).not.toContain(posKey(avoid[0] ?? spawn));
     expect(distance(seats[1] ?? spawn, spawn)).toBe(1);
@@ -78,7 +79,7 @@ describe('placeParty', () => {
 });
 
 describe('PartyTrail', () => {
-  const exit = BA_DAN_VILLAGE.exit?.pos ?? { x: 23, y: 7 };
+  const exit = BA_DAN_VILLAGE.exit?.pos ?? { x: 31, y: 9 };
   const a = { x: 3, y: 7 };
   const b = { x: 4, y: 7 };
   const c = { x: 4, y: 8 };
@@ -259,6 +260,16 @@ describe('reserved movement batches', () => {
     rows: Array.from({ length: 9 }, () => ',,,,,,,,,'),
     npcs: [],
   });
+  // The canal-bank squeeze these cases were written for: the 24 x 16 village as it stood before the blockout, a
+  // canal along row 6 with a one-tile bridge at (9,6). The live village has a two-tile bridge and an open square, so
+  // the squeeze is a frozen fixture rather than followed (`oldVillage.fixture.ts`).
+  const oldVillage = buildGrid({
+    ...BA_DAN_VILLAGE,
+    width: 24,
+    height: 16,
+    rows: OLD_VILLAGE_ROWS,
+    npcs: [],
+  });
   const canalSeats = [
     { x: 11, y: 3 },
     { x: 10, y: 4 },
@@ -358,7 +369,7 @@ describe('reserved movement batches', () => {
 
   it('tries a farther clearance seat when the nearest one traps another follower at the canal', () => {
     const trail = new PartyTrail(canalSeats);
-    const plan = trail.planWalk(canalPath, 5, grid, canalNpcs);
+    const plan = trail.planWalk(canalPath, 5, oldVillage, canalNpcs);
     expect(plan).not.toBeNull();
     expect(plan?.batches[0]?.map((route) => route.path.at(-1))).toEqual([
       { x: 13, y: 4 },
@@ -368,7 +379,12 @@ describe('reserved movement batches', () => {
     for (const route of plan?.batches.flat() ?? []) {
       expect(
         pathCost(
-          { grid, blocked: new Set(canalNpcs.map(posKey)), surfaces: new Map(), size: 1 },
+          {
+            grid: oldVillage,
+            blocked: new Set(canalNpcs.map(posKey)),
+            surfaces: new Map(),
+            size: 1,
+          },
           route.from,
           route.path,
         ),
@@ -379,7 +395,7 @@ describe('reserved movement batches', () => {
   it('keeps seats when a follower has a clearance seat but every choice traps the next one', () => {
     const trail = new PartyTrail(canalSeats);
     const avoid = [...canalNpcs, { x: 13, y: 4 }, { x: 13, y: 5 }, { x: 13, y: 6 }];
-    expect(trail.planWalk(canalPath, 5, grid, avoid)).toBeNull();
+    expect(trail.planWalk(canalPath, 5, oldVillage, avoid)).toBeNull();
     expect(trail.positions(5)).toEqual(canalSeats);
   });
 
@@ -564,12 +580,13 @@ it('keeps the five-leg courtyard audit separated without the serial cadence regr
     total += end;
     serialTotal += tracks.reduce((sum, track) => sum + track.timing.duration, 0);
   };
+  // Five legs round the square: east of the table, up to the shop road, back past the table, down to the bank.
   for (const target of [
-    { x: 10, y: 7 },
-    { x: 10, y: 3 },
-    { x: 11, y: 3 },
-    { x: 10, y: 5 },
-    { x: 10, y: 7 },
+    { x: 16, y: 10 },
+    { x: 17, y: 8 },
+    { x: 15, y: 8 },
+    { x: 12, y: 11 },
+    { x: 16, y: 10 },
   ]) {
     const from = trail.head ?? spawn;
     const walk = findPath(
@@ -649,4 +666,51 @@ describe('a follower joining and leaving the line (#696)', () => {
     const follower = after[3];
     expect(last && follower && distance(last, follower)).toBe(1);
   });
+});
+
+describe('a large party settling between commands (#846)', () => {
+  const field = buildGrid({
+    ...BA_DAN_VILLAGE,
+    width: 24,
+    height: 24,
+    rows: Array.from({ length: 24 }, () => ','.repeat(24)),
+    npcs: [],
+  });
+  const steps: [number, number][] = [
+    [1, 0],
+    [1, 0],
+    [0, 1],
+    [-1, 0],
+    [2, 0],
+    [0, -2],
+    [0, 1],
+    [-1, 0],
+    [0, 1],
+    [1, 0],
+  ];
+
+  for (const size of [3, 4, 5, 6]) {
+    it(`a party of ${size} never walks a follower across the party to reseat after a short move`, () => {
+      const trail = new PartyTrail(placeParty(field, { x: 12, y: 12 }, size));
+      trail.settle(field, [], { beside: true });
+      let head = { x: 12, y: 12 };
+      for (const [dx, dy] of steps) {
+        const dest = { x: head.x + dx, y: head.y + dy };
+        const route = findPath(
+          { grid: field, blocked: new Set(), surfaces: new Map(), size: 1 },
+          head,
+          dest,
+          600,
+        );
+        expect(route).toBeDefined();
+        const plan = trail.planWalk(route?.path ?? [], size, field, []);
+        expect(plan).not.toBeNull();
+        head = dest;
+        const reseat = trail.settle(field, [], { beside: true });
+        // A short command moves the leader a tile or two; nobody reseats further than that.
+        for (const r of reseat) expect(r.path.length).toBeLessThanOrEqual(2);
+        for (const p of trail.positions(size)) expect(distance(p, head)).toBeLessThanOrEqual(3);
+      }
+    });
+  }
 });

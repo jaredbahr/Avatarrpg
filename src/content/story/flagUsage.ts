@@ -28,15 +28,23 @@ import type { FlagValue } from '../../core/types';
 import { SCENE_PREFIX, SCENE_VALUES, STANDING_PREFIX } from '../../core/story/conditions';
 import type { FlagDef, FlagType } from './flags';
 
-export type FlagRole = 'read' | 'write';
+type FlagRole = 'read' | 'write';
 
 export interface FlagUse {
   readonly key: string;
   readonly role: FlagRole;
   /** `story:<node id>`, `map:<map id>`, `journal:<note id>`, `app:<module>` and so on. */
   readonly area: string;
-  /** A readable path inside the area, for the failure message. */
+  /**
+   * A readable path inside the area. A choice's option is named by where it leads
+   * (`options[→gate_talked].setFlags`), so inserting an option leaves the others' paths alone.
+   */
   readonly at: string;
+  /**
+   * The same path with every option named by its position (`options[1].setFlags`), only where it
+   * differs from `at`: the form the releases frozen before option identity recorded (ADR 0112).
+   */
+  readonly positionalAt?: string;
   /** The value written, or the value an `eq`/`gte`/`lte` condition compares with. */
   readonly value?: FlagValue;
 }
@@ -67,6 +75,28 @@ function recordId(record: unknown, index: number, source: FlagSource): string {
 }
 
 /**
+ * How each item of an array is named in a path, so that inserting one leaves the others' names
+ * alone. Records with their own ids (a map's NPCs, its triggers) are named by id; a choice's
+ * options (records that each lead somewhere by `next`) by their destination, with `#2`, `#3`
+ * for a destination two options share; anything else by its position.
+ */
+export function itemNames(items: readonly unknown[]): string[] {
+  if (items.length === 0) return [];
+  const ids = items.map((item) => (isRecord(item) && typeof item.id === 'string' ? item.id : null));
+  if (ids.every((id) => id !== null) && new Set(ids).size === ids.length)
+    return ids.map((id) => `#${id}`);
+  const leads = items.every((item) => isRecord(item) && typeof item.next === 'string');
+  if (!leads) return items.map((_, index) => String(index));
+  const seen = new Map<string, number>();
+  return items.map((item) => {
+    const next = (item as { next: string }).next;
+    const count = (seen.get(next) ?? 0) + 1;
+    seen.set(next, count);
+    return count === 1 ? `→${next}` : `→${next}#${count}`;
+  });
+}
+
+/**
  * Every flag use inside one value. Recurses through plain objects, arrays and
  * `Map` values; anything else (functions, class instances) is opaque data.
  */
@@ -75,74 +105,83 @@ export function flagUsesIn(value: unknown, area: string, at = ''): FlagUse[] {
   const ancestors = new Set<unknown>();
   const join = (path: string, key: string): string => (path ? `${path}.${key}` : key);
 
-  const visit = (node: unknown, path: string): void => {
+  // `path` names options by destination, `legacy` by position (see `FlagUse.positionalAt`).
+  const visit = (node: unknown, path: string, legacy: string): void => {
     if (typeof node !== 'object' || node === null || ancestors.has(node)) return;
     if (Array.isArray(node)) {
       ancestors.add(node);
-      node.forEach((item, index) => visit(item, `${path}[${index}]`));
+      const names = itemNames(node);
+      node.forEach((item, index) =>
+        visit(item, `${path}[${names[index] ?? index}]`, `${legacy}[${index}]`),
+      );
       ancestors.delete(node);
       return;
     }
     if (node instanceof Map) {
       ancestors.add(node);
-      for (const [key, item] of node) visit(item, `${path}.get(${String(key)})`);
+      for (const [key, item] of node)
+        visit(item, `${path}.get(${String(key)})`, `${legacy}.get(${String(key)})`);
       ancestors.delete(node);
       return;
     }
     if (!isRecord(node)) return;
 
-    const read = (key: string, where: string, compared?: unknown): void => {
+    // Where a use sits, by destination and (where that differs) by position.
+    const place = (where: string, old: string): { at: string; positionalAt?: string } =>
+      where === old ? { at: where } : { at: where, positionalAt: old };
+    const read = (key: string, where: string, old: string, compared?: unknown): void => {
       out.push({
         key,
         role: 'read',
         area,
-        at: where,
+        ...place(where, old),
         ...(isFlagValue(compared) ? { value: compared } : {}),
       });
     };
-    const write = (key: string, where: string, written: unknown): void => {
+    const write = (key: string, where: string, old: string, written: unknown): void => {
       out.push({
         key,
         role: 'write',
         area,
-        at: where,
+        ...place(where, old),
         ...(isFlagValue(written) ? { value: written } : {}),
       });
     };
 
-    if (node.kind === 'flag' && typeof node.key === 'string') read(node.key, path, node.value);
+    const both = (key: string): [string, string] => [join(path, key), join(legacy, key)];
+    if (node.kind === 'flag' && typeof node.key === 'string')
+      read(node.key, path, legacy, node.value);
     if (node.kind === 'standing' && typeof node.nation === 'string') {
-      read(`${STANDING_PREFIX}${node.nation}`, path, node.value);
+      read(`${STANDING_PREFIX}${node.nation}`, path, legacy, node.value);
     }
-    if (node.kind === 'branch' && typeof node.flag === 'string')
-      read(node.flag, join(path, 'flag'));
+    if (node.kind === 'branch' && typeof node.flag === 'string') read(node.flag, ...both('flag'));
     if (typeof node.flag === 'string' && typeof node.whenSet === 'boolean') {
-      read(node.flag, join(path, 'flag'));
+      read(node.flag, ...both('flag'));
     }
-    if (typeof node.requiresFlag === 'string') read(node.requiresFlag, join(path, 'requiresFlag'));
+    if (typeof node.requiresFlag === 'string') read(node.requiresFlag, ...both('requiresFlag'));
     if (node.kind === 'flags' && isRecord(node.set)) {
-      for (const [key, written] of Object.entries(node.set)) write(key, join(path, 'set'), written);
+      for (const [key, written] of Object.entries(node.set)) write(key, ...both('set'), written);
     }
     if (isRecord(node.setFlags)) {
       for (const [key, written] of Object.entries(node.setFlags)) {
-        write(key, join(path, 'setFlags'), written);
+        write(key, ...both('setFlags'), written);
       }
     }
     // A choice option's `adjust` is the only writer of nation standing.
     if (isRecord(node.adjust) && typeof node.next === 'string') {
       for (const [nation, delta] of Object.entries(node.adjust)) {
         if (typeof delta === 'number' && delta !== 0) {
-          write(`${STANDING_PREFIX}${nation}`, join(path, 'adjust'), delta);
+          write(`${STANDING_PREFIX}${nation}`, ...both('adjust'), delta);
         }
       }
     }
 
     ancestors.add(node);
-    for (const [key, item] of Object.entries(node)) visit(item, join(path, key));
+    for (const [key, item] of Object.entries(node)) visit(item, ...both(key));
     ancestors.delete(node);
   };
 
-  visit(value, at);
+  visit(value, at, at);
   return out;
 }
 
@@ -168,7 +207,7 @@ export function keyMatches(registered: string, key: string): boolean {
 }
 
 /** Edit distance, for the near-duplicate check. Small keys only; quadratic is fine. */
-export function editDistance(a: string, b: string): number {
+function editDistance(a: string, b: string): number {
   let previous = Array.from({ length: b.length + 1 }, (_, index) => index);
   for (let i = 1; i <= a.length; i++) {
     const current = [i];
@@ -186,7 +225,7 @@ export function editDistance(a: string, b: string): number {
 }
 
 /** Folds case and separators, so `ruonSpared`, `ruon_spared` and `ruon.spared` collide. */
-export function foldKey(key: string): string {
+function foldKey(key: string): string {
   return key.toLowerCase().replace(/[^a-z0-9*]/g, '');
 }
 

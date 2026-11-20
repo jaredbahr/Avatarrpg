@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { attachPointer } from './pointer';
+import { attachPointer, isRightClick } from './pointer';
 
 /** Only the DOM surface the adapter uses; events still use real EventTarget dispatch. */
 class PointerTarget extends EventTarget {
@@ -393,5 +393,19 @@ describe('pointer adapter wheel zoom', () => {
     } finally {
       detach();
     }
+  });
+});
+
+describe('right click', () => {
+  it('is a mouse context menu, by pointer type where the browser reports one', () => {
+    expect(isRightClick({ pointerType: 'mouse', button: 2 })).toBe(true);
+    expect(isRightClick({ pointerType: 'touch', button: 0 })).toBe(false);
+    expect(isRightClick({ pointerType: 'pen', button: 2 })).toBe(false);
+  });
+
+  it('falls back to the button where the event carries no pointer type', () => {
+    expect(isRightClick({ button: 2 })).toBe(true);
+    // A long press and the keyboard's menu key both report the main button.
+    expect(isRightClick({ pointerType: '', button: 0 })).toBe(false);
   });
 });

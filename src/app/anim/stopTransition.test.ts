@@ -6,7 +6,7 @@ import { STROLL_RAMP_MS, strollTiming } from './stroll';
 
 /**
  * Gait and stopping (M1), reproduced from the paired telemetry in
- * `docs/coordination/handoffs/live-candidate-review.md`: a two-cell combat
+ * `docs/coordination/handoffs/live-candidate-review.md` (in Git history up to 2c132c59): a two-cell combat
  * move ran 220 ms, travelled 0.902 tile in the first 40 ms, and "immediately
  * selects ready stance". These drive the real animator with no DOM, sampling
  * the drawn position and pose at fixed times the way `CombatScene` builds its

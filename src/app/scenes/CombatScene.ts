@@ -31,6 +31,8 @@ import {
   knownAbilities,
   previewAbility,
   resolveAim,
+  sameSide,
+  aimReachTiles,
   targetableTiles,
   affectedTiles,
 } from '../../core/rules/abilities';
@@ -51,6 +53,7 @@ import { canMove, effectiveStats, isAlive, statusDefs } from '../../core/rules/s
 import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
 import { coverCue } from './coverCue';
 import { activeUnit, upcomingOrder } from '../../core/rules/turnOrder';
+import { isGuest, isTableControlled } from '../../core/rules/guests';
 import { encounterText } from '../../core/story/encounterText';
 import { Renderer } from '../../render/renderer';
 import { usesIntegerZoom } from '../../render/projection';
@@ -65,14 +68,32 @@ import {
   weatherChipText,
 } from '../../core/rules/obscurementPresentation';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
+import type { ActionEvent, Direction, InputHint } from '../input/actions';
+import { isDirection, slotIndex } from '../input/actions';
+import { cycleCursor, cycleOrder, stepCursor } from '../input/boardCursor';
+import type { TileRank } from '../input/boardCursor';
+import { combatInput } from '../input/combatFocus';
+import { handoffCopy } from '../input/glyphs';
 import { ambienceFx, resolveFx } from '../../content/fx';
 import { ambientEmitters } from '../anim/ambience';
+import { boardLightFor } from '../dayLight';
 import { burningPropEmitters } from '../anim/propFire';
-import { announce, button, clear, el, mark, motionReduced, painterCanvas, tip } from '../ui/dom';
+import {
+  announce,
+  button,
+  clear,
+  el,
+  guardHandoff,
+  mark,
+  motionReduced,
+  painterCanvas,
+  tip,
+} from '../ui/dom';
 import { assetCanvas } from '../ui/assetCanvas';
 import { portraitKeyFor } from '../ui/PartyRoster';
 import { victoryNote, victoryResults, type VictoryRow } from '../ui/victoryResults';
 import { UI_MARKS, markKindFor } from '../ui/marks';
+import { objectiveLine, objectiveOverlay, tipOverlay } from './combatObjective';
 import { iconMarkup } from '../ui/icons';
 import { paletteFor } from '../../render/palettes';
 import { paintElementGlyph } from '../../render/painters/glyphs';
@@ -95,7 +116,7 @@ import { createMovementThreatQuery } from '../ui/movementThreats';
 import { partyWalkPhase } from '../animator';
 import type { Animator } from '../animator';
 import type { SoundCue } from '../anim/choreography';
-import { TOPDOWN_PRESENTATION_TIMING } from '../anim/choreography';
+import { ENEMY_PHASE_BEAT_MS, TOPDOWN_PRESENTATION_TIMING } from '../anim/choreography';
 import { PresentationClock, type CombatSpeed } from './presentationClock';
 import { flushTime } from './flockFlush';
 import { resolveCombatBodyPick } from './combatBodyPick';
@@ -129,10 +150,23 @@ import {
   unseenCombatTips,
   type CombatTipFeature,
 } from './combatGuidance';
+import { defendHintFlag, defendHintFor, type DefendHint } from './defendHint';
 
-export function actingTurnCopy(unit: Pick<Unit, 'faction' | 'name'>): string {
-  return unit.faction === 'ally' ? `Ally turn · ${unit.name} is acting` : `${unit.name} is acting`;
+/** An ability that stands a downed friend up (ADR 0118): aimed at the fallen, not the living. */
+function isDownedAbility(ability: Ability): boolean {
+  return ability.targeting.shape === 'unit' && ability.targeting.allow === 'downed';
 }
+
+/** How fast a held look-around pans, in CSS px a second. */
+const LOOK_SPEED = 720;
+
+/** What the HUD says while the AI acts; a guest is named as one (ADR 0116). */
+export function actingTurnCopy(unit: Pick<Unit, 'faction' | 'name'>): string {
+  return isGuest(unit) ? `Guest turn · ${unit.name} is acting` : `${unit.name} is acting`;
+}
+
+/** The visible tag a guest carries in the turn strip and the HUD (ADR 0116). */
+export const GUEST_TAG = 'Guest';
 
 const COMBAT_OPENING_HOLD_MS = 700;
 const COMBAT_OPENING_FOCUS_MS = 320;
@@ -245,6 +279,12 @@ interface OverlayBuild {
   readonly targetReticle: TargetReticleCue | null;
 }
 
+/** Marks the one control `confirm` presses when nothing has focus (ADR 0115 §1). */
+function defaultControl<T extends HTMLElement>(control: T): T {
+  control.className = `${control.className} input-default`.trim();
+  return control;
+}
+
 /** Sound cues a top-down skip still plays: the ones that tell how a blow or the fight ended. */
 const OUTCOME_CUES: ReadonlySet<string> = new Set(['ko', 'victory', 'defeat']);
 export class CombatScene implements Scene {
@@ -274,13 +314,30 @@ export class CombatScene implements Scene {
   private mode: Mode = { kind: 'idle' };
   private pending: Vec2 | null = null;
   private hover: Vec2 | null = null;
+  /**
+   * The board cursor a keyboard or gamepad moves (ADR 0115 §3): always on a
+   * legal tile, and while moving or aiming it is the pending choice.
+   */
+  private cursor: Vec2 | null = null;
+  /** Looking over the board with the cursor while no action is chosen. */
+  private browsing = false;
+  /** The action-bar button focus goes back to when the board gives it up. */
+  private barSlot: string | null = null;
   /** How high each ability's flight lobs, or null when nothing flies; read once from its recipe. */
   private lobs = new Map<string, number | null>();
   private inspector: UnitInspector | PropInspector | null = null;
   private readonly movementThreatQuery: ReturnType<typeof createMovementThreatQuery>;
+  /** The last "stay safe" hint, so a redraw of the same board does not ask the rules again. */
+  private defendHintCache: {
+    battle: BattleState;
+    unitId: string;
+    hint: DefendHint | null;
+  } | null = null;
 
-  /** Party unit whose owner last acknowledged the hand-off banner. */
+  /** The participant who last acknowledged the hand-off banner. */
   private handedOffTo: string | null = null;
+  /** When the current hand-off card first showed, for its hold-off (ADR 0115 §5). */
+  private handoffShownAt = 0;
   private bannerShownFor: string | null = null;
   private lastActiveId: string | null = null;
   private recentreButton: HTMLButtonElement | null = null;
@@ -338,6 +395,10 @@ export class CombatScene implements Scene {
   /** Surface cells are immutable with the battle grid, so do not rescan them every frame. */
   private obscurementMemo: { grid: BattleState['grid']; tiles: readonly Vec2[] } | null = null;
   private aiScheduled = false;
+  /** An enemy action was dispatched since the table last had the board (see `coverHeld`). */
+  private enemyActed = false;
+  /** When the last enemy action finished playing; the beat counts from here. */
+  private coverIdleSince: number | null = null;
   private aiDueUnitId: string | null = null;
   private resultShown = false;
   private victoryPending = false;
@@ -513,13 +574,41 @@ export class CombatScene implements Scene {
     const scene = el('div', { class: 'scene combat-scene' });
     scene.appendChild(el('div', { class: 'top-bar combat-bar' }));
     scene.appendChild(el('div', { class: 'turn-strip' }));
-    const canvas = el('canvas', { class: 'map-canvas', attrs: { 'aria-label': 'Battlefield' } });
+    // A tab stop: with focus here the arrow keys move the board cursor (ADR 0115 §4).
+    const canvas = el('canvas', {
+      class: 'map-canvas',
+      attrs: { 'aria-label': 'Battlefield', role: 'application', tabindex: '0' },
+    });
     this.canvas = canvas;
     scene.appendChild(
       el('div', { class: 'map-wrap' }, canvas, el('div', { class: 'combat-overlays' })),
     );
-    scene.appendChild(el('div', { class: 'hud' }));
+    // Tabbing onto the board on your turn is asking to look around it.
+    canvas.addEventListener('focus', () => {
+      const unit = this.active();
+      if (
+        !this.pointerless ||
+        !unit ||
+        this.zone === 'board' ||
+        this.battleOpening ||
+        this.battle()?.phase !== 'active' ||
+        !this.isPlayerTurn() ||
+        this.needsHandoff()
+      )
+        return;
+      this.browsing = true;
+      this.placeCursor(unit.pos);
+    });
+    const hud = el('div', { class: 'hud' });
+    // Remember which action had focus, so the board can hand focus back to it.
+    hud.addEventListener('focusin', (event) => {
+      const slot = event.target instanceof HTMLElement ? event.target.dataset.slot : undefined;
+      if (slot) this.barSlot = slot;
+    });
+    scene.appendChild(hud);
     host.appendChild(scene);
+    this.cursor = null;
+    this.browsing = false;
 
     this.setupRenderer();
     this.sync();
@@ -1001,6 +1090,10 @@ export class CombatScene implements Scene {
     this.detach = attachPointer(canvas, {
       onTap: (point) => this.onTap(point.x, point.y),
       onLongPress: (point) => this.onLongPress(point.x, point.y),
+      // A right click backs out of a move or an aim, and inspects otherwise.
+      onSecondary: (point) => {
+        if (!this.cancelStep()) this.onLongPress(point.x, point.y);
+      },
       // Panning is a no-op while the whole board fits: the camera clamps it
       // away, so a stray drag at fit scale never moves anything.
       onDrag: (delta) => this.pan(delta.x, delta.y),
@@ -1076,7 +1169,16 @@ export class CombatScene implements Scene {
 
   private isPlayerTurn(): boolean {
     const unit = this.active();
-    return !!unit && unit.faction === 'party' && isAlive(unit);
+    return !!unit && isTableControlled(unit) && isAlive(unit);
+  }
+
+  /** "Nilak (Ava)", or "Veyra, guest (Ava)" for a table guest: who is acting, and who is playing. */
+  private turnLabel(unit: Unit): string {
+    if (!isGuest(unit)) return this.app.session.labelFor(unit);
+    const person = this.app.session.solo
+      ? undefined
+      : this.app.session.controllerFor(this.app.state, unit.id);
+    return person ? `${unit.name}, guest (${person.name})` : `${unit.name}, guest`;
   }
 
   private reachableCells() {
@@ -1291,6 +1393,306 @@ export class CombatScene implements Scene {
   }
 
   /* ---------------------------------------------------------------- */
+  /* Keyboard and gamepad (ADR 0115)                                   */
+  /* ---------------------------------------------------------------- */
+
+  /** True while a keyboard or a pad, not a pointer, was the last thing used. */
+  private get pointerless(): boolean {
+    return this.app.input?.pointerless === true;
+  }
+
+  /** Where directions go: the board while moving, aiming or looking round; else the action bar. */
+  private get zone(): 'bar' | 'board' {
+    return this.mode.kind !== 'idle' || this.browsing ? 'board' : 'bar';
+  }
+
+  /** The tiles the cursor may stand on now, in cycle order: the nearest enemy first. */
+  private cursorTiles(battle: BattleState, unit: Unit): Vec2[] {
+    const ability =
+      this.mode.kind === 'aim' ? this.app.content.abilities.get(this.mode.abilityId) : undefined;
+    const tiles =
+      this.mode.kind === 'move'
+        ? [...this.reachableCells().values()]
+            .filter((cell) => cell.cost > 0)
+            .map((cell) => cell.pos)
+        : ability
+          ? targetableTiles(this.app.content, battle, unit, ability)
+          : [
+              ...battle.units.filter(isAlive).map((candidate) => candidate.pos),
+              ...battle.props.map((prop) => prop.pos),
+            ];
+    const rank = (tile: Vec2): TileRank => {
+      const target = inspectTargetAt(battle.units, battle.props, tile, false);
+      if (!target) return 2;
+      return target.kind === 'unit' && target.unit.faction === 'enemy' ? 0 : 1;
+    };
+    return cycleOrder(tiles, unit.pos, rank);
+  }
+
+  /**
+   * A keyboard or pad that picks Move or an ability starts the cursor: on the
+   * hero for a move, on the nearest occupied target for an aim, so "pick, then
+   * confirm" hits the nearest enemy. Pointer play is unchanged.
+   */
+  private startCursor(): void {
+    this.browsing = false;
+    this.cursor = null;
+    const battle = this.battle();
+    const unit = this.active();
+    if (!this.pointerless || !battle || !unit || this.mode.kind === 'idle') return;
+    this.cursor = unit.pos;
+    if (this.mode.kind !== 'aim') return;
+    const first = this.cursorTiles(battle, unit)[0];
+    if (first && inspectTargetAt(battle.units, battle.props, first, false)) this.placeCursor(first);
+  }
+
+  /** Stands the cursor on a tile: it becomes the pending choice, in view and read out. */
+  private placeCursor(tile: Vec2, render = false): void {
+    const battle = this.battle();
+    const unit = this.active();
+    if (!battle || !unit) return;
+    this.cursor = tile;
+    this.hover = tile;
+    if (this.mode.kind !== 'idle') {
+      const ability =
+        this.mode.kind === 'aim' ? this.app.content.abilities.get(this.mode.abilityId) : undefined;
+      this.pending = ability ? resolveAim(this.app.content, battle, unit, ability, tile) : tile;
+    }
+    this.revealTile(tile);
+    if (!render) return;
+    this.renderHud();
+    const target = inspectTargetAt(battle.units, battle.props, tile, false);
+    const name =
+      target?.kind === 'unit'
+        ? `${target.unit.name}, ${target.unit.hp} of ${target.unit.base.maxHp} health`
+        : target
+          ? (this.app.content.props.get(target.prop.propId)?.name ?? 'Something')
+          : 'Open ground';
+    const forecast = this.host?.querySelector('.confirm-dialog .confirm-body')?.textContent ?? '';
+    announce(forecast ? `${name}. ${forecast}` : name);
+  }
+
+  /** Pans the least distance that keeps the cursor's tile clear of the canvas edge. */
+  private revealTile(tile: Vec2): void {
+    const camera = this.renderer?.camera;
+    if (!camera) return;
+    const { width, height } = camera.viewport;
+    const point = camera.project({ x: tile.x + 0.5, y: tile.y + 0.5 });
+    const margin = Math.min(camera.tile * camera.scale, width / 4, height / 4);
+    const x = Math.min(width - margin, Math.max(margin, point.x));
+    const y = Math.min(height - margin, Math.max(margin, point.y));
+    if (x !== point.x || y !== point.y) this.pan(x - point.x, y - point.y);
+  }
+
+  private moveCursor(direction: Direction): void {
+    const battle = this.battle();
+    const unit = this.active();
+    if (!battle || !unit) return;
+    const next = stepCursor(this.cursorTiles(battle, unit), this.cursor ?? unit.pos, direction);
+    if (next) this.placeCursor(next, true);
+  }
+
+  private cycleTarget(step: 1 | -1): void {
+    const battle = this.battle();
+    const unit = this.active();
+    if (!battle || !unit) return;
+    const order = this.cursorTiles(battle, unit);
+    // From the hero's own tile (nothing chosen yet) the cycle starts at its first entry.
+    const current =
+      this.cursor && order.some((tile) => samePos(tile, this.cursor!)) ? this.cursor : null;
+    const next = cycleCursor(order, current, step);
+    if (next) this.placeCursor(next, true);
+  }
+
+  /** Backs out one step: the More list, then a move or an aim, then looking round. */
+  private cancelStep(): boolean {
+    if (this.moreOpen) {
+      this.setMoreOpen(false, true);
+      return true;
+    }
+    if (this.mode.kind === 'idle' && !this.browsing) return false;
+    this.mode = { kind: 'idle' };
+    this.browsing = false;
+    this.clearPending();
+    this.hover = null;
+    this.renderHud();
+    this.focusForInput(true);
+    return true;
+  }
+
+  private actionButtons(): HTMLButtonElement[] {
+    return [...(this.host?.querySelectorAll<HTMLButtonElement>('.hud .action-row > button') ?? [])];
+  }
+
+  /**
+   * Puts keyboard or gamepad focus where input belongs after a rebuild dropped
+   * it (or, forced, at a turn's start): the card that must be answered, the
+   * board while a tile is being chosen, otherwise the action bar. Pointer play
+   * and focus anywhere else that still exists are left alone.
+   */
+  private focusForInput(force = false): void {
+    const scene = this.host?.querySelector<HTMLElement>('.combat-scene');
+    if (!this.pointerless || this.suspended || !scene || scene.closest('[inert]')) return;
+    if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
+    const card = scene.querySelector<HTMLElement>('.combat-overlays .input-default');
+    const buttons = this.actionButtons().filter((candidate) => !candidate.disabled);
+    const bar =
+      this.zone === 'bar' && this.isPlayerTurn()
+        ? (buttons.find((candidate) => candidate.dataset.slot === this.barSlot) ?? buttons[0])
+        : undefined;
+    const target = card ?? bar ?? this.canvas;
+    const active = document.activeElement;
+    // The board held focus while there was nothing else to hold it (an enemy's
+    // turn, the opening view); it gives it up once a card or the bar is there.
+    const parked = active === this.canvas && target !== this.canvas;
+    const lost = !active || active === document.body || !active.isConnected || parked;
+    // Forced (a new turn), focus moves only from the last turn's own controls:
+    // the header (More, Pause) and anything outside the fight keep it.
+    if (!lost && (!force || !active.closest('.hud, .map-wrap'))) return;
+    target?.focus({ preventScroll: true });
+  }
+
+  /** A keyboard or gamepad action; see `combatInput` for what each does where. */
+  handleAction(event: ActionEvent): boolean {
+    const battle = this.battle();
+    const { action } = event;
+    if (!battle || this.suspended) return false;
+    const unit = this.active();
+    const now = this.presentationNow();
+    const effect = combatInput(action, event.repeat, {
+      opening: this.battleOpening !== null,
+      active: battle.phase === 'active' && !this.victoryBeat && !this.victoryPending,
+      busy: this.boardActionBusy(now, unit?.id),
+      playerTurn: this.isPlayerTurn(),
+      handoff: this.needsHandoff(),
+      zone: this.zone,
+      mode: this.mode.kind,
+      moreOpen: this.moreOpen,
+    });
+    const centre = (): { x: number; y: number } => {
+      const viewport = this.renderer?.camera.viewport;
+      return { x: (viewport?.width ?? 0) / 2, y: (viewport?.height ?? 0) / 2 };
+    };
+    switch (effect) {
+      case 'pass':
+        return false;
+      case 'ignore':
+        return true;
+      case 'skipOpening':
+        this.skipBattleOpening();
+        return true;
+      case 'skipPlayback':
+        this.skipPresentation();
+        return true;
+      case 'zoomIn':
+        this.zoomBy(1.25, centre());
+        return true;
+      case 'zoomOut':
+        this.zoomBy(0.8, centre());
+        return true;
+      case 'recentre':
+        this.recentre();
+        return true;
+      case 'cursor':
+        if (isDirection(action)) this.moveCursor(action);
+        return true;
+      case 'cycle':
+        this.cycleTarget(action === 'prev' ? -1 : 1);
+        return true;
+      case 'cancel':
+        return this.cancelStep();
+      case 'commit': {
+        const confirm = this.host?.querySelector<HTMLButtonElement>(
+          '.confirm-dialog .btn-ok:not(:disabled)',
+        );
+        if (confirm) confirm.click();
+        else this.app.toasts.show('Choose a highlighted tile first.');
+        return true;
+      }
+      case 'inspectCursor':
+      case 'inspectActive': {
+        const tile = effect === 'inspectCursor' ? this.cursor : null;
+        const target = tile ? inspectTargetAt(battle.units, battle.props, tile, true) : undefined;
+        if (target?.kind === 'prop') this.openPropInspector(target.prop);
+        else if (target?.kind === 'unit') this.openUnitInspector(target.unit);
+        else if (unit) this.openUnitInspector(unit);
+        return true;
+      }
+      case 'browse': {
+        if (!unit) return true;
+        // Only from the action bar: Up from the header's buttons is ordinary focus movement.
+        const from = document.activeElement;
+        if (from instanceof HTMLElement && from !== document.body && !from.dataset.slot)
+          return false;
+        this.browsing = true;
+        this.placeCursor(unit.pos);
+        this.canvas?.focus({ preventScroll: true });
+        return true;
+      }
+      case 'barStep': {
+        const buttons = this.actionButtons().filter((candidate) => !candidate.disabled);
+        const index = buttons.indexOf(document.activeElement as HTMLButtonElement);
+        const step = action === 'prev' ? -1 : 1;
+        buttons[
+          (Math.max(index, step === 1 ? -1 : 0) + step + buttons.length) % buttons.length
+        ]?.focus();
+        return true;
+      }
+      case 'slot': {
+        const slot = this.actionButtons()[slotIndex(action) ?? -1];
+        if (slot && !slot.disabled) slot.click();
+        return true;
+      }
+      case 'endTurn':
+        if (unit) this.endTurn(unit);
+        return true;
+      case 'focusBar': {
+        const active = document.activeElement;
+        if (active && active !== document.body && active.isConnected) return false;
+        this.focusForInput(true);
+        return true;
+      }
+    }
+  }
+
+  /** What the buttons do now, for the legend (ADR 0115 §6). */
+  inputHints(): readonly InputHint[] {
+    const battle = this.battle();
+    if (!battle || battle.phase !== 'active' || this.battleOpening || this.needsHandoff())
+      return [];
+    if (!this.isPlayerTurn() || this.boardActionBusy(this.presentationNow(), this.active()?.id))
+      return [
+        { key: 'confirm', label: 'Skip ahead' },
+        { key: 'menu', label: 'Pause' },
+      ];
+    if (this.mode.kind === 'move')
+      return [
+        { key: 'move', label: 'Choose a tile' },
+        { key: 'confirm', label: 'Walk there' },
+        { key: 'cancel', label: 'Back' },
+      ];
+    if (this.mode.kind === 'aim')
+      return [
+        { key: 'move', label: 'Choose a target' },
+        { key: 'cycle', label: 'Next target' },
+        { key: 'confirm', label: 'Confirm' },
+        { key: 'cancel', label: 'Back' },
+      ];
+    if (this.browsing)
+      return [
+        { key: 'move', label: 'Look around' },
+        { key: 'confirm', label: 'Inspect' },
+        { key: 'cancel', label: 'Back' },
+      ];
+    return [
+      { key: 'move', label: 'Pick an action' },
+      { key: 'confirm', label: 'Choose' },
+      { key: 'endTurn', label: 'End turn' },
+      { key: 'menu', label: 'Pause' },
+    ];
+  }
+
+  /* ---------------------------------------------------------------- */
   /* Turn flow                                                         */
   /* ---------------------------------------------------------------- */
 
@@ -1438,11 +1840,39 @@ export class CombatScene implements Scene {
     }
   }
 
+  /**
+   * Whether the hand-off card or the defeat panel must wait: the enemy phase just acted, and its
+   * last action is still playing (impact, hit-stop, damage number, knockdown) or has not yet had
+   * its readable beat. The board shows alone meanwhile. A player's own turn never waits here.
+   */
+  private coverHeld(): boolean {
+    if (!this.enemyActed) return false;
+    const now = this.presentationNow();
+    if (this.animatorForBoard.busy(now)) {
+      this.coverIdleSince = null;
+      return true;
+    }
+    this.coverIdleSince ??= now;
+    if (now - this.coverIdleSince < ENEMY_PHASE_BEAT_MS) return true;
+    this.enemyActed = false;
+    this.coverIdleSince = null;
+    return false;
+  }
+
+  /** Per frame: lay the held card down once the last enemy action has been seen. */
+  private releaseCover(): void {
+    if (!this.enemyActed) return;
+    const battle = this.battle();
+    if (!battle || battle.phase === 'victory') return;
+    const waiting = battle.phase !== 'active' || this.needsHandoff();
+    if (waiting && !this.coverHeld()) this.renderHud();
+  }
+
   private needsHandoff(): boolean {
     const unit = this.active();
-    if (!unit || unit.faction !== 'party') return false;
+    if (!unit || !isTableControlled(unit)) return false;
     if (this.app.session.solo) return false;
-    return this.app.session.needsHandoff(this.handedOffTo, unit.id);
+    return this.app.session.needsHandoffTo(this.handedOffTo, this.app.state, unit.id);
   }
 
   sync(): void {
@@ -1473,6 +1903,7 @@ export class CombatScene implements Scene {
 
     const unit = this.active();
     const activeId = unit?.id ?? null;
+    let turnChanged = false;
 
     if (activeId !== this.lastActiveId) {
       this.clearEndTurnConfirmation();
@@ -1481,15 +1912,17 @@ export class CombatScene implements Scene {
       this.lastActiveId = activeId;
       this.mode = { kind: 'idle' };
       this.clearPending();
+      this.cursor = null;
+      this.browsing = false;
+      this.barSlot = null;
+      turnChanged = true;
       this.stopAiTimer();
 
       // Keep the last acknowledged human across unit and enemy turns; only a
       // change of human ownership needs another hand-off card.
       if (unit) {
         announce(
-          unit.faction === 'party'
-            ? `${this.app.session.labelFor(unit)}'s turn.`
-            : actingTurnCopy(unit),
+          isTableControlled(unit) ? `${this.turnLabel(unit)}'s turn.` : actingTurnCopy(unit),
         );
       }
       // The More list was opened for the last turn; the next player at the
@@ -1538,6 +1971,8 @@ export class CombatScene implements Scene {
     // Do not let the first hand-off card cover the establishing view. This
     // rerender happens in the same sync, before the first RAF can paint it.
     if (this.battleOpening) this.renderHud();
+    // A new turn starts on its action bar, whoever's hands the keys are in.
+    if (turnChanged) this.focusForInput(true);
     // A fresh opening owns the first enemy turn too; later turns use the
     // unchanged scheduling path below. This keeps the first formation frame
     // visible instead of letting a 260 ms AI timer cut it short.
@@ -1554,7 +1989,7 @@ export class CombatScene implements Scene {
     const unit = this.active();
     if (!battle || battle.phase !== 'active' || !unit) return;
     if (this.suspended || this.aiHeld || this.battleOpening) return;
-    if (unit.faction === 'party') return;
+    if (isTableControlled(unit)) return;
 
     if (this.presentationClock) {
       if (this.aiDueAt === null) {
@@ -1589,6 +2024,7 @@ export class CombatScene implements Scene {
           schedule(Math.max(COMBAT_AI_GLIDE_RETRY_MS, remaining));
           return;
         }
+        this.enemyActed = true;
         this.app.dispatch({ type: 'runAiTurn' });
       }, wait);
       this.aiTimer = timer;
@@ -1615,7 +2051,7 @@ export class CombatScene implements Scene {
     if (this.cameraGlide) return;
     const battle = this.battle();
     const unit = this.active();
-    if (!battle || battle.phase !== 'active' || !unit || unit.faction === 'party') {
+    if (!battle || battle.phase !== 'active' || !unit || isTableControlled(unit)) {
       this.stopAiTimer();
       return;
     }
@@ -1628,12 +2064,34 @@ export class CombatScene implements Scene {
     this.aiDueAt = null;
     this.aiDueUnitId = null;
     this.aiScheduled = false;
+    this.enemyActed = true;
     this.app.dispatch({ type: 'runAiTurn' });
   }
 
   /* ---------------------------------------------------------------- */
   /* Rendering: chrome                                                 */
   /* ---------------------------------------------------------------- */
+
+  /**
+   * The objective line under the round (ADR 0116's 2026-11-15 amendment): a flag, the goal and
+   * the rounds left, read out whole as one status line so a screen reader hears the change.
+   */
+  private objectiveLineElement(goal: NonNullable<ReturnType<typeof objectiveLine>>): HTMLElement {
+    const line = el(
+      'div',
+      {
+        class: `combat-objective${goal.urgent ? ' urgent' : ''}`,
+        attrs: { role: 'status', 'aria-label': goal.spoken },
+      },
+      mark(UI_MARKS.flag, 'mark-inline combat-objective-mark'),
+      el('span', { class: 'visually-hidden', text: 'Goal: ' }),
+      el('span', { class: 'combat-objective-label', text: goal.label, title: goal.label }),
+    );
+    if (goal.rounds) {
+      line.appendChild(el('span', { class: 'combat-objective-rounds', text: goal.rounds }));
+    }
+    return line;
+  }
 
   private renderTopBar(): void {
     const bar = this.host?.querySelector<HTMLElement>('.combat-bar');
@@ -1658,6 +2116,7 @@ export class CombatScene implements Scene {
     clear(bar);
 
     const encounter = this.app.content.encounters.get(battle.encounterId);
+    const goal = battle.phase === 'active' ? objectiveLine(encounter, battle.round) : null;
     // The encounter's name on a plate, in the display face, with the round under it.
     bar.appendChild(
       el(
@@ -1686,6 +2145,7 @@ export class CombatScene implements Scene {
               ]
             : []),
         ),
+        ...(goal ? [this.objectiveLineElement(goal)] : []),
       ),
     );
     bar.appendChild(el('div', { class: 'spacer' }));
@@ -1897,25 +2357,32 @@ export class CombatScene implements Scene {
           ? this.app.content.characters.get(unit.characterId)
           : undefined;
       const chipName = definition?.shortName ?? unit.name;
+      // A guest is tagged on its chip, and its name says so to a screen reader
+      // (ADR 0116): it fights with the party but is not one of the heroes.
+      const guest = isGuest(unit);
+      const named = guest ? `${unit.name} (guest)` : unit.name;
 
       // The element class puts the unit's colour in --el, for the party's ring.
       const chip = el(
         'button',
         {
-          class: `turn-chip faction-${unit.faction} element-${unit.element}${isActive ? ' active' : ''}`,
+          class: `turn-chip faction-${unit.faction} element-${unit.element}${guest ? ' guest' : ''}${isActive ? ' active' : ''}`,
           attrs: {
             type: 'button',
-            'aria-label': `Focus ${unit.name}`,
+            'aria-label': `Focus ${named}`,
             ...(this.victoryPending || this.victoryBeat ? { disabled: '' } : {}),
           },
           onClick: () => this.focusUnit(unit.id),
         },
         assetCanvas(portraitKeyFor(this.app.content, unit), 2.4),
         el('span', { class: 'tiny', text: chipName }),
+        guest
+          ? el('small', { class: 'guest-tag', text: GUEST_TAG, attrs: { 'aria-hidden': 'true' } })
+          : null,
       );
       // A phone shows the waiting chips as faces alone and a long name
       // ellipses anywhere, so the full name always rides on the chip itself.
-      const who = player && player.name !== unit.name ? `${unit.name} (${player.name})` : unit.name;
+      const who = player && player.name !== unit.name ? `${unit.name} (${player.name})` : named;
       chip.title = `${who}: ${unit.hp}/${unit.base.maxHp} HP. Focus on the battlefield.`;
       strip.appendChild(chip);
     }
@@ -1925,7 +2392,13 @@ export class CombatScene implements Scene {
   /* Rendering: HUD                                                    */
   /* ---------------------------------------------------------------- */
 
+  /** Rebuilds the HUD, then puts keyboard or gamepad focus back where it belongs. */
   private renderHud(): void {
+    this.buildHud();
+    this.focusForInput();
+  }
+
+  private buildHud(): void {
     const hud = this.host?.querySelector<HTMLElement>('.hud');
     const overlays = this.host?.querySelector<HTMLElement>('.combat-overlays');
     const battle = this.battle();
@@ -1936,12 +2409,15 @@ export class CombatScene implements Scene {
 
     if (battle.phase !== 'active') {
       if (battle.phase === 'victory' && this.victoryPending) return;
+      if (battle.phase !== 'victory' && this.coverHeld()) return;
       if (battle.phase === 'victory' && this.victoryBeat) {
         overlays.appendChild(
           el(
             'div',
             { class: 'victory-beat-overlay', onClick: () => this.skipVictoryBeat() },
-            button('Show result', () => this.skipVictoryBeat(), { class: 'btn-ghost' }),
+            defaultControl(
+              button('Show result', () => this.skipVictoryBeat(), { class: 'btn-ghost' }),
+            ),
           ),
         );
         return;
@@ -1958,9 +2434,14 @@ export class CombatScene implements Scene {
     if (this.battleOpening) return;
 
     if (this.needsHandoff()) {
+      // The last enemy blow plays out, and is read, before the card covers it.
+      if (this.coverHeld()) return;
       overlays.appendChild(this.handoffBanner());
       return;
     }
+    // The table has the board again: the next enemy phase starts its own beat.
+    this.enemyActed = false;
+    this.coverIdleSince = null;
 
     const unit = this.active();
     if (!unit) return;
@@ -1969,12 +2450,17 @@ export class CombatScene implements Scene {
       this.mode = { kind: 'idle' };
       this.clearPending();
     }
+    // Nothing chosen and nobody looking round: input is the action bar's again.
+    if (this.mode.kind === 'idle' && !this.browsing) this.cursor = null;
 
-    if (unit.faction !== 'party') {
+    if (!isTableControlled(unit)) {
       hud.appendChild(
         el(
           'div',
-          { class: `enemy-turn-card element-${unit.element}`, attrs: { 'aria-hidden': 'true' } },
+          {
+            class: `enemy-turn-card element-${unit.element}${isGuest(unit) ? ' guest' : ''}`,
+            attrs: { 'aria-hidden': 'true' },
+          },
           assetCanvas(
             portraitKeyFor(this.app.content, unit),
             3,
@@ -1999,9 +2485,53 @@ export class CombatScene implements Scene {
     if (this.pending) {
       actions.appendChild(this.confirmBar(unit));
     } else {
-      const hint = this.aimHint(unit);
+      const hint = this.aimHint(unit) ?? this.defendHintBar(unit);
       if (hint) actions.appendChild(hint);
     }
+  }
+
+  /**
+   * The "stay safe" line (#846): one short hint when the hero is low or could be
+   * hit hard, naming a heal, Guard or a safe step they really have. It speaks
+   * only while the hero is idle (never over a pending decision or an aim),
+   * only with guidance on, and never in the guided first fight, which already
+   * has a coach. "Got it" hides that kind of hint for good, in a
+   * `guidance.tip.*` flag like the one-time tips.
+   */
+  private defendHintBar(unit: Unit): HTMLElement | null {
+    const battle = this.battle();
+    const state = this.app.state;
+    if (
+      !battle ||
+      !state ||
+      this.mode.kind !== 'idle' ||
+      this.battleOpening ||
+      !this.app.settings?.combatGuidance ||
+      isGuidedFight(battle, this.app.content.encounters)
+    )
+      return null;
+    const cached = this.defendHintCache;
+    let hint: DefendHint | null;
+    if (cached && cached.battle === battle && cached.unitId === unit.id) hint = cached.hint;
+    else {
+      hint = defendHintFor(this.app.content, battle, unit, this.movementThreatQuery);
+      this.defendHintCache = { battle, unitId: unit.id, hint };
+    }
+    if (!hint || state.flags[defendHintFlag(hint.kind)] === true) return null;
+    const kind = hint.kind;
+    return el(
+      'div',
+      { class: 'confirm-bar defend-hint', attrs: { role: 'status', 'aria-live': 'polite' } },
+      el('span', { class: 'defend-hint-text', text: hint.text }),
+      button(
+        'Got it',
+        () => {
+          this.saveGuidanceFlags({ [defendHintFlag(kind)]: true });
+          this.renderHud();
+        },
+        { class: 'btn-ghost' },
+      ),
+    );
   }
 
   /**
@@ -2017,7 +2547,8 @@ export class CombatScene implements Scene {
     const unit = stage === 1 ? this.active() : undefined;
     const battle = this.battle();
     const content = this.app.content;
-    return unit?.faction === 'party' &&
+    return unit &&
+      isTableControlled(unit) &&
       battle &&
       !knownAbilities(content, unit).some(
         (ability) =>
@@ -2172,7 +2703,8 @@ export class CombatScene implements Scene {
 
   private unitPanel(unit: Unit): HTMLElement {
     const stats = effectiveStats(this.app.content, unit);
-    const player = this.app.session.participantForUnit(unit.id);
+    const player = this.app.session.controllerFor(this.app.state, unit.id);
+    const guest = isGuest(unit);
 
     const apPips = el('div', {
       class: 'pips',
@@ -2216,7 +2748,19 @@ export class CombatScene implements Scene {
             el(
               'div',
               { class: 'stack tight' },
-              el('strong', { class: 'unit-name', text: unit.name }),
+              // A hero's name stands alone; a guest's carries its tag beside it.
+              guest
+                ? el(
+                    'div',
+                    { class: 'row tight' },
+                    el('strong', { class: 'unit-name', text: unit.name }),
+                    el('span', {
+                      class: 'chip chip-guest',
+                      text: GUEST_TAG,
+                      attrs: { title: 'Fights with you for this battle only' },
+                    }),
+                  )
+                : el('strong', { class: 'unit-name', text: unit.name }),
               player && player.name !== unit.name
                 ? el('span', { class: 'tiny muted', text: player.name })
                 : null,
@@ -2254,7 +2798,7 @@ export class CombatScene implements Scene {
     const bar = el('div', { class: 'hud-panel action-bar', attrs: { role: 'toolbar' } });
     bar.appendChild(this.abilityHeader(unit));
     const row = el('div', { class: 'action-row' });
-    const interactive = unit.faction === 'party' && this.isPlayerTurn();
+    const interactive = isTableControlled(unit) && this.isPlayerTurn();
     const cue = this.guideStage();
 
     const moveActive = this.mode.kind === 'move';
@@ -2271,11 +2815,14 @@ export class CombatScene implements Scene {
             ? 'Walk to a highlighted tile'
             : 'No move points left this turn',
     });
+    moveButton.setAttribute('aria-pressed', String(moveActive));
     moveButton.prepend(mark(UI_MARKS.move));
     moveButton.appendChild(el('span', { class: 'action-sub', text: `${unit.move} left` }));
+    moveButton.dataset.slot = 'move';
     row.appendChild(moveButton);
 
     for (const ability of knownAbilities(this.app.content, unit)) {
+      if (!this.worthListing(unit, ability)) continue;
       row.appendChild(this.abilityButton(unit, ability, interactive));
     }
 
@@ -2285,6 +2832,7 @@ export class CombatScene implements Scene {
       disabled: !interactive,
     });
     endButton.prepend(mark(UI_MARKS.end));
+    endButton.dataset.slot = 'end';
     if (unit.ap > 0)
       endButton.appendChild(el('span', { class: 'action-sub', text: `${unit.ap} AP left` }));
     row.appendChild(endButton);
@@ -2333,8 +2881,33 @@ export class CombatScene implements Scene {
     return header;
   }
 
+  /**
+   * "Help up" (ADR 0118) is on everyone's bar, but a button for it is noise until
+   * someone is down: it appears while a friend lies on the board who has not been
+   * helped up this fight, and goes live once the hero stands next to them.
+   */
+  private worthListing(unit: Unit, ability: Ability): boolean {
+    if (!isDownedAbility(ability)) return true;
+    const battle = this.battle();
+    return (
+      !!battle &&
+      battle.units.some(
+        (other) => !isAlive(other) && sameSide(unit, other) && !battle.helpedUp?.includes(other.id),
+      )
+    );
+  }
+
   private abilityButton(unit: Unit, ability: Ability, interactive = true): HTMLElement {
-    const check = canUseAbility(this.app.content, unit, ability);
+    const battle = this.battle();
+    const baseCheck = canUseAbility(this.app.content, unit, ability);
+    // A friend is down but not within reach: say where to go rather than open an empty aim.
+    const check =
+      baseCheck.ok &&
+      battle &&
+      isDownedAbility(ability) &&
+      targetableTiles(this.app.content, battle, unit, ability).length === 0
+        ? { ok: false, reason: 'Stand next to a friend who is down to help them up.' }
+        : baseCheck;
     const selected = this.mode.kind === 'aim' && this.mode.abilityId === ability.id;
     const cooldown = unit.cooldowns[ability.id] ?? 0;
 
@@ -2347,6 +2920,9 @@ export class CombatScene implements Scene {
           ? ability.description
           : check.reason,
     });
+
+    node.dataset.slot = `ability:${ability.id}`;
+    node.setAttribute('aria-pressed', String(selected));
 
     // The ability's own mark above its name, in its element's colour; the
     // cost as words under it.
@@ -2385,6 +2961,7 @@ export class CombatScene implements Scene {
     }
     this.mode = this.mode.kind === 'move' ? { kind: 'idle' } : { kind: 'move' };
     this.clearPending();
+    this.startCursor();
     this.renderHud();
   }
 
@@ -2394,6 +2971,7 @@ export class CombatScene implements Scene {
         ? { kind: 'idle' }
         : { kind: 'aim', abilityId: ability.id };
     this.clearPending();
+    this.startCursor();
     this.renderHud();
   }
 
@@ -2669,6 +3247,24 @@ export class CombatScene implements Scene {
           }),
         );
       }
+      // A bout's first shove toward the water leaves them on the edge (ADR 0122 §2a).
+      if (shove.teeters) {
+        chips.appendChild(
+          el('span', {
+            class: `chip shove-out-forecast ${shove.friendly ? 'chip-friendly' : 'chip-terrain'}`,
+            text: `${shove.name}: Teetering`,
+          }),
+        );
+      }
+      // A sparring bout's water (ADR 0122 §4): in the place a knockout would show.
+      if (shove.out) {
+        chips.appendChild(
+          el('span', {
+            class: `chip shove-out-forecast ${shove.friendly ? 'chip-friendly' : 'chip-terrain'}`,
+            text: `${shove.name}: Out of the bout`,
+          }),
+        );
+      }
     }
 
     for (const status of preview.statuses) {
@@ -2840,12 +3436,33 @@ export class CombatScene implements Scene {
     if (!unit) return el('div');
     // The one place the optional names from setup appear; without one this is
     // the player name the card has always shown.
-    const who = this.app.session.handoffNameFor(unit.id) ?? unit.name;
+    const state = this.app.state;
+    const who = this.app.session.controllerHandoffName(state, unit.id) ?? unit.name;
+    const person = this.app.session.controllerFor(state, unit.id);
+    const playing = isGuest(unit) ? `Playing ${unit.name}, our guest` : `Playing ${unit.name}`;
 
-    if (this.bannerShownFor !== unit.id) {
-      this.bannerShownFor = unit.id;
-      announce(`Hand the tablet to ${who}.`);
+    const pass = handoffCopy(this.app.input?.device ?? 'touch', navigator.maxTouchPoints > 0);
+    // A table guest changes hands each round, so the card is keyed on both.
+    const shownFor = `${unit.id}|${person?.id ?? ''}`;
+    if (this.bannerShownFor !== shownFor) {
+      this.bannerShownFor = shownFor;
+      this.handoffShownAt = performance.now();
+      announce(`${pass} ${who}.`);
     }
+    // One confirm accepts the card, but never the last player's held or mashed button.
+    const ready = guardHandoff(
+      defaultControl(
+        button(
+          "I'm ready",
+          () => {
+            this.handedOffTo = person?.id ?? null;
+            this.renderHud();
+          },
+          { class: 'btn-primary btn-large' },
+        ),
+      ),
+      this.handoffShownAt,
+    );
 
     return el(
       'div',
@@ -2853,17 +3470,10 @@ export class CombatScene implements Scene {
       el(
         'div',
         { class: 'panel center' },
-        el('p', { class: 'muted', text: 'Hand the tablet to' }),
+        el('p', { class: 'muted', text: pass }),
         el('h1', { text: who }),
-        el('p', { class: 'muted', text: `Playing ${unit.name}` }),
-        button(
-          "I'm ready",
-          () => {
-            this.handedOffTo = unit.id;
-            this.renderHud();
-          },
-          { class: 'btn-primary btn-large' },
-        ),
+        el('p', { class: 'muted', text: playing }),
+        ready,
       ),
     );
   }
@@ -2903,9 +3513,11 @@ export class CombatScene implements Scene {
                 class: 'btn-primary btn-large',
               })
             : null,
-          button(victory ? 'Continue' : 'Carry on', () => this.app.resolveBattle(), {
-            class: retry ? 'btn-large' : 'btn-primary btn-large',
-          }),
+          ((next) => (victory ? defaultControl(next) : next))(
+            button(victory ? 'Continue' : 'Carry on', () => this.app.resolveBattle(), {
+              class: retry ? 'btn-large' : 'btn-primary btn-large',
+            }),
+          ),
         ),
       ),
     );
@@ -2998,6 +3610,7 @@ export class CombatScene implements Scene {
     this.lastPresentationFrameAt = now;
     this.updateBattleOpening(now);
     this.updateVictoryBeat(now);
+    if (battle.phase === 'active') this.lookAround(wallNow);
     if (battle.phase === 'active') this.keepAnimatedLargeActorInView(now, battle, deltaMs);
 
     const unit = this.active();
@@ -3143,7 +3756,7 @@ export class CombatScene implements Scene {
         const rise = this.animatorForBoard.wallRise(now, pos);
         return rise === undefined ? pos : { ...pos, rise };
       }),
-      overlays,
+      overlays: this.withObjective(battle, overlays),
       obscuringTiles: this.obscuringTilesFor(battle),
       weatherIntensity: weatherAt(this.app.content, battle.encounterId, battle.round),
       climbMarkers,
@@ -3177,12 +3790,55 @@ export class CombatScene implements Scene {
       time: now,
       reducedMotion: motionReduced(),
       flushedAt: this.flushedAt,
+      // Half the exploration grade, and the scene's lamps (ADR 0121); every rule mark draws over it.
+      light: boardLightFor(
+        this.app.state?.world.clock.phase ?? 'midday',
+        this.app.content.maps.get(battle.mapId)?.scene,
+        'combat',
+      ),
     };
 
     renderer.draw(view);
     this.deliverTopdownSounds(now, wallNow);
     this.advanceTopdownAi(now);
+    this.releaseCover();
   };
+
+  /** The held look-around (Shift + arrows, the right stick) and the triggers' zoom, per frame. */
+  private lookAround(wallNow: number): void {
+    const seconds = Math.min(0.1, Math.max(0, (wallNow - (this.lastLookAt ?? wallNow)) / 1000));
+    this.lastLookAt = wallNow;
+    const input = this.app.input;
+    const viewport = this.renderer?.camera.viewport;
+    if (!input || !viewport) return;
+    const look = input.panVector();
+    const zoom = input.zoomRate();
+    if (zoom !== 0)
+      this.zoomBy(Math.exp(zoom * seconds * 1.5), {
+        x: viewport.width / 2,
+        y: viewport.height / 2,
+      });
+    // Looking right moves the board left under the view, as a drag to the left does.
+    if (look.x !== 0 || look.y !== 0)
+      this.pan(-look.x * LOOK_SPEED * seconds, -look.y * LOOK_SPEED * seconds);
+  }
+
+  private lastLookAt: number | null = null;
+
+  /**
+   * The encounter's objective cells under every other overlay while the fight is on (ADR 0116's
+   * 2026-11-15 amendment): a rule the board must show, on either backend and on everyone's turn.
+   */
+  private withObjective(
+    battle: BattleState,
+    overlays: readonly OverlayLayer[],
+  ): readonly OverlayLayer[] {
+    if (battle.phase !== 'active') return overlays;
+    const layer = objectiveOverlay(this.app.content.encounters.get(battle.encounterId));
+    // A tipping platform's slide shows all round, over the objective (ADR 0122 §3).
+    const tip = tipOverlay(this.app.content, battle);
+    return [...(layer ? [layer] : []), ...(tip ? [tip] : []), ...overlays];
+  }
 
   /**
    * Automatic combat framing follows only an enlarged animated body. Manual
@@ -3524,14 +4180,26 @@ export class CombatScene implements Scene {
       const ability = this.app.content.abilities.get(this.mode.abilityId);
       if (ability) {
         const targets = targetableTiles(this.app.content, battle, unit, ability);
+        // The whole range first (issue #846), then the legal targets in it, then the area under
+        // the aim: the tapped tile, or with a mouse the hovered one, once it is a legal aim.
+        const inRange = aimReachTiles(this.app.content, battle, unit, ability);
+        // A big target's far cells are targets through its near one: the range covers them too.
+        const known = new Set(inRange.map(posKey));
+        const reach = [...inRange, ...targets.filter((tile) => !known.has(posKey(tile)))];
+        if (reach.length > 0) overlays.push({ kind: 'reach', tiles: reach });
         overlays.push({
           kind: 'target',
           tiles: targets,
         });
-        if (this.pending) {
+        const aim =
+          this.pending ??
+          (this.hover && targets.some((target) => samePos(target, this.hover as Vec2))
+            ? this.hover
+            : null);
+        if (aim) {
           overlays.push({
             kind: 'area',
-            tiles: affectedTiles(this.app.content, battle.grid, unit, ability, this.pending),
+            tiles: affectedTiles(this.app.content, battle.grid, unit, ability, aim),
           });
         }
         const originTile = tileAt(battle.grid, unit.pos);

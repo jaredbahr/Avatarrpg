@@ -20,39 +20,39 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 
 ```mermaid
 flowchart TD
-  n139["sq02_after<br/>Gate Guard Dorin: Side gate: open. I went and looked at it befo…"]:::entry
-  n140["sq02_ask<br/>Gate Guard Dorin: I could show you the register. If you’re not …"]
-  n141["sq02_choice<br/>Gate Guard Dorin: A month. I wrote “opened” every day for a mon…"]
-  n142["sq02_hen<br/>The side gate: A brown hen walks up to the side gate, considers…"]
-  n143["sq02_hook<br/>Gate Guard Dorin: Halt! Sorry. Hello. If you were going to use …"]:::entry
-  n144["sq02_mocked<br/>The side gate: You laugh. Somebody pulls the gate the other way…"]
-  n145["sq02_mocked_after<br/>Gate Guard Dorin: It’s open now. Thank you."]
-  n146["sq02_public<br/>Mira’s table: Dorin stands by Mira’s table with the register op…"]
-  n147["sq02_public_after<br/>Gate Guard Dorin: That was terrible. I would like never to do i…"]
-  n148["sq02_quiet<br/>Gate Guard Dorin: Hold that side. No, the other side. Yes. That…"]
-  n149["sq02_register<br/>Gate Guard Dorin: Side gate. Every morning: “Opened. Dorin.” A …"]
-  n150["sq02_return<br/>Gate Guard Dorin: When the crews came round the bend, word came…"]:::entry
-  n151["sq02_return_gate<br/>The side gate: Behind him, the side gate stands open the right …"]
-  n152["sq02_shortcut<br/>The side gate: Beyond the side gate, a path runs behind the hou…"]
-  n31["dorin_directions — exit to act1 / part 1"]:::external
-  n170["village_leave — exit to ba-dan-day / part 1"]:::external
-  n139 -->|"Next"| n170
-  n140 -->|"Read the register"| n149
-  n140 -->|"Another time"| n31
-  n141 -->|"Fix it quietly; set: sq02.gate=#quot;quiet#quot;"| n148
-  n141 -->|"Help him tell the village; set: sq02.gate=#quot;public#quot;"| n146
-  n141 -->|"Laugh and pull it open; set: sq02.gate=#quot;mocked#quot;"| n144
-  n142 -->|"Next"| n141
-  n143 -->|"Next"| n140
-  n144 -->|"Next"| n145
-  n145 -->|"Next"| n152
-  n146 -->|"Next"| n147
-  n147 -->|"Next"| n152
-  n148 -->|"Next"| n152
-  n149 -->|"Next"| n142
-  n150 -->|"Next"| n151
-  n151 -->|"Next"| n170
-  n152 -->|"Next"| n170
+  n387["sq02_after<br/>Gate Guard Dorin: Side gate: open. I went and looked at it befo…"]:::entry
+  n388["sq02_ask<br/>Gate Guard Dorin: I could show you the register. If you’re not …"]
+  n389["sq02_choice<br/>Gate Guard Dorin: A month. I wrote “opened” every day for a mon…"]
+  n390["sq02_hen<br/>The side gate: A brown hen walks up to the side gate, considers…"]
+  n391["sq02_hook<br/>Gate Guard Dorin: Halt! Sorry. Hello. If you were going to use …"]:::entry
+  n392["sq02_mocked<br/>The side gate: You laugh. Somebody pulls the gate the other way…"]
+  n393["sq02_mocked_after<br/>Gate Guard Dorin: It’s open now. Thank you."]
+  n394["sq02_public<br/>Mira’s table: Dorin stands by Mira’s table with the register op…"]
+  n395["sq02_public_after<br/>Gate Guard Dorin: That was terrible. I would like never to do i…"]
+  n396["sq02_quiet<br/>Gate Guard Dorin: Hold that side. No, the other side. Yes. That…"]
+  n397["sq02_register<br/>Gate Guard Dorin: Side gate. Every morning: “Opened. Dorin.” A …"]
+  n398["sq02_return<br/>Gate Guard Dorin: When the crews came round the bend, word came…"]:::entry
+  n399["sq02_return_gate<br/>The side gate: Behind him, the side gate stands open the right …"]
+  n400["sq02_shortcut<br/>The side gate: Beyond the side gate, a path runs behind the hou…"]
+  n37["dorin_directions — exit to act1 / part 1"]:::external
+  n418["village_leave — exit to ba-dan-day / part 1"]:::external
+  n387 -->|"Next"| n418
+  n388 -->|"Read the register"| n397
+  n388 -->|"Another time"| n37
+  n389 -->|"Fix it quietly; set: sq02.gate=#quot;quiet#quot;"| n396
+  n389 -->|"Help him tell the village; set: sq02.gate=#quot;public#quot;"| n394
+  n389 -->|"Laugh and pull it open; set: sq02.gate=#quot;mocked#quot;"| n392
+  n390 -->|"Next"| n389
+  n391 -->|"Next"| n388
+  n392 -->|"Next"| n393
+  n393 -->|"Next"| n400
+  n394 -->|"Next"| n395
+  n395 -->|"Next"| n400
+  n396 -->|"Next"| n400
+  n397 -->|"Next"| n390
+  n398 -->|"Next"| n399
+  n399 -->|"Next"| n418
+  n400 -->|"Next"| n418
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

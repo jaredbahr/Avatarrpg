@@ -99,10 +99,18 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       (id) => window.captureProtocol.filter((event) => event.id === id),
       pointerId,
     );
-    expect(interrupted).toEqual([
+    // The press and the release carry the button state the game reads. What
+    // `buttons` holds on the two capture notifications is the engine's choice:
+    // Chromium copies the held button, WebKit reports none. Their order, pointer
+    // and target are the contract, so those are compared on every engine.
+    const pressed = (event: CaptureEvent) =>
+      event.type === 'pointerdown' || event.type === 'pointerup'
+        ? event
+        : { ...event, buttons: null };
+    expect(interrupted.map(pressed)).toEqual([
       { type: 'pointerdown', id: pointerId, buttons: 1, trusted: true, onCanvas: true },
-      { type: 'gotpointercapture', id: pointerId, buttons: 1, trusted: true, onCanvas: true },
-      { type: 'lostpointercapture', id: pointerId, buttons: 1, trusted: true, onCanvas: true },
+      { type: 'gotpointercapture', id: pointerId, buttons: null, trusted: true, onCanvas: true },
+      { type: 'lostpointercapture', id: pointerId, buttons: null, trusted: true, onCanvas: true },
       { type: 'pointerup', id: pointerId, buttons: 0, trusted: true, onCanvas: false },
     ]);
     expect(await page.evaluate(() => window.fnt!.app.state)).toEqual(initialState);
@@ -114,22 +122,49 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       .soft(afterHover, 'hover after capture loss must not continue the drag')
       .toEqual(afterLoss);
 
-    const target = { x: 1, y: 7 };
+    // The nearest open cell a few steps away that the party can walk to and that shows on the
+    // canvas. It was a fixed road cell on the old village; the rebuilt Ba Dan (#875) moved it.
     const current = await page.evaluate(() => window.fnt!.app.state!);
-    const preview = previewWalk(CONTENT, current, target);
-    expect(preview.refusal).toBeNull();
-    expect(preview.label).toBe('the path');
-    expect(preview.path.at(-1)).toEqual(target);
-    const point = await paintedTileCentre(page, target);
-    if (!point) throw new Error('The road destination has no painted point');
-    expect(
-      await page.evaluate(
-        (point) =>
-          document.elementFromPoint(point.x, point.y) === document.querySelector('.map-canvas'),
-        point,
-      ),
-      'the legal road target must be visible',
-    ).toBe(true);
+    const map = CONTENT.maps.get(current.location.mapId);
+    if (!map) throw new Error('No exploration map');
+    const from = current.location.pos;
+    const cells = map.rows
+      .flatMap((row, y) => [...row].map((symbol, x) => ({ symbol, pos: { x, y } })))
+      .filter(({ symbol, pos }) => {
+        const distance = Math.abs(pos.x - from.x) + Math.abs(pos.y - from.y);
+        if (distance < 2 || distance > 5 || map.legend[symbol]?.blocked) return false;
+        const preview = previewWalk(CONTENT, current, pos);
+        return (
+          preview.refusal === null &&
+          preview.label === 'the path' &&
+          preview.path.at(-1)?.x === pos.x &&
+          preview.path.at(-1)?.y === pos.y
+        );
+      })
+      .sort(
+        (a, b) =>
+          Math.abs(a.pos.x - from.x) +
+          Math.abs(a.pos.y - from.y) -
+          (Math.abs(b.pos.x - from.x) + Math.abs(b.pos.y - from.y)),
+      );
+    let target: { x: number; y: number } | null = null;
+    let point: { x: number; y: number } | null = null;
+    for (const cell of cells) {
+      const painted = await paintedTileCentre(page, cell.pos);
+      if (
+        painted &&
+        (await page.evaluate(
+          (p) => document.elementFromPoint(p.x, p.y) === document.querySelector('.map-canvas'),
+          painted,
+        ))
+      ) {
+        target = cell.pos;
+        point = painted;
+        break;
+      }
+    }
+    expect(target, 'a legal walk target must be visible').not.toBeNull();
+    if (!target || !point) throw new Error('No visible legal walk target');
     await page.evaluate(() => {
       window.captureProtocol = [];
     });

@@ -34,7 +34,7 @@ import type { AnimatorOptions } from './animator';
 import { Session } from './session';
 import { resetBallot } from './tableVote';
 import type { Participant, Player } from './session';
-import type { Settings, SlotId } from './storage/localSaves';
+import type { LoadedSave, Settings, SlotId } from './storage/localSaves';
 import {
   AUTOSAVE_ID,
   applySettings,
@@ -50,8 +50,8 @@ import {
   reconcileWorld,
 } from '../core/save/reconcile';
 import { applyIdAliases } from '../core/save/aliases';
-import { applyFlagBackfills } from '../core/save/backfill';
-import { FLAG_BACKFILLS } from '../content/story/flagBackfills';
+import { applyBackfills } from '../core/save/backfill';
+import { FLAG_BACKFILLS, HISTORY_REV } from '../content/story/flagBackfills';
 import { ID_ALIASES } from '../content/idAliases';
 import type { SessionMeta } from '../core/save/serialize';
 import { announce, clear, el } from './ui/dom';
@@ -61,7 +61,13 @@ import { setUiSink } from './audio/ui';
 import { MusicPlayer, musicFor } from './audio/music';
 import { WHEEL_LINES_SVG } from './ui/marks';
 import { Toasts } from './ui/Toasts';
-import { SavePersistence, runningStandalone, storageProbe } from './storage/persistence';
+import {
+  SavePersistence,
+  onAppleMobile,
+  runningStandalone,
+  storageProbe,
+} from './storage/persistence';
+import { ensureStorageBorn, localStore, markCopySaved } from './storage/storageCheck';
 import { Stats } from './ui/Stats';
 import { Curtain } from './ui/Curtain';
 import { PauseMenu } from './ui/PauseMenu';
@@ -80,6 +86,8 @@ import { CombatScene } from './scenes/CombatScene';
 import { worldConversationFor } from '../content/story/presentations';
 import type { Projection } from '../render/projection';
 import { INTERLUDES } from '../content/story/interludes';
+import { InputRouter } from './input/InputRouter';
+import type { ActionEvent, InputHint } from './input/actions';
 
 /** What `rendererCamera()` reports: tile size and offset in CSS px, and whether the whole board is on screen. */
 export interface CameraInfo {
@@ -136,6 +144,13 @@ export interface Scene {
   /** Pause and resume timed scene presentation while the pause menu is open. */
   pausePresentation?(): void;
   resumePresentation?(): void;
+  /**
+   * A keyboard or gamepad action (ADR 0115). Return true when the scene took
+   * it; false leaves it to the controls on screen. Only board scenes need this.
+   */
+  handleAction?(event: ActionEvent): boolean;
+  /** What the buttons do now, for the legend drawn in the device's glyphs. */
+  inputHints?(): readonly InputHint[];
   /**
    * The events a command produced, before the scene may be swapped for the
    * one the new state calls for. Return true when the scene schedules the
@@ -208,9 +223,14 @@ export class App {
    * Whether the browser keeps the saves (#772): asked after the first save
    * written, and the title and Save menu warn while it does not.
    */
-  readonly savePersistence = new SavePersistence(storageProbe(), runningStandalone, () => {
-    if (this.scene?.name === 'title') this.scene.sync();
-  });
+  readonly savePersistence = new SavePersistence(
+    storageProbe(),
+    runningStandalone,
+    () => {
+      if (this.scene?.name === 'title') this.scene.sync();
+    },
+    onAppleMobile,
+  );
   /**
    * The watch (day and phase) whose handover bark has been shown (ADR 0047
    * §8). Held here rather than on the scene, so leaving the map and coming
@@ -227,6 +247,8 @@ export class App {
   readonly stats: Stats | null;
   /** The reveal-from-ink on every scene change. */
   private readonly curtain: Curtain;
+  /** Keyboard and gamepad actions, and the device last used (ADR 0115). */
+  readonly input: InputRouter;
 
   private previewSnapshot: { state: GameState | null; session: SessionMeta } | null = null;
   get previewActive(): boolean {
@@ -341,6 +363,13 @@ export class App {
     this.stats = Stats.enabled() ? new Stats(this.overlayHost) : null;
     this.curtain = new Curtain(this.overlayHost);
     void this.savePersistence.check();
+    this.input = new InputRouter({
+      sceneHost: this.sceneHost,
+      sceneAction: (event) => this.scene?.handleAction?.(event) ?? false,
+      sceneHints: () => this.scene?.inputHints?.() ?? null,
+      openMenu: () => this.openPauseFromInput(),
+    });
+    this.input.start();
 
     window.addEventListener('resize', () => this.requestResize());
     window.addEventListener('orientationchange', () => this.requestResize());
@@ -412,11 +441,13 @@ export class App {
 
   showScene(scene: Scene, replaceRetained = false): void {
     const active = document.activeElement;
+    // A keyboard player's focus is visible; a gamepad player has no key to make it so.
     const enterDialogueWithFocus =
       scene.name === 'dialogue' &&
-      active instanceof HTMLElement &&
-      this.sceneHost.contains(active) &&
-      active.matches(':focus-visible');
+      (this.input?.device === 'gamepad' ||
+        (active instanceof HTMLElement &&
+          this.sceneHost.contains(active) &&
+          active.matches(':focus-visible')));
     this.cancelRoute();
     this.syncMusic(scene.name);
     const previousInterlude = this.currentSceneIsInterlude;
@@ -758,6 +789,8 @@ export class App {
       startNode: this.storyEntry,
       ...(difficulty ? { difficulty } : {}),
     });
+    // A new game is played on this build's story from its first scene.
+    this.historyRev = HISTORY_REV;
 
     this.session.setPlayers(
       players.map((player, index) => ({
@@ -792,13 +825,30 @@ export class App {
     if (!this.previewActive) this.saveTo(AUTOSAVE_ID, `Autosave — ${this.placeLabel()}`);
   }
 
-  /** Installs a loaded save, replacing everything. */
-  adoptSave(saved: GameState, session: SessionMeta | undefined): void {
+  /**
+   * The history revision the running game is at (ADR 0112): this build's, or a loaded file's
+   * when that is higher. Stamped on every save, so a file written by a newer build keeps its
+   * revision through an older one and is never given a rule a second time.
+   */
+  private historyRev = HISTORY_REV;
+
+  /** Installs a save read from a slot or a file, at the history revision the file records. */
+  adoptLoaded(save: LoadedSave): void {
+    this.adoptSave(save.state, save.session, save.blob.history);
+  }
+
+  /**
+   * Installs a loaded save, replacing everything. `history` is the file's history revision
+   * (`SaveBlob.history`); a game that never left this build's memory is at the current one.
+   */
+  adoptSave(saved: GameState, session: SessionMeta | undefined, history = HISTORY_REV): void {
     // Content ids are forever: a retired id is renamed before anything reads it, the region
     // lookup below included (`core/save/aliases.ts`). Idempotent, so the wait's re-entry is safe.
-    // Then a flag added after the save was written gets the answer its registry entry
-    // declares for a save already past its setter (#773, `core/save/backfill.ts`).
-    const state = applyFlagBackfills(applyIdAliases(saved, ID_ALIASES), FLAG_BACKFILLS);
+    // Then a file older than a backfill rule gets that rule's answer for the history it could
+    // not record (ADR 0112, `core/save/backfill.ts`). The wait re-enters at the current
+    // revision, so a rule is never applied twice.
+    const state = applyBackfills(applyIdAliases(saved, ID_ALIASES), history, FLAG_BACKFILLS);
+    this.historyRev = Math.max(history, HISTORY_REV);
     // A save from another region loads that region before it is reconciled against content.
     const wait = this.regionsPending([
       this.regions?.pendingForMap(state.location.mapId),
@@ -930,6 +980,18 @@ export class App {
         announce(event.label);
       }
       if (event.type === 'message') this.toasts.show(event.text);
+      if (event.type === 'leaderPassed' && this.state && !this.session.solo) {
+        // A shared tablet: say plainly who has the say now, once the walk has landed.
+        const name = this.session.decider(this.state)?.name;
+        if (name) {
+          const text = `${name} is in charge now`;
+          announce(text);
+          window.setTimeout(
+            () => this.toasts.show(text, 'info', 4500),
+            Math.max(0, this.animator.finishesAt - performance.now()),
+          );
+        }
+      }
       if (event.type === 'comboDiscovered') {
         const rule = this.content.combos.find((candidate) => candidate.id === event.comboId);
         if (!rule) continue;
@@ -1053,6 +1115,27 @@ export class App {
     this.pause.open(this.overlayHost);
   }
 
+  /** Escape or Start with nothing to back out of: the pause menu, wherever a game is running. */
+  private openPauseFromInput(): boolean {
+    const name = this.scene?.name;
+    if (!this.state || this.pause) return false;
+    if (name === 'dialogue') {
+      // The stage's own Pause also stops a playing interlude; press that one.
+      const own = [...this.sceneHost.querySelectorAll<HTMLButtonElement>('.top-bar button')].find(
+        (candidate) => candidate.textContent?.trim() === 'Pause' && !candidate.closest('[inert]'),
+      );
+      own?.click();
+      return this.pause !== null;
+    }
+    if (name !== 'explore' && name !== 'combat') return false;
+    const previous = document.activeElement;
+    this.openPause(() => {
+      if (previous instanceof HTMLElement && previous.isConnected)
+        previous.focus({ preventScroll: true });
+    });
+    return this.pause !== null;
+  }
+
   closePause(): void {
     // A load or route replacement must not restore focus into the outgoing scene.
     this.pauseReturnFocus = null;
@@ -1125,9 +1208,15 @@ export class App {
       label: label ?? this.placeLabel(),
       summary: this.saveSummary(),
       session: this.session.toMeta(),
+      history: this.historyRev,
     });
     if (!result.ok && result.error) this.toasts.show(result.error, 'warn');
-    if (result.ok) void this.savePersistence.afterSave();
+    if (result.ok) {
+      // Stamped with the first save, not at boot: a browser that has saved
+      // nothing keeps an empty store (#772).
+      ensureStorageBorn(localStore(), Date.now());
+      void this.savePersistence.afterSave();
+    }
     return result.ok;
   }
 
@@ -1139,7 +1228,9 @@ export class App {
       label: this.placeLabel(),
       summary: this.saveSummary(),
       session: this.session.toMeta(),
+      history: this.historyRev,
     });
+    if (result.ok) markCopySaved(localStore(), Date.now());
     this.toasts.show(
       result.ok ? 'Save file downloaded.' : (result.error ?? 'Export failed.'),
       result.ok ? 'info' : 'warn',

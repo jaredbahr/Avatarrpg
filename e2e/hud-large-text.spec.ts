@@ -362,3 +362,37 @@ test('the frame-time readout keeps off the encounter plate', async ({ page }) =>
   expect(overlap?.plate).toBe(false);
   expect(overlap?.bar).toBe(false);
 });
+
+/*
+ * Reduce motion once shortened every transition to 1ms with `!important`.
+ * transition-property starts as `all`, so that gave every element a transition
+ * on every property, inherited ones included, and a Large text change reached
+ * the page one tree level per frame. On WebKit a conversation opened in that
+ * window kept its body text at the old size for over a second, then re-wrapped
+ * under the reader. The new size must reach every element at once.
+ */
+test('Largest text reaches every element at once under reduce motion', async ({ page }) => {
+  await resetStorage(page, '?renderer=canvas');
+  await startGame(page, ['Tala', 'Mina'], ['sura', 'riko'], 'large-text-reduce-motion');
+  await enterNode(page, 'gate_escort_explore');
+  await enterNode(page, 'gate_parley');
+  const detail = page.locator('.conversation-panel .choice-option > span.muted').first();
+  await expect(detail).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.dataset.reduceMotion)).toBe('on');
+
+  const after = await page.evaluate(() => {
+    window.fnt?.app.updateSettings({ largeText: 'huge' });
+    const span = document.querySelector('.conversation-panel .choice-option > span.muted');
+    return {
+      root: getComputedStyle(document.documentElement).fontSize,
+      detail: span ? getComputedStyle(span).fontSize : null,
+      fontTransitions: document
+        .getAnimations()
+        .filter((animation) => (animation as CSSTransition).transitionProperty === 'font-size')
+        .length,
+    };
+  });
+  expect(after.root).toBe('24px');
+  expect(after.detail, 'inherited body text takes the new size in the same frame').toBe('24px');
+  expect(after.fontTransitions).toBe(0);
+});

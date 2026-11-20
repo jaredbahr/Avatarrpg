@@ -482,7 +482,7 @@ function runSequence(tableSize: (typeof TABLE_SIZES)[number], trial: number): Ph
 
   const leaveVillage = applyAndCount(
     state,
-    { type: 'walkTo', pos: { x: 23, y: 7 } },
+    { type: 'walkTo', pos: { x: 31, y: 9 } },
     context,
     counts,
   );

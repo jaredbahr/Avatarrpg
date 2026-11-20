@@ -1397,6 +1397,7 @@ const DRAWN_RECIPES: Readonly<Record<string, FxRecipeInput>> = {
     flash: 0,
   },
   'fx.status.guarded': { palette: 'earth', impact: [flashRing('accent', 0.35)], flash: 0 },
+  'fx.status.teetering': { palette: 'water', impact: [flashRing('accent', 0.3)], flash: 0 },
   'fx.status.inspired': {
     palette: 'neutral',
     impact: [healMotes(8), flashRing('accent', 0.3)],

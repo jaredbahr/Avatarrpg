@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import {
   enterNode,
+  finishConversation,
   resetStorage,
   setLargeText,
   settleLayout,
@@ -16,10 +17,10 @@ test('local map tracks a real walk and preserves the campaign when opened', asyn
   const party = page.locator('.explore-map-corner .local-party');
   await expect(party).toHaveCount(2);
   const start = await party.first().getAttribute('cx');
-  await page.evaluate(() => window.fnt?.app.dispatch({ type: 'walkTo', pos: { x: 8, y: 7 } }));
+  await page.evaluate(() => window.fnt?.app.dispatch({ type: 'walkTo', pos: { x: 8, y: 10 } }));
   await waitForIdle(page);
   await expect(party.first()).toHaveAttribute('cx', '8.5');
-  await expect(party.first()).toHaveAttribute('cy', '7.5');
+  await expect(party.first()).toHaveAttribute('cy', '10.5');
   expect(start).not.toBe('8.5');
   const before = await page.evaluate(() => JSON.stringify(window.fnt?.app.state));
   await page.getByRole('button', { name: 'Map', exact: true }).click();
@@ -54,9 +55,7 @@ test('local map tracks a real walk and preserves the campaign when opened', asyn
   await expect
     .poll(async () => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
     .toBe('mira_intro');
-  const lines = page.locator('.dialogue-panel button');
-  const total = Number((await page.locator('.line-count').textContent())?.split(' of ')[1]);
-  for (let line = 0; line < total; line++) await lines.click();
+  await finishConversation(page);
   await expect(page.locator('.explore-scene')).toBeVisible();
   await expect(page.locator('.explore-objective')).toContainText(
     'Take the east road to the quarry.',

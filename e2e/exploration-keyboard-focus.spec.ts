@@ -57,6 +57,12 @@ async function idle(page: Page) {
     return app?.state?.screen === 'explore' && !app.animator.busy(performance.now());
   });
 }
+/** The village's own cells, read from content so the spec follows the map. */
+const villageCell = (page: Page, which: 'spawn' | 'seat') =>
+  page.evaluate((which) => {
+    const map = window.fnt?.app.content.maps.get('ba_dan_village');
+    return which === 'spawn' ? map?.partySpawns?.[0] : map?.restSpots?.[0]?.pos;
+  }, which);
 async function talkToMira(page: Page) {
   await activate(page, button(page, 'Map'));
   await activate(page, button(page, 'Walk to Elder Mira'));
@@ -75,7 +81,8 @@ test('final opening Continue places visible focus on the exploration HUD', async
   await visibleFocus(page.locator('[data-interlude-control="next"]'));
   await page.keyboard.press('Enter');
   await idle(page);
-  await visibleFocus(button(page, 'Map'));
+  // Focus lands on the first usable HUD action: Talk when someone stands near the spawn, Map when not.
+  await visibleFocus(page.locator('.explore-hud .action-button:not([disabled])').first());
   expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe('village_explore');
   await expect(page.locator('.explore-scene .map-canvas')).toBeVisible();
   await page.screenshot({ path: info.outputPath('opening-to-exploration.png') });
@@ -87,12 +94,20 @@ test('keyboard Map walk, Mira conversation and return retain visible world focus
   await fixture(page);
   await talkToMira(page);
   await visibleFocus(next(page));
-  expect(await page.evaluate(() => window.fnt?.app.state?.location.pos)).toEqual({ x: 10, y: 5 });
-  for (let line = 1; line < 4; line++) {
+  // Mira stands beside the spawn, so the walk to her leaves the party where it began.
+  expect(await page.evaluate(() => window.fnt?.app.state?.location.pos)).toEqual(
+    await villageCell(page, 'spawn'),
+  );
+  // Mira's table (DLG-01): every turn and its one question by keyboard alone.
+  for (let step = 0; step < 40; step++) {
+    const nodeId = await page.evaluate(() => window.fnt?.app.state?.story.nodeId);
+    if (nodeId === 'village_explore') break;
+    const choosing = (await page.locator('.choice-option:not([disabled])').count()) > 0;
+    await visibleFocus(
+      choosing ? page.locator('.choice-option:not([disabled])').first() : next(page),
+    );
     await page.keyboard.press('Enter');
-    await visibleFocus(next(page));
   }
-  await page.keyboard.press('Enter');
   await idle(page);
   await visibleFocus(page.locator('.explore-hud .action-button:not([disabled])').first());
   expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe('village_explore');
@@ -162,7 +177,9 @@ test('movement completion retains focused Map after replacing the HUD', async ({
   expect(samples).toContainEqual({ moving: true, mapFocused: true });
   expect(samples).toContainEqual({ moving: false, mapFocused: true });
   await witness.dispose();
-  expect(await page.evaluate(() => window.fnt?.app.state?.location.pos)).toEqual({ x: 10, y: 5 });
+  expect(await page.evaluate(() => window.fnt?.app.state?.location.pos)).toEqual(
+    await villageCell(page, 'seat'),
+  );
   await page.screenshot({ path: info.outputPath('movement-hud-focus.png') });
 });
 

@@ -224,5 +224,3 @@ export const COMBOS: readonly ComboRule[] = [
     label: 'The oil floats on the water, untouched.',
   }),
 ];
-
-export const COMBO_BY_ID: ReadonlyMap<string, ComboRule> = new Map(COMBOS.map((c) => [c.id, c]));

@@ -30,6 +30,11 @@ export interface WheelGesture {
 
 export interface PointerHandlers extends GestureHandlers {
   onWheel?(gesture: WheelGesture): void;
+  /**
+   * A mouse right click (ADR 0115 §1): a scene with something to back out of
+   * cancels it. Without this handler a right click is a long press.
+   */
+  onSecondary?(point: GesturePoint): void;
 }
 
 /**
@@ -39,6 +44,16 @@ export interface PointerHandlers extends GestureHandlers {
  */
 export function wheelZoomFactor(wheel: WheelGesture): number {
   return Math.exp(-wheel.deltaY * (wheel.ctrl ? 0.01 : 0.002));
+}
+
+/**
+ * Whether a `contextmenu` event is a mouse's right button. A finger's or a
+ * pen's long press raises the same event, and so does the keyboard's menu key;
+ * those are a hold, never a cancel. Browsers that report no pointer type on
+ * the event are told apart by the button.
+ */
+export function isRightClick(event: { pointerType?: string; button: number }): boolean {
+  return event.pointerType ? event.pointerType === 'mouse' : event.button === 2;
 }
 
 const kindOf = (event: PointerEvent): PointerKind =>
@@ -154,11 +169,14 @@ export function attachPointer(target: HTMLElement, handlers: PointerHandlers): (
     recognizer.leave(kindOf(event));
   };
 
-  // Stops the browser's own long-press menu fighting the inspector, and makes
-  // a mouse right-click the same thing as a long press.
+  // Stops the browser's own long-press menu fighting the inspector. A mouse
+  // right-click is `onSecondary` where the scene has one, else a long press.
   const onContextMenu = (event: Event) => {
     event.preventDefault();
-    if (event instanceof MouseEvent && handlers.onLongPress) handlers.onLongPress(local(event));
+    if (!(event instanceof MouseEvent)) return;
+    if (isRightClick(event as PointerEvent) && handlers.onSecondary)
+      handlers.onSecondary(local(event));
+    else handlers.onLongPress?.(local(event));
   };
 
   const onWheel = (event: WheelEvent) => {

@@ -6,6 +6,7 @@
 import type { TopDownLayout } from '../../topdownLayout';
 import { BA_DAN_TOPDOWN_TERRAIN } from '../../scenes/baDan.topdown.terrain';
 import { BA_DAN_TOPDOWN_OBJECTS, BA_DAN_TOPDOWN_SLOTS } from '../../scenes/baDan.topdown';
+import { BA_DAN_VILLAGE_TERRAIN, baDanObjects } from '../../scenes/baDan.layout';
 import { FOREST_TOPDOWN_OBJECTS } from '../../scenes/forestRoad.topdown';
 import {
   MOUTHS as FOREST_MOUTHS,
@@ -24,11 +25,26 @@ import {
   quarryTerrain,
 } from '../../scenes/quarry.topdown.terrain';
 
+/**
+ * Ba Dan's old layout, drawn to the 24 x 16 rows. It is NOT registered in `BA_DAN_VALLEY_LAYOUTS`: the village is now
+ * `BA_DAN_VILLAGE_TOPDOWN_LAYOUT`, drawn to the 32 x 20 rows from the set-piece plan. It stays exported so the old baker and its sources keep compiling.
+ */
 export const BA_DAN_TOPDOWN_LAYOUT: TopDownLayout = {
   mapId: 'ba_dan_village',
   terrain: BA_DAN_TOPDOWN_TERRAIN,
   objects: BA_DAN_TOPDOWN_OBJECTS,
   slots: BA_DAN_TOPDOWN_SLOTS,
+};
+
+/**
+ * Ba Dan's layout on the 32 x 20 rows (stage 6): the set-piece plan's members as sprites, on the ground spec's terrain.
+ * The old 24 x 16 layout above stays for the old baker and its tests.
+ */
+export const BA_DAN_VILLAGE_TOPDOWN_LAYOUT: TopDownLayout = {
+  mapId: 'ba_dan_village',
+  terrain: BA_DAN_VILLAGE_TERRAIN,
+  objects: baDanObjects(),
+  slots: [],
 };
 
 export const FOREST_TOPDOWN_LAYOUT: TopDownLayout = {
@@ -64,7 +80,7 @@ export const QUARRY_FLOOR_TOPDOWN_LAYOUT: TopDownLayout = {
 };
 
 export const BA_DAN_VALLEY_LAYOUTS: readonly TopDownLayout[] = [
-  BA_DAN_TOPDOWN_LAYOUT,
+  BA_DAN_VILLAGE_TOPDOWN_LAYOUT,
   FOREST_TOPDOWN_LAYOUT,
   QUARRY_GATE_TOPDOWN_LAYOUT,
   CUTTING_TOPDOWN_LAYOUT,

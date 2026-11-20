@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { CONTENT, CONTENT_BUNDLE, STORY_PROLOGUE } from './index';
 import { levelForXp, xpForLevel } from '../core/rules/leveling';
-import { xpRoster } from '../core/state/createGame';
+import { xpPerHead } from '../core/state/createGame';
+import { SIDE_FIGHT_XP } from './story/sideFightsAct1';
 import { evaluate } from '../core/story/conditions';
 import type { FlagValue, GameState, StoryNode } from '../core/types';
+import { REGIONS } from './regions';
 
 /**
  * Does the party actually arrive at the level each fight is tuned for?
@@ -138,6 +140,12 @@ function walkOnce(decisions: ReadonlyMap<string, number>, party: readonly string
         nodeId = flags[node.flag] ? node.ifSet : node.ifUnset;
         break;
 
+      case 'branchWhen':
+        // The condition reads the same flags/party/visited a `choice` does, so a
+        // gated line is one deterministic road per path, never a new decision.
+        nodeId = evaluate(asState(flags, party, visited), node.when) ? node.ifTrue : node.ifFalse;
+        break;
+
       case 'choice': {
         // Only options this party could actually take are on the table.
         const open = node.options.filter((o) =>
@@ -191,12 +199,7 @@ function walkOnce(decisions: ReadonlyMap<string, number>, party: readonly string
           break;
         }
 
-        const roster = xpRoster(encounter, flags);
-        const total = roster.reduce(
-          (sum, placement) => sum + (CONTENT.enemies.get(placement.enemyId)?.xp ?? 0),
-          0,
-        );
-        xp += Math.max(1, Math.round(total / encounter.baselinePartySize));
+        xp += xpPerHead(encounter, flags, (id) => CONTENT.enemies.get(id)?.xp ?? 0);
         nodeId = node.next;
         break;
       }
@@ -419,6 +422,71 @@ describe('progression', () => {
     }
   });
 
+  it('carries on after a Driller loss at the same level as a win (C-01)', () => {
+    /*
+     * A Driller loss used to end the story; it now carries on into Act II
+     * (owner, 2026-11-14), and it is forgiving: the party that loses starts
+     * the next act at the level of the party that won (owner, 2026-11-15).
+     * The boss pays nothing on a loss, so `act1_lost` has to make it up, and
+     * this is the route most likely to drift when the boss's XP changes.
+     */
+    const winLevels = new Set(CLEAN.map((w) => levelForXp(w.finalXp)));
+    expect(winLevels.size, 'every clean route ends the act on one level').toBe(1);
+    const [winLevel] = [...winLevels];
+    const bossLosses = ALL.filter((w) =>
+      w.steps.some((s) => s.lost && s.encounterId === 'enc_grumbler'),
+    );
+    expect(bossLosses.length, 'no route loses to the Driller').toBeGreaterThan(0);
+    for (const walk of bossLosses) {
+      const level = levelForXp(walk.finalXp);
+      expect(walk.endedAt).toBe('act1_epilogue_lost');
+      expect(walk.flags.act1_lost).toBe(true);
+      expect(level, `${walk.finalXp} XP after losing to the Driller`).toBe(winLevel);
+      expect(level).toBeGreaterThanOrEqual(3);
+      expect(level).toBeLessThanOrEqual(5);
+    }
+  });
+
+  it('enters the Act II region inside its level band on every route, won or lost (ADR 0011)', () => {
+    /*
+     * The region graph's first edge: Ba Dan's coast road opens on Saltstep and Emberwatch once
+     * Act I is over either way (`ACT1_OVER` in `maps/world.ts`). A party arrives with whatever
+     * the act paid it, so every route, a lost fight included, must land inside the band that
+     * region's fights are tuned for (`regions/bands.ts` holds the fights to the band).
+     */
+    const next = REGIONS.find((region) => region.id === 'saltstep_emberwatch');
+    expect(next, 'the region Act I opens onto').toBeDefined();
+    const band = next?.levelBand ?? { minLevel: 0, maxLevel: 0 };
+    for (const walk of ALL) {
+      const label = [...walk.decisions].map(([k, v]) => `${k}=${v}`).join(', ') || 'defaults';
+      const level = levelForXp(walk.finalXp);
+      expect(level, `route [${label}] enters on level ${level}`).toBeGreaterThanOrEqual(
+        band.minLevel,
+      );
+      expect(level, `route [${label}] enters on level ${level}`).toBeLessThanOrEqual(band.maxLevel);
+    }
+  });
+
+  it('keeps a table that plays both Act I side fights inside the Act II band (#909)', () => {
+    /*
+     * SF-1.1 and SF-1.2 open once Act I is over and pay the same won or carried on, so every route
+     * that plays both enters Saltstep with the act's XP plus both purses. The script sizes them to
+     * lift a table to level 5 and its first path before Saltstep; never past RG-02's band.
+     */
+    const band = REGIONS.find((region) => region.id === 'saltstep_emberwatch')?.levelBand;
+    expect(band, 'the region Act I opens onto').toBeDefined();
+    const purse = ['enc_sf11_the_bend', 'enc_sf12_edge_on'].reduce((sum, id) => {
+      const encounter = CONTENT.encounters.get(id);
+      expect(encounter?.xpPerHead, `${id} pays a set XP a head`).toBe(SIDE_FIGHT_XP);
+      return sum + (encounter ? xpPerHead(encounter, {}, () => 0) : 0);
+    }, 0);
+    for (const walk of ALL) {
+      const level = levelForXp(walk.finalXp + purse);
+      expect(level, `${walk.finalXp} + ${purse} XP`).toBe(5);
+      expect(level).toBeLessThanOrEqual(band?.maxLevel ?? 0);
+    }
+  });
+
   it('keeps every enemy XP value positive except the story ally', () => {
     for (const enemy of CONTENT_BUNDLE.enemies) {
       if (enemy.id === 'ruon_ally') {
@@ -452,11 +520,13 @@ function reachableFrom(start: string, target: string): boolean {
           ? [node.next, node.onDefeat]
           : node.kind === 'branch'
             ? [node.ifSet, node.ifUnset]
-            : node.kind === 'end'
-              ? node.next
-                ? [node.next]
-                : []
-              : [node.next];
+            : node.kind === 'branchWhen'
+              ? [node.ifTrue, node.ifFalse]
+              : node.kind === 'end'
+                ? node.next
+                  ? [node.next]
+                  : []
+                : [node.next];
     for (const id of next) {
       if (seen.has(id)) continue;
       seen.add(id);

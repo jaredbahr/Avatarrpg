@@ -124,8 +124,49 @@ function enumerateTargets(battle: BattleState, caster: Unit, ability: Ability) {
   return { legal, invalid };
 }
 
-function guardedProbe(source: GameState, ability: Ability) {
+/**
+ * "Help up" aims at a fallen friend, and these mid-battle fixtures rarely have
+ * one lying beside a living party member. For that ability alone, stage one: the
+ * second living party member is laid down on a free tile next to the first.
+ * Every other ability sees the real battle untouched.
+ */
+function withFallenFriend(source: GameState): GameState {
   const copy = structuredClone(source);
+  const battle = copy.battle;
+  ensure(battle, 'missing fixture battle');
+  const party = battle.units.filter((unit) => unit.faction === 'party' && isAlive(unit));
+  const [helper, fallen] = party;
+  ensure(helper && fallen, 'help up needs two living party members to stage a casualty');
+  const taken = new Set(battle.units.filter(isAlive).flatMap((u) => occupiedCells(u).map(posKey)));
+  for (const [dx, dy] of [
+    [1, 0],
+    [-1, 0],
+    [0, 1],
+    [0, -1],
+    [1, 1],
+    [-1, -1],
+    [1, -1],
+    [-1, 1],
+  ] as const) {
+    const pos = { x: helper.pos.x + dx, y: helper.pos.y + dy };
+    const tile = inBounds(battle.grid, pos)
+      ? battle.grid.tiles[pos.y * battle.grid.width + pos.x]
+      : undefined;
+    if (!tile || tile.blocked || taken.has(posKey(pos))) continue;
+    return {
+      ...copy,
+      battle: {
+        ...battle,
+        units: battle.units.map((unit) => (unit.id === fallen.id ? { ...unit, hp: 0, pos } : unit)),
+      },
+    };
+  }
+  throw new Error('no free tile beside the helper for a staged casualty');
+}
+
+function guardedProbe(source: GameState, ability: Ability) {
+  const downed = ability.targeting.shape === 'unit' && ability.targeting.allow === 'downed';
+  const copy = downed ? withFallenFriend(source) : structuredClone(source);
   const battle = copy.battle;
   ensure(battle, 'missing fixture battle');
   const living = battle.units.filter(isAlive);

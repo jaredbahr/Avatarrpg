@@ -4,6 +4,7 @@ import { HANG_GUARD_MS } from './scripts/test-support/workBounds';
 const exclude = ['e2e/**', 'node_modules/**', 'dist/**'];
 const serial = [
   'src/core/sim/runCombat.test.ts',
+  'src/core/rules/turnCycle.property.test.ts',
   'src/core/sim/disciplineSmoke.test.ts',
   'src/content/topdownLayout.test.ts',
   'scripts/bundle-report-cli.test.ts',

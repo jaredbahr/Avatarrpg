@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { CONTENT } from '../src/content';
 import { resetStorage, waitForIdle } from './helpers';
+import { fightToTheEnd, keyboardDriver, playToFirstFight } from './input-play';
 
 async function expectVisibleFocus(target: Locator): Promise<void> {
   await expect(target).toBeFocused();
@@ -66,6 +67,11 @@ async function advanceLines(page: Page, control: Locator, count: number): Promis
 test('the opening route uses the keyboard from title to a conversation on the Forest Road', async ({
   page,
 }) => {
+  // The route is long by design: the prologue, Ba Dan's seat and its walk to Gao (#875), the
+  // village exit walk and the Forest Road. It takes 48-52 s on unthrottled Chromium and about 55 s
+  // to reach the exit walk on CI's GPU-less WebKit, where every step still moved one tile. Its
+  // budget is sized to the route, as the gamepad route and the sibling test below are.
+  test.setTimeout(180_000);
   await resetStorage(page, '?renderer=canvas&titleArtHold=0');
   await pressControl(page, button(page, 'New game'));
   await expectVisibleFocus(button(page, '1 player'));
@@ -109,22 +115,45 @@ test('the opening route uses the keyboard from title to a conversation on the Fo
   await advanceLines(page, opening, linesOf('act1_open'));
   await expectNode(page, 'village_explore');
   const map = button(page, 'Map');
-  await expectVisibleFocus(map);
+  // The party arrives within reach of Mira's table (the Ba Dan blockout, #875), so the
+  // HUD's contextual action, Talk, takes the first focus and one Enter opens her scene.
+  await expectVisibleFocus(button(page, 'Talk Elder Mira'));
   await page.keyboard.press('Enter');
-  await pressControl(page, button(page, 'Walk to Elder Mira'));
   await expectNode(page, 'mira_intro');
   const next = page.locator('[data-conversation-control="next"]');
-  await advanceLines(page, next, 4);
+  await advanceLines(page, next, linesOf('mira_intro'));
+  // The rest of Mira's table (DLG-01) by keyboard: each turn, then one question.
+  for (let step = 0; step < 40; step++) {
+    const nodeId = await page.evaluate(() => window.fnt?.app.state?.story.nodeId ?? '');
+    if (nodeId === 'village_explore') break;
+    if (CONTENT.story.get(nodeId)?.kind === 'choice')
+      await pressControl(page, page.locator('.choice-option:not([disabled])').first());
+    else await pressControl(page, next);
+  }
   await expectNode(page, 'village_explore');
 
+  // Mira's table seats the party two cells from where her scene ends, so walk there by
+  // keyboard the way a player would: Look around offers the seat.
+  await pressControl(page, button(page, 'Look around'));
+  await pressControl(page, button(page, /Sit and wait/));
+  await waitForIdle(page);
   await pressControl(page, button(page, /^Wait/));
   await pressControl(page, button(page, /Afternoon/));
   await expect
     .poll(() => page.evaluate(() => window.fnt?.app.state?.world.clock.phase))
     .toBe('afternoon');
   await expectVisibleFocus(button(page, /^Wait/));
+  // Gao keeps his shop across the square: walk over by direction, east along the square's
+  // south side and then north to his shop front, until his Talk is offered.
   const gao = button(page, 'Talk Gao the Shopkeeper');
-  await pressControl(page, gao, 'Enter', 'Shift+Tab');
+  for (let step = 0; step < 16 && !(await gao.isVisible()); step++) {
+    const x = await page.evaluate(() => window.fnt?.app.state?.location.pos.x ?? 0);
+    await page.locator('canvas.map-canvas').focus();
+    await page.keyboard.press(x < 19 ? 'ArrowRight' : 'ArrowUp');
+    await waitForIdle(page);
+  }
+  // Focus is on the map after the walk; the HUD's Talk comes after it in tab order.
+  await pressControl(page, gao);
   await expectNode(page, 'plant_chair');
   await pressControl(page, button(page, /Another time/));
   await expectNode(page, 'gao_friendly');
@@ -163,4 +192,31 @@ test('the opening route uses the keyboard from title to a conversation on the Fo
   await expect(east).toHaveAttribute('title', /roadblock/);
   await page.keyboard.press('Escape');
   await expectVisibleFocus(map);
+});
+
+test('arrow keys, Enter and Escape alone play from the title to the end of the first fight', async ({
+  page,
+}) => {
+  test.setTimeout(360_000);
+  await resetStorage(page, '?renderer=canvas&titleArtHold=0');
+  const keys = keyboardDriver(page);
+  await playToFirstFight(page, keys);
+
+  // The action bar's number keys are the keyboard's own shortcut: 1 is Move.
+  await expect.poll(() => page.evaluate(() => window.fnt?.app.boardBusy() === false)).toBe(true);
+  await expect(page.locator('.combat-scene .hud .action-row > button').first()).toBeFocused();
+  await page.keyboard.press('Digit1');
+  await expect(page.locator('.combat-scene .hud [data-slot="move"]')).toHaveClass(/selected/);
+  await expect(page.locator('.combat-scene canvas.map-canvas')).toBeFocused();
+  await expect(page.locator('.input-legend')).toContainText('Choose a tile');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.combat-scene .hud [data-slot="move"]')).toBeFocused();
+  await expect(page.locator('.combat-scene .hud [data-slot="move"]')).not.toHaveClass(/selected/);
+
+  const outcome = await fightToTheEnd(page, keys);
+  test.info().annotations.push({ type: 'fight outcome', description: outcome });
+  expect(await page.evaluate(() => window.fnt?.app.state?.battle ?? null)).toBeNull();
+  expect(await page.evaluate(() => window.fnt?.app.state?.story.visited)).toContain(
+    'battle_forest_road',
+  );
 });

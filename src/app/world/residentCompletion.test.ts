@@ -4,6 +4,7 @@ import { createGame } from '../../core/state/createGame';
 import { apply } from '../../core/state/reducer';
 import type { DayPhase, GameState, MapDef, Vec2 } from '../../core/types';
 import {
+  DORIN_POST,
   residentCompletionBudgetMs,
   residentCompletionPlan,
   residentPhaseChangeSettled,
@@ -16,7 +17,7 @@ import type {
 import { planResidentMotion } from './residentMotion';
 
 const VILLAGE = CONTENT.maps.get('ba_dan_village') as MapDef;
-const SEAT: Vec2 = { x: 10, y: 5 };
+const SEAT: Vec2 = { x: 13, y: 10 };
 
 function phaseState(phase: DayPhase): GameState {
   const base = createGame(CONTENT, {
@@ -41,7 +42,7 @@ function phaseChangeTracks(): PlannedResidentTrack[] {
     map: VILLAGE,
     before,
     after,
-    party: [SEAT, { x: 9, y: 5 }],
+    party: [SEAT, { x: 12, y: 10 }],
   });
   return motions.map((motion) => ({ start: 0, motion }));
 }
@@ -62,10 +63,18 @@ function shortWalk(enter = false, leave = false): PlannedResidentTrack {
 
 const settledFrame = (): ResidentCompletionFrame => ({
   moving: false,
-  markers: [{ id: 'lw.npc.dorin', pos: { x: 17, y: 6 }, at: { x: 17, y: 6 }, alpha: 1 }],
+  markers: [{ id: 'lw.npc.dorin', pos: DORIN_POST, at: DORIN_POST, alpha: 1 }],
 });
 
 describe('resident phase-change completion budget', () => {
+  it("holds the e2e helper's gate post to Dorin's anchor", () => {
+    expect(CONTENT.anchors.get('bd03.post')?.site).toEqual({
+      kind: 'map',
+      mapId: 'ba_dan_village',
+      pos: DORIN_POST,
+    });
+  });
+
   it('accepts ordinary completion within the planned virtual-time allowance', async () => {
     let now = 0;
     const completed = await waitWithinResidentBudget(
@@ -109,7 +118,7 @@ describe('resident phase-change completion budget', () => {
     expect(
       residentPhaseChangeSettled({
         ...good,
-        markers: [{ id: 'lw.npc.dorin', pos: { x: 17, y: 6 }, at: { x: 17, y: 6 }, alpha: 0.5 }],
+        markers: [{ id: 'lw.npc.dorin', pos: DORIN_POST, at: DORIN_POST, alpha: 0.5 }],
       }),
     ).toBe(false);
 

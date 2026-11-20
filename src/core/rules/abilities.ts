@@ -37,6 +37,7 @@ import {
   posKey,
   samePos,
   tileAt,
+  unitAt,
 } from './grid';
 import { SQUARE_FOOTPRINTS } from './footprint';
 import { expectedDamage, healAmount, hitBreakdown, rollDamage } from './damage';
@@ -56,6 +57,21 @@ import { canUseAbilities, effectiveStats, isAlive } from './stats';
 /* Targeting geometry                                                  */
 /* ------------------------------------------------------------------ */
 
+function canTargetFrom(
+  content: ContentIndex,
+  grid: Grid,
+  origin: Vec2,
+  ability: Ability,
+  target: Vec2,
+  targetElevation: number,
+  needsSight: boolean,
+): boolean {
+  const elevation = tileAt(grid, origin)?.elevation ?? 0;
+  const heightReach = heightReachBonus(content, ability, elevation, targetElevation);
+  if (distance(origin, target) > ability.range + heightReach) return false;
+  return !needsSight || hasLineOfSight(grid, origin, target);
+}
+
 /**
  * The first occupied caster cell that can legally reach and see `target`.
  *
@@ -63,7 +79,7 @@ import { canUseAbilities, effectiveStats, isAlive } from './stats';
  * with ties broken by `occupiedCells` order (the anchor first). For a size-1
  * caster there is only one cell, so this is the old behaviour exactly; for a
  * 2x2 it picks the gun that is actually pointing at the target rather than
- * whichever corner happens to come first. The reordering is switch-gated: the
+ * whichever corner happens to come first. The reordering is switch-gated:
  * an explicitly injected legacy 2x1 keeps strict anchor-first order. No RNG, so preview and
  * resolution still agree.
  */
@@ -77,18 +93,20 @@ export function validatingOrigin(
   squareFootprints: boolean = SQUARE_FOOTPRINTS,
 ): Vec2 | null {
   const targetElevation = tileAt(grid, target)?.elevation ?? 0;
+  const needsSight = checkLineOfSight && ability.requiresLineOfSight;
+  if (caster.size === 1) {
+    const origin = caster.pos;
+    return canTargetFrom(content, grid, origin, ability, target, targetElevation, needsSight)
+      ? { x: origin.x, y: origin.y }
+      : null;
+  }
+
   const cells = occupiedCells(caster, squareFootprints);
-  const ordered = squareFootprints
-    ? [...cells].sort((a, b) => distance(a, target) - distance(b, target))
-    : cells;
-  for (const cell of ordered) {
-    const casterElevation = tileAt(grid, cell)?.elevation ?? 0;
-    const heightReach = heightReachBonus(content, ability, casterElevation, targetElevation);
-    if (distance(cell, target) > ability.range + heightReach) continue;
-    if (checkLineOfSight && ability.requiresLineOfSight && !hasLineOfSight(grid, cell, target)) {
-      continue;
+  if (squareFootprints) cells.sort((a, b) => distance(a, target) - distance(b, target));
+  for (const cell of cells) {
+    if (canTargetFrom(content, grid, cell, ability, target, targetElevation, needsSight)) {
+      return cell;
     }
-    return cell;
   }
   return null;
 }
@@ -119,8 +137,9 @@ export function heightReachBonus(
   fromElevation: number,
   toElevation: number,
 ): number {
-  if (!canReachFromHeight(ability)) return 0;
-  return fromElevation > toElevation ? content.tuning.heightReachBonus : 0;
+  return fromElevation > toElevation && canReachFromHeight(ability)
+    ? content.tuning.heightReachBonus
+    : 0;
 }
 
 /** Every tile an ability touches when aimed at `target`. */
@@ -159,14 +178,52 @@ export function sameSide(a: Unit, b: Unit): boolean {
 }
 
 /** Living units standing on any of `tiles`. */
+/** True when the ability stands a downed friend up (the shared "Help up"). */
+export function revives(ability: Ability): boolean {
+  return ability.effects.some((effect) => effect.kind === 'revive');
+}
+
+/**
+ * Hit points a revive gives `unit`: its fraction of maximum health, at least 1.
+ * One function for the preview, the AI and the reducer, so they cannot disagree.
+ */
+export function reviveHp(unit: Unit, fraction: number): number {
+  return Math.max(1, Math.round(unit.base.maxHp * fraction));
+}
+
+/**
+ * Who an ability touches among `tiles`: the living, except that a revive looks
+ * for the *downed*, whom `unitsOnTiles` never sees.
+ */
+export function unitsTouched(
+  units: readonly Unit[],
+  tiles: readonly Vec2[],
+  ability: Ability,
+  squareFootprints: boolean = SQUARE_FOOTPRINTS,
+): Unit[] {
+  if (!revives(ability)) return unitsOnTiles(units, tiles, squareFootprints);
+  const keys = new Set(tiles.map(posKey));
+  return units.filter(
+    (u) => !isAlive(u) && occupiedCells(u, squareFootprints).some((c) => keys.has(posKey(c))),
+  );
+}
+
 export function unitsOnTiles(
   units: readonly Unit[],
   tiles: readonly Vec2[],
   squareFootprints: boolean = SQUARE_FOOTPRINTS,
 ): Unit[] {
-  const keys = new Set(tiles.map(posKey));
+  if (tiles.length === 0) return [];
+  const onlyKey = tiles.length === 1 ? posKey(tiles[0]!) : undefined;
+  const keys = onlyKey === undefined ? new Set(tiles.map(posKey)) : undefined;
+  const contains = (cell: Vec2) => {
+    const key = posKey(cell);
+    return key === onlyKey || keys?.has(key) === true;
+  };
   return units.filter(
-    (u) => isAlive(u) && occupiedCells(u, squareFootprints).some((c) => keys.has(posKey(c))),
+    (u) =>
+      isAlive(u) &&
+      (u.size === 1 ? contains(u.pos) : occupiedCells(u, squareFootprints).some(contains)),
   );
 }
 
@@ -194,7 +251,7 @@ export function resolveAim(
   squareFootprints: boolean = SQUARE_FOOTPRINTS,
 ): Vec2 {
   if (ability.targeting.shape !== 'unit') return tapped;
-  const occupant = unitsOnTiles(battle.units, [tapped], squareFootprints)[0];
+  const occupant = unitAt(battle.units, tapped, squareFootprints);
   if (!occupant) return tapped;
   for (const cell of occupiedCells(occupant, squareFootprints)) {
     if (aimCellTargetable(content, battle.grid, caster, ability, cell, squareFootprints)) {
@@ -251,19 +308,55 @@ export function canUseAbility(content: ContentIndex, unit: Unit, ability: Abilit
   return OK;
 }
 
-/** Is `target` a legal aim point for this ability? */
-export function isValidTarget(
+/**
+ * Is the tile a downed friend who can be helped up right now (ADR 0118)? They
+ * must lie there, nobody may be standing on them, and each fighter gets up once
+ * a fight (`BattleState.helpedUp`).
+ */
+function downedTargetCheck(
+  battle: BattleState,
+  caster: Unit,
+  target: Vec2,
+  squareFootprints: boolean,
+): UseCheck {
+  const fallen = battle.units.find(
+    (u) =>
+      !isAlive(u) &&
+      sameSide(caster, u) &&
+      occupiedCells(u, squareFootprints).some((c) => samePos(c, target)),
+  );
+  if (!fallen) return { ok: false, reason: 'Nobody is down there.' };
+  // A sparring bout helps nobody up (ADR 0122 §2).
+  if (battle.boutOut?.includes(fallen.id)) {
+    return { ok: false, reason: `${fallen.name} is out of the bout.` };
+  }
+  if (unitsOnTiles(battle.units, [target], squareFootprints).length > 0) {
+    return { ok: false, reason: 'Somebody is standing there.' };
+  }
+  if (battle.helpedUp?.includes(fallen.id)) {
+    return { ok: false, reason: `${fallen.name} was already helped up once this fight.` };
+  }
+  return OK;
+}
+
+/**
+ * The part of aiming that is about the ground, not what stands on it: on the map, within range,
+ * not too close, and in sight. `isValidTarget` starts here, and `aimReachTiles` draws it.
+ */
+function checkAimReach(
   content: ContentIndex,
   battle: BattleState,
   caster: Unit,
   ability: Ability,
   target: Vec2,
-  squareFootprints: boolean = SQUARE_FOOTPRINTS,
+  squareFootprints: boolean,
 ): UseCheck {
-  if (ability.targeting.shape === 'self') return OK;
   if (!inBounds(battle.grid, target)) return { ok: false, reason: 'Off the map.' };
 
-  const range = distanceToUnit(target, caster, squareFootprints);
+  const range =
+    caster.size === 1
+      ? distance(target, caster.pos)
+      : distanceToUnit(target, caster, squareFootprints);
   const inRangeOrigin = validatingOrigin(
     content,
     battle.grid,
@@ -275,12 +368,38 @@ export function isValidTarget(
   );
   if (!inRangeOrigin) return { ok: false, reason: 'Out of range.' };
   if (range < ability.minRange) return { ok: false, reason: 'Too close.' };
-  if (!validatingOrigin(content, battle.grid, caster, ability, target, true, squareFootprints)) {
+  // This origin is already in range. A large caster may have a second firing
+  // cell when this one cannot see the target.
+  if (
+    ability.requiresLineOfSight &&
+    !hasLineOfSight(battle.grid, inRangeOrigin, target) &&
+    (caster.size === 1 ||
+      !validatingOrigin(content, battle.grid, caster, ability, target, true, squareFootprints))
+  ) {
     return { ok: false, reason: 'No line of sight.' };
+  }
+  return OK;
+}
+
+/** Is `target` a legal aim point for this ability? */
+export function isValidTarget(
+  content: ContentIndex,
+  battle: BattleState,
+  caster: Unit,
+  ability: Ability,
+  target: Vec2,
+  squareFootprints: boolean = SQUARE_FOOTPRINTS,
+): UseCheck {
+  if (ability.targeting.shape === 'self') return OK;
+  const reach = checkAimReach(content, battle, caster, ability, target, squareFootprints);
+  if (!reach.ok) return reach;
+
+  if (ability.targeting.shape === 'unit' && ability.targeting.allow === 'downed') {
+    return downedTargetCheck(battle, caster, target, squareFootprints);
   }
 
   if (ability.targeting.shape === 'unit') {
-    const occupant = unitsOnTiles(battle.units, [target], squareFootprints)[0];
+    const occupant = unitAt(battle.units, target, squareFootprints);
     if (!occupant) {
       /*
        * A prop is a legal target for anything that would take an enemy or
@@ -335,6 +454,39 @@ export function isValidTarget(
   return OK;
 }
 
+/**
+ * Every tile this ability could be aimed at on the ground alone: in range, far enough, in sight,
+ * whoever stands there. This is the range the player sees while aiming; `targetableTiles` is the
+ * subset that also holds a legal target. Empty for a self ability, which has no range to show.
+ */
+export function aimReachTiles(
+  content: ContentIndex,
+  battle: BattleState,
+  caster: Unit,
+  ability: Ability,
+  squareFootprints: boolean = SQUARE_FOOTPRINTS,
+): Vec2[] {
+  if (ability.targeting.shape === 'self') return [];
+  const out: Vec2[] = [];
+  const reach = canReachFromHeight(ability)
+    ? ability.range + content.tuning.heightReachBonus
+    : ability.range;
+  const seen = new Set<string>();
+  for (const cell of occupiedCells(caster, squareFootprints)) {
+    for (let dy = -reach; dy <= reach; dy++) {
+      for (let dx = -reach; dx <= reach; dx++) {
+        const pos = { x: cell.x + dx, y: cell.y + dy };
+        if (seen.has(posKey(pos))) continue;
+        if (checkAimReach(content, battle, caster, ability, pos, squareFootprints).ok) {
+          seen.add(posKey(pos));
+          out.push(pos);
+        }
+      }
+    }
+  }
+  return out;
+}
+
 /** Every tile the player may legally tap for this ability. */
 export function targetableTiles(
   content: ContentIndex,
@@ -384,7 +536,7 @@ export function targetableTiles(
 /* Preview                                                             */
 /* ------------------------------------------------------------------ */
 
-export interface PreviewTarget {
+interface PreviewTarget {
   readonly unitId: string;
   readonly name: string;
   readonly friendly: boolean;
@@ -455,7 +607,7 @@ export function previewAbility(
   const origin =
     validatingOrigin(content, battle.grid, caster, ability, target, true, squareFootprints) ??
     caster.pos;
-  const inArea = unitsOnTiles(battle.units, tiles, squareFootprints).filter(
+  const inArea = unitsTouched(battle.units, tiles, ability, squareFootprints).filter(
     (u) => allowsCasterTarget(ability) || u.id !== caster.id,
   );
   // Pushes preview from the same cell resolution uses: the blast centre for
@@ -522,6 +674,9 @@ export function previewAbility(
             remainingHealCapacity -= gained;
             if (gained === 0) healAtCapacity = true;
           }
+          break;
+        case 'revive':
+          if (friendly) heal += reviveHp(unit, effect.fraction);
           break;
         case 'status':
           break;
@@ -674,7 +829,7 @@ export function resolveAbility(
 
   // Snapshot who is standing where *before* anything moves, so a push in one
   // effect does not pull a unit out of the next effect's area.
-  const struck = unitsOnTiles(draft.units, tiles, squareFootprints).filter(
+  const struck = unitsTouched(draft.units, tiles, ability, squareFootprints).filter(
     (u) => allowsCasterTarget(ability) || u.id !== caster.id,
   );
   const hitIds = struck.map((u) => u.id);
@@ -778,6 +933,16 @@ function applyEffect(
       const amount = healAmount(content, caster, effect);
       const recipients = ability.targeting.shape === 'self' ? [caster.id] : friendlyIds;
       for (const id of recipients) draft.heal(id, amount);
+      break;
+    }
+
+    case 'revive': {
+      // Whoever lies on the target tile: `unitsTouched` found the downed, not the living.
+      for (const id of friendlyIds) {
+        const fallen = draft.unit(id);
+        if (!fallen || isAlive(fallen)) continue;
+        draft.revive(id, reviveHp(fallen, effect.fraction), caster.id);
+      }
       break;
     }
 

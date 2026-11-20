@@ -5,12 +5,21 @@
  *
  * - **Reach**: the move overlay's cells (the reducer's 8-way reachable set) as a warm tinted wash with
  *   a solid 1 px rim on its edge (#699); shown only while no ability is armed.
+ * - **Range**: while an ability is armed, every tile it could be aimed at (in range, far enough, in
+ *   sight, whoever stands there; the core's `aimReachTiles`) as a wash with the same solid rim, so
+ *   the reach reads even when only one enemy is in it.
  * - **Targets**: units on a valid target tile get a small ring; a ground target with nobody on it
  *   gets the target wash, so a wall or a blast aimed at open ground still shows where it may land.
  *   Height reach (`rangeBonus`) washes its cells in the party's cream.
- * - **Area**: the armed ability's area as an ember wash; every figure in it gets a hit ring, cream
- *   for the party and red for the rest.
+ * - **Area**: the armed ability's area under the aim as an ember wash; every figure in it gets a hit
+ *   ring, cream for the party and red for the rest.
  * - **Path**: paired footprints along `view.path` and a ring at its end.
+ * - **Objective**: the encounter's objective cells (ADR 0116's 2026-11-15 amendment) as a mint wash
+ *   under every other overlay, all fight long, with a ring at each cell's foot (it still reads with a
+ *   figure standing there) and a small pennant in its upper corner.
+ * - **Tip**: on a sparring platform that tips (ADR 0122 §3), the cells its heavier half will slide
+ *   into when the round ends, as a sea-blue wash with a ring at each, over the objective and under
+ *   everything that is armed.
  * - **Cover**: a shield pip by the aimed target's ring when it is in cover (`hasCover` with the
  *   board's roster), struck through when the ability ignores cover (`requiresLineOfSight: false`).
  *
@@ -31,8 +40,14 @@ export type Rgb = readonly [number, number, number];
 export const REACH_RGB: Rgb = [242, 196, 120];
 export const AREA_RGB: Rgb = [214, 92, 70];
 export const TARGET_RGB: Rgb = [242, 140, 110];
+/** The armed ability's range: the walk's warm tone, which the area's ember and the rings sit over. */
+export const RANGE_RGB: Rgb = [236, 170, 96];
 export const PARTY_RGB: Rgb = [242, 212, 122];
 export const ENEMY_RGB: Rgb = [242, 120, 96];
+/** The objective's mint: no other overlay, surface or faction uses it. */
+export const OBJECTIVE_RGB: Rgb = [120, 220, 160];
+/** The tipping platform's slide: a sea blue no other overlay, surface or faction uses. */
+export const TIP_RGB: Rgb = [90, 160, 235];
 /** The shadow colour, for the footprints' print and the pips' outline. */
 const INK: Rgb = [50, 33, 37];
 
@@ -62,6 +77,12 @@ export interface CoverPip {
   readonly kind: 'covered' | 'ignored';
 }
 
+/** The objective's pennant, its top-left corner at world px (x, y). */
+export interface Pennant {
+  readonly x: number;
+  readonly y: number;
+}
+
 export interface WashSpec {
   readonly grid: Grid;
   /** Drawn in order; a later wash lies over an earlier one. */
@@ -70,6 +91,8 @@ export interface WashSpec {
   readonly steps: { readonly from: Vec2; readonly path: readonly Vec2[] } | null;
   readonly rings: readonly Ring[];
   readonly pips: readonly CoverPip[];
+  /** Absent: none. */
+  readonly pennants?: readonly Pennant[];
 }
 
 /** A cell's foot point in world px (`cellX`, `cellY` in `head.js`). */
@@ -240,6 +263,29 @@ function layPip(d: Uint8ClampedArray, BW: number, BH: number, pip: CoverPip): vo
     for (let k = 0; k < 7; k++) px(d, BW, BH, pip.x - 1 + k, pip.y + 6 - k, ENEMY_RGB);
 }
 
+/** A 6×10 pennant on a pole, by row: 1 the outline and pole, 2 the mint fill. */
+const PENNANT = [
+  '110000',
+  '122100',
+  '122221',
+  '122221',
+  '122100',
+  '110000',
+  '100000',
+  '100000',
+  '100000',
+  '100000',
+] as const;
+
+function layPennant(d: Uint8ClampedArray, BW: number, BH: number, flag: Pennant): void {
+  PENNANT.forEach((row, y) =>
+    [...row].forEach((v, x) => {
+      if (v === '1') px(d, BW, BH, flag.x + x, flag.y + y, INK);
+      if (v === '2') px(d, BW, BH, flag.x + x, flag.y + y, OBJECTIVE_RGB);
+    }),
+  );
+}
+
 /** The whole overlay layer for `spec`: board-sized RGBA, one texel a world px. */
 export function washImage(spec: WashSpec): RgbaImage {
   const BW = spec.grid.width * CS,
@@ -250,6 +296,7 @@ export function washImage(spec: WashSpec): RgbaImage {
   if (spec.steps) laySteps(data, BW, BH, spec.steps.from, spec.steps.path);
   for (const ring of spec.rings) layRing(data, BW, BH, ring);
   for (const pip of spec.pips) layPip(data, BW, BH, pip);
+  for (const flag of spec.pennants ?? []) layPennant(data, BW, BH, flag);
   return { width: BW, height: BH, data };
 }
 
@@ -274,36 +321,58 @@ function footOf(cells: readonly Vec2[]): Vec2 {
 export function washSpec(view: MapView, square = SQUARE_FOOTPRINTS): WashSpec {
   const layer = (kind: string) => view.overlays.find((o) => o.kind === kind)?.tiles ?? [];
   const move = layer('move'),
+    reachArea = layer('reach'),
     targets = layer('target'),
     area = layer('area'),
-    bonus = layer('rangeBonus');
+    bonus = layer('rangeBonus'),
+    objective = layer('objective'),
+    tip = layer('tip');
   const cells = (u: MapView['units'][number]) => footprintCells(u.pos, u.size, square);
   const living = view.units.filter((u) => !u.fallen);
   const washes: WashArea[] = [];
   const rings: Ring[] = [];
-  if (area.length) {
-    washes.push({ cells: area, color: AREA_RGB });
-    const hit = new Set(area.map(posKey));
-    for (const u of living)
-      if (cells(u).some((c) => hit.has(posKey(c)))) {
-        rings.push({
-          ...footOf(cells(u)),
-          color: u.faction === 'enemy' ? ENEMY_RGB : PARTY_RGB,
-          w: 10,
-          h: 4,
-        });
-      }
-  } else if (targets.length) {
+  const pennants: Pennant[] = [];
+  // The objective lies under everything else and shows whatever is armed.
+  if (objective.length) {
+    washes.push({ cells: objective, color: OBJECTIVE_RGB });
+    for (const cell of objective) {
+      rings.push({ ...footOf([cell]), color: OBJECTIVE_RGB, w: 12, h: 5 });
+      pennants.push({ x: cell.x * CS + CS - 9, y: cell.y * CS + 2 });
+    }
+  }
+  // Where the platform will slide its fighters: over the objective, under whatever is armed.
+  if (tip.length) {
+    washes.push({ cells: tip, color: TIP_RGB });
+    for (const cell of tip) rings.push({ ...footOf([cell]), color: TIP_RGB, w: 12, h: 5 });
+  }
+  if (reachArea.length || targets.length || area.length) {
+    // The range first, so the area and the rings lie over it.
+    if (reachArea.length) washes.push({ cells: reachArea, color: RANGE_RGB });
     const valid = new Set(targets.map(posKey));
     const standing = new Set<string>();
     for (const u of living)
       if (cells(u).some((c) => valid.has(posKey(c)))) {
         for (const c of cells(u)) standing.add(posKey(c));
-        rings.push({ ...footOf(cells(u)), color: TARGET_RGB, w: 9, h: 3 });
       }
+    // Ground a blast may land on with nobody there; with a range wash, that is already tinted.
     const open = targets.filter((c) => !standing.has(posKey(c)));
-    if (open.length) washes.push({ cells: open, color: TARGET_RGB });
+    if (open.length && !reachArea.length) washes.push({ cells: open, color: TARGET_RGB });
     if (bonus.length) washes.push({ cells: bonus, color: PARTY_RGB });
+    if (area.length) washes.push({ cells: area, color: AREA_RGB });
+    const hit = new Set(area.map(posKey));
+    for (const u of living) {
+      const mine = cells(u);
+      if (mine.some((c) => hit.has(posKey(c)))) {
+        rings.push({
+          ...footOf(mine),
+          color: u.faction === 'enemy' ? ENEMY_RGB : PARTY_RGB,
+          w: 10,
+          h: 4,
+        });
+      } else if (mine.some((c) => valid.has(posKey(c)))) {
+        rings.push({ ...footOf(mine), color: TARGET_RGB, w: 9, h: 3 });
+      }
+    }
   } else if (move.length) {
     washes.push({ cells: move, color: REACH_RGB });
   }
@@ -322,6 +391,7 @@ export function washSpec(view: MapView, square = SQUARE_FOOTPRINTS): WashSpec {
     steps: view.path.length && view.pathFrom ? { from: view.pathFrom, path: view.path } : null,
     rings,
     pips,
+    ...(pennants.length ? { pennants } : {}),
   };
 }
 
@@ -341,6 +411,7 @@ export function washKey(spec: WashSpec): string {
     spec.steps && [spec.steps.from, spec.steps.path],
     spec.rings,
     spec.pips,
+    spec.pennants ?? [],
   ]);
 }
 
@@ -357,7 +428,12 @@ let last: { key: string; image: RgbaImage | null } | null = null;
 /** The overlay layer for `view`, rebuilt only when what it shows changes; null when it is empty. */
 export function washLayer(view: MapView, square = SQUARE_FOOTPRINTS): RgbaImage | null {
   const spec = washSpec(view, square);
-  const empty = !spec.washes.length && !spec.steps && !spec.rings.length && !spec.pips.length;
+  const empty =
+    !spec.washes.length &&
+    !spec.steps &&
+    !spec.rings.length &&
+    !spec.pips.length &&
+    !spec.pennants?.length;
   const key = empty ? '' : washKey(spec);
   if (last?.key === key) return last.image;
   last = { key, image: empty ? null : washImage(spec) };

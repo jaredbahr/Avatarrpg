@@ -17,9 +17,19 @@ describe('region assets (ADR 0111 §4)', () => {
     for (const path of sharedMusic) expect(seen.has(path), path).toBe(false);
   });
 
-  it("gives the demo region its five boards and its three area tracks; the title's is shared", () => {
+  it("gives the demo region its five baked boards and its three area tracks; the title's is shared; RG-02 its five boards", () => {
     const { regions, sharedMusic } = regionAssets();
-    expect(regions.map((region) => region.id)).toEqual(['ba_dan_valley']);
+    expect(regions.map((region) => region.id)).toEqual(['ba_dan_valley', 'saltstep_emberwatch']);
+    // RG-02, the pipeline trial: its five boards (SF-2.2's platform the fifth), and no area track yet.
+    expect(regions[1]?.artDirs).toEqual([
+      'art/topdown/saltstep-market/',
+      'art/topdown/saltstep-pontoon/',
+      'art/topdown/saltstep-platform/',
+      'art/topdown/emberwatch-parade/',
+      'art/topdown/emberwatch-power-yard/',
+    ]);
+    expect(regions[1]?.musicFiles).toEqual([]);
+    // Ba Dan ships its ground alone (stage 4, ADR 0120) until its set pieces stand on it.
     expect(regions[0]?.artDirs).toEqual([
       'art/topdown/ba-dan/',
       'art/topdown/forest-road/',

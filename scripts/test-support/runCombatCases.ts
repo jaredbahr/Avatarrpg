@@ -3,13 +3,16 @@ import { fileURLToPath } from 'node:url';
 import { Worker } from 'node:worker_threads';
 import { build } from 'esbuild';
 import type { SimOptions, SimResult } from '../../src/core/sim/runCombat';
+import type { TurnCycleCoverage } from './turnCycle';
 
-type CombatCase = Pick<SimOptions, 'seed' | 'encounterId' | 'party'>;
+export type CombatCase = Pick<SimOptions, 'seed' | 'encounterId' | 'party'> & {
+  readonly checkTurnCycle?: boolean;
+};
 type IndexedCase = { index: number; options: CombatCase };
 type CombatResult = Pick<
   SimResult,
   'anomalies' | 'outcome' | 'rounds' | 'partyHpRemaining' | 'partyHpTotal'
->;
+> & { readonly turnCycle?: TurnCycleCoverage };
 type ResultRow = { index: number; result: CombatResult };
 
 const LANES = Math.min(4, availableParallelism());

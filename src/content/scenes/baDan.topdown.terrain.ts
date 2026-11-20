@@ -246,6 +246,9 @@ export const COURTS: readonly Court[] = [
   { id: 'mira-court', x: 16.2, y: 11.8, r: 2.6 },
   { id: 'well-court', x: 19.4, y: 22.4, r: 2.4 },
   { id: 'watch-plaza', x: 23.6, y: 14.2, r: 2.4 },
+  // The canal head (the cohesion pilot): Mira's door, the end of the canal and the crossing are one
+  // worn square, so the grass the paths left between them goes, rather than lying in it as islands.
+  { id: 'canal-head', x: 22.6, y: 13.3, r: 2.9 },
 ];
 
 /** The noise seeds the paved edges and the quay draw on, so a reader can find them in one place. */
@@ -383,12 +386,26 @@ function vtRaw(vx: number, vy: number): Terrain {
 }
 
 const VT = new Map<number, Terrain>();
-/** A vertex's terrain, tidied: a lone cobble vertex (fewer than two paved or water sides) becomes grass. */
+/**
+ * A vertex's terrain, tidied: a lone cobble vertex (fewer than two paved or water sides) becomes
+ * grass, and a lone grass vertex in the paving (three or four paved sides, not a soil bed) becomes
+ * paving, so the paving's noise leaves no pinhole islands of grass in a square people cross (the
+ * cohesion pilot, ADR 0119).
+ */
 export function vt(vx: number, vy: number): Terrain {
   const key = vy * 1000 + vx;
   const hit = VT.get(key);
   if (hit) return hit;
   let v = vtRaw(vx, vy);
+  if (v === 'G' && !BED.has(key)) {
+    const np = [
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1],
+    ].filter(([dx, dy]) => vtRaw(vx + (dx ?? 0), vy + (dy ?? 0)) === 'C').length;
+    if (np >= 3) v = 'C';
+  }
   if (v === 'C') {
     const nc = [
       [1, 0],
