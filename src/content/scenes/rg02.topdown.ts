@@ -367,7 +367,7 @@ export const SALTSTEP_PLATFORM_OBJECTS: readonly TopDownObject[] = [
   ),
   // Two mooring bollards at diagonal corners, where boats tie on.
   piece('bollard_nw', 'bollard', 'prop', [[3, 3]], true, { x: 4, base: -12 }),
-  flip(piece('bollard_se', 'bollard', 'prop', [[11, 7]], true, { x: -4, base: -12 })),
+  flip(piece('bollard_se', 'bollard', 'prop', [[11, 7]], true, { x: -10, base: -16 })),
   // The market's signature, seen from here: a painted tide pole in the water off the north-east corner, flat like the
   // piles, since it stands in open water where nobody walks.
   piece('tide_pole', 'level_pole', 'flat', [[12, 1]], false),
