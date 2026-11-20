@@ -95,7 +95,8 @@ export const RG02_BOARDS: readonly TopDownBoard[] = [
     folder: 'river-road',
     terrain: RIVER_ROAD_TERRAIN,
     layout: RIVER_ROAD_TOPDOWN_LAYOUT,
-    stone: 'rock',
+    earth: 'road',
+    stone: 'rise',
     // the road, its pull-offs, the landing's footpath and the lookout's track; a dry morning, so little lies wet
     wear: { paths: RIVER_ROAD_WORN, wet: 0.08, soft: true },
   }),

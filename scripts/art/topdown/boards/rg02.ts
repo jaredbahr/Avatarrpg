@@ -63,20 +63,26 @@ function wang(folder: string, key: string): RgbaImage {
 export type Rg02Tiles = Readonly<Record<RgClass, RgbaImage | undefined>>;
 
 export function rg02Tiles(
-  earth: 'parade' | 'yard' = 'parade',
-  stone: 'parade' | 'rock' = 'parade',
+  earth: 'parade' | 'yard' | 'road' = 'parade',
+  stone: 'parade' | 'rise' = 'parade',
 ): Rg02Tiles {
+  // The countryside's own sets (`tools/rrtiles.py`): the river road's cart road on meadow, its slow river, the ford's
+  // gravel over shallows, and the lookout's grey rock. The coast's boards keep the harbour, quay and parade sets.
+  const country = earth === 'road';
   return {
-    [RG.water]: wang('rg02_quay', 'LLLL'),
+    [RG.water]: country ? wang('rg02_river', 'LLLL') : wang('rg02_quay', 'LLLL'),
     [RG.deck]: wang('rg02_planks2', 'UUUU'),
-    [RG.sand]: wang('rg02_quay', 'UUUU'),
-    [RG.earth]: wang(earth === 'yard' ? 'rg02_yard' : 'rg02_parade', 'LLLL'),
-    // the coast's flagstones, or in open country the bare pale rock of the quarry's floor
-    [RG.stone]: stone === 'rock' ? wang('q_floor32', 'LLLL') : wang('rg02_parade', 'UUUU'),
-    [RG.puddle]: wang('rg02_yard', 'UUUU'),
+    [RG.sand]: country ? wang('rg02_ford', 'UUUU') : wang('rg02_quay', 'UUUU'),
+    [RG.earth]: wang(
+      earth === 'road' ? 'rg02_road' : earth === 'yard' ? 'rg02_yard' : 'rg02_parade',
+      'LLLL',
+    ),
+    [RG.stone]: stone === 'rise' ? wang('rg02_rise', 'UUUU') : wang('rg02_parade', 'UUUU'),
+    // the yard's puddle, or in the country the ford's clear shallows over pebbles
+    [RG.puddle]: country ? wang('rg02_ford', 'LLLL') : wang('rg02_yard', 'UUUU'),
     [RG.void]: undefined,
-    // the countryside's grass: Ba Dan's plain sunlit grass, the calmest under pieces
-    [RG.grass]: load(`${ASSETS}/tiles/gc32/c0000.png`),
+    // the countryside's meadow grass (the coast never lays it)
+    [RG.grass]: country ? wang('rg02_road', 'UUUU') : load(`${ASSETS}/tiles/gc32/c0000.png`),
   };
 }
 
@@ -144,9 +150,9 @@ export interface Rg02BoardConfig {
   readonly folder: string;
   readonly terrain: Rg02Terrain;
   readonly layout: TopDownLayout;
-  readonly earth?: 'parade' | 'yard';
-  /** What the stone class is drawn as: the coast's flagstones (the default) or bare rock (the river road's cliff). */
-  readonly stone?: 'parade' | 'rock';
+  readonly earth?: 'parade' | 'yard' | 'road';
+  /** What the stone class is drawn as: the coast's flagstones (the default) or the river road's grey rock. */
+  readonly stone?: 'parade' | 'rise';
   /** The ground's wear: cells walked into a lighter path, and how much of the open ground lies wet. */
   readonly wear?: {
     readonly paths?: readonly (readonly [number, number])[];

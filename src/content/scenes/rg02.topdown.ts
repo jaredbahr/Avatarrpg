@@ -686,7 +686,7 @@ export const RIVER_ROAD_TERRAIN = new Rg02Terrain({
     '=': RG.earth,
     F: RG.earth,
     ':': RG.sand,
-    '~': RG.sand,
+    '~': RG.puddle, // the ford's clear shallows over pebbles
     W: RG.water,
     w: RG.deck,
     X: RG.stone,
