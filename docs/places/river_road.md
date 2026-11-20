@@ -178,6 +178,7 @@ end hidden until you reach it, so the three valleys are a reveal (the one thing 
    checked at 3x and the kit is shown beside Kaya before anything ships.
 9. **The bend's cliff:** a rock face baked into the plate, not a sprite. One face system in the RG-02 baker raises
    both the cliff and the lookout rise (and serves later terraced maps); the kit list's cliff sprite (#19) is dropped.
+   Built: see "The raised rock" under the kit as made.
 
 ## Open questions (stage 5)
 
@@ -261,7 +262,7 @@ folder. **Spent: 140 credits over 27 jobs** (the ledger's `rg02_obj_rr_*`), agai
 | Fallen log (16)             | `fallen_log`                                       | seed 3      | 79 x 37   |            5 |
 | Boulder (17)                | `boulders` (rg02)                                  | existing    |           |            0 |
 | Driftwood (18)              | `driftwood`                                        | seed 3      | 33 x 17   |            5 |
-| Cliff (19)                  | dropped: a baked rock face, later                  |             |           |            0 |
+| Cliff (19)                  | dropped: the baked rock face                       |             |           |            0 |
 | Rock at the cliff foot (20) | `rockfall`                                         | seed 3      | 58 x 34   |            6 |
 | Country jetty (21)          | `country_jetty`, over water                        | seed 11     | 115 x 32  | 12 (2 takes) |
 | Rowboat (22)                | `river_rowboat` (new: lies along bank)             | seed 3      | 72 x 31   |            5 |
@@ -278,5 +279,15 @@ folder. **Spent: 140 credits over 27 jobs** (the ledger's `rg02_obj_rr_*`), agai
   while the map still reads them as deck, so the party walks across.
 - **The lookout's bent tree** grows from the last grass at the rise's west foot (34, 0), since no tree roots on the
   rise's rock where the plan's box put it.
-- The cliff's rows keep `rock_spur` stand-ins until the baked rock face replaces them; `rockfall` is one piece along
-  the cliff's foot.
+- **The raised rock** (decision 9): the terrain's `raised` (`rg02.topdown.terrain.ts`) lifts the cliff (`X`) two
+  tiers and the rise (`^`) one, 13 px a tier, as the quarry's shelves and Ba Dan's terraces. Its outline is the
+  ground's noise smoothed, so its sides wander but throw no slivers. Along the south edge of every raised cell above
+  lower ground, the cut face hangs over the top of the cell below, as the quarry's does. Its foot wanders round 12 px
+  past the edge and stays clear of where a figure stands there, and a taller face rises the rest of the way into the
+  raised cell. The baker (`rg02.ts`) paints the face with the quarry's terrace strip, tinted to the rise's grey: lit at
+  the lip, darkening to a foot in the hard shadow tone, with a ledge between the cliff's two tiers and a few vertical
+  seams. The tops get a 1 px outline in darker rock, lit on the left and shaded on the right, and cast a short hard
+  band to the lower right. The cliff's top has gone to grass in patches with low outcrops between; the rise has dry
+  tufts. The ramp (`S`) falls to the road in three worn steps, and the rise's face tapers to nothing beside it. The
+  cliff's cells read as rock, so they are blocked terrain with no piece on them, and `rockfall` lies along its foot.
+  The lookout's flat rock moved 0.3 of a cell north, onto the rise's top and back from the lip.

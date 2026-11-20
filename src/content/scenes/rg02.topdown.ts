@@ -677,7 +677,7 @@ export const RIVER_ROAD_TERRAIN = new Rg02Terrain({
   rows: RIVER_ROAD.rows,
   // Open countryside: grass under the trees (`T`) and the bank's boulders (`U`), the packed-earth road (`=`) and its
   // pull-offs (`.`, and the camp's crates `F`), the gravel bars and the ford (`:`, `~`), the plank bridge and the
-  // landing (`w`, water under their pieces), and the cliff at the bend and the lookout's rise (`X`, `^`, `S`) as bare stone. Past the grid the
+  // landing (`w`, water under their pieces), and the cliff at the bend and the lookout's rise (`X`, `^`, `S`) as grey rock, the cliff and the rise raised (`raised`). Past the grid the
   // rows carry on: the wooded hills to the north, the river to the south, the road out of each end.
   chars: {
     ',': RG.grass,
@@ -699,6 +699,10 @@ export const RIVER_ROAD_TERRAIN = new Rg02Terrain({
   },
   beyond: RG.grass,
   earthTerrain: 'D',
+  // the bend's cliff stands two tiers above the road and no one climbs it; the lookout's rise is one tier, walked up
+  // its ramp (`S`) (`docs/places/river_road.md`, decision 9)
+  raised: { X: 2, '^': 1 },
+  rock: 'X',
   mouths: [
     mouth('emberwatch', 'west', [
       { x: 0, y: 5 },
@@ -721,15 +725,9 @@ export const RIVER_ROAD_WORN: readonly (readonly [number, number])[] = [
   [35, 2],
 ];
 
-/** A small stable hash of a cell, for the stand-ins' flip and nudge. */
+/** A small stable hash of a cell, for the trees' and boulders' flip and nudge. */
 const cellHash = (x: number, y: number): number => ((x * 73856093) ^ (y * 19349663)) >>> 0;
 
-/**
- * Stand-ins, not the set-piece plan (stage 5): every blocked cell must be a solid piece's footprint, so the region's
- * own art covers them for now. A pine on each tree cell (`T`), boulders on the bank's (`U`), rock spurs along the cliff at
- * the bend (`X`, two cells a spur), and a crate stack on each of the camp's and the shade stop's crates (`F`). Stage 5
- * replaces them with the brief's pieces (the shade stop's big tree, the bridge's rails and pole, the camp).
- */
 /**
  * A kit piece placed on a stage-5 plan member's box (`riverRoad.setpieces.ts`): centred on the box, standing on its
  * south edge, its footprint the cells the box covers. Sizes and positions are the plan's, so the art lands where the
@@ -773,9 +771,9 @@ function onBox(
  * The river road's pieces (stage 6 of `docs/level-design.md`): the kit made for it (`tools/rrobj.py`, cleaned into
  * `assets/objects_rr/`), Ba Dan's valley trees and trough for the wooded hills and the shade stop, and the coast's crates
  * and boulders, each on the stage-5 box it was planned as. The blocked cells come from the rows: a tree on every `T`
- * (the big shade tree on the shade stop's), a boulder on every `U`, crates or the trough on every `F`, and the cliff's
- * `X` cells under rock until the RG-02 baker raises a rock face there (the owner's choice, 2026-11-20); its foot is the
- * rockfall. Later states are not laid here: `toll_bar_up` (the pole raised after SF-2.3) and `cabbage_sack` (the one sack
+ * (the big shade tree on the shade stop's), a boulder on every `U` and crates or the trough on every `F`. The cliff's
+ * `X` cells are the RG-02 baker's raised rock (`raised` on the terrain; the owner's choice, 2026-11-20), blocked terrain
+ * with no piece on them but the rockfall at its foot. Later states are not laid here: `toll_bar_up` (the pole raised after SF-2.3) and `cabbage_sack` (the one sack
  * left after SF-2.3's Carry on) are in the kit for the story work to place.
  */
 export const RIVER_ROAD_OBJECTS: readonly TopDownObject[] = [
@@ -809,33 +807,21 @@ export const RIVER_ROAD_OBJECTS: readonly TopDownObject[] = [
         return x === 12 && y === 3
           ? [piece('shade-trough', 'trough_ek', 'prop', [[x, y]], true)]
           : [piece(`crates_${x}_${y}`, 'crate_stack', 'prop', [[x, y]], true)];
-      if (ch !== 'X') return [];
-      // the cliff's foot: one fallen heap along row 2's three cells
-      if (y === 2)
-        return x === 30
-          ? [
-              piece(
-                'bend-cliff-foot',
-                'rockfall',
-                'prop',
-                [
-                  [30, 2],
-                  [31, 2],
-                  [32, 2],
-                ],
-                true,
-              ),
-            ]
-          : [];
-      if (row[x - 1] === 'X' && (x - row.indexOf('X')) % 2 === 1) return [];
-      const cells: [number, number][] =
-        row[x + 1] === 'X'
-          ? [
-              [x, y],
-              [x + 1, y],
-            ]
-          : [[x, y]];
-      return [turn(piece(`spur_${x}_${y}`, 'rock_spur', 'prop', cells, true))];
+      // the cliff is baked rock (`raised`); its foot is one fallen heap along row 2's three cells
+      if (ch !== 'X' || y !== 2 || x !== 30) return [];
+      return [
+        piece(
+          'bend-cliff-foot',
+          'rockfall',
+          'prop',
+          [
+            [30, 2],
+            [31, 2],
+            [32, 2],
+          ],
+          true,
+        ),
+      ];
     }),
   ),
   // the landing
@@ -878,7 +864,8 @@ export const RIVER_ROAD_OBJECTS: readonly TopDownObject[] = [
   onBox('ford-log', 'fallen_log', 'flat', { x: 20, y: 9.2, w: 2, h: 0.6 }),
   onBox('far-bank-driftwood', 'driftwood', 'flat', { x: 26, y: 8, w: 1, h: 1 }),
   // the lookout
-  onBox('lookout-rock', 'flat_rock', 'prop', { x: 36.4, y: 2.2, w: 1.4, h: 0.6 }),
+  // the flat rock stands on the rise's top, back from its lip (the plan's box, 0.3 of a cell north)
+  onBox('lookout-rock', 'flat_rock', 'prop', { x: 36.4, y: 1.9, w: 1.4, h: 0.6 }),
   onBox('lookout-milestone', 'milestone', 'prop', { x: 35.3, y: 1.4, w: 0.4, h: 0.4 }),
   // the plan's box is on the rise's rock, where no tree roots: it grows from the last grass at the rise's west foot
   onBox('lookout-tree', 'bent_tree', 'tree', { x: 34, y: 0, w: 1, h: 1 }, { base: -8 }),
