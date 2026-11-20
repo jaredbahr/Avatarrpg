@@ -39,9 +39,9 @@ flowchart TD
   n1["act1_epilogue_lost — exit to act1 / part 1"]:::external
   n14["cutting_after_explore — exit to world / part 1"]:::external
   n44["forest_explore — exit to world / part 1"]:::external
-  n419["village_explore — exit to act1 / part 1"]:::external
+  n420["village_explore — exit to act1 / part 1"]:::external
   n32 -->|"Next"| n44
-  n52 -->|"Next"| n419
+  n52 -->|"Next"| n420
   n75 -->|"Next"| n77
   n76 -->|"Next"| n79
   n77 -->|"Next"| n78
@@ -53,8 +53,8 @@ flowchart TD
   n84 -->|"Next"| n81
   n85 -->|"Next"| n83
   n86 -->|"set: (none); phase: morning"| n1
-  n90 -->|"Next"| n419
-  n258 -->|"Next"| n419
+  n90 -->|"Next"| n420
+  n258 -->|"Next"| n420
   n330 -->|"Next"| n14
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87

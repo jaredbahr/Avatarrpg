@@ -6,7 +6,7 @@
 
 Source: [../regions/saltstepEmberwatch/sf22.ts](../../src/content/story/../regions/saltstepEmberwatch/sf22.ts).
 
-5 nodes; 1 fights; 0 branches; 0 choices
+6 nodes; 1 fights; 0 branches; 0 choices
 
 Green nodes are story entry points (new game, map interactions, cross-file targets, or roots). Hexagons are fights; diamonds are flag branches. Purple placeholders exit this file; dashed placeholders continue in another part. Counts include owned story nodes only.
 
@@ -14,24 +14,26 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 
 <a id="part-1"></a>
 
-## Part 1: entry `sf22_rules`
+## Part 1: entry `sf22_challenge`
 
-5 owned nodes.
+6 owned nodes.
 
 ```mermaid
 flowchart TD
   n374{{"sf22_battle<br/>Fight: enc_sf22_platform (expected level 4)"}}
   n375["sf22_bowls<br/>Bowl-seller: Sixty bowls. Sand’s in the tub. Don’t stack them w…"]
-  n376["sf22_lost<br/>Set flags"]
-  n377["sf22_rules<br/>Tavi Ren: No bending the platform. Bend whatever else you like.…"]:::entry
-  n378["sf22_won<br/>Channel hand: Fair. We wash. You can dry, since you’re so quick."]
+  n376["sf22_challenge<br/>Ferry apprentice: You’re the ones off the cabbage cart. We sett…"]:::entry
+  n377["sf22_lost<br/>Set flags"]
+  n378["sf22_rules<br/>Tavi Ren: No bending the platform. Bend whatever else you like.…"]
+  n379["sf22_won<br/>Channel hand: Fair. We wash. You can dry, since you’re so quick."]
   n171["mq02_market_explore — exit to mq02-paper-and-stone / part 8"]:::external
-  n374 -->|"Victory"| n378
-  n374 -->|"Defeat"| n376
+  n374 -->|"Victory"| n379
+  n374 -->|"Defeat"| n377
   n375 -->|"Next"| n171
-  n376 -->|"set: (none); grant XP: 15"| n375
-  n377 -->|"Next"| n374
-  n378 -->|"Next"| n171
+  n376 -->|"Next"| n378
+  n377 -->|"set: (none); grant XP: 15"| n375
+  n378 -->|"Next"| n374
+  n379 -->|"Next"| n171
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

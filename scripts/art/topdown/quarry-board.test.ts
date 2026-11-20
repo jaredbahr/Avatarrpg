@@ -18,7 +18,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import { PNG } from 'pngjs';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { regionAssets } from '../../region-assets';
 import { validateTopDownLayout } from '../../../src/content/schemas';
 import {
@@ -51,8 +51,6 @@ import {
 import type { RgbaImage } from '../../../src/render/shadow/hardShadowMask';
 import { bakePlate, mirror, quarryObject, quarryTiles, QUARRY_BOARDS } from './boards/quarry';
 import { sceneFile } from './lib/board';
-
-vi.setConfig({ testTimeout: 300_000 });
 
 const PAGE = readFileSync('prototypes/topdown/tutorial-demo.html', 'utf8');
 const SRC = 'prototypes/topdown/src/b3';

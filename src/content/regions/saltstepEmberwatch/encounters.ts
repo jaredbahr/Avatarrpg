@@ -121,7 +121,7 @@ export const SALTSTEP_EMBERWATCH_ENCOUNTERS: readonly EncounterDef[] = [
     // shoves a turn, which on a deck this size decides the bout in a round.
     hard: { power: 3, ap: 0 },
     intro:
-      'PLACEHOLDER (story): the bout’s opening narration on the spare platform at the midday lull.',
-    tip: 'PLACEHOLDER (story): a tip for the kids: push them into the water, and watch the blue cells where the deck will tip.',
+      'The midday lull. The spare platform rides loose on its moorings, and it leans toward whoever stands on it. Half the market has found a reason to be near the rail.',
+    tip: 'A shove toward the water leaves a fighter teetering on the edge. Shove them again after their turn and they are in, and out of the bout. If you are the one teetering, step back from the edge. Blue squares show where the deck will tip when the round ends.',
   },
 ];

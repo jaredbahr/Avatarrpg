@@ -2,13 +2,13 @@
  * SF-2.2, "The tipping platform" (Saltstep; sparring): Tavi's ferry apprentices and a crew of channel
  * hands, on a spare market platform at the midday lull. Losers wash the bowl-seller's bowls.
  *
- * Lines are the merged script's (`docs/story/scripts/act2-sparks.md`), word for word. The bout's rules
+ * Lines are the merged script's (`docs/story/scripts/act2-sparks.md`) and the writing pass's answers on #914
+ * (2026-11-19), word for word. The bout's rules
  * are ADR 0122 (owner, 2026-11-19). It pays a token `SF22_XP_PER_HEAD` on a win (the encounter's
  * `xpPerHead`) and on "Carry on" (`grantXp`) alike (owner, 2026-11-19).
  *
  * Not built yet: Saltstep's trust rising when the bout is played (community trust, C-25, has no
- * mechanism). The challenge itself has no line in the script: the apprentices' conversation opens
- * on Tavi's rules.
+ * mechanism).
  */
 import type { StoryNode } from '../../../core/types';
 import { staged } from './stage';
@@ -19,6 +19,18 @@ export const SF22_XP_PER_HEAD = 15;
 const NARRATOR = 'portrait.narrator';
 
 const NODES: readonly StoryNode[] = [
+  {
+    // The challenge (#914): both crews against the party, and the losers wash the bowls.
+    id: 'sf22_challenge',
+    kind: 'dialogue',
+    speaker: 'Ferry apprentice',
+    portrait: NARRATOR,
+    lines: [
+      'You’re the ones off the cabbage cart. We settle the midday on the loose platform, us and the channel hands. Today we thought we’d be on the same side for once, and you’d be the other one.',
+      'Losers wash the bowl-seller’s bowls. There are sixty. Are you in?',
+    ],
+    next: 'sf22_rules',
+  },
   {
     id: 'sf22_rules',
     kind: 'dialogue',
@@ -64,6 +76,7 @@ const NODES: readonly StoryNode[] = [
 
 /** The bout's conversations, played over the market beside the apprentices or the bowl-seller. */
 export const SF22_STORY: readonly StoryNode[] = staged(NODES, 'saltstep_market', {
+  sf22_challenge: 'sf22_apprentices',
   sf22_rules: 'sf22_apprentices',
   sf22_won: 'sf22_apprentices',
   sf22_bowls: 'mq02_bowl_seller',
