@@ -38,6 +38,7 @@ export const SALTSTEP_EMBERWATCH: RegionManifest = {
   scenes: {
     saltstep_market: { url: 'art/topdown/saltstep-market/scene.json', cameraCentreMargin: 1 },
     saltstep_pontoon: { url: 'art/topdown/saltstep-pontoon/scene.json', cameraCentreMargin: 1 },
+    saltstep_platform: { url: 'art/topdown/saltstep-platform/scene.json', cameraCentreMargin: 1 },
     emberwatch_parade: { url: 'art/topdown/emberwatch-parade/scene.json', cameraCentreMargin: 1 },
     emberwatch_power_yard: {
       url: 'art/topdown/emberwatch-power-yard/scene.json',

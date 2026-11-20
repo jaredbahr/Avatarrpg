@@ -6,6 +6,9 @@ import {
   EMBERWATCH_POWER_YARD_TOPDOWN_LAYOUT,
   SALTSTEP_MARKET_TERRAIN,
   SALTSTEP_MARKET_TOPDOWN_LAYOUT,
+  SALTSTEP_PLATFORM_RAISED,
+  SALTSTEP_PLATFORM_TERRAIN,
+  SALTSTEP_PLATFORM_TOPDOWN_LAYOUT,
   SALTSTEP_PONTOON_TERRAIN,
   SALTSTEP_PONTOON_TOPDOWN_LAYOUT,
 } from '../../../../src/content/scenes/rg02.topdown';
@@ -49,6 +52,15 @@ export const RG02_BOARDS: readonly TopDownBoard[] = [
     layout: SALTSTEP_PONTOON_TOPDOWN_LAYOUT,
     // the quay's cart track along the north side
     wear: { paths: span(0, 10, 0, 0) },
+  }),
+  rg02Board({
+    id: 'saltstep_platform',
+    folder: 'saltstep-platform',
+    terrain: SALTSTEP_PLATFORM_TERRAIN,
+    layout: SALTSTEP_PLATFORM_TOPDOWN_LAYOUT,
+    // the stall's old footprint down the seam, where feet and crates wore the planks paler
+    wear: { paths: span(6, 8, 3, 7) },
+    raised: SALTSTEP_PLATFORM_RAISED,
   }),
   rg02Board({
     id: 'emberwatch_parade',
