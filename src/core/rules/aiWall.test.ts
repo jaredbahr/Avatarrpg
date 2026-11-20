@@ -1,11 +1,20 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { CONTENT } from '../../content';
+import {
+  TIME_BUDGETS,
+  TIME_BUDGET_TAG,
+  elapsedMs,
+  expectTimeWithin,
+  expectWorkWithin,
+} from '../../../scripts/test-support/workBounds';
 import { RngCursor } from '../rng';
 import { BattleDraft, raisedWallTile } from '../state/battleDraft';
 import { createBattle, createGame } from '../state/createGame';
 import type { Grid, StatusInstance, Tile, Unit, Vec2 } from '../types';
+import * as abilityRules from './abilities';
 import { affectedTiles, isValidTarget } from './abilities';
 import { planAiTurn, wallStrandsCaster } from './ai';
+import * as gridRules from './grid';
 import { DEFAULT_TILE, hasLineOfSight, tileAt, withTile } from './grid';
 
 /**
@@ -648,15 +657,19 @@ describe('the AI and its own walls', () => {
     expect(wallStrandsCaster(draft, caster, [wallTile])).toBe(false);
   });
 
-  it('scores a full turn for three casters on a 20x12 board inside a budget', () => {
-    /*
-     * Guard against the tempting-but-wrong fix: asking "can the caster still hit
-     * something after this wall?" by sweeping every tile it could walk to. That
-     * search ran once per candidate placement, on every scored position, and was
-     * the expensive part of a wall-heavy turn. The rule now reads the caster's
-     * position only, so a three-bender turn should stay well inside the budget.
-     */
-    const { draft, casterIds } = setup({
+  /*
+   * Guard against the tempting-but-wrong fix: asking "can the caster still hit
+   * something after this wall?" by sweeping every tile it could walk to. That
+   * search ran once per candidate placement, on every scored position, and was
+   * the expensive part of a wall-heavy turn. The rule now reads the caster's
+   * position only.
+   *
+   * The gate bounds the work that fix multiplied, not the time it took (#796):
+   * the reachability searches, the target-validity checks and the sight lines
+   * of one turn each. The counts are the same on every machine.
+   */
+  const threeCasters = () =>
+    setup({
       grid: openGrid(20, 12),
       casters: [
         bender({ x: 3, y: 3 }, { move: 3 }),
@@ -670,13 +683,43 @@ describe('the AI and its own walls', () => {
       ],
     });
 
-    const started = performance.now();
-    for (const id of casterIds) planAiTurn(draft, id, new RngCursor(0x51ce));
-    const elapsed = performance.now() - started;
-
-    // Sanity: the casters actually paid for walls rather than skipping the work.
-    expect(usedAbilities(draft)).toContain('earth_wall');
-    // Generous for loaded CI machines; the rejected full-map search took seconds.
-    expect(elapsed).toBeLessThan(1500);
+  it('scores a full turn for three casters on a 20x12 board within its work bounds', () => {
+    const { draft, casterIds } = threeCasters();
+    const searches = vi.spyOn(gridRules, 'reachable');
+    const validity = vi.spyOn(abilityRules, 'isValidTarget');
+    const sight = vi.spyOn(gridRules, 'hasLineOfSight');
+    try {
+      for (const id of casterIds) planAiTurn(draft, id, new RngCursor(0x51ce));
+      // Sanity: the casters actually paid for walls rather than skipping the work.
+      expect(usedAbilities(draft)).toContain('earth_wall');
+      expect(searches).toHaveBeenCalled();
+      expect(validity).toHaveBeenCalled();
+      expect(sight).toHaveBeenCalled();
+      // Measured 3 (one per caster), 21,412 and 11,297; each bound is about 1.5 times that.
+      expectWorkWithin('reachability searches in three AI turns', searches.mock.calls.length, 5);
+      expectWorkWithin(
+        'target-validity checks in three AI turns',
+        validity.mock.calls.length,
+        32_000,
+      );
+      expectWorkWithin('sight lines traced in three AI turns', sight.mock.calls.length, 17_000);
+    } finally {
+      searches.mockRestore();
+      validity.mockRestore();
+      sight.mockRestore();
+    }
   });
+
+  // The time itself, for the nightly hosted run only; the rejected full-map search took seconds.
+  it.runIf(TIME_BUDGETS)(
+    `scores a full turn for three casters on a 20x12 board inside 1.5 s ${TIME_BUDGET_TAG}`,
+    () => {
+      const { draft, casterIds } = threeCasters();
+      const ms = elapsedMs(() => {
+        for (const id of casterIds) planAiTurn(draft, id, new RngCursor(0x51ce));
+      });
+      expect(usedAbilities(draft)).toContain('earth_wall');
+      expectTimeWithin('three AI wall turns on a 20x12 board', ms, 1500);
+    },
+  );
 });

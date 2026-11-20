@@ -50,6 +50,7 @@ describe('withTopDownMaps', () => {
       'quarry_floor',
       'saltstep_market',
       'saltstep_pontoon',
+      'saltstep_platform',
       'emberwatch_parade',
       'emberwatch_power_yard',
     ]);
@@ -74,6 +75,7 @@ describe('withTopDownMaps', () => {
       ['quarry_floor', 'quarry-floor'],
       ['saltstep_market', 'saltstep-market'],
       ['saltstep_pontoon', 'saltstep-pontoon'],
+      ['saltstep_platform', 'saltstep-platform'],
       ['emberwatch_parade', 'emberwatch-parade'],
       ['emberwatch_power_yard', 'emberwatch-power-yard'],
     ] as const) {

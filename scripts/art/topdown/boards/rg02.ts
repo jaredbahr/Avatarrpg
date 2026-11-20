@@ -142,6 +142,11 @@ export interface Rg02BoardConfig {
     /** Organic edges for the colour drift, the wet patches and the quilt's seams: per-pixel, not stepped and square. */
     readonly soft?: boolean;
   };
+  /**
+   * Deck cells one step up (the map's elevation 1), as `[x, y, ramp]`: the top a shade lighter, a plank-high face along
+   * each south edge that drops to ordinary deck, half height on a ramp cell. SF-2.2's north step on the platform.
+   */
+  readonly raised?: readonly (readonly [number, number, boolean])[];
 }
 
 export function bake(cfg: Rg02BoardConfig): Baked {
@@ -283,6 +288,28 @@ export function bake(cfg: Rg02BoardConfig): Baked {
         mix(up, GLINT, 0.45);
       }
     }
+
+  // 2c. a raised deck (`cfg.raised`): the step's top lighter, and its front face of one dark plank with a lit top edge
+  const STEP_TOP: Rgb = [0xe8, 0xd2, 0xa8];
+  const STEP_FACE: Rgb = [0x6b, 0x4a, 0x33];
+  const up = new Map((cfg.raised ?? []).map(([cx, cy, ramp]) => [`${cx},${cy}`, ramp]));
+  for (const [cx, cy, ramp] of cfg.raised ?? []) {
+    const x0 = GRID.x + cx * CELL,
+      y0 = GRID.y + cy * CELL;
+    const drop = !up.has(`${cx},${cy + 1}`);
+    const face = drop ? (ramp ? 5 : 9) : 0;
+    for (let y = y0; y < y0 + CELL; y++)
+      for (let x = x0; x < x0 + CELL; x++) {
+        // only the deck itself: the plank edge's organic outline over the water stays as baked
+        if (c(x, y) !== RG.deck) continue;
+        const i = y * PW + x,
+          fy = y - (y0 + CELL - face);
+        if (fy < 0) mix(i, STEP_TOP, 0.16);
+        else if (fy === 0) set(i, STEP_TOP);
+        else if (fy === face - 1) set(i, LIP);
+        else mix(i, STEP_FACE, 0.85);
+      }
+  }
 
   const classes = new Uint8Array(PW * PH);
   for (let i = 0; i < classes.length; i++)
