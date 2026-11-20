@@ -1688,7 +1688,16 @@ export type GameEvent =
       readonly comboId?: string;
     }
   | { readonly type: 'unitPushed'; readonly unitId: string; readonly to: Vec2 }
-  | { readonly type: 'unitDied'; readonly unitId: string }
+  | {
+      readonly type: 'unitDied';
+      readonly unitId: string;
+      /**
+       * Set only in a sparring bout (ADR 0122 §2): `down` when the fighter was knocked to 0 HP,
+       * `water` when a forced move carried them in. Presentation shows it as out of the bout, not
+       * as a knockout.
+       */
+      readonly out?: 'down' | 'water';
+    }
   /** A downed unit stood back up with `hp` health, helped by `helperId` (ADR 0118). */
   | {
       readonly type: 'unitRevived';

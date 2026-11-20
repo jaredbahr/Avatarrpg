@@ -258,7 +258,8 @@ export const ENEMIES: readonly EnemyDef[] = [
     ai: 'aggressive',
     xp: 1,
     sprite: 'unit.enemy.rigger',
-    description: 'PLACEHOLDER (story): one of Tavi’s ferry apprentices, quick on a moving deck.',
+    description:
+      'Poles a ferry all day and has the shoulders for it. Quick on a wet deck. Laughs when it goes in.',
   },
   {
     id: 'channel_hand',
@@ -271,7 +272,8 @@ export const ENEMIES: readonly EnemyDef[] = [
     ai: 'aggressive',
     xp: 1,
     sprite: 'unit.enemy.freighthandler',
-    description: 'PLACEHOLDER (story): a channel hand, heavy and hard to move.',
+    description:
+      'Hauls barges through the channel for a living. Slow to move and very hard to shift.',
   },
   {
     /*
