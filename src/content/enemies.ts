@@ -279,7 +279,9 @@ export const ENEMIES: readonly EnemyDef[] = [
    * SF-2.3, the bridge toll: a corporal and six guards from another quarry, unpaid for two months
    * (the script). They pay their XP through the encounter's `xpPerHead`, so their own `xp` is a
    * token that never pays. They wear the Cutting's mercenary sheets until their own art is made: the
-   * blade, the crossbow and the sergeant. The descriptions say only what they do in a fight; who
+   * blade, the crossbow and the sergeant. Lighter than Jin's crew, whose stats they started from: with
+   * the blades' Slow, Story won 33% at one player and 94% at three (sim, 2026-11-20); at these numbers,
+   * with clubs, Story wins every trial at one, three and six players. The descriptions say only what they do in a fight; who
    * they are waits for the writing pass.
    */
   {
@@ -288,12 +290,13 @@ export const ENEMIES: readonly EnemyDef[] = [
     shortName: 'Guard',
     element: 'nonbender',
     size: 1,
-    stats: { maxHp: 32, maxAp: 4, maxMove: 4, power: 6, defense: 2, speed: 6, focus: 10 },
-    abilities: ['merc_blade'],
+    stats: { maxHp: 26, maxAp: 4, maxMove: 4, power: 5, defense: 1, speed: 6, focus: 10 },
+    abilities: ['club_swing'],
     ai: 'aggressive',
     xp: 1,
     sprite: 'unit.enemy.merc',
-    description: 'A low, fast blade that can leave you Slowed for a turn.',
+    description:
+      'Holds the bridge with a club. Not sturdy; two of them side by side fill the planks.',
   },
   {
     id: 'toll_crossbow',
@@ -301,7 +304,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     shortName: 'Crossbow',
     element: 'nonbender',
     size: 1,
-    stats: { maxHp: 30, maxAp: 4, maxMove: 4, power: 5, defense: 1, speed: 7, focus: 15 },
+    stats: { maxHp: 24, maxAp: 4, maxMove: 4, power: 4, defense: 0, speed: 7, focus: 15 },
     abilities: ['merc_crossbow'],
     ai: 'cautious',
     xp: 1,
@@ -314,7 +317,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     name: 'Corporal',
     element: 'nonbender',
     size: 1,
-    stats: { maxHp: 50, maxAp: 5, maxMove: 4, power: 6, defense: 3, speed: 6, focus: 10 },
+    stats: { maxHp: 40, maxAp: 4, maxMove: 4, power: 5, defense: 2, speed: 6, focus: 10 },
     abilities: ['merc_blade', 'rally'],
     ai: 'support',
     xp: 1,

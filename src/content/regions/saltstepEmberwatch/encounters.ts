@@ -149,6 +149,11 @@ export const SALTSTEP_EMBERWATCH_ENCOUNTERS: readonly EncounterDef[] = [
     baselinePartySize: 3,
     reinforcements: [at(9, 4, 'toll_guard'), at(14, 2, 'toll_crossbow'), at(11, 7, 'toll_guard')],
     variants: [],
+    /*
+     * Hard keeps one of the shared profile's two extra AP and +3 of its power: with all of it a table of three won
+     * 63% here, and with none of it Hard was barely harder than Story (sim, 2026-11-20).
+     */
+    hard: { power: 3, ap: 1 },
     intro: 'PLACEHOLDER (story): the pole across the bridge, the guards behind it.',
     tip: 'The guards hold the bridge. The stream is shallow at the ford, downstream: cross there to come at them from the side. The corporal’s Rally makes a guard hit harder, so reach him early.',
   },
