@@ -510,9 +510,9 @@ function paintMasses(
         const seamL = hash2(x + 1, 0, 153) < 0.07 && row > 2 && row < H - 1;
         if (seam) col = mixRgb(col, SHADE, 0.45);
         else if (seamL) col = mixRgb(col, LIGHT, 0.18);
-        // a tier's ledge on a tall face: a lit line with its shadow under it
-        if (H > FACE_TIER + 6) {
-          const ledge = H - FACE_TIER;
+        // a ledge at each tier of a tall face: a lit line with its shadow under it
+        for (let k = 1; H - k * FACE_TIER > 6; k++) {
+          const ledge = H - k * FACE_TIER;
           if (row === ledge) col = mixRgb(col, LIGHT, 0.3);
           else if (row === ledge + 1) col = mixRgb(col, SHADE, 0.35);
         }

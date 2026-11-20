@@ -56,7 +56,8 @@ export interface Rg02TerrainConfig {
   readonly earthTerrain?: 'G' | 'D';
   /**
    * Raised ground (the river road's cliff and lookout rise): the row characters drawn as a rock mass standing above
-   * the ground, each with its height in tiers. A mass's stone is its top; its bottom `FACE_TIER` px a tier, in each
+   * the ground, each with the height of its face in tiers. This is the art's height only; the rules' elevation is the
+   * map legend's. A mass's stone is its top; its bottom `FACE_TIER` px a tier, in each
    * column, are its cut face, which nothing stands on. A character not listed (a ramp) is flat stone with no face.
    */
   readonly raised?: Readonly<Record<string, number>>;
