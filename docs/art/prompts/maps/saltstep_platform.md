@@ -1,4 +1,4 @@
-# Map painting: Spare market platform (`saltstep_platform`)
+# Map painting: The Loose Platform (`saltstep_platform`)
 
 **Deliver** one PNG of 1920×1408 pixels or a whole multiple of it (3840×2816 is the comfortable size to generate at), landscape 15:11, saved as `art/raw/maps/saltstep_platform.png`. `art:map` downsizes it with a box filter and never upscales.
 

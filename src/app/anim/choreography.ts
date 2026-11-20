@@ -1262,10 +1262,27 @@ export function choreograph(input: ChoreographyInput): Choreography {
             ...(span > 0 ? {} : { alpha: { from: 1, to: 0.35 } }),
             frame: 0,
           });
-          const { recipe, palette } = effect('fx.ko.fall');
+          // A sparring bout (ADR 0122): nobody is hurt, so going in the water splashes, and either
+          // way out reads as "out" in a calm colour rather than a knockout's red "down".
+          const splash = event.out === 'water';
+          const { recipe, palette } = effect(splash ? 'fx.bout.splash' : 'fx.ko.fall');
           const centre = unitEffectCentre(event.unitId, pos);
-          emit(recipe.impact, at + duration * 0.4, centre, centre, palette, eventIndex, 5);
-          floater(unitFloaterPos(event.unitId, pos), 'down', '#e2584a', at + duration * 0.3);
+          emit(
+            recipe.impact,
+            at + duration * (splash ? 0.15 : 0.4),
+            centre,
+            centre,
+            palette,
+            eventIndex,
+            5,
+          );
+          if (splash) cue('fx.surface.water', at, 7, eventIndex);
+          floater(
+            unitFloaterPos(event.unitId, pos),
+            event.out ? 'out' : 'down',
+            event.out ? '#cfc3ae' : '#e2584a',
+            at + duration * 0.3,
+          );
         }
         cursor = at + timing.gap * 2 * rate;
         break;

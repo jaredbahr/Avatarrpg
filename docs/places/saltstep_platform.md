@@ -33,8 +33,8 @@ in the harbour it floats, and whether anyone watches from boats. See open questi
 
 - **Why the player comes here:** an optional, friendly bout in the middle of a busy act: the first fight in the
   game where nobody is an enemy, and where the board itself is the opponent's best weapon.
-- **What it was before:** a market platform with its stall taken off, waiting for a new tenant (PLACEHOLDER: the
-  writing pass may say whose).
+- **What it was before:** a net-mender's stall, who moved ashore when the platform's moorings went slack; nobody has
+  claimed it since, which is why it is spare (the writing pass, #914). Nobody says this in the bout.
 - **Feeling on arrival:** silly, wobbly, a dare. **On leaving:** wet and laughing.
 - **Later states:** none on the board. After the bout it is not visited again.
 

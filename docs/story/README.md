@@ -4,7 +4,7 @@
 
 Generated from the effective runtime story nodes, including party voice dialogue variants. Regenerate with `npm run docs:story`; verify committed output with `npm run docs:story -- --check`.
 
-426 nodes; 9 fights; 28 branches; 11 choices
+427 nodes; 9 fights; 28 branches; 11 choices
 
 Each runtime story node is owned by exactly one diagram. Entry points are highlighted; cross-file exits and cross-part continuations link to the diagram owning their target. Files over 80 nodes split from entry points into parts of at most 80 owned nodes. Boundary placeholders are excluded from counts.
 
@@ -22,7 +22,7 @@ Edges show every authored story transition, choice condition and flag mutation. 
 | [Return](./return.md)                                     |    33 |      0 |        0 |       0 |     1 |
 | [The river road (blockout)](./river-road.md)              |     2 |      0 |        0 |       0 |     1 |
 | [Riverside](./riverside.md)                               |     7 |      0 |        0 |       0 |     1 |
-| [SF-2.2 The tipping platform](./sf22-tipping-platform.md) |     5 |      1 |        0 |       0 |     1 |
+| [SF-2.2 The tipping platform](./sf22-tipping-platform.md) |     6 |      1 |        0 |       0 |     1 |
 | [Act I side fights](./side-fights-act1.md)                |    34 |      2 |        7 |       0 |     1 |
 | [SQ-01 Too Many Cabbages](./sq01-cabbages.md)             |    10 |      0 |        1 |       1 |     1 |
 | [SQ-02 A Very Official Gate](./sq02-official-gate.md)     |    14 |      0 |        0 |       2 |     1 |
