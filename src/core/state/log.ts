@@ -85,7 +85,11 @@ export function describeEvent(
       return `${nameOf(units, event.unitId)} is shoved back.`;
 
     case 'unitDied':
-      return `${nameOf(units, event.unitId)} is down!`;
+      return event.out === 'water'
+        ? `${nameOf(units, event.unitId)} goes in the water, out of the bout!`
+        : event.out
+          ? `${nameOf(units, event.unitId)} is out of the bout!`
+          : `${nameOf(units, event.unitId)} is down!`;
 
     case 'unitRevived':
       return `${nameOf(units, event.helperId)} helps ${nameOf(units, event.unitId)} up! (${event.hp} HP)`;

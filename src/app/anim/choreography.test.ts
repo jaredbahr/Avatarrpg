@@ -1229,6 +1229,15 @@ describe('choreograph', () => {
     expect(hit?.at).toBeGreaterThan(cast?.at ?? 0);
   });
 
+  it('splashes a fighter shoved off the platform, and calls it out, not down (ADR 0122)', () => {
+    const { tracks, sounds } = run([{ type: 'unitDied', unitId: 'e0', out: 'water' }]);
+    expect(tracks.find((t) => t.kind === 'floater')?.text).toBe('out');
+    expect(sounds.map((s) => s.key)).toContain('fx.surface.water');
+    const knocked = run([{ type: 'unitDied', unitId: 'e0', out: 'down' }]);
+    expect(knocked.tracks.find((t) => t.kind === 'floater')?.text).toBe('out');
+    expect(knocked.sounds.map((s) => s.key)).not.toContain('fx.surface.water');
+  });
+
   it('cue going down', () => {
     const { sounds } = run([{ type: 'unitDied', unitId: 'e0' }]);
     expect(sounds.map((s) => s.key)).toContain('ko');

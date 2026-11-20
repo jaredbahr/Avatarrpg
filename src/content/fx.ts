@@ -1463,6 +1463,12 @@ const DRAWN_RECIPES: Readonly<Record<string, FxRecipeInput>> = {
     flash: 0,
   },
 
+  // A fighter shoved off the tipping platform (ADR 0122): a friendly splash, no shake.
+  'fx.bout.splash': {
+    palette: 'water',
+    impact: [droplets(20), droplets(8, 'dark')],
+    flash: 0,
+  },
   'fx.prop.water_barrel': {
     palette: 'water',
     impact: [droplets(16), shards(6, 'dark'), dust(4)],

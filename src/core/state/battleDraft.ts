@@ -202,8 +202,8 @@ export class BattleDraft {
     if (!this.boutOut.includes(unitId)) this.boutOut.push(unitId);
     if (!isAlive(unit)) return;
     this.replace({ ...unit, hp: 0 });
-    this.message(`${unit.name} is out of the bout.`);
-    this.emit({ type: 'unitDied', unitId });
+    // Only a forced move reaches here with the fighter still up: 0 HP has already emitted its own.
+    this.emit({ type: 'unitDied', unitId, out: 'water' });
   }
 
   /**
@@ -337,7 +337,8 @@ export class BattleDraft {
       ...(options.cause ? { cause: options.cause } : {}),
     });
 
-    if (hp <= 0) this.emit({ type: 'unitDied', unitId });
+    if (hp <= 0)
+      this.emit({ type: 'unitDied', unitId, ...(this.bout ? { out: 'down' as const } : {}) });
     // In a bout, 0 HP is out of the bout: recorded, and never helped up (ADR 0122 §2).
     if (hp <= 0 && this.bout) this.putOut(unitId);
   }
