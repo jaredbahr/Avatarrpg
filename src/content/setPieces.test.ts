@@ -5,8 +5,8 @@ import { LEGEND } from './maps/legend';
 import { BA_DAN_DRESSING_PLAN } from './maps/oldVillage.dressing.fixture';
 import { BA_DAN_TOPDOWN_OBJECTS } from './scenes/baDan.topdown';
 import { BA_DAN_SET_PIECE_PLAN } from './scenes/baDan.setpieces';
-import { BA_DAN_TRACKS } from './scenes/baDan.ground';
-import { trackCells } from './ground';
+import { RIVER_ROAD_SET_PIECE_PLAN } from './scenes/riverRoad.setpieces';
+import { SET_PIECE_PLANS, setPiecePlanFor, type PlannedMap } from './scenes/setPiecePlans';
 import {
   memberCells,
   validateDressing,
@@ -104,33 +104,40 @@ describe('the placement grammar (ADR 0119)', () => {
   });
 });
 
-/** The live board's rows and the ground spec's tracks: what the stage 5 plan is held against. */
-const liveContext = (): PlanContext => {
+/** A planned map's live rows and its named tracks: what its stage 5 plan is held against. */
+const contextFor = (planned: PlannedMap): PlanContext => {
+  const { map } = planned;
   const blockedLive = (x: number, y: number): boolean => {
-    const ch = BA_DAN_VILLAGE.rows[y]?.[x];
+    const ch = map.rows[y]?.[x];
     if (ch === undefined) return true;
-    const def = BA_DAN_VILLAGE.legend?.[ch] ?? LEGEND[ch];
+    const def = map.legend?.[ch] ?? LEGEND[ch];
     return def ? def.blocked === true : true;
   };
   return {
-    width: BA_DAN_VILLAGE.width,
-    height: BA_DAN_VILLAGE.height,
+    width: map.width,
+    height: map.height,
     blocked: blockedLive,
-    tracks: new Map(
-      BA_DAN_TRACKS.map((t) => [t.id, trackCells(t, BA_DAN_VILLAGE.width, BA_DAN_VILLAGE.height)]),
-    ),
-    // a disk is worn out to its radius, a ring a half cell beyond it
-    disks: new Map(
-      BA_DAN_TRACKS.flatMap((t) =>
-        'disk' in t
-          ? [[t.id, { x: t.disk[0], y: t.disk[1], r: t.r }] as const]
-          : 'ring' in t
-            ? [[t.id, { x: t.ring[0], y: t.ring[1], r: t.r + 0.5 }] as const]
-            : [],
-      ),
-    ),
+    tracks: planned.tracks(),
+    disks: planned.disks(),
   };
 };
+
+const planned = (mapId: string): PlannedMap => {
+  const p = setPiecePlanFor(mapId);
+  if (!p) throw new Error(`no set-piece plan for ${mapId}`);
+  return p;
+};
+
+/** Ba Dan's live board's rows and the ground spec's tracks. */
+const liveContext = (): PlanContext => contextFor(planned(BA_DAN_VILLAGE.id));
+
+describe('every map with a set-piece plan', () => {
+  it('has one plan a map, each for a map that exists', () => {
+    const ids = SET_PIECE_PLANS.map((p) => p.plan.mapId);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const p of SET_PIECE_PLANS) expect(p.map.id).toBe(p.plan.mapId);
+  });
+});
 
 describe("Ba Dan's set pieces as boxes (stage 5)", () => {
   it('holds the plan to the rows, the named tracks, the quiet ground and the placement rules', () => {
@@ -278,5 +285,41 @@ describe("Ba Dan's set pieces as boxes (stage 5)", () => {
       expect(find(p, 'belongs to both "a" and "b"')).toHaveLength(1);
       expect(find(p, 'zone "z" has 0 focal')).toHaveLength(1);
     });
+  });
+});
+
+describe("the river road's set pieces as boxes (stage 5)", () => {
+  const ctx = contextFor(planned('river_road'));
+
+  it('holds the plan to the rows, the worn paths, the quiet ground and the placement rules', () => {
+    expect(validateSetPiecePlan(RIVER_ROAD_SET_PIECE_PLAN, ctx)).toEqual([]);
+  });
+
+  it('gives every member to one piece and every zone of the brief its one focus', () => {
+    const members = RIVER_ROAD_SET_PIECE_PLAN.pieces.flatMap((p) => p.members.map((m) => m.id));
+    expect(new Set(members).size).toBe(members.length);
+    expect(RIVER_ROAD_SET_PIECE_PLAN.zones.map((z) => z.id)).toEqual([
+      'from_the_coast',
+      'shade_stop',
+      'bridge',
+      'bend',
+      'lookout',
+    ]);
+    expect(RIVER_ROAD_SET_PIECE_PLAN.pieces.map((p) => p.id)).toEqual(
+      expect.arrayContaining(['bridge', 'guards_camp', 'shade_stop', 'landing', 'ford', 'lookout']),
+    );
+  });
+
+  it("names its walking paths from the board's worn paths, each cell once", () => {
+    const tracks = [...ctx.tracks.entries()];
+    expect(tracks.map(([id]) => id).sort()).toEqual([
+      'camp_ground',
+      'landing_path',
+      'lookout_track',
+      'road',
+      'shade_pull_off',
+    ]);
+    const cells = tracks.flatMap(([, c]) => c.map((v) => `${v.x},${v.y}`));
+    expect(new Set(cells).size).toBe(cells.length);
   });
 });

@@ -10,15 +10,11 @@
  * `import.meta.env.DEV`, so a production build never contains it.
  */
 import type { Camera } from '../../render/camera';
-import { trackCells } from '../../content/ground';
-import { BA_DAN_TRACKS } from '../../content/scenes/baDan.ground';
-import { BA_DAN_SET_PIECE_PLAN } from '../../content/scenes/baDan.setpieces';
+import { setPiecePlanFor } from '../../content/scenes/setPiecePlans';
 import type { PlanMember } from '../../content/setPieces';
 
 /** Kaya's height in world px (1.0 in the plan). */
 const FIGURE_PX = 45;
-
-const PLAN = BA_DAN_SET_PIECE_PLAN;
 
 /** Whether the page was opened with `?boxes`. */
 export function boxesRequested(): boolean {
@@ -31,16 +27,17 @@ export function boxesRequested(): boolean {
 
 export class BoxesOverlay {
   private readonly canvas: HTMLCanvasElement;
-  private readonly trackCells: readonly { x: number; y: number }[];
+  /** Each planned map's track cells, measured once when its plan is first drawn. */
+  private readonly trackCells = new Map<string, readonly { x: number; y: number }[]>();
 
-  constructor(wrap: HTMLElement, width: number, height: number) {
+  // The board's size is the plan's map's own; the arguments stay for the scene's call.
+  constructor(wrap: HTMLElement, _width: number, _height: number) {
     this.canvas = document.createElement('canvas');
     this.canvas.setAttribute('aria-hidden', 'true');
     this.canvas.dataset.boxes = 'true';
     this.canvas.style.cssText =
       'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:var(--z-overlay)';
     wrap.appendChild(this.canvas);
-    this.trackCells = BA_DAN_TRACKS.flatMap((t) => trackCells(t, width, height));
   }
 
   destroy(): void {
@@ -59,7 +56,14 @@ export class BoxesOverlay {
     if (!ctx) return;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, width, height);
-    if (mapId !== PLAN.mapId) return;
+    const planned = setPiecePlanFor(mapId);
+    if (!planned) return;
+    const PLAN = planned.plan;
+    let tracks = this.trackCells.get(mapId);
+    if (!tracks) {
+      tracks = [...planned.tracks().values()].flat();
+      this.trackCells.set(mapId, tracks);
+    }
 
     const cell = camera.tile * camera.scale;
     const at = (x: number, y: number) => camera.project({ x, y });
@@ -71,7 +75,7 @@ export class BoxesOverlay {
 
     // the ground's named tracks
     ctx.fillStyle = 'rgba(255, 214, 0, 0.16)';
-    for (const t of this.trackCells) {
+    for (const t of tracks) {
       const p = at(t.x, t.y);
       ctx.fillRect(p.x, p.y, cell, cell);
     }
