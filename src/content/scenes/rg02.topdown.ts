@@ -868,7 +868,8 @@ export const RIVER_ROAD_OBJECTS: readonly TopDownObject[] = [
   onBox('camp-bedroll-2', 'bedroll', 'flat', { x: 26, y: 3, w: 1, h: 1 }, { flip: true }),
   onBox('camp-bedroll-3', 'bedroll', 'flat', { x: 24, y: 4, w: 1, h: 1 }),
   onBox('camp-rubbish', 'rubbish_heap', 'flat', { x: 26, y: 2, w: 1, h: 1 }),
-  onBox('camp-pot', 'cook_pot', 'prop', { x: 21.3, y: 2.4, w: 0.4, h: 0.4 }),
+  // the pot sits on the ground at the fire's east side, clear of the toll sign
+  onBox('camp-pot', 'cook_pot', 'prop', { x: 25.05, y: 3.35, w: 0.4, h: 0.4 }),
   onBox('camp-toll-sign', 'toll_sign', 'prop', { x: 21.2, y: 3.5, w: 0.6, h: 0.3 }),
   // the ford, and the far bank
   onBox('ford-stones', 'stepping_stones', 'flat', { x: 20, y: 8, w: 2, h: 1 }),
