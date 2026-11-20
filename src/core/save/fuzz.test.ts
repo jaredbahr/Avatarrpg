@@ -1,11 +1,17 @@
 /**
  * Seeded corrupt-save corpus. Keep the seed and case labels in failures so a
- * failing mutation can be replayed without a random search. The budget covers
- * fixture creation, all mutations, loading, reconciliation and reducer steps.
+ * failing mutation can be replayed without a random search. The workload is
+ * fixture creation, all mutations, loading, reconciliation and reducer steps;
+ * its size is the exact mutation count, not a time.
  */
 import { createHash } from 'node:crypto';
-import { performance } from 'node:perf_hooks';
 import { describe, expect, it } from 'vitest';
+import {
+  elapsedMs,
+  expectTimeWithin,
+  TIME_BUDGET_TAG,
+  TIME_BUDGETS,
+} from '../../../scripts/test-support/workBounds';
 import { CONTENT } from '../../content';
 import { RngCursor, seedFromString } from '../rng';
 import { DIRECTIONS } from '../rules/grid';
@@ -20,7 +26,6 @@ import { deserialize, SAVE_FORMAT_VERSION, serialize, stateFromBlob } from './se
 
 const SEED = 'save-fuzz-485-v1';
 const SAMPLES = 32;
-const BUDGET_MS = 20_000;
 type Raw = Record<string, unknown>;
 
 interface Fixture {
@@ -346,10 +351,9 @@ function checkLoaded(json: string, mustAccept: boolean): boolean {
 }
 
 describe('seeded save corruption', () => {
-  it(
-    'checks 2080 mutations and usable valid saves within 20 seconds',
-    () => {
-      const started = performance.now();
+  let workloadMs: number | undefined;
+  it('checks 2080 mutations and usable valid saves', () => {
+    workloadMs = elapsedMs(() => {
       const failures: string[] = [];
       const seen = new Map<string, number>();
       const distinctPayloads = new Set<string>();
@@ -414,11 +418,8 @@ describe('seeded save corruption', () => {
         }
       }
 
-      const elapsed = performance.now() - started;
-      expect(elapsed, `complete ${mutations}-mutation workload, seed=${SEED}`).toBeLessThan(
-        BUDGET_MS,
-      );
-      expect(mutations).toBe(2_080);
+      // The work is the corpus, and it is exact: 2080 mutations on any machine (#796).
+      expect(mutations, 'mutations loaded, seed=' + SEED).toBe(2_080);
       expect(
         distinctPayloads.size,
         'at least 2000 distinct mutated inputs, not repeated cases',
@@ -431,7 +432,16 @@ describe('seeded save corruption', () => {
       ).toBeGreaterThanOrEqual(256);
       expect(failureCount, failures.join('\n')).toBe(0);
       expect(({} as Raw).polluted).toBeUndefined();
-    },
-    BUDGET_MS,
-  );
+    });
+  });
+
+  // The 20 s budget the gate used to hold, now a nightly check on a hosted runner (#796; owner, 2026-11-20).
+  it.runIf(TIME_BUDGETS)(`finishes the workload within 20 seconds ${TIME_BUDGET_TAG}`, () => {
+    expect(workloadMs, 'the workload test did not finish').toBeDefined();
+    expectTimeWithin(
+      'the save-corruption workload (2080 mutations)',
+      workloadMs ?? Infinity,
+      20_000,
+    );
+  });
 });

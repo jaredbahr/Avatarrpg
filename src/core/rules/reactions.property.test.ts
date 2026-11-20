@@ -1,8 +1,14 @@
 /** Seeded equality at the immediate, nonlethal action boundary, not turn upkeep. */
-import { performance } from 'node:perf_hooks';
 import { isDeepStrictEqual } from 'node:util';
 import { describe, expect, it, vi } from 'vitest';
 import { CONTENT } from '../../content';
+import {
+  elapsedMs,
+  expectTimeWithin,
+  expectWorkWithin,
+  TIME_BUDGET_TAG,
+  TIME_BUDGETS,
+} from '../../../scripts/test-support/workBounds';
 import { RngCursor, seedFromString } from '../rng';
 import * as drafts from '../state/battleDraft';
 import { createBattle, createGame } from '../state/createGame';
@@ -19,7 +25,6 @@ import {
 import { occupiedCells, posKey, samePos, tileAt } from './grid';
 import { forecastReactions } from './reactions';
 
-const BUDGET_MS = 20_000;
 const SEED = 'world-forecast-484-v1';
 const WORLD_EFFECTS = new Set(['damage', 'surface', 'push', 'pull', 'dash', 'wall']);
 const OriginalDraft = drafts.BattleDraft;
@@ -289,10 +294,9 @@ function assertPublicProps(
 }
 
 describe('seeded world reaction forecast versus reducer', () => {
-  it(
-    'matches at least 500 legal immediate-world actions within 20 seconds',
-    () => {
-      const started = performance.now();
+  let workloadMs: number | undefined;
+  it('matches at least 500 legal immediate-world actions', () => {
+    workloadMs = elapsedMs(() => {
       const abilities = [...CONTENT.abilities.values()].filter((ability) =>
         ability.effects.some((effect) => WORLD_EFFECTS.has(effect.kind)),
       );
@@ -570,11 +574,14 @@ describe('seeded world reaction forecast versus reducer', () => {
       expect(changedProps).toBeGreaterThan(0);
       expect(reactionChanges).toBeGreaterThan(0);
       expect(mismatches, failures.join('\n')).toBe(0);
-      expect(
-        performance.now() - started,
-        'complete generation, execution and oracle workload',
-      ).toBeLessThan(BUDGET_MS);
-    },
-    BUDGET_MS,
-  );
+      // At least 500 actions is the coverage; this is the ceiling on the same count (measured 504).
+      expectWorkWithin('world actions forecast and applied', attempted, 750);
+    });
+  });
+
+  // The 20 s budget the gate used to hold, now a nightly check on a hosted runner (#796; owner, 2026-11-20).
+  it.runIf(TIME_BUDGETS)(`finishes the workload within 20 seconds ${TIME_BUDGET_TAG}`, () => {
+    expect(workloadMs, 'the workload test did not finish').toBeDefined();
+    expectTimeWithin('the world-reaction forecast workload', workloadMs ?? Infinity, 20_000);
+  });
 });

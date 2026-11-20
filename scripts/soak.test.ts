@@ -8,6 +8,13 @@ import type { SimOptions, SimResult } from '../src/core/sim/runCombat';
 import type { ContentIndex, EncounterDef, MapDef } from '../src/core/types';
 import { parseSoakArgs } from './soak';
 import {
+  TIME_BUDGETS,
+  TIME_BUDGET_TAG,
+  cpuMs,
+  expectTimeWithin,
+  expectWorkWithin,
+} from './test-support/workBounds';
+import {
   DEFAULT_SOAK_TRIALS,
   MAX_IDLE_EXAMPLES_PER_CELL,
   SOAK_SIZES,
@@ -410,25 +417,51 @@ describe('opt-in simulator diagnostics', () => {
 });
 
 /*
- * The matrix's cost guard measures this process's CPU time, not the wall clock (#584). Wall time
- * failed whenever other jobs shared the machine (33-36 s locally beside Playwright, 30.7 s on a
- * hosted runner) while the work itself had not changed. CPU time still catches a pathological
- * slowdown in the rules or the AI; fine-grained regressions are the core bench's job (#566). The
- * budget is 45 s of CPU: the matrix measured about 30 s after #570 priced AI paths like a real
- * move, and a 50% margin keeps an ordinary runner green while a doubling still fails. The test
- * timeout is wall time and only stops a hang, so it is generous.
+ * The matrix's cost guard counts the reducer commands its battles apply, two a cell (#796). A count is the
+ * same on every machine; the earlier guards were not: 30 s of wall time failed whenever other jobs
+ * shared the machine, and its replacement, 45 s of CPU (#584), still measured the machine. A battle
+ * that drags, an AI that dithers or a turn that never ends all show up as more commands. The bound
+ * is about 1.5 times the measured count, so a doubling fails.
+ *
+ * What a command count cannot see is each command getting slower. That is the core bench's job
+ * (#566), and the CPU budget below still checks the whole matrix in the nightly hosted run.
  */
-it('runs two real seeds in every encounter/variant/size cell within its CPU budget', () => {
-  const before = process.cpuUsage();
-  const report = runSoakReport(CONTENT, { trials: 2 });
-  const used = process.cpuUsage(before);
-  const cpuMs = (used.user + used.system) / 1000;
-  expect(report.rows).toHaveLength(CELLS);
-  expect(report.summary.attempted).toBe(CELLS * 2);
-  expect(report.summary.completed).toBe(CELLS * 2);
-  expect(report.failures).toEqual([]);
-  expect(report.violations).toEqual([]);
-  expect(report.summary.passed).toBe(true);
-  expect(report.rows.every((row) => row.attempted === 2 && row.completed === 2)).toBe(true);
-  expect(cpuMs, `96-battle matrix used ${cpuMs.toFixed(0)}ms of CPU`).toBeLessThanOrEqual(45_000);
-}, 120_000);
+describe('the real soak matrix', () => {
+  let report: ReturnType<typeof runSoakReport> | undefined;
+  let commands = 0;
+  let cpu = 0;
+  const matrix = () => {
+    if (report) return report;
+    const applied = vi.spyOn(reducer, 'apply');
+    try {
+      cpu = cpuMs(() => {
+        report = runSoakReport(CONTENT, { trials: 2 });
+      });
+      commands = applied.mock.calls.length;
+    } finally {
+      applied.mockRestore();
+    }
+    if (!report) throw new Error('The soak matrix did not run');
+    return report;
+  };
+
+  it('runs two real seeds in every encounter/variant/size cell within its work bound', () => {
+    const report = matrix();
+    expect(report.rows).toHaveLength(CELLS);
+    expect(report.summary.attempted).toBe(CELLS * 2);
+    expect(report.summary.completed).toBe(CELLS * 2);
+    expect(report.failures).toEqual([]);
+    expect(report.violations).toEqual([]);
+    expect(report.summary.passed).toBe(true);
+    expect(report.rows.every((row) => row.attempted === 2 && row.completed === 2)).toBe(true);
+    expect(commands).toBeGreaterThan(CELLS * 2);
+    // Measured 2,795 commands over 78 cells (one per activation: a party turn or an AI turn).
+    expectWorkWithin('reducer commands applied by the soak matrix', commands, 4_200);
+  });
+
+  // 45 s of CPU: the matrix measured about 30 s after #570 priced AI paths like a real move.
+  it.runIf(TIME_BUDGETS)(`keeps the matrix inside its CPU budget ${TIME_BUDGET_TAG}`, () => {
+    matrix();
+    expectTimeWithin('CPU time of the soak matrix', cpu, 45_000);
+  });
+});
