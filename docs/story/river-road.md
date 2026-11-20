@@ -14,13 +14,13 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 
 <a id="part-1"></a>
 
-## Part 1: entry `river_road_sign`
+## Part 1: entry `river_road_explore`
 
 2 owned nodes.
 
 ```mermaid
 flowchart TD
-  n313["river_road_explore<br/>Explore river_road: Follow the river road toward Causeway."]
+  n313["river_road_explore<br/>Explore river_road: Follow the river road toward Causeway."]:::entry
   n314["river_road_sign<br/>River road: PLACEHOLDER (story): the cart sets off up the river…"]:::entry
   n313 -->|"Legacy/audit exit (live map exits differ)"| n313
   n314 -->|"Next"| n313

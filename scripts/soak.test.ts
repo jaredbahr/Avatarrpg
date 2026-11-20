@@ -95,10 +95,10 @@ function waitingFixture(): ContentIndex {
 
 /**
  * Encounter, roster and table-size cells in the shipped game: Act I's 48, plus RG-02's two fights
- * (the winch and SF-2.1) Act I's two side fights (SF-1.1, SF-1.2) and SF-2.2's bout, one roster each, at six
- * table sizes.
+ * (the winch and SF-2.1) Act I's two side fights (SF-1.1, SF-1.2), SF-2.2's bout and SF-2.3's bridge toll, one
+ * roster each, at six table sizes.
  */
-const CELLS = 78;
+const CELLS = 84;
 
 describe('combat soak report', () => {
   it('defaults to 200 attempts for every pinned roster and size with balance parties and seeds', () => {
@@ -147,6 +147,7 @@ describe('combat soak report', () => {
         ['enc_mq02_winch', null],
         ['enc_sf21_wet_ground', null],
         ['enc_sf22_platform', null],
+        ['enc_sf23_bridge_toll', null],
       ]);
     }
   });
@@ -455,8 +456,8 @@ describe('the real soak matrix', () => {
     expect(report.summary.passed).toBe(true);
     expect(report.rows.every((row) => row.attempted === 2 && row.completed === 2)).toBe(true);
     expect(commands).toBeGreaterThan(CELLS * 2);
-    // Measured 2,795 commands over 78 cells (one per activation: a party turn or an AI turn).
-    expectWorkWithin('reducer commands applied by the soak matrix', commands, 4_200);
+    // Measured 2,986 commands over 84 cells (one per activation: a party turn or an AI turn).
+    expectWorkWithin('reducer commands applied by the soak matrix', commands, 4_500);
   });
 
   // 45 s of CPU: the matrix measured about 30 s after #570 priced AI paths like a real move.
