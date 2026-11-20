@@ -854,13 +854,15 @@ export const RIVER_ROAD_OBJECTS: readonly TopDownObject[] = [
   onBox('shade-hitching-post', 'hitching_post', 'prop', { x: 13.4, y: 3.4, w: 0.25, h: 0.25 }),
   // the bridge (a walkway: the RG-02 baker lays it flat into the plate, no cast), and the borrowed barrier across it
   onBox('bridge-deck', 'plank_bridge', 'walkway', { x: 19, y: 5, w: 2, h: 2 }, { deck: true }),
-  // its foot stands on the planks (a deck piece: the plate under the bridge is water), clear of the deck's south edge
+  // the lowered barrier (`toll_bar_diag`): its post and crate at the deck's south-west corner, inside the rails, and
+  // the striped arm angling across the planks to its forked stick at the north-east; a deck piece, since the plate
+  // under the bridge is water
   onBox(
     'bridge-toll-pole',
-    'toll_bar_across',
+    'toll_bar_diag',
     'prop',
-    { x: 20.6, y: 5.1, w: 0.2, h: 1.8 },
-    { deck: true, base: -8 },
+    { x: 19.2, y: 5.5, w: 1.1, h: 1.3 },
+    { deck: true },
   ),
   // the guards' camp
   onBox('camp-cold-fire', 'cold_fire', 'flat', { x: 24, y: 3, w: 1, h: 1 }),
