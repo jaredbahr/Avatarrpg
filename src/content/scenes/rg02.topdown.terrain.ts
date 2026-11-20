@@ -63,6 +63,11 @@ export interface Rg02TerrainConfig {
   readonly raised?: Readonly<Record<string, number>>;
   /** The raised characters whose top no one climbs (the cliff): their top reads as rock, so their cells are blocked terrain. */
   readonly rock?: string;
+  /**
+   * Where this board's noise is sampled from, in plate px: a board cropped out of another (SF-2.3's out of the river
+   * road) samples at the parent's coordinates, so its edges and faces are the parent's, pixel for pixel. 0 by default.
+   */
+  readonly noiseOffset?: { readonly x: number; readonly y: number };
 }
 
 /** A tier of cut face, in plate px: the quarry's `Q_FACE` (`TOPDOWN_FACE_OVERHANG`), as a terrace's. */
@@ -96,6 +101,9 @@ export class Rg02Terrain {
   /** The plate's top-left in game world px. */
   readonly origin: Vec2;
   private readonly vw: number;
+  /** `noiseOffset`, in plate px. */
+  private readonly nox: number;
+  private readonly noy: number;
   private readonly weights: Float32Array;
   private masses: Masses | null | undefined;
 
@@ -105,6 +113,8 @@ export class Rg02Terrain {
     this.plateW = GRID.x * 2 + this.gw * CELL;
     this.plateH = GRID.y + this.gh * CELL + 2 * CELL;
     this.origin = { x: -GRID.x, y: -GRID.y };
+    this.nox = config.noiseOffset?.x ?? 0;
+    this.noy = config.noiseOffset?.y ?? 0;
     this.vw = Math.ceil(this.plateW / TILE) + 1;
     const vh = Math.ceil(this.plateH / TILE) + 1;
     this.weights = new Float32Array(this.vw * vh * CLASSES.length);
@@ -158,6 +168,8 @@ export class Rg02Terrain {
     const bump = own === undefined ? 0 : 0.9 * Math.max(0, 1 - d / 20);
     const dry = own !== undefined && own !== RG.water && own !== RG.void;
     const hold = dry ? 1.4 * Math.max(0, Math.min(1, (20 - d) / 7)) : 0;
+    const nx = px + this.nox,
+      ny = py + this.noy;
     let best: RgClass = RG.earth,
       score = -1e9;
     for (const k of CLASSES) {
@@ -169,8 +181,8 @@ export class Rg02Terrain {
       if (w <= 0 && k !== own) continue;
       const s =
         w +
-        vnoise(px, py, 21 + k * 7, 11) * 0.3 +
-        vnoise(px, py, 23 + k * 7, 4) * 0.16 +
+        vnoise(nx, ny, 21 + k * 7, 11) * 0.3 +
+        vnoise(nx, ny, 23 + k * 7, 4) * 0.16 +
         (k === own ? bump : 0) -
         (k === RG.water || k === RG.void ? hold : 0);
       if (s > score) {
@@ -220,7 +232,10 @@ export class Rg02Terrain {
 
   /** The column's face height for a mass of `tiers`: `FACE_TIER` px a tier, its lip ragged by a couple of px. */
   faceHeight(px: number, tiers: number): number {
-    return tiers * FACE_TIER + Math.round(vnoise(px, 0, 141, 9) * 2 + vnoise(px, 0, 142, 3));
+    return (
+      tiers * FACE_TIER +
+      Math.round(vnoise(px + this.nox, 0, 141, 9) * 2 + vnoise(px + this.nox, 0, 142, 3))
+    );
   }
 
   /** The raised masses and their faces, worked out once over the box round the raised cells (null with none). */
@@ -353,7 +368,9 @@ export class Rg02Terrain {
         const foot =
           E +
           FACE_OVERHANG_FOOT +
-          Math.round(vnoise(px, 0, 143, 17) * 4 + vnoise(px, 0, 144, 5) * 1.5);
+          Math.round(
+            vnoise(px + this.nox, 0, 143, 17) * 4 + vnoise(px + this.nox, 0, 144, 5) * 1.5,
+          );
         const lip = Math.max(0, foot - H);
         // the mass must come down to the edge in this column (a notch in its side leaves no face)
         let reach = -1;
