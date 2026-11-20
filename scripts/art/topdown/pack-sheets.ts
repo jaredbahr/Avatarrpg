@@ -94,6 +94,7 @@ export function shippedFiles(): string[] {
             'quarry-floor',
             'saltstep-market',
             'saltstep-pontoon',
+            'saltstep-platform',
             'emberwatch-parade',
             'emberwatch-power-yard',
             'props',
