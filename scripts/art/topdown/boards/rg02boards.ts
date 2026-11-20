@@ -4,6 +4,9 @@ import {
   EMBERWATCH_PARADE_TOPDOWN_LAYOUT,
   EMBERWATCH_POWER_YARD_TERRAIN,
   EMBERWATCH_POWER_YARD_TOPDOWN_LAYOUT,
+  RIVER_ROAD_BRIDGE_TERRAIN,
+  RIVER_ROAD_BRIDGE_TOPDOWN_LAYOUT,
+  RIVER_ROAD_BRIDGE_WORN,
   RIVER_ROAD_TERRAIN,
   RIVER_ROAD_TOPDOWN_LAYOUT,
   RIVER_ROAD_WORN,
@@ -99,5 +102,15 @@ export const RG02_BOARDS: readonly TopDownBoard[] = [
     stone: 'rise',
     // the road, its pull-offs, the landing's footpath and the lookout's track; a dry morning, so little lies wet
     wear: { paths: RIVER_ROAD_WORN, wet: 0.08, soft: true },
+  }),
+  rg02Board({
+    id: 'river_road_bridge',
+    folder: 'river-road-bridge',
+    terrain: RIVER_ROAD_BRIDGE_TERRAIN,
+    layout: RIVER_ROAD_BRIDGE_TOPDOWN_LAYOUT,
+    earth: 'road',
+    stone: 'rise',
+    // SF-2.3's board is a crop of the river road's, so it wears as the road does
+    wear: { paths: RIVER_ROAD_BRIDGE_WORN, wet: 0.08, soft: true },
   }),
 ];

@@ -109,6 +109,13 @@ const SCENES: Readonly<Record<string, Scene>> = {
       'A packed-earth road runs left to right across the middle, a wide slow river along the whole bottom edge and a wooded hillside along the top. Halfway along, a side stream comes down from the hills to the river; a plank bridge carries the road over it, with stepping stones a little downstream. A big shade tree and a trough stand by the road on the left, a footpath leads down to a small jetty, and a camp with a cold fire sits past the bridge. At the right the road climbs past a rock face to a rise looking out over open country.',
     light: 'Bright morning light, a little haze over the river.',
   },
+  river_road_bridge: {
+    place:
+      'The plank bridge on the river road, where a quarry corporal and his guards have put a pole across it.',
+    scene:
+      'A packed-earth road crosses the middle left to right and runs over a plank bridge where a side stream comes down from wooded hills along the top. A striped pole lies across the bridge. Past it, above the road on the right, a small camp: a cold fire ringed with stones, bedrolls, a cook pot and stacked crates. Two rows below the bridge the stream runs shallow over stepping stones, a fallen log beside them. A wide slow river runs along the bottom edge, gravel bars at its edge, and a grey rock face rises at the top-right corner.',
+    light: 'Bright morning light, a little haze over the river.',
+  },
   emberwatch_parade: {
     place: 'Emberwatch, an old military outpost across the bay, reopened for civilians.',
     scene:

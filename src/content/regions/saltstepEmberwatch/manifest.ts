@@ -22,6 +22,7 @@ export const SALTSTEP_EMBERWATCH: RegionManifest = {
     'emberwatch_power_yard',
     'saltstep_platform',
     'river_road',
+    'river_road_bridge',
   ],
   // Ba Dan's coast road is this region's way in, and the market's west road its way home.
   neighbours: ['ba_dan_valley'],
@@ -45,6 +46,10 @@ export const SALTSTEP_EMBERWATCH: RegionManifest = {
       cameraCentreMargin: 1,
     },
     river_road: { url: 'art/topdown/river-road/scene.json', cameraCentreMargin: 1 },
+    river_road_bridge: {
+      url: 'art/topdown/river-road-bridge/scene.json',
+      cameraCentreMargin: 1,
+    },
   },
   load: () => import('./content').then((module) => module.SALTSTEP_EMBERWATCH_CONTENT),
 };
