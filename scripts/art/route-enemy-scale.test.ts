@@ -7,10 +7,6 @@ import type { Ctx } from '../../src/render/painters/shapes';
 import { UNIT_PAINTERS } from '../../src/render/painters/units';
 import { validateImages, validateSheets } from './validate';
 
-// Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
-// 5 s default once. Headroom here, not a raised global timeout.
-vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
-
 const ROUTE_FIGURES = [
   'unit.enemy.thug',
   'unit.enemy.slinger',

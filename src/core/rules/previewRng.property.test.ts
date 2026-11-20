@@ -1,7 +1,13 @@
 /** Every authored ability is a pure query, including illegal aiming probes. */
-import { performance } from 'node:perf_hooks';
 import { describe, expect, it, vi } from 'vitest';
 import { CONTENT } from '../../content';
+import {
+  elapsedMs,
+  expectTimeWithin,
+  expectWorkWithin,
+  TIME_BUDGET_TAG,
+  TIME_BUDGETS,
+} from '../../../scripts/test-support/workBounds';
 import * as random from '../rng';
 import { BattleDraft } from '../state/battleDraft';
 import { createBattle, createGame } from '../state/createGame';
@@ -18,7 +24,6 @@ import { scoreAbility, weightsFor } from './ai';
 import { inBounds, occupiedCells, posKey } from './grid';
 import { isAlive } from './stats';
 
-const BUDGET_MS = 20_000;
 const SEEDS = ['preview-purity-a', 'preview-purity-b'] as const;
 const DRAW_METHODS = ['float', 'int', 'range', 'chance', 'pick', 'shuffle'] as const;
 const DRAW_FUNCTIONS = [
@@ -270,10 +275,9 @@ function forbidDraws(): () => void {
 }
 
 describe('all-ability preview and AI RNG purity', () => {
-  it(
-    'covers every legal tile and illegal probes without changing inputs within 20 seconds',
-    () => {
-      const started = performance.now();
+  let workloadMs: number | undefined;
+  it('covers every legal tile and illegal probes without changing inputs', () => {
+    workloadMs = elapsedMs(() => {
       const fixtures = midBattles();
       const abilities = [...CONTENT.abilities.values()];
       ensure(fixtures.length >= 4 && abilities.length > 0, 'missing generated coverage');
@@ -422,11 +426,21 @@ describe('all-ability preview and AI RNG purity', () => {
           illegalReasons: Object.fromEntries(illegalReasons),
         })}\n`,
       );
-      expect(
-        performance.now() - started,
-        'complete generation, controls and all-ability workload',
-      ).toBeLessThan(BUDGET_MS);
-    },
-    BUDGET_MS,
-  );
+      // The workload is every authored ability on every legal tile of eight mid-battle fixtures.
+      // It grows with the content, never with the machine: measured 71,095 queries of each kind
+      // (30,987 when the bound was first set; the abilities and fixtures have grown since).
+      expectWorkWithin('preview queries over all abilities and fixtures', totalPreview, 107_000);
+      expectWorkWithin('AI score queries over all abilities and fixtures', totalScore, 107_000);
+    });
+  });
+
+  // The 20 s budget the gate used to hold, now a nightly check on a hosted runner (#796; owner, 2026-11-20).
+  it.runIf(TIME_BUDGETS)(`finishes the workload within 20 seconds ${TIME_BUDGET_TAG}`, () => {
+    expect(workloadMs, 'the workload test did not finish').toBeDefined();
+    expectTimeWithin(
+      'the preview and AI-score workload over all abilities and fixtures',
+      workloadMs ?? Infinity,
+      20_000,
+    );
+  });
 });

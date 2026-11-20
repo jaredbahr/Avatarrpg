@@ -8,7 +8,7 @@
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import decode, { init } from '@jsquash/webp/decode.js';
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import {
   ASSETS,
   TOPDOWN_KEYS,
@@ -25,8 +25,6 @@ import { withActions, type SheetActions, type SheetClips } from './store';
 
 /** The oblique board's figure scale the G1 sheets were fitted at (ADR 0094); the board retired at T7. */
 const OBLIQUE_FIGURE_SCALE = 1.25;
-
-vi.setConfig({ testTimeout: 120_000, hookTimeout: 120_000 });
 
 type Page = { readonly width: number; readonly data: Uint8ClampedArray };
 const pages = new Map<string, Page>();
