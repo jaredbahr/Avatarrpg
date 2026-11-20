@@ -518,7 +518,8 @@
     "forest_road:road_depart",
     "quarry_floor:quarry_descent",
     "quarry_gate:gate_parley",
-    "saltstep_market:mq02_saltstep_arrival"
+    "saltstep_market:mq02_saltstep_arrival",
+    "saltstep_market:mq02_saltstep_arrival_tidy"
   ],
   "anchors": [
     "bd01.bench",
