@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { expectWorkWithin } from '../../../scripts/test-support/workBounds';
 import { createCombatCasePool } from '../../../scripts/test-support/runCombatCases';
 import type { TurnCycleCoverage } from '../../../scripts/test-support/turnCycle';
 import { CONTENT } from '../../content';
@@ -6,7 +7,7 @@ import { partyOfSize } from '../sim/balance';
 import { seedFor } from '../sim/runCombat';
 
 const pool = createCombatCasePool();
-beforeAll(() => pool.warm(), 30_000);
+beforeAll(() => pool.warm());
 afterAll(() => pool.close().then(() => undefined));
 
 describe('the authored combat turn cycle', () => {
@@ -30,56 +31,53 @@ describe('the authored combat turn cycle', () => {
     }),
   ).flat();
 
-  it(
-    'observes every seeded battle and finishes the whole matrix in under 20 seconds',
-    {
-      // A hang guard, not a budget: the work is bounded by the case count (#777 finding 5).
-      timeout: 120_000,
-    },
-    async (ctx) => {
-      expect(encounters).toEqual(
-        expect.arrayContaining([
-          'enc_forest_road',
-          'enc_quarry_gate',
-          'enc_ambush',
-          'enc_grumbler',
-          'enc_mq02_winch',
-          'enc_sf21_wet_ground',
-        ]),
-      );
-      expect(cases).toHaveLength(encounters.length * sizes.length * trials);
-      expect(new Set(cases.map((item) => item.seed)).size).toBe(cases.length);
-      const run = pool.run(cases, ctx.signal);
-      ctx.onTestFinished(async () => {
-        await Promise.allSettled([run]);
-      });
-      const results = await run;
-      expect(results).toHaveLength(cases.length);
-      const totals: TurnCycleCoverage = {
-        starts: 0,
-        completedRounds: 0,
-        midRoundDeaths: 0,
-        revivedBeforeSlot: 0,
-        revivedAfterSlot: 0,
-        statusesExpired: 0,
-        longStatusesExpired: 0,
-        singleTurnSkips: 0,
-        recoveredSkips: 0,
-        cooldownsReady: 0,
-        longCooldownsReady: 0,
-        cooldownUseChecks: 0,
-        bossRounds: 0,
-      };
-      for (const [index, result] of results.entries()) {
-        const coverage = result.turnCycle;
-        expect(coverage, 'case ' + index + ' ran its real draft observer').toBeDefined();
-        for (const field of Object.keys(totals) as (keyof TurnCycleCoverage)[]) {
-          totals[field] += coverage![field];
-        }
+  // The work is bounded by the case count and the turn starts it totals, never by a timeout (#796).
+  it('observes every seeded battle across the whole matrix', async (ctx) => {
+    expect(encounters).toEqual(
+      expect.arrayContaining([
+        'enc_forest_road',
+        'enc_quarry_gate',
+        'enc_ambush',
+        'enc_grumbler',
+        'enc_mq02_winch',
+        'enc_sf21_wet_ground',
+      ]),
+    );
+    expect(cases).toHaveLength(encounters.length * sizes.length * trials);
+    expect(new Set(cases.map((item) => item.seed)).size).toBe(cases.length);
+    const run = pool.run(cases, ctx.signal);
+    ctx.onTestFinished(async () => {
+      await Promise.allSettled([run]);
+    });
+    const results = await run;
+    expect(results).toHaveLength(cases.length);
+    const totals: TurnCycleCoverage = {
+      starts: 0,
+      completedRounds: 0,
+      midRoundDeaths: 0,
+      revivedBeforeSlot: 0,
+      revivedAfterSlot: 0,
+      statusesExpired: 0,
+      longStatusesExpired: 0,
+      singleTurnSkips: 0,
+      recoveredSkips: 0,
+      cooldownsReady: 0,
+      longCooldownsReady: 0,
+      cooldownUseChecks: 0,
+      bossRounds: 0,
+    };
+    for (const [index, result] of results.entries()) {
+      const coverage = result.turnCycle;
+      expect(coverage, 'case ' + index + ' ran its real draft observer').toBeDefined();
+      for (const field of Object.keys(totals) as (keyof TurnCycleCoverage)[]) {
+        totals[field] += coverage![field];
       }
-      for (const [field, witnessed] of Object.entries(totals)) {
-        expect(witnessed, field).toBeGreaterThan(0);
-      }
-    },
-  );
+    }
+    for (const [field, witnessed] of Object.entries(totals)) {
+      expect(witnessed, field).toBeGreaterThan(0);
+    }
+    // Measured 12,027 turn starts and 1,860 completed rounds over the matrix.
+    expectWorkWithin('turn starts over the seeded matrix', totals.starts, 18_000);
+    expectWorkWithin('completed rounds over the seeded matrix', totals.completedRounds, 2_800);
+  });
 });
