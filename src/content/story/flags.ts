@@ -206,6 +206,11 @@ export const LATE_SCENES: Readonly<Record<string, OldSavesAnswer>> = {
     answer: 'open',
     why: 'Read only by the ferry apprentices’ own once-only gate in the market. A side fight no release had, so no older save has had it, and it waits by the ferry landing.',
   },
+  sf23_battle: {
+    upTo: '2026-11-19-roads',
+    answer: 'open',
+    why: 'Read only by the corporal’s own once-only gate on the river road. A side fight no release had, so no older save has had it, and it waits at the guards’ camp.',
+  },
   look_hesra_boot: {
     upTo: '2026-11-15-demo',
     answer: 'open',
@@ -574,6 +579,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'story:mq02_galleries',
       'story:mq02_ferry_driver',
       'story:sf21_driver',
+      'story:sf23_driver',
       'resident:lw.npc.mira',
       'resident:lw.npc.gao',
       'resident:lw.npc.dorin',

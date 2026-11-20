@@ -7,6 +7,7 @@ import { MQ02_STORY } from './mq02';
 import { EMBERWATCH_STORY } from './emberwatch';
 import { RIVER_ROAD_STORY } from './riverRoad';
 import { SF22_STORY } from './sf22';
+import { SF23_STORY } from './sf23';
 
 const STORY_GROUPS: readonly StoryGroup[] = [
   {
@@ -32,6 +33,12 @@ const STORY_GROUPS: readonly StoryGroup[] = [
     title: 'The river road (blockout)',
     source: '../regions/saltstepEmberwatch/riverRoad.ts',
     nodes: RIVER_ROAD_STORY,
+  },
+  {
+    slug: 'sf23-bridge-toll',
+    title: 'SF-2.3 The bridge toll',
+    source: '../regions/saltstepEmberwatch/sf23.ts',
+    nodes: SF23_STORY,
   },
 ];
 

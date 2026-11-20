@@ -13,6 +13,7 @@
 import type { EncounterDef, EncounterPlacement } from '../../../core/types';
 import { WINCH_BRAKE_CELLS } from './maps';
 import { SF22_XP_PER_HEAD } from './sf22';
+import { SF23_XP_PER_HEAD } from './sf23';
 
 const at = (x: number, y: number, enemyId: string): EncounterPlacement => ({
   enemyId,
@@ -123,5 +124,32 @@ export const SALTSTEP_EMBERWATCH_ENCOUNTERS: readonly EncounterDef[] = [
     intro:
       'The midday lull. The spare platform rides loose on its moorings, and it leans toward whoever stands on it. Half the market has found a reason to be near the rail.',
     tip: 'A shove toward the water leaves a fighter teetering on the edge. Shove them again after their turn and they are in, and out of the bout. If you are the one teetering, step back from the edge. Blue squares show where the deck will tip when the round ends.',
+  },
+  {
+    /*
+     * SF-2.3, the bridge toll (optional; `docs/places/river_road.md`, "Fight needs (SF-2.3)"), on a 19 by 12 crop of
+     * the river road round the bridge (`river_road_bridge`). The guards hold the bridge, a two-wide choke, with a
+     * crossbow back in the camp behind its crates; the corporal stands by the cold fire. The party comes from the west
+     * bank and can flank by the ford. A table of three meets the corporal and three guards; a table of six meets the
+     * script's corporal and six. A token 15 XP a head, won or carried on, as SF-2.2's.
+     */
+    id: 'enc_sf23_bridge_toll',
+    name: 'The bridge toll',
+    mapId: 'river_road_bridge',
+    expectedLevel: 4,
+    xpPerHead: SF23_XP_PER_HEAD,
+    enemies: [
+      at(8, 5, 'toll_guard'),
+      at(8, 6, 'toll_guard'),
+      at(10, 2, 'toll_crossbow'),
+      at(14, 3, 'toll_corporal'),
+    ],
+    allies: [],
+    conditionalEnemies: [],
+    baselinePartySize: 3,
+    reinforcements: [at(9, 4, 'toll_guard'), at(14, 2, 'toll_crossbow'), at(11, 7, 'toll_guard')],
+    variants: [],
+    intro: 'PLACEHOLDER (story): the pole across the bridge, the guards behind it.',
+    tip: 'The guards hold the bridge. The stream is shallow at the ford, downstream: cross there to come at them from the side. The corporal’s Rally makes a guard hit harder, so reach him early.',
   },
 ];
