@@ -43312,6 +43312,2139 @@
     "tileset_id": "61d06238-c088-49be-9fb2-54e87df5446f"
    },
    "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rr_plank_bridge_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "5f2f9306-c37e-4034-893d-68a048ff91e6",
+   "status": "completed",
+   "settings": {
+    "description": "a short sturdy plank footbridge seen front-on from a low top-down camera: a deck...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 88,
+     "height": 104
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 3660.0654640625,
+   "balance_after": 3654.0654640625,
+   "secs": 25,
+   "notes": "",
+   "ids": {
+    "background_job_id": "5f2f9306-c37e-4034-893d-68a048ff91e6",
+    "object_id": "2ead5553-a933-4568-b976-b9e313659acf"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rr_toll_bar_down_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "40d8e02f-296f-4199-bacb-b7f5540e89b0",
+   "status": "completed",
+   "settings": {
+    "description": "a borrowed official red-and-white striped road barrier arm lying level across, i...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 80,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 3654.0654640625,
+   "balance_after": 3649.0654640625,
+   "secs": 25,
+   "notes": "",
+   "ids": {
+    "background_job_id": "40d8e02f-296f-4199-bacb-b7f5540e89b0",
+    "object_id": "e5e8f896-8789-424d-8b71-34c15f28a123"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rr_toll_bar_up_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "4928d9ea-5226-4e97-9ad4-2f7cf01e9235",
+   "status": "completed",
+   "settings": {
+    "description": "a borrowed official red-and-white striped road barrier arm raised upright, its f...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 80
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 3649.0654640625,
+   "balance_after": 3644.0654640625,
+   "secs": 25,
+   "notes": "",
+   "ids": {
+    "background_job_id": "4928d9ea-5226-4e97-9ad4-2f7cf01e9235",
+    "object_id": "930b60f3-ddbf-4a4c-b3a0-443f6e5122fe"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rr_shade_tree_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "fde42bdc-fd80-4486-a755-094b6307ea44",
+   "status": "completed",
+   "settings": {
+    "description": "a big old broad shade tree with a thick gnarled trunk and a wide round canopy of...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 88,
+     "height": 120
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 3644.0654640625,
+   "balance_after": 3638.0654640625,
+   "secs": 30,
+   "notes": "",
+   "ids": {
+    "background_job_id": "fde42bdc-fd80-4486-a755-094b6307ea44",
+    "object_id": "2c2ae001-f51d-4823-80f9-f693f33c5480"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rr_country_jetty_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "053d870f-6844-471a-a0dd-093a485fb5db",
+   "status": "completed",
+   "settings": {
+    "description": "a small country jetty of rough grey planks on round wooden posts running left to...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 128,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 3638.0654640625,
+   "balance_after": 3632.0654640625,
+   "secs": 25,
+   "notes": "",
+   "ids": {
+    "background_job_id": "053d870f-6844-471a-a0dd-093a485fb5db",
+    "object_id": "b0814e89-4bf0-4dd3-b93b-99df9d8c8c72"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rr_bent_tree_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "0182991d-e21d-4ca3-941f-580d792055e8",
+   "status": "completed",
+   "settings": {
+    "description": "a lone wind-bent hill tree on a rise: a thin twisted trunk leaning to the right ...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 96
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 3632.0654640625,
+   "balance_after": 3627.0654640625,
+   "secs": 25,
+   "notes": "",
+   "ids": {
+    "background_job_id": "0182991d-e21d-4ca3-941f-580d792055e8",
+    "object_id": "c2f09df4-3d3d-45d2-8eda-189cb1c19dd4"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rr_log_bench_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "4ed4070b-9885-43b2-b9d3-6fe1d7179b75",
+   "status": "completed",
+   "settings": {
+    "description": "a weathered fallen log lying on its side as a seat, bark worn smooth on top wher...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 72,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 3627.0654640625,
+   "balance_after": 3622.0654640625,
+   "secs": 47,
+   "notes": "",
+   "ids": {
+    "background_job_id": "4ed4070b-9885-43b2-b9d3-6fe1d7179b75",
+    "object_id": "c4cbc933-d0be-4baa-af70-d99b7d4466c7"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rr_hitching_post_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "e58960a6-f2af-4922-bd3b-88566793d247",
+   "status": "completed",
+   "settings": {
+    "description": "a single short wooden hitching post with an iron ring and a loop of rope tied to...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 3622.0654640625,
+   "balance_after": 3617.0654640625,
+   "secs": 20,
+   "notes": "",
+   "ids": {
+    "background_job_id": "e58960a6-f2af-4922-bd3b-88566793d247",
+    "object_id": "dfabe357-f919-4dd6-b93b-0003af3de8c0"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rr_cold_fire_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "814de5e2-194b-4768-a6ab-32bfbe6f4818",
+   "status": "completed",
+   "settings": {
+    "description": "a cold campfire: a ring of grey stones round grey ash and a few charred sticks, ...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 3617.0654640625,
+   "balance_after": 3612.0654640625,
+   "secs": 25,
+   "notes": "",
+   "ids": {
+    "background_job_id": "814de5e2-194b-4768-a6ab-32bfbe6f4818",
+    "object_id": "1cdcc376-7de5-4559-9d75-ff66e9e79437"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rr_bedroll_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "96232287-c200-426e-b0ca-ea3ecf63a6ce",
+   "status": "completed",
+   "settings": {
+    "description": "a rolled-up brown blanket bedroll tied with two straps lying on the ground, a li...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 3612.0654640625,
+   "balance_after": 3607.0654640625,
+   "secs": 25,
+   "notes": "",
+   "ids": {
+    "background_job_id": "96232287-c200-426e-b0ca-ea3ecf63a6ce",
+    "object_id": "c1a61355-45bc-4f0c-b6d1-9d35d8c5a153"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rr_rubbish_heap_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "c0f032fb-e338-439c-a1aa-c049924b7079",
+   "status": "completed",
+   "settings": {
+    "description": "a small untidy heap of camp rubbish on the ground: empty sacks, a broken crate s...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 3607.0654640625,
+   "balance_after": 3602.0654640625,
+   "secs": 31,
+   "notes": "",
+   "ids": {
+    "background_job_id": "c0f032fb-e338-439c-a1aa-c049924b7079",
+    "object_id": "f331ec69-7cb6-40b6-8e28-5ec129361829"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rr_cook_pot_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "68ab2d61-2b23-4b33-8dea-1fa47d1448db",
+   "status": "completed",
+   "settings": {
+    "description": "a small dented iron cooking pot with a lid and a wire handle, a wooden spoon res...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 3602.0654640625,
+   "balance_after": 3597.0654640625,
+   "secs": 31,
+   "notes": "",
+   "ids": {
+    "background_job_id": "68ab2d61-2b23-4b33-8dea-1fa47d1448db",
+    "object_id": "b18f5e82-482e-4886-85fe-76f7e45d8282"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rr_toll_sign_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "f95a588a-746c-4d49-9314-f3549c4e8304",
+   "status": "completed",
+   "settings": {
+    "description": "a hand-lettered wooden sign on a stake, the board painted with the word TOLL and...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 3597.0654640625,
+   "balance_after": 3592.0654640625,
+   "secs": 36,
+   "notes": "",
+   "ids": {
+    "background_job_id": "f95a588a-746c-4d49-9314-f3549c4e8304",
+    "object_id": "c99a600d-5770-4873-9f43-51460e5c713f"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rr_stepping_stones_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "cb80d587-0dde-4305-a1ba-2851d1f67961",
+   "status": "completed",
+   "settings": {
+    "description": "a line of five flat grey river stepping stones running left to right, wet on the...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 88,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 3592.0654640625,
+   "balance_after": 3587.0654640625,
+   "secs": 31,
+   "notes": "",
+   "ids": {
+    "background_job_id": "cb80d587-0dde-4305-a1ba-2851d1f67961",
+    "object_id": "80f7e329-1daf-4ea2-b01f-df49b7cb1f95"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rr_fallen_log_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "48b366bc-a878-44c7-b886-363d6c92c209",
+   "status": "completed",
+   "settings": {
+    "description": "a long fallen tree trunk lying left to right with broken branch stubs and a litt...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 88,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 3587.0654640625,
+   "balance_after": 3582.0654640625,
+   "secs": 20,
+   "notes": "",
+   "ids": {
+    "background_job_id": "48b366bc-a878-44c7-b886-363d6c92c209",
+    "object_id": "1861e3c5-e5a1-404b-bb78-52b9e58f8255"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rr_driftwood_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "8f4c7dbf-11c8-4901-b948-67c2fa35a3dc",
+   "status": "completed",
+   "settings": {
+    "description": "a pale bleached piece of driftwood with a forked end lying on the ground, seen f...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 3582.0654640625,
+   "balance_after": 3577.0654640625,
+   "secs": 25,
+   "notes": "",
+   "ids": {
+    "background_job_id": "8f4c7dbf-11c8-4901-b948-67c2fa35a3dc",
+    "object_id": "9b810668-9844-4548-b13d-18e262ac1dda"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rr_rockfall_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "5187634c-567c-4c03-a08d-0d88e54c7e5a",
+   "status": "completed",
+   "settings": {
+    "description": "a heap of fallen grey rocks and broken stone of different sizes at the foot of a...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 128,
+     "height": 56
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 3577.0654640625,
+   "balance_after": 3571.0654640625,
+   "secs": 25,
+   "notes": "",
+   "ids": {
+    "background_job_id": "5187634c-567c-4c03-a08d-0d88e54c7e5a",
+    "object_id": "df79e400-0560-4143-a7ce-4eefbf16d102"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rr_rowboat_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "d895c77f-17fb-428a-b676-9d1f06f6d042",
+   "status": "completed",
+   "settings": {
+    "description": "a small plain wooden river rowboat lying broadside, seen from the side: the hull...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 96,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 3571.0654640625,
+   "balance_after": 3566.0654640625,
+   "secs": 20,
+   "notes": "",
+   "ids": {
+    "background_job_id": "d895c77f-17fb-428a-b676-9d1f06f6d042",
+    "object_id": "c0fd058a-efdf-4d7a-b4bd-f648aeb55e11"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rr_net_rack_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "1ac7c886-26af-422c-b348-e5323aab3b7e",
+   "status": "completed",
+   "settings": {
+    "description": "a fishing net hung up to dry between two upright wooden poles, a brown net with ...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 72,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 3566.0654640625,
+   "balance_after": 3561.0654640625,
+   "secs": 25,
+   "notes": "",
+   "ids": {
+    "background_job_id": "1ac7c886-26af-422c-b348-e5323aab3b7e",
+    "object_id": "5bb808da-8692-4eab-ba94-e9dfe0496e34"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rr_flat_rock_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "c68ff7cf-0f4f-450f-b018-cd59e1c09b32",
+   "status": "completed",
+   "settings": {
+    "description": "a low flat-topped grey rock, smooth and worn where travellers sit, a little gras...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 64,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 3561.0654640625,
+   "balance_after": 3556.0654640625,
+   "secs": 25,
+   "notes": "",
+   "ids": {
+    "background_job_id": "c68ff7cf-0f4f-450f-b018-cd59e1c09b32",
+    "object_id": "2ffe1e0d-c925-4b27-ac47-949e5f75f074"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rr_milestone_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "a85ea604-4867-456b-a135-faa5c09e713f",
+   "status": "completed",
+   "settings": {
+    "description": "a small carved grey stone milestone, rounded on top, with a simple carved mark a...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 3556.0654640625,
+   "balance_after": 3551.0654640625,
+   "secs": 26,
+   "notes": "",
+   "ids": {
+    "background_job_id": "a85ea604-4867-456b-a135-faa5c09e713f",
+    "object_id": "c5df3f96-9e00-4b6a-8e05-cbf770397a33"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rr_cabbage_sack_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "7d8e8c2d-da9e-4bbb-99e2-5a05893ee834",
+   "status": "completed",
+   "settings": {
+    "description": "a burlap sack of cabbages sitting upright on the ground, slumped open at the top...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 3551.0654640625,
+   "balance_after": 3546.0654640625,
+   "secs": 25,
+   "notes": "",
+   "ids": {
+    "background_job_id": "7d8e8c2d-da9e-4bbb-99e2-5a05893ee834",
+    "object_id": "db76214d-c436-4ace-b0d0-212b56dea9d4"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rr_country_jetty_11",
+   "endpoint": "/create-object-pro-flash",
+   "job": "356b87d6-9be1-4402-9dd5-8299c652a9b0",
+   "status": "completed",
+   "settings": {
+    "description": "a long low country jetty three times as wide as it is deep, filling the canvas w...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 128,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 11
+   },
+   "credits": 6.0,
+   "credit_source": "usage",
+   "balance_diff": 6.0,
+   "usage": {
+    "type": "generations",
+    "generations": 6.0
+   },
+   "balance_before": 3546.0654640625,
+   "balance_after": 3540.0654640625,
+   "secs": 25,
+   "notes": "",
+   "ids": {
+    "background_job_id": "356b87d6-9be1-4402-9dd5-8299c652a9b0",
+    "object_id": "32bdf953-79f0-4244-bc2e-6fb994cd880c"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rr_bent_tree_11",
+   "endpoint": "/create-object-pro-flash",
+   "job": "4386e216-da9e-49a2-a8a0-0d7bd0487926",
+   "status": "completed",
+   "settings": {
+    "description": "a tall lone wind-bent hill tree, twice as tall as a person, reaching from the bo...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 96
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 11
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 3540.0654640625,
+   "balance_after": 3535.0654640625,
+   "secs": 19,
+   "notes": "",
+   "ids": {
+    "background_job_id": "4386e216-da9e-49a2-a8a0-0d7bd0487926",
+    "object_id": "08bb4746-3432-42ec-86ae-5f96787c2ba3"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rr_bedroll_11",
+   "endpoint": "/create-object-pro-flash",
+   "job": "c51b0466-6623-408c-b299-9ca48f4c3980",
+   "status": "completed",
+   "settings": {
+    "description": "a rolled canvas bedroll tied with two leather straps, lying flat on the ground, ...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 11
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 3535.0654640625,
+   "balance_after": 3530.0654640625,
+   "secs": 25,
+   "notes": "",
+   "ids": {
+    "background_job_id": "c51b0466-6623-408c-b299-9ca48f4c3980",
+    "object_id": "1a26c845-a792-48a7-bc95-91181301ba06"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rr_toll_bar_diag_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "585a0355-9339-4b41-844e-7ab51095f382",
+   "status": "completed",
+   "settings": {
+    "description": "a borrowed official red-and-white striped road barrier lowered across a bridge, ...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 80
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 3530.0654640625,
+   "balance_after": 3525.0654640625,
+   "secs": 31,
+   "notes": "",
+   "ids": {
+    "background_job_id": "585a0355-9339-4b41-844e-7ab51095f382",
+    "object_id": "7dd778da-a616-4acc-9d84-c96a1fd1392d"
+   },
+   "region": "saltstep_emberwatch"
+  },
+  {
+   "name": "rg02_obj_rr_toll_bar_diag_11",
+   "endpoint": "/create-object-pro-flash",
+   "job": "912c134c-5fd5-4bb7-999c-9512214fc39b",
+   "status": "completed",
+   "settings": {
+    "description": "a borrowed official red-and-white striped road barrier lowered across a bridge, ...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 48,
+     "height": 80
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 11
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 3525.0654640625,
+   "balance_after": 3520.0654640625,
+   "secs": 36,
+   "notes": "",
+   "ids": {
+    "background_job_id": "912c134c-5fd5-4bb7-999c-9512214fc39b",
+    "object_id": "b34bddd4-c38e-4ec2-85c3-c4dfc7833012"
+   },
+   "region": "saltstep_emberwatch"
   }
  ],
  "end_balance": 16728.0,

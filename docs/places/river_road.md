@@ -232,3 +232,51 @@ win, the camp's crates, bedrolls, fire and rubbish are gone (no art); Scene 5.6 
 **Total:** 26 pieces for the plan, 20 of them new at about 108 credits for a first take (113 with the cabbage sack, and
 up to 123 if the sign and the boat do not serve). RG-02's cap stands at 1,700 with 1,599 spent, so the kit needs the
 owner's credit OK before stage 6.
+
+## The kit as made (stage 6)
+
+The owner raised RG-02's cap to 1,850 on 2026-11-20. Every new piece was made once with `create-object-pro-flash`
+(`prototypes/topdown/tools/rrobj.py`, seed 3), with a second take at seed 11 for the jetty, the bent tree and the bedroll (seed 3's read as a barrel or a chest), and a diagonal lowered barrier (`toll_bar_diag`, seeds 3 and 11) the owner asked for; the
+takes are cleaned by `tools/rrproc.py` into `prototypes/topdown/assets/objects_rr/` (alpha cut at 128, trimmed,
+`manifest.json` naming each piece's job, seed and credits), and the RG-02 baker looks there after the region's own
+folder. **Spent: 140 credits over 27 jobs** (the ledger's `rg02_obj_rr_*`), against about 113 planned.
+
+| Art (# above)               | Shipped as                                         | Take chosen | Native px |      Credits |
+| --------------------------- | -------------------------------------------------- | ----------- | --------- | -----------: |
+| Hill trees (1)              | `tree_pine`, `tree_broadleaf` (bd20)               | existing    |           |            0 |
+| Shade tree (2)              | `shade_tree`                                       | seed 3      | 80 x 106  |            6 |
+| Water trough (3)            | `trough_ek` (bd20)                                 | existing    |           |            0 |
+| Log bench (4)               | `log_bench`                                        | seed 3      | 60 x 29   |            5 |
+| Hitching post (5)           | `hitching_post`                                    | seed 3      | 15 x 35   |            5 |
+| Plank bridge (6)            | `plank_bridge`, over water on the plate            | seed 3      | 80 x 65   |            6 |
+| Toll pole, lowered (7)      | `toll_bar_diag` (placed); `toll_bar_down` (unused) | seed 3      | 44 x 47   | 15 (3 takes) |
+| Toll pole, raised (8)       | `toll_bar_up` (not placed: SF-2.3)                 | seed 3      | 22 x 74   |            5 |
+| Cold fire (9)               | `cold_fire`                                        | seed 3      | 42 x 30   |            5 |
+| Crate stack (10)            | `crate_stack` (rg02)                               | existing    |           |            0 |
+| Bedroll (11)                | `bedroll`, one flipped                             | seed 11     | 43 x 21   | 10 (2 takes) |
+| Rubbish heap (12)           | `rubbish_heap`                                     | seed 3      | 37 x 30   |            5 |
+| Cooking pot (13)            | `cook_pot`                                         | seed 3      | 26 x 29   |            5 |
+| Toll sign (14)              | `toll_sign` (new: hand-lettered)                   | seed 3      | 24 x 41   |            5 |
+| Stepping stones (15)        | `stepping_stones`                                  | seed 3      | 82 x 12   |            5 |
+| Fallen log (16)             | `fallen_log`                                       | seed 3      | 79 x 37   |            5 |
+| Boulder (17)                | `boulders` (rg02)                                  | existing    |           |            0 |
+| Driftwood (18)              | `driftwood`                                        | seed 3      | 33 x 17   |            5 |
+| Cliff (19)                  | dropped: a baked rock face, later                  |             |           |            0 |
+| Rock at the cliff foot (20) | `rockfall`                                         | seed 3      | 58 x 34   |            6 |
+| Country jetty (21)          | `country_jetty`, over water                        | seed 11     | 115 x 32  | 12 (2 takes) |
+| Rowboat (22)                | `river_rowboat` (new: lies along bank)             | seed 3      | 72 x 31   |            5 |
+| Net rack (23)               | `net_rack`                                         | seed 3      | 60 x 42   |            5 |
+| Flat rock (24)              | `flat_rock`                                        | seed 3      | 48 x 22   |            5 |
+| Milestone (25)              | `milestone`                                        | seed 3      | 19 x 28   |            5 |
+| Bent tree (26)              | `bent_tree`                                        | seed 11     | 39 x 95   | 10 (2 takes) |
+| Cabbage sack (later state)  | `cabbage_sack` (not placed: SF-2.3)                | seed 3      | 37 x 44   |            5 |
+
+- **The lowered pole:** the first take (`toll_bar_down`) drew the arm running sideways, along the road, and a code cut
+  turned it to stand in until the owner asked for a clearer barrier (2026-11-20). `toll_bar_diag` draws the arm on a
+  diagonal from a post and crate at the deck's south-west corner to a forked stick at the north-east, across the planks.
+- **The bridge and the jetty** lie over water: the plate paints the `w` cells as water and the pieces carry the planks,
+  while the map still reads them as deck, so the party walks across.
+- **The lookout's bent tree** grows from the last grass at the rise's west foot (34, 0), since no tree roots on the
+  rise's rock where the plan's box put it.
+- The cliff's rows keep `rock_spur` stand-ins until the baked rock face replaces them; `rockfall` is one piece along
+  the cliff's foot.

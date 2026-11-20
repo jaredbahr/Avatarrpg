@@ -15,7 +15,7 @@
  *    atlas. The pieces are RG-02's own (`tools/rg02obj.py`), cut at alpha 128 and trimmed
  *    (`assets/objects_rg02/`).
  */
-import { readdirSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import type { MapScene, SceneScenery } from '../../../../src/core/types';
 import type { TopDownLayout } from '../../../../src/content/topdownLayout';
 import {
@@ -47,6 +47,21 @@ import { cleanSprite } from '../lib/sprites';
  * tall prop already takes at runtime (`objectShadowMask`): more of the shadow is the dark seam and band.
  */
 const RG02_PROP_FOOT = { lobster_pots: { band: 6 } } as const;
+
+/**
+ * Where a piece's sprite lives: the region's own objects (`assets/objects_rg02/`), the river road's kit
+ * (`assets/objects_rr/`, `tools/rrobj.py`), or Ba Dan's valley set, whose hill trees and trough the river road reuses
+ * (`assets/objects_bd20/`). The first folder holding the name wins.
+ */
+const OBJECT_DIRS = ['objects_rg02', 'objects_rr', 'objects_bd20'] as const;
+
+function objectFile(sprite: string): string {
+  for (const dir of OBJECT_DIRS) {
+    const file = `${ASSETS}/${dir}/${sprite}.png`;
+    if (existsSync(file)) return file;
+  }
+  throw new Error(`RG-02 piece "${sprite}" is in none of ${OBJECT_DIRS.join(', ')}`);
+}
 
 const T = 32;
 type Rgb = readonly [number, number, number];
@@ -360,7 +375,7 @@ export function bake(cfg: Rg02BoardConfig): Baked {
   const placed: Placed[] = cfg.layout.objects.map((o) => {
     let img = sprites.get(o.sprite);
     if (!img) {
-      img = cleanSprite(load(`${ASSETS}/objects_rg02/${o.sprite}.png`));
+      img = cleanSprite(load(objectFile(o.sprite)));
       sprites.set(o.sprite, img);
     }
     const base = o.base - tr.origin.y;
