@@ -21,10 +21,22 @@ export const CELL = 40;
 /** The grid's top-left in plate px. */
 export const GRID = { x: 80, y: 120 } as const;
 
-/** The classes the bake lays: the harbour, the planks, the quay's sand, packed earth, flagstones, a puddle, the void. */
-export const RG = { water: 0, deck: 1, sand: 2, earth: 3, stone: 4, puddle: 5, void: 6 } as const;
+/**
+ * The classes the bake lays: the harbour, the planks, the quay's sand, packed earth, flagstones, a puddle, the void, and
+ * the countryside's grass (the river road). A new class is appended, so the coast's boards bake byte for byte as before.
+ */
+export const RG = {
+  water: 0,
+  deck: 1,
+  sand: 2,
+  earth: 3,
+  stone: 4,
+  puddle: 5,
+  void: 6,
+  grass: 7,
+} as const;
 export type RgClass = (typeof RG)[keyof typeof RG];
-const CLASSES: readonly RgClass[] = [0, 1, 2, 3, 4, 5, 6];
+const CLASSES: readonly RgClass[] = [0, 1, 2, 3, 4, 5, 6, 7];
 
 /** One RG-02 board's terrain: its map's rows and what each character is drawn as. */
 export interface Rg02TerrainConfig {
@@ -37,6 +49,11 @@ export interface Rg02TerrainConfig {
   /** Row characters that carry on only one cell past the grid, not to the plate's edge (a yard's clutter on its rim). */
   readonly ends?: string;
   readonly mouths: readonly RimMouth[];
+  /**
+   * What packed earth reads as to the checks: soil (`G`, the coast's yards and verges, where trees root) or a dirt road
+   * (`D`, the river road's, which its mouth must run out on while the grass is the soil).
+   */
+  readonly earthTerrain?: 'G' | 'D';
 }
 
 export class Rg02Terrain {
@@ -140,7 +157,10 @@ export class Rg02Terrain {
     const c = this.classAt(px, py);
     if (c === RG.water) return { ground: 'water', terrain: 'W' };
     if (c === RG.void) return { ground: 'void', terrain: 'V' };
-    return { ground: 'ground', terrain: c === RG.stone ? 'C' : c === RG.earth ? 'G' : 'D' };
+    if (c === RG.stone) return { ground: 'ground', terrain: 'C' };
+    if (c === RG.grass) return { ground: 'ground', terrain: 'G' };
+    if (c === RG.earth) return { ground: 'ground', terrain: this.config.earthTerrain ?? 'G' };
+    return { ground: 'ground', terrain: 'D' };
   };
 }
 

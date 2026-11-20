@@ -62,19 +62,28 @@ function wang(folder: string, key: string): RgbaImage {
 /** Each class's plain tile; a board may draw its earth from another set (the power yard's mud). */
 export type Rg02Tiles = Readonly<Record<RgClass, RgbaImage | undefined>>;
 
-export function rg02Tiles(earth: 'parade' | 'yard' = 'parade'): Rg02Tiles {
+export function rg02Tiles(
+  earth: 'parade' | 'yard' = 'parade',
+  stone: 'parade' | 'rock' = 'parade',
+): Rg02Tiles {
   return {
     [RG.water]: wang('rg02_quay', 'LLLL'),
     [RG.deck]: wang('rg02_planks2', 'UUUU'),
     [RG.sand]: wang('rg02_quay', 'UUUU'),
     [RG.earth]: wang(earth === 'yard' ? 'rg02_yard' : 'rg02_parade', 'LLLL'),
-    [RG.stone]: wang('rg02_parade', 'UUUU'),
+    // the coast's flagstones, or in open country the bare pale rock of the quarry's floor
+    [RG.stone]: stone === 'rock' ? wang('q_floor32', 'LLLL') : wang('rg02_parade', 'UUUU'),
     [RG.puddle]: wang('rg02_yard', 'UUUU'),
     [RG.void]: undefined,
+    // the countryside's grass: Ba Dan's plain sunlit grass, the calmest under pieces
+    [RG.grass]: load(`${ASSETS}/tiles/gc32/c0000.png`),
   };
 }
 
 const VOID: Rgb = [0x1c, 0x17, 0x19];
+/** The river bank's wet earth under the grass, and the road's trodden verge (the countryside's grass only). */
+const BANK: Rgb = [0x5a, 0x4a, 0x2e];
+const VERGE: Rgb = [0x6e, 0x6a, 0x3a];
 const SHADE: Rgb = [0x32, 0x21, 0x25];
 const LIP: Rgb = [0x3a, 0x2e, 0x2c];
 const FACE: readonly Rgb[] = [
@@ -127,6 +136,7 @@ const CLASS_OF: Readonly<Record<RgClass, number>> = {
   [RG.stone]: CLASS.C,
   [RG.puddle]: CLASS.W,
   [RG.void]: CLASS.void,
+  [RG.grass]: CLASS.G,
 };
 
 export interface Rg02BoardConfig {
@@ -135,6 +145,8 @@ export interface Rg02BoardConfig {
   readonly terrain: Rg02Terrain;
   readonly layout: TopDownLayout;
   readonly earth?: 'parade' | 'yard';
+  /** What the stone class is drawn as: the coast's flagstones (the default) or bare rock (the river road's cliff). */
+  readonly stone?: 'parade' | 'rock';
   /** The ground's wear: cells walked into a lighter path, and how much of the open ground lies wet. */
   readonly wear?: {
     readonly paths?: readonly (readonly [number, number])[];
@@ -153,7 +165,7 @@ export function bake(cfg: Rg02BoardConfig): Baked {
   const tr = cfg.terrain;
   const PW = tr.plateW,
     PH = tr.plateH;
-  const tiles = rg02Tiles(cfg.earth);
+  const tiles = rg02Tiles(cfg.earth, cfg.stone);
   const g = blank(PW, PH);
   const d = g.data;
   const cls = new Uint8Array(PW * PH);
@@ -203,7 +215,7 @@ export function bake(cfg: Rg02BoardConfig): Baked {
         // a deck or the quay lays a short hard shadow on the water to its lower right
         for (let s = 1; s <= 4; s++) {
           const o = c(x - Math.ceil(s * 0.6), y - s);
-          if (o === RG.deck || o === RG.sand || o === RG.stone) {
+          if (o === RG.deck || o === RG.sand || o === RG.stone || o === RG.grass) {
             mix(i, SHADE, s <= 2 ? 0.55 : 0.4);
             break;
           }
@@ -217,6 +229,26 @@ export function bake(cfg: Rg02BoardConfig): Baked {
           if (c(x + r, y) === RG.water || c(x - r, y) === RG.water || c(x, y + r) === RG.water)
             wet = r;
         if (wet) mix(i, [0x5a, 0x3d, 0x2b], wet === 1 ? 0.45 : 0.28);
+      }
+      if (k === RG.grass) {
+        // a bank of dark earth at the waterline, the grass thinning into it, and a trodden verge along the road
+        let bank = 0;
+        for (let r = 1; r <= 4 && !bank; r++)
+          if (c(x + r, y) === RG.water || c(x - r, y) === RG.water || c(x, y + r) === RG.water)
+            bank = r;
+        if (bank) mix(i, BANK, bank === 1 ? 0.7 : bank === 2 ? 0.5 : 0.22);
+        else {
+          let verge = 0;
+          for (let r = 1; r <= 2 && !verge; r++)
+            if (
+              c(x + r, y) === RG.earth ||
+              c(x - r, y) === RG.earth ||
+              c(x, y + r) === RG.earth ||
+              c(x, y - r) === RG.earth
+            )
+              verge = r;
+          if (verge) mix(i, VERGE, verge === 1 ? 0.3 : 0.15);
+        }
       }
       if (
         k !== RG.puddle &&
