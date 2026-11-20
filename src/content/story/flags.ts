@@ -220,7 +220,14 @@ export const LATE_SCENES: Readonly<Record<string, OldSavesAnswer>> = {
  * `sites` names the roads answered (`next=gate_talked_through`). `saveHistory.test.ts` asks for
  * an entry.
  */
-export const LATE_EDGES: Readonly<Record<string, OldSavesAnswer>> = {};
+export const LATE_EDGES: Readonly<Record<string, OldSavesAnswer>> = {
+  'map:saltstep_market': {
+    upTo: '2026-11-19-roads',
+    sites: ['triggers[#mq02_saltstep_arrival_tidy].node=mq02_saltstep_arrival'],
+    answer: 'open',
+    why: 'The tidy-cart trigger plays the same arrival scene as the one it splits from; only the cart’s picture differs, so a save that came the old way recorded everything this road would.',
+  },
+};
 
 /* The hub flag: read nearly everywhere after the quarry. */
 const ACT1_COMPLETE_READERS = [
@@ -777,6 +784,8 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
         'story:pella_home',
         'story:sq01_pella_list',
         'story:sq01_sled_again',
+        // An old save past the side story shows Bo-shan's cart as it always was: the untidy one.
+        'map:saltstep_market',
       ],
     ),
     setBy: ['story:sq01_choice'],
@@ -788,6 +797,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'story:pella_home',
       'story:sq01_sled_again',
       'story:sq01_pella_list',
+      'map:saltstep_market',
     ],
   },
 

@@ -265,11 +265,11 @@ export function connectAct1(map: MapDef): MapDef {
           },
           {
             // SQ-01: Bo-shan's tipped sled in the south ditch, for a party carrying Pella's list,
-            // until the workers are home. The cabbage cart stands in for a sled until art exists.
+            // until the workers are home (art batch #38, `tools/sq01gen.py`).
             id: 'sq01_sled',
             name: 'Overturned sled',
             pos: { x: 11, y: 10 },
-            sprite: 'prop.cart',
+            sprite: 'world.sq01_sled',
             node: 'sq01_sled',
             // Not after a Driller loss either: its outcomes count on Dorin's handcart.
             when: {
