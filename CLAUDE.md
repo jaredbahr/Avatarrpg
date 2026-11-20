@@ -39,6 +39,9 @@ the owner and Claude have a workflow good enough to build the whole game, region
 - **Players and devices:** the owner's family on **one shared tablet** (hot-seat; iPad landscape first), so whose turn
   it is and the hand-offs must always be clear. For friends far away the owner plans to run it on his **PC and share it
   through Steam Remote Play**, so a PC window with mouse and keyboard must work too.
+- **Quality before speed** (owner, 2026-11-20): "I would rather take time to do it correctly and well than rush
+  something easy and poor looking." When a choice is left to you, take the plan that will look and play well, even
+  when it costs more stages.
 - **Polish is family-level only:** keep what helps the kids play (clear turns, big text, tap targets, forgiving
   difficulty). Stranger onboarding, public-release polish and a public link are not goals.
 - **What "finished" means for the demo:** **combat juice** (an action clip per heading and ability, impact effects,
