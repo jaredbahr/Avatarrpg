@@ -1,8 +1,11 @@
 # Place brief: `saltstep_platform`
 
-**Status (2026-11-19):** stages 0 to 2 of `docs/level-design.md`, waiting for the owner's yes. No rows, layout or
-art exist yet. A fight board only: the party reaches it from the Saltstep market by a conversation, as SF-2.1's
-riggers are reached in the power yard; there is no explore map here.
+**Status (2026-11-20):** plan 2 chosen (owner, 2026-11-19); blockout built (#916); art (stage 6) built on the owner's
+yes of 2026-11-20 and waiting for his look. The board is baked by `scripts/art/topdown/boards/rg02boards.ts`: the
+region's deck and water, the north step drawn by the baker's `raised` cells, the counter stub (`counter_side`, the one
+new piece, 12 PixelLab credits over two takes) and RG-02's own bollards, tide pole, piles, buoys, gulls and Tavi's
+rowboat. A fight board only: the party reaches it from the Saltstep market by a conversation, as SF-2.1's riggers are
+reached in the power yard; there is no explore map here.
 
 **One line:** a spare market platform, floating loose in the harbour, where the ferry apprentices spar for who
 washes the bowls, and it tips toward whichever side has more people on it.

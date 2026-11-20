@@ -82,7 +82,10 @@ function servePaged(): void {
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 5));
 
-/** Polls until `done` holds, so a chained load is waited on rather than guessed at. */
+/**
+ * Polls until `done` holds, so a chained load is waited on rather than guessed at. The cap is a
+ * number of event-loop turns, not a time: a busy machine makes each turn longer, never fewer.
+ */
 async function until(done: () => boolean): Promise<void> {
   for (let tries = 0; tries < 400 && !done(); tries++) await settle();
   expect(done()).toBe(true);
@@ -118,7 +121,8 @@ describe('a sheet on more than one atlas page (ADR 0052)', () => {
     FakeImage.failing.add('/art/topdown/driller-2.webp');
     const store = new SheetStore();
     store.frame(PAGED, 'idle', 0, undefined, 128, 2);
-    await settle();
+    // Wait for the failure itself, not for a guessed 5 ms (#796).
+    await until(() => store.loadState(PAGED) === 'failed');
     expect(store.loadedFor(PAGED)).toBe(false);
     expect(store.frame(PAGED, 'idle', 0, undefined, 128, 2)).toBeNull();
   });
@@ -187,8 +191,7 @@ describe('a knockout fetched with its sheet (ADR 0059)', () => {
     const store = new SheetStore();
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     store.frame(KEY, 'idle', 0, undefined, 128, 1);
-    await settle();
-    await settle();
+    await until(() => store.loadState(KEY) === 'failed');
     expect(store.loadedFor(KEY)).toBe(false);
     expect(store.clips(KEY)).toBeUndefined();
     expect(store.frame(KEY, 'idle', 0, undefined, 128, 1)).toBeNull();

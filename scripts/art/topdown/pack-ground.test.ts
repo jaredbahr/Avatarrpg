@@ -6,15 +6,13 @@
  * seated). Ba Dan ships its ground alone (ADR 0120) until its set pieces stand on it, so it has none to seat yet.
  */
 import { readFileSync, readdirSync } from 'node:fs';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { decodeWebp, isLosslessWebp } from '../lib/webp';
 import { measureStyle } from '../lib/colours';
 import { haloPixels, seatingTable, shadowTable, straightEdge, terrainEdge } from './ground-checks';
 import { BOARDS } from './boards/index';
 import { packBoard, type Baked, type TopDownBoard } from './lib/board';
 import { bakedDisc, bakedMound, dehalo } from './lib/sprites';
-
-vi.setConfig({ testTimeout: 300_000, hookTimeout: 300_000 });
 
 interface Packed {
   readonly board: TopDownBoard;

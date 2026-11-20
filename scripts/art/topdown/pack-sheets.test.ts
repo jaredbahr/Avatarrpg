@@ -4,12 +4,9 @@
  * byte, and nothing else under `public/art/topdown/`.
  */
 import { readFileSync } from 'node:fs';
-import { expect, it, vi } from 'vitest';
+import { expect, it } from 'vitest';
 import { decodeWebp, isLosslessWebp } from '../lib/webp';
 import { DATA, VFX_OUTPUTS, packTopdownSheets, shippedFiles } from './pack-sheets';
-
-// Reading some 3,000 frames and the encoder's slowest lossless search take a minute or more on a busy machine.
-vi.setConfig({ testTimeout: 600_000, hookTimeout: 600_000 });
 
 const files = await packTopdownSheets();
 

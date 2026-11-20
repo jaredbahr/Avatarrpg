@@ -16,7 +16,8 @@ sys.path.insert(0, 'tools'); import pl
 
 os.environ.setdefault('PIXELLAB_REGION', 'saltstep_emberwatch')
 # The owner approved about 1,040 credits (+-50%) for the region's art on 2026-11-15: stop before 1,560.
-CAP = 1560.0
+# +40 for SF-2.2's tipping platform (the owner's yes, 2026-11-20: about 30-50 credits for the platform's art).
+CAP = 1600.0
 D8 = ['south', 'south-east', 'east', 'north-east', 'north', 'north-west', 'west', 'south-west']
 S = json.load(open('style.json'))
 WHO = ('veyra', 'handler', 'rigger', 'tavi', 'clerk', 'luli', 'bowlseller', 'freightclerk', 'cook')
