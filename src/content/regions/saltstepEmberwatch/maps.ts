@@ -363,6 +363,16 @@ export const EMBERWATCH_PARADE: MapDef = {
       sprite: SPRITE.tavi,
       node: 'mq03_tavi',
     },
+    {
+      // The way onto the river road (`docs/places/river_road.md`): shown once Scene 3.9's invitation sets
+      // `mq03.invited`. Scene 3.9 is not built, so nothing shows it yet; the blockout is walked by warp.
+      id: 'river_road_sign',
+      name: 'River road',
+      pos: { x: 22, y: 9 },
+      sprite: 'world.route_sign',
+      node: 'river_road_sign',
+      when: { kind: 'flag', key: 'mq03.invited', op: 'set' },
+    },
   ],
 };
 
@@ -482,10 +492,83 @@ export const SALTSTEP_PLATFORM: MapDef = {
   props: [],
 };
 
+/**
+ * The river road (`docs/places/river_road.md`, plan 1; owner, 2026-11-20): the cart's day up the river from the coast to
+ * Causeway, five views in a row. GREY BLOCKOUT (stage 3): the rows are the plan; nothing is dressed.
+ *
+ * - West: the road leaves the bay (the west mouth walks back to Emberwatch's parade ground).
+ * - The shade stop: the big tree (`T`), the trough (`F`) and a pull-off loop; a footpath down to the river landing.
+ * - The bridge: the plank bridge (`w`) carries the road over the side stream; the ford (`~`, shallow) a little
+ *   downstream is the way round it (SF-2.3's board is a crop of this view). The guards' camp is north of the road,
+ *   east of the bridge: its cold fire and its crates (`F`, cover).
+ * - The bend: the road climbs north-east past a cliff (`X`) that hides the far end.
+ * - The lookout: a rise (`^`, a ramp `S` up from the road) at the east end, where Scene 5.6's meal looks out over the
+ *   three valleys. The road runs on east into Causeway, which is not built yet, so its east end is a closed edge.
+ * - The river fills the south edge, wide and empty: the quiet space.
+ */
+export const RIVER_ROAD: MapDef = {
+  id: 'river_road',
+  projection: 'topdown',
+  name: 'The River Road',
+  kind: 'explore',
+  width: 40,
+  height: 14,
+  ambience: 'village',
+  legend: RG02_LEGEND,
+  rows: [
+    'TTTTTTTTTTTTTTTTTTTWWTTTTTTTTXXXXX,,,,,,',
+    'TTT,TTTT,,,,TTTT,,,WW,,,TTTTTXXXXX,^^^^^',
+    'TT,,,TT,,,,,,,T,,,,WW,...F.T,,XXX,,S^^^^',
+    ',,,,,,,,,,T,F,,,,,,WW,.F...,,,,,========',
+    ',,,,,,,,,.....,,,,,WW,.....,,,==========',
+    '===================ww===========,,,,,,,,',
+    '===================ww=========,,,,,,,,,,',
+    ',,,,,,,.,,,,,,,,,,,WW,,,,,U,,,,,,,,,,,,,',
+    ',,,,,,,.,,,,,,,,,,,~~,,U,,,,,,,,,,,,,,,,',
+    ',,,,::::::,,,,,,,,,WW:::::::,,,,,WWWWWWW',
+    'WWWWWWwwwWWWWWWW,,,WW:::::::WWWWWWWWWWWW',
+    'WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW',
+    'WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW',
+    'WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW',
+  ],
+  partySpawns: [
+    { x: 1, y: 5 },
+    { x: 1, y: 6 },
+    { x: 2, y: 5 },
+    { x: 2, y: 6 },
+    { x: 3, y: 5 },
+    { x: 3, y: 6 },
+  ],
+  exits: [
+    {
+      pos: { x: 0, y: 5 },
+      toMapId: 'emberwatch_parade',
+      // The parade ground's open grass south of its east road, clear of the power yard's gap.
+      toPos: { x: 21, y: 11 },
+      label: 'West → Emberwatch',
+      direction: 'west',
+      area: mouth(0, [5, 6]),
+    },
+  ],
+  edges: [
+    { side: 'west', span: [3, 4], treatment: 'band' },
+    { side: 'west', span: [7, 9], treatment: 'band' },
+    { side: 'north', span: [34, 39], treatment: 'band' },
+    // Causeway (RG-03) is not built: the road's east end is closed until it is.
+    { side: 'east', span: [0, 2], treatment: 'band' },
+    { side: 'east', span: [3, 4], treatment: 'barrier' },
+    { side: 'east', span: [5, 8], treatment: 'band' },
+  ],
+  edgeContract: 'enforce',
+  npcs: [],
+  props: [],
+};
+
 export const SALTSTEP_EMBERWATCH_MAPS: readonly MapDef[] = [
   SALTSTEP_MARKET,
   SALTSTEP_PONTOON,
   EMBERWATCH_PARADE,
   EMBERWATCH_POWER_YARD,
   SALTSTEP_PLATFORM,
+  RIVER_ROAD,
 ];

@@ -20,18 +20,18 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 
 ```mermaid
 flowchart TD
-  n372{{"sf22_battle<br/>Fight: enc_sf22_platform (expected level 4)"}}
-  n373["sf22_bowls<br/>Bowl-seller: Sixty bowls. Sand’s in the tub. Don’t stack them w…"]
-  n374["sf22_lost<br/>Set flags"]
-  n375["sf22_rules<br/>Tavi Ren: No bending the platform. Bend whatever else you like.…"]:::entry
-  n376["sf22_won<br/>Channel hand: Fair. We wash. You can dry, since you’re so quick."]
+  n374{{"sf22_battle<br/>Fight: enc_sf22_platform (expected level 4)"}}
+  n375["sf22_bowls<br/>Bowl-seller: Sixty bowls. Sand’s in the tub. Don’t stack them w…"]
+  n376["sf22_lost<br/>Set flags"]
+  n377["sf22_rules<br/>Tavi Ren: No bending the platform. Bend whatever else you like.…"]:::entry
+  n378["sf22_won<br/>Channel hand: Fair. We wash. You can dry, since you’re so quick."]
   n171["mq02_market_explore — exit to mq02-paper-and-stone / part 8"]:::external
-  n372 -->|"Victory"| n376
-  n372 -->|"Defeat"| n374
-  n373 -->|"Next"| n171
-  n374 -->|"set: (none); grant XP: 15"| n373
-  n375 -->|"Next"| n372
-  n376 -->|"Next"| n171
+  n374 -->|"Victory"| n378
+  n374 -->|"Defeat"| n376
+  n375 -->|"Next"| n171
+  n376 -->|"set: (none); grant XP: 15"| n375
+  n377 -->|"Next"| n374
+  n378 -->|"Next"| n171
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5
