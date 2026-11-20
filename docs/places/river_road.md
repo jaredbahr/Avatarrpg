@@ -1,9 +1,10 @@
 # Place brief: `river_road`
 
-**Status (2026-11-20):** stages 0 to 2 of `docs/level-design.md`, answered by the owner. No rows, layout or art exist
-yet. The owner chose a walkable road map over a conversation like the coast road, about 40 by 14 cells, a crop board
-for SF-2.3, and RG-02 for now. He left the plan to the designer: "I would rather take time to do it correctly and well
-than rush something easy and poor looking." Plan 1 is taken.
+**Status (2026-11-20):** stages 0 to 5 of `docs/level-design.md`. The owner answered the brief, approved the blockout
+(#922, "layout's right") and the ground (#923, its own countryside tiles), and left the plan to the designer: "I would
+rather take time to do it correctly and well than rush something easy and poor looking." Plan 1 is taken. Stage 5 places
+the set pieces as boxes (`src/content/scenes/riverRoad.setpieces.ts`, `?boxes` on a dev build); the kit list it implies
+is at the end. No set-piece art exists yet.
 
 **One line:** the cart's day-long road up the river from the coast to Causeway, with a plank bridge someone has put a
 pole across, and at the far end a place to pull off and see three valleys at once.
@@ -171,3 +172,59 @@ end hidden until you reach it, so the three valleys are a reveal (the one thing 
 4. **Region:** RG-02 for now; its east exit waits for Causeway (RG-03).
 5. **The west end** (the designer's call, not asked): Scene 3.9 puts the cart on the road's west end, and the west
    mouth walks back to Emberwatch's parade ground. Emberwatch's rows do not change for it.
+6. **Layout (#922)** and **ground (#923):** approved as built.
+
+## Open questions (stage 5)
+
+1. **The bend's cliff:** a sprite (the kit list prices one), or a rock face baked into the plate? A baked face needs a
+   face system the RG-02 baker does not have yet (it would also raise the lookout); the sprite does not.
+2. **The landing's owner:** the boat and the drying net say someone fishes or ferries from the landing.
+   `PLACEHOLDER (story)`: who, and whether they are there by day (stage 7, life).
+3. **The toll pole's look:** red-and-white, a borrowed road barrier (the brief's signature), or a plain peeled pole? The
+   kit list prices one pole in two states.
+
+## Kit list (stage 5)
+
+The set pieces are placed as labelled boxes: `src/content/scenes/riverRoad.setpieces.ts` (8 set pieces, 33 members
+besides the rim's 48 trees, five zones with one focus each), checked by `src/content/setPieces.test.ts` and drawn in the
+game with `?boxes` on a dev build. This is every piece of art that plan needs, and nothing it does not. **Sizes are the
+plan's, in px**: width is the footprint (40 px a cell), height is the plan's height in figures (1 figure = 45 px).
+Credits are the guide's costs (object about 5, house-sized about 9; `docs/level-design.md` section 7) for a first take,
+and 0 where existing art serves. No art is generated yet.
+
+| #   | Art                                              | Used by (members)                            | Size px (w x h) | Existing art (native px)                                                                   | Credits |
+| --- | ------------------------------------------------ | -------------------------------------------- | --------------- | ------------------------------------------------------------------------------------------ | ------: |
+| 1   | Hill tree, pine and broadleaf                    | `rim_trees` (48)                             | 40 x 99         | Ba Dan valley `tree_pine` 38 x 81, `tree_broadleaf` 38 x 54 (`objects_bd20`): same country |       0 |
+| 2   | Big old shade tree, wide canopy                  | `shade-tree`                                 | 80 x 117        | none (Ba Dan's trees are a third of its size)                                              |       5 |
+| 3   | Water trough                                     | `shade-trough`                               | 40 x 27         | `trough_ek` 46 x 23 (`objects_bd20`), `water_trough` 55 x 26 (`objects_rg02`)              |       0 |
+| 4   | Log to sit on                                    | `shade-log-bench`                            | 64 x 20         | `crew_bench` 46 x 21 (`objects_bd20`) is a plank bench, not a log                          |       5 |
+| 5   | Hitching post                                    | `shade-hitching-post`                        | 10 x 40         | none (`gate_post` 30 x 69 is twice too big)                                                |       5 |
+| 6   | Plank bridge with both rails                     | `bridge-deck`, `bridge-rail-north`, `-south` | 80 x 96         | none                                                                                       |       9 |
+| 7   | Toll pole, lowered across the deck               | `bridge-toll-pole`                           | 12 x 72         | none                                                                                       |       5 |
+| 8   | Toll pole's post, with the pole raised (edit #7) | `bridge-pole-post`; the after-SF-2.3 state   | 16 x 45         | none                                                                                       |       5 |
+| 9   | Cold fire: a ring of stones and ash              | `camp-cold-fire`                             | 40 x 20         | `firewood` 39 x 29 (`objects8`) is a woodpile, not a fire                                  |       5 |
+| 10  | Crate stack                                      | `camp-crates-west`, `camp-crates-east`       | 40 x 40         | `crate_stack` 26 x 50 (`objects_rg02`)                                                     |       0 |
+| 11  | Bedroll (one sprite, flipped)                    | `camp-bedroll-1` to `-3`                     | 40 x 20         | none                                                                                       |       5 |
+| 12  | Rubbish heap                                     | `camp-rubbish`                               | 40 x 20         | none                                                                                       |       5 |
+| 13  | Cooking pot                                      | `camp-pot`                                   | 16 x 16         | `cookpot` 41 x 36 (`objects8`) is two and a half times too big                             |       5 |
+| 14  | Hand-lettered toll sign on a stake               | `camp-toll-sign`                             | 24 x 40         | `warning_sign` 16 x 34 (`objects_rg02`), if it reads as hand-lettered                      |   0 (5) |
+| 15  | Stepping stones across the stream                | `ford-stones`                                | 80 x 40         | none                                                                                       |       5 |
+| 16  | Fallen log in the stream                         | `ford-log`                                   | 80 x 24         | none                                                                                       |       5 |
+| 17  | Boulder                                          | `ford-boulder`, `far-bank-boulder`           | 40 x 36         | `boulders` 42 x 25 (`objects_rg02`), `lime_boulder` 40 x 36 (`objects13`)                  |       0 |
+| 18  | Driftwood                                        | `far-bank-driftwood`                         | 40 x 16         | none                                                                                       |       5 |
+| 19  | The bend's cliff (see open question 1)           | `bend-cliff`                                 | 200 x 72        | `rock_spur` 67 x 48 (`objects_rg02`) stands in today                                       |       9 |
+| 20  | Fallen rock at the cliff's foot                  | `bend-cliff-foot`                            | 120 x 45        | `rock_spur` 67 x 48, `shore_rocks` 42 x 23 (`objects_rg02`)                                |       5 |
+| 21  | Small country jetty, with its mooring post       | `landing-jetty`, `landing-mooring-post`      | 120 x 40        | `jetty` 46 x 41 (`objects_rg02`) is a harbour jetty a third the length                     |       5 |
+| 22  | Rowboat, side-on                                 | `landing-boat`                               | 88 x 18         | `rowboat` 38 x 40 (`objects_rg02`), if it reads lying along the bank                       |   0 (5) |
+| 23  | Net drying on two poles                          | `landing-net-rack`                           | 64 x 40         | `net_pile` 47 x 30 (`objects_rg02`) is a heap, not a rack                                  |       5 |
+| 24  | Flat rock to sit on                              | `lookout-rock`                               | 56 x 20         | none                                                                                       |       5 |
+| 25  | Milestone                                        | `lookout-milestone`                          | 16 x 27         | none                                                                                       |       5 |
+| 26  | Wind-bent tree                                   | `lookout-tree`                               | 40 x 90         | none                                                                                       |       5 |
+
+**Later states** (the brief's): after SF-2.3's Carry on, one sack of cabbages by the cold fire (40 x 30, new, 5); after a
+win, the camp's crates, bedrolls, fire and rubbish are gone (no art); Scene 5.6 stands Parcel's cart at the lookout
+(`parcel_cart`, existing, 0).
+
+**Total:** 26 pieces for the plan, 20 of them new at about 108 credits for a first take (113 with the cabbage sack, and
+up to 123 if the sign and the boat do not serve). RG-02's cap stands at 1,700 with 1,599 spent, so the kit needs the
+owner's credit OK before stage 6.
