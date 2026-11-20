@@ -699,9 +699,10 @@ export const RIVER_ROAD_TERRAIN = new Rg02Terrain({
   },
   beyond: RG.grass,
   earthTerrain: 'D',
-  // the bend's cliff stands two tiers above the road and no one climbs it; the lookout's rise is one tier, walked up
-  // its ramp (`S`) (`docs/places/river_road.md`, decision 9)
-  raised: { X: 2, '^': 1 },
+  // the face's height in tiers, not the rules' elevation (the legend's): the bend's cliff shows three tiers of face, a
+  // wall that hides the bend, and no one climbs it; the lookout's rise is one tier, walked up its ramp (`S`)
+  // (`docs/places/river_road.md`, decision 9; owner, 2026-11-20: "make the cliff taller")
+  raised: { X: 3, '^': 1 },
   rock: 'X',
   mouths: [
     mouth('emberwatch', 'west', [
@@ -807,7 +808,7 @@ export const RIVER_ROAD_OBJECTS: readonly TopDownObject[] = [
         return x === 12 && y === 3
           ? [piece('shade-trough', 'trough_ek', 'prop', [[x, y]], true)]
           : [piece(`crates_${x}_${y}`, 'crate_stack', 'prop', [[x, y]], true)];
-      // the cliff is baked rock (`raised`); its foot is one fallen heap along row 2's three cells
+      // the cliff is baked rock (`raised`); at its foot, one fallen heap along row 2's three cells
       if (ch !== 'X' || y !== 2 || x !== 30) return [];
       return [
         piece(
@@ -820,6 +821,8 @@ export const RIVER_ROAD_OBJECTS: readonly TopDownObject[] = [
             [32, 2],
           ],
           true,
+          // the face hangs about 12 px over the road's edge: the heap lies at its foot, not on the wall
+          { base: 10 },
         ),
       ];
     }),
