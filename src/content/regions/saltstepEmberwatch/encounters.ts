@@ -129,7 +129,7 @@ export const SALTSTEP_EMBERWATCH_ENCOUNTERS: readonly EncounterDef[] = [
     /*
      * SF-2.3, the bridge toll (optional; `docs/places/river_road.md`, "Fight needs (SF-2.3)"), on a 19 by 12 crop of
      * the river road round the bridge (`river_road_bridge`). The guards hold the bridge, a two-wide choke, with a
-     * crossbow back in the camp behind its crates; the corporal stands by the cold fire. The party comes from the west
+     * crossbow back in the camp behind its crates; the corporal stands by the cook pot. The party comes from the west
      * bank and can flank by the ford. A table of three meets the corporal and three guards; a table of six meets the
      * script's corporal and six. A token 15 XP a head, won or carried on, as SF-2.2's.
      */
@@ -141,13 +141,14 @@ export const SALTSTEP_EMBERWATCH_ENCOUNTERS: readonly EncounterDef[] = [
     enemies: [
       at(8, 5, 'toll_guard'),
       at(8, 6, 'toll_guard'),
-      at(10, 2, 'toll_crossbow'),
-      at(14, 3, 'toll_corporal'),
+      // the camp's bare earth, clear of its bedrolls, rubbish heap, fire, pot and lamp oil
+      at(11, 2, 'toll_crossbow'),
+      at(14, 4, 'toll_corporal'),
     ],
     allies: [],
     conditionalEnemies: [],
     baselinePartySize: 3,
-    reinforcements: [at(9, 4, 'toll_guard'), at(14, 2, 'toll_crossbow'), at(11, 7, 'toll_guard')],
+    reinforcements: [at(9, 4, 'toll_guard'), at(12, 2, 'toll_crossbow'), at(11, 7, 'toll_guard')],
     variants: [],
     /*
      * Hard keeps one of the shared profile's two extra AP and +3 of its power: with all of it a table of three won
