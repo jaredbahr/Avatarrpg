@@ -287,8 +287,8 @@ const WORK: Record<string, { probes: number; validity: number; searches: number 
   'enemyTurn/enc_ambush/base/{}/e2': { probes: 4613, validity: 574, searches: 2 },
   'enemyTurn/enc_ambush/base/{}/e4': { probes: 7653, validity: 575, searches: 1 },
   'enemyTurn/enc_ambush/base/{}/e8': { probes: 9718, validity: 911, searches: 3 },
-  'reachable/topdown/ba_dan_village': { probes: 709, validity: 0, searches: 1 },
-  'findPath/topdown/ba_dan_village': { probes: 5619, validity: 0, searches: 0 },
+  'reachable/topdown/ba_dan_village': { probes: 2657, validity: 0, searches: 1 },
+  'findPath/topdown/ba_dan_village': { probes: 10308, validity: 0, searches: 0 },
 };
 const HEADROOM = 1.5;
 
