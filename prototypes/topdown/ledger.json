@@ -42504,6 +42504,273 @@
     "object_id": "4e9c485f-79bd-4a96-b22e-f1cd874462f6"
    },
    "region": "ba_dan_valley"
+  },
+  {
+   "name": "sq01_sled_3",
+   "endpoint": "/create-object-pro-flash",
+   "job": "59edaa07-d02f-4fa4-9a22-d963844f95de",
+   "status": "completed",
+   "settings": {
+    "description": "a small wooden delivery sled tipped over on its side in a roadside ditch: two lo...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 56,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 3843.0654640625,
+   "balance_after": 3838.0654640625,
+   "secs": 19,
+   "notes": "",
+   "ids": {
+    "background_job_id": "59edaa07-d02f-4fa4-9a22-d963844f95de",
+    "object_id": "7cf2244f-7408-40eb-bd47-2d75cb796a06"
+   },
+   "region": "ba_dan_valley"
+  },
+  {
+   "name": "sq01_cart_3",
+   "endpoint": "/edit-image-pro-flash",
+   "job": "d9b981b2-6c80-4750-87e6-03bded452d60",
+   "status": "completed",
+   "settings": {
+    "image": "<png>",
+    "method": "text",
+    "description": "Change ONLY the load on the cart behind the bird. Remove the big canvas-covered ...",
+    "no_background": true,
+    "seed": 3
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 3838.0654640625,
+   "balance_after": 3833.0654640625,
+   "secs": 20,
+   "notes": "",
+   "ids": {
+    "background_job_id": "d9b981b2-6c80-4750-87e6-03bded452d60",
+    "image_id": "3d401fa2-1ee4-5d0e-9f9a-c6b90a82882f",
+    "source_image_id": "3d401fa2-1ee4-5d0e-9f9a-c6b90a82882f"
+   },
+   "region": "ba_dan_valley"
+  },
+  {
+   "name": "sq01_sled_11",
+   "endpoint": "/create-object-pro-flash",
+   "job": "a5142da9-bfc0-41a5-8d9f-04fab7238d13",
+   "status": "completed",
+   "settings": {
+    "description": "a small wooden snow-style delivery sled tipped over on its side in a roadside di...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 56,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 11
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 3833.0654640625,
+   "balance_after": 3828.0654640625,
+   "secs": 25,
+   "notes": "",
+   "ids": {
+    "background_job_id": "a5142da9-bfc0-41a5-8d9f-04fab7238d13",
+    "object_id": "0c38117d-7106-40a3-bd5c-fc975a8dc8d4"
+   },
+   "region": "ba_dan_valley"
+  },
+  {
+   "name": "sq01_sled_19",
+   "endpoint": "/create-object-pro-flash",
+   "job": "d6c34586-5c94-4f19-83b1-b37348bf42f6",
+   "status": "completed",
+   "settings": {
+    "description": "a small wooden snow-style delivery sled tipped over on its side in a roadside di...",
+    "view": "low top-down",
+    "n_directions": 1,
+    "image_size": {
+     "width": 56,
+     "height": 48
+    },
+    "style_image": {
+     "image": "<png>",
+     "size": {
+      "width": 42,
+      "height": 47
+     },
+     "usage_description": "the camera and style reference: a front-on low top-down view. The object's front..."
+    },
+    "target_palette": {
+     "colors": [
+      "#1c1719",
+      "#3a2e2c",
+      "#5a3d2b",
+      "#7d5434",
+      "#a6713f",
+      "#c99a5b",
+      "#e8d8b0",
+      "#f6eed6",
+      "#6b2a1f",
+      "#9a4129",
+      "#c4643f",
+      "#e09a6a",
+      "#243d33",
+      "#35593f",
+      "#4f7d4a",
+      "#7aa05a",
+      "#a9c46f",
+      "#3e3d47",
+      "#5d5b63",
+      "#85807f",
+      "#aea89c",
+      "#1f3a4f",
+      "#2c6070",
+      "#4a8f98",
+      "#86c2bd",
+      "#5e1a20",
+      "#962b2b",
+      "#c9473a",
+      "#f0c39c",
+      "#c98b66",
+      "#8c5a45",
+      "#d9a441",
+      "#f2d47a",
+      "#3b2f45"
+     ],
+     "name": "village"
+    },
+    "seed": 19
+   },
+   "credits": 5.0,
+   "credit_source": "usage",
+   "balance_diff": 5.0,
+   "usage": {
+    "type": "generations",
+    "generations": 5.0
+   },
+   "balance_before": 3828.0654640625,
+   "balance_after": 3823.0654640625,
+   "secs": 25,
+   "notes": "",
+   "ids": {
+    "background_job_id": "d6c34586-5c94-4f19-83b1-b37348bf42f6",
+    "object_id": "cd1cbc6e-0161-4f80-b0aa-cff9e481a2b2"
+   },
+   "region": "ba_dan_valley"
   }
  ],
  "end_balance": 16728.0,

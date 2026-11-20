@@ -96,6 +96,13 @@ const SCENES: Readonly<Record<string, Scene>> = {
       'A broad deck of weathered planks on the water, ragged at its edges, with deep harbour water all round it. A cast-iron hand pump in its crate stands near the left end, in two places. A short two-plank-wide gangway, its brake lever at its far end, joins the deck to a smaller platform on the right, where a heavy timber winch with a crane arm stands; the platform runs on to the right edge as a gangway toward a barge beyond the picture.',
     light: 'Grey afternoon light off the water, the tide on the turn.',
   },
+  saltstep_platform: {
+    place:
+      'A spare market platform at Saltstep, floating loose in the harbour, where the ferry apprentices spar.',
+    scene:
+      'A small square deck of market planking alone on the water, with deep harbour water all round it. Down its middle runs the short stub of an old stall counter, open at both ends. A low step of planks runs along the top edge, sloping down at each end. Two mooring bollards with looped rope stand at the top-left and bottom-right corners of the deck.',
+    light: 'Bright midday light, calm water.',
+  },
   emberwatch_parade: {
     place: 'Emberwatch, an old military outpost across the bay, reopened for civilians.',
     scene:

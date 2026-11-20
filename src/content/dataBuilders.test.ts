@@ -195,6 +195,8 @@ describe('content builders preserve their authored values', () => {
       ['world.tea_station', 'art/props/tea-station.png', 'earth'],
       ['world.route_sign', 'art/world/route-sign.png', 'neutral'],
       ['world.parcel_cart', 'art/topdown/objects/parcel_cart.png', 'neutral'],
+      ['world.parcel_cart_tidy', 'art/topdown/objects/parcel_cart_tidy.png', 'neutral'],
+      ['world.sq01_sled', 'art/topdown/objects/sq01_sled.png', 'neutral'],
       ['world.lantern_crates', 'art/topdown/objects/lantern_crates.png', 'neutral'],
       ['world.side_gate_hung', 'art/topdown/objects/side_gate_hung.png', 'neutral'],
       ['world.gao_jar', 'art/topdown/objects/gao_jar.png', 'neutral'],

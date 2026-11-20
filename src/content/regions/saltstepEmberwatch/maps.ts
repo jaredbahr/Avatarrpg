@@ -13,6 +13,8 @@
  * - `emberwatch_parade` (explore, 24 x 16): the old outpost's parade ground, where the ferry lands.
  * - `emberwatch_power_yard` (combat, 19 x 12): the power yard, SF-2.1's board and an explore map,
  *   with the live line along its north side and the overflowing cistern.
+ * - `saltstep_platform` (combat, 15 x 11): SF-2.2's sparring bout, a spare market platform floating
+ *   loose in the harbour (`docs/places/saltstep_platform.md`). A grey blockout (stage 3): no scene yet.
  */
 import type { MapDef, Vec2 } from '../../../core/types';
 import { LEGEND } from '../../maps/legend';
@@ -46,6 +48,13 @@ const COMBAT_PARTY_SPAWNS: readonly Vec2[] = [
   { x: 3, y: 8 },
 ];
 
+/** The platform's raised north rim (`h`) and the ramps at its ends (`H`): one tier of plank. */
+const PLATFORM_LEGEND: typeof LEGEND = {
+  ...RG02_LEGEND,
+  h: { terrain: 'wood', elevation: 1 },
+  H: { terrain: 'wood', elevation: 1, ramp: true },
+};
+
 /**
  * The region's sprites (`docs/pipeline-trial-log.md`, "Art production"): its own people and pieces since the art
  * batches.
@@ -61,9 +70,15 @@ const SPRITE = {
   luli: 'npc.luli',
   // Sabi leads the riggers and wears their sheet (the art list: she shares it).
   sabi: 'unit.enemy.rigger',
+  // SF-2.2: the ferry apprentices borrow the riggers' sheet until their own art is approved.
+  apprentices: 'unit.enemy.rigger',
 } as const;
 
 const ARRIVED = { kind: 'visited', nodeId: 'mq02_saltstep_arrival' } as const;
+// SQ-01's persistent change (the story bible): after Too Many Cabbages, Bo-shan's cart arrives stacked low and even, with
+// one enormous cabbage on top. The flag's key is spelled here rather than imported, so this region's chunk does not pull
+// in Ba Dan's side story.
+const SQ01_RESOLVED = { kind: 'flag', key: 'sq01.cabbages', op: 'set' } as const;
 // The party has heard Scene 2.2 at the bowl stall.
 const BOWL_CARRIED = { kind: 'visited', nodeId: 'mq02_bowl_seller' } as const;
 const VOTED = {
@@ -144,9 +159,25 @@ export const SALTSTEP_MARKET: MapDef = {
       node: 'mq02_saltstep_arrival',
       label: 'Saltstep',
       sprite: 'world.parcel_cart',
-      when: { kind: 'not', of: ARRIVED },
+      when: {
+        kind: 'all',
+        of: [
+          { kind: 'not', of: ARRIVED },
+          { kind: 'not', of: SQ01_RESOLVED },
+        ],
+      },
       once: true,
       // The whole walkable column, so no route east from the coast road slips past it.
+      area: [1, 2, 3, 4, 5, 6, 7, 8, 9].map((y) => ({ x: 3, y })),
+    },
+    {
+      // The same first sight, for a table that sorted Bo-shan's load (SQ-01): only the cart's picture differs.
+      id: 'mq02_saltstep_arrival_tidy',
+      node: 'mq02_saltstep_arrival',
+      label: 'Saltstep',
+      sprite: 'world.parcel_cart_tidy',
+      when: { kind: 'all', of: [{ kind: 'not', of: ARRIVED }, SQ01_RESOLVED] },
+      once: true,
       area: [1, 2, 3, 4, 5, 6, 7, 8, 9].map((y) => ({ x: 3, y })),
     },
   ],
@@ -200,6 +231,15 @@ export const SALTSTEP_MARKET: MapDef = {
         kind: 'all',
         of: [BOWL_CARRIED, { kind: 'not', of: { kind: 'visited', nodeId: 'mq02_stall_drifts' } }],
       },
+    },
+    {
+      // SF-2.2, optional: Tavi's apprentices by the ferry landing, until the bout has started.
+      id: 'sf22_apprentices',
+      name: 'Ferry apprentices',
+      pos: { x: 18, y: 9 },
+      sprite: SPRITE.apprentices,
+      node: 'sf22_rules',
+      when: { kind: 'not', of: { kind: 'visited', nodeId: 'sf22_rules' } },
     },
   ],
 };
@@ -397,9 +437,55 @@ export const EMBERWATCH_POWER_YARD: MapDef = {
   props: [],
 };
 
+/**
+ * SF-2.2's board (`docs/places/saltstep_platform.md`, plan 2, owner 2026-11-19): a 9 x 6 deck in
+ * the harbour. The old stall counter's stub (`F`, blocked cover) stands on the seam, column 7, the
+ * platform's pivot (`enc_sf22_platform`'s `tipping`), with gaps north and south of it, so there are
+ * two ways across. Two mooring bollards (`F`) at the north-west and south-east corners. The north
+ * rim is a step one tier up (`h`), with a ramp at each end (`H`) and the water behind it. Water
+ * (`W`) everywhere else: a shove into it is out of the bout (ADR 0122).
+ */
+export const SALTSTEP_PLATFORM: MapDef = {
+  id: 'saltstep_platform',
+  projection: 'topdown',
+  // The script's own words for it (SF-2.2); the writing pass may name it.
+  name: 'Spare market platform',
+  kind: 'combat',
+  width: 15,
+  height: 11,
+  ambience: 'village',
+  legend: PLATFORM_LEGEND,
+  rows: [
+    'WWWWWWWWWWWWWWW',
+    'WWWWWWWWWWWWWWW',
+    'WWWHhhhhhhhHWWW',
+    'WWWFwwwwwwwwWWW',
+    'WWWwwwwFwwwwWWW',
+    'WWWwwwwFwwwwWWW',
+    'WWWwwwwFwwwwWWW',
+    'WWWwwwwwwwwFWWW',
+    'WWWWWWWWWWWWWWW',
+    'WWWWWWWWWWWWWWW',
+    'WWWWWWWWWWWWWWW',
+  ],
+  // The west half, two cells from the seam first, so contact comes in the first round and nobody
+  // starts on the edge (core F8).
+  partySpawns: [
+    { x: 5, y: 5 },
+    { x: 5, y: 4 },
+    { x: 5, y: 6 },
+    { x: 4, y: 5 },
+    { x: 4, y: 3 },
+    { x: 4, y: 7 },
+  ],
+  npcs: [],
+  props: [],
+};
+
 export const SALTSTEP_EMBERWATCH_MAPS: readonly MapDef[] = [
   SALTSTEP_MARKET,
   SALTSTEP_PONTOON,
   EMBERWATCH_PARADE,
   EMBERWATCH_POWER_YARD,
+  SALTSTEP_PLATFORM,
 ];
