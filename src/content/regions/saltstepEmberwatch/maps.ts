@@ -238,7 +238,7 @@ export const SALTSTEP_MARKET: MapDef = {
       name: 'Ferry apprentices',
       pos: { x: 18, y: 9 },
       sprite: SPRITE.apprentices,
-      node: 'sf22_rules',
+      node: 'sf22_challenge',
       when: { kind: 'not', of: { kind: 'visited', nodeId: 'sf22_rules' } },
     },
   ],
@@ -448,8 +448,8 @@ export const EMBERWATCH_POWER_YARD: MapDef = {
 export const SALTSTEP_PLATFORM: MapDef = {
   id: 'saltstep_platform',
   projection: 'topdown',
-  // The script's own words for it (SF-2.2); the writing pass may name it.
-  name: 'Spare market platform',
+  // The writing pass's name for it (#914).
+  name: 'The Loose Platform',
   kind: 'combat',
   width: 15,
   height: 11,

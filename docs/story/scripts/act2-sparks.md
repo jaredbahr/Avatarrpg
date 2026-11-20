@@ -1787,11 +1787,30 @@ them the scrap. They only had to ask in daylight.
 loose, at the midday lull. **Why:** nobody is angry. Losers wash the bowl-seller's bowls. The platform tips
 toward whichever side has more people on it, and going in the water counts as out.
 
+**Ferry apprentice:** You're the ones off the cabbage cart. We settle the midday on the loose platform, us and the
+channel hands. Today we thought we'd be on the same side for once, and you'd be the other one.
+
+**Ferry apprentice:** Losers wash the bowl-seller's bowls. There are sixty. Are you in?
+
 **Tavi:** No bending the platform. Bend whatever else you like. If you fall in, swim to the left. The right's
 where the fish-seller empties her bucket.
 
 **Win:** **Channel hand:** Fair. We wash. You can dry, since you're so quick. **Carry on:** **Bowl-seller:**
 Sixty bowls. Sand's in the tub. Don't stack them wet.
+
+**Bout intro:** The midday lull. The spare platform rides loose on its moorings, and it leans toward whoever stands on
+it. Half the market has found a reason to be near the rail.
+
+**Tip:** A shove toward the water leaves a fighter teetering on the edge. Shove them again after their turn and they
+are in, and out of the bout. If you are the one teetering, step back from the edge. Blue squares show where the deck
+will tip when the round ends.
+
+**Ferry apprentice** (enemy card): Poles a ferry all day and has the shoulders for it. Quick on a wet deck. Laughs when
+it goes in. **Channel hand** (enemy card): Hauls barges through the channel for a living. Slow to move and very hard
+to shift.
+
+**The board:** The Loose Platform. The stall that stood there was a net-mender's, who moved ashore when the platform's
+moorings went slack; nobody has claimed it since, which is why it is spare. Nobody says this in the bout.
 
 ### SF-2.3 — The bridge toll (the river road to Causeway)
 
