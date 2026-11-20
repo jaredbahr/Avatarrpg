@@ -16,7 +16,7 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 
 ## Part 1: entry `mq02_bowl_seller`
 
-10 owned nodes.
+9 owned nodes.
 
 ```mermaid
 flowchart TD
@@ -27,9 +27,9 @@ flowchart TD
   n117["mq02_bowl_pump_woman<br/>Bowl-seller: Anybody who hasn’t eaten. Today, the pump woman ou…"]
   n120{"mq02_bowl_tenzo<br/>Branch when: Tenzo is with you"}
   n215["mq02_tenzo_broth<br/>Tenzo: Pepper, river fish, and something sour right at the end.…"]
-  n171["mq02_market_explore<br/>Explore saltstep_market: Stop at the bowl stall on the quay."]
   n116["mq02_bowl_plum_skin<br/>Bowl-seller: Pickled plum skin. The plum I eat myself."]
   n214["mq02_tenzo_both_bowls<br/>Tenzo: I’ll wash both bowls."]
+  n171["mq02_market_explore — continue / part 8"]:::continuation
   n115 -->|"Next"| n121
   n116 -->|"Next"| n214
   n117 -->|"Next"| n120
@@ -38,13 +38,16 @@ flowchart TD
   n120 -->|"when: Tenzo is with you"| n215
   n120 -->|"otherwise (not: Tenzo is with you)"| n171
   n121 -->|"Next"| n117
-  n171 -->|"Legacy/audit exit (live map exits differ)"| n171
   n214 -->|"Next"| n171
   n215 -->|"Next"| n116
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5
 ```
+
+Continuations:
+
+- `mq02_market_explore` → [mq02-paper-and-stone, part 8](./mq02-paper-and-stone.md#part-8)
 
 <a id="part-2"></a>
 
@@ -56,7 +59,7 @@ flowchart TD
 flowchart TD
   n131["mq02_coast_parcel<br/>The Coast Road: The road levels out. The ostrich horse slows do…"]:::entry
   n175["mq02_parcel<br/>Bo-shan: That’s Parcel. He stops where he thinks stops should b…"]
-  n171["mq02_market_explore — continue / part 1"]:::continuation
+  n171["mq02_market_explore — continue / part 8"]:::continuation
   n131 -->|"Next"| n175
   n175 -->|"Next"| n171
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
@@ -66,7 +69,7 @@ flowchart TD
 
 Continuations:
 
-- `mq02_market_explore` → [mq02-paper-and-stone, part 1](./mq02-paper-and-stone.md#part-1)
+- `mq02_market_explore` → [mq02-paper-and-stone, part 8](./mq02-paper-and-stone.md#part-8)
 
 <a id="part-3"></a>
 
@@ -159,7 +162,7 @@ Continuations:
 flowchart TD
   n154["mq02_freight_office<br/>Saltstep: A freight office with a clean brass plate: “Jin. Cont…"]:::entry
   n153["mq02_freight_clerk<br/>Freight clerk: She’s across the bay. If it’s about a bill, leav…"]
-  n171["mq02_market_explore — continue / part 1"]:::continuation
+  n171["mq02_market_explore — continue / part 8"]:::continuation
   n153 -->|"Next"| n171
   n154 -->|"Next"| n153
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
@@ -169,7 +172,7 @@ flowchart TD
 
 Continuations:
 
-- `mq02_market_explore` → [mq02-paper-and-stone, part 1](./mq02-paper-and-stone.md#part-1)
+- `mq02_market_explore` → [mq02-paper-and-stone, part 8](./mq02-paper-and-stone.md#part-8)
 
 <a id="part-6"></a>
 
@@ -180,7 +183,7 @@ Continuations:
 ```mermaid
 flowchart TD
   n160["mq02_jin_hears_public<br/>Freight clerk: I heard the whole thing from here. I’ve written …"]:::entry
-  n171["mq02_market_explore — continue / part 1"]:::continuation
+  n171["mq02_market_explore — continue / part 8"]:::continuation
   n160 -->|"Next"| n171
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
@@ -189,7 +192,7 @@ flowchart TD
 
 Continuations:
 
-- `mq02_market_explore` → [mq02-paper-and-stone, part 1](./mq02-paper-and-stone.md#part-1)
+- `mq02_market_explore` → [mq02-paper-and-stone, part 8](./mq02-paper-and-stone.md#part-8)
 
 <a id="part-7"></a>
 
@@ -200,7 +203,7 @@ Continuations:
 ```mermaid
 flowchart TD
   n161["mq02_jin_hears_quiet<br/>Freight clerk: Our handlers say a crate split and some stranger…"]:::entry
-  n171["mq02_market_explore — continue / part 1"]:::continuation
+  n171["mq02_market_explore — continue / part 8"]:::continuation
   n161 -->|"Next"| n171
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
@@ -209,11 +212,26 @@ flowchart TD
 
 Continuations:
 
-- `mq02_market_explore` → [mq02-paper-and-stone, part 1](./mq02-paper-and-stone.md#part-1)
+- `mq02_market_explore` → [mq02-paper-and-stone, part 8](./mq02-paper-and-stone.md#part-8)
 
 <a id="part-8"></a>
 
-## Part 8: entry `mq02_miri_crates`
+## Part 8: entry `mq02_market_explore`
+
+1 owned nodes.
+
+```mermaid
+flowchart TD
+  n171["mq02_market_explore<br/>Explore saltstep_market: Stop at the bowl stall on the quay."]:::entry
+  n171 -->|"Legacy/audit exit (live map exits differ)"| n171
+  classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
+  classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
+  classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5
+```
+
+<a id="part-9"></a>
+
+## Part 9: entry `mq02_miri_crates`
 
 5 owned nodes.
 
@@ -224,7 +242,7 @@ flowchart TD
   n165["mq02_kaya_forty_steps<br/>Kaya: She’s here. The shop’s here. It’s about forty steps that …"]
   n166["mq02_kaya_reads_chalk<br/>Saltstep: Kaya does not take the forty steps. She reads the cha…"]
   n164["mq02_kaya_after_customs<br/>Kaya: After customs. I’ll go after customs."]
-  n171["mq02_market_explore — continue / part 1"]:::continuation
+  n171["mq02_market_explore — continue / part 8"]:::continuation
   n137 -->|"when: Kaya is with you"| n165
   n137 -->|"otherwise (not: Kaya is with you)"| n171
   n164 -->|"Next"| n171
@@ -238,18 +256,18 @@ flowchart TD
 
 Continuations:
 
-- `mq02_market_explore` → [mq02-paper-and-stone, part 1](./mq02-paper-and-stone.md#part-1)
+- `mq02_market_explore` → [mq02-paper-and-stone, part 8](./mq02-paper-and-stone.md#part-8)
 
-<a id="part-9"></a>
+<a id="part-10"></a>
 
-## Part 9: entry `mq02_saltstep_arrival`
+## Part 10: entry `mq02_saltstep_arrival`
 
 1 owned nodes.
 
 ```mermaid
 flowchart TD
   n191["mq02_saltstep_arrival<br/>Saltstep: Saltstep is a market on the water. Stalls sit on plat…"]:::entry
-  n171["mq02_market_explore — continue / part 1"]:::continuation
+  n171["mq02_market_explore — continue / part 8"]:::continuation
   n191 -->|"Next"| n171
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
@@ -258,11 +276,11 @@ flowchart TD
 
 Continuations:
 
-- `mq02_market_explore` → [mq02-paper-and-stone, part 1](./mq02-paper-and-stone.md#part-1)
+- `mq02_market_explore` → [mq02-paper-and-stone, part 8](./mq02-paper-and-stone.md#part-8)
 
-<a id="part-10"></a>
+<a id="part-11"></a>
 
-## Part 10: entry `mq02_stall_drifts`
+## Part 11: entry `mq02_stall_drifts`
 
 80 owned nodes.
 
@@ -348,8 +366,8 @@ flowchart TD
   n187{"mq02_riko_stamp<br/>Branch when: Riko is with you"}
   n186["mq02_riko_packet<br/>Riko: She gave the packet to the man with the stamp."]
   n216["mq02_two_ways<br/>Customs clerk: I can do this two ways. I can read that packet o…"]
-  n188["mq02_riko_watches — continue / part 11"]:::continuation
-  n213["mq02_tavi_how_it_goes — continue / part 11"]:::continuation
+  n188["mq02_riko_watches — continue / part 12"]:::continuation
+  n213["mq02_tavi_how_it_goes — continue / part 12"]:::continuation
   n108 -->|"Jump aboard now."| n109
   n108 -->|"Follow along the pole walk."| n111
   n108 -->|"Ask Tavi for a tow."| n110
@@ -445,12 +463,12 @@ flowchart TD
 
 Continuations:
 
-- `mq02_riko_watches` → [mq02-paper-and-stone, part 11](./mq02-paper-and-stone.md#part-11)
-- `mq02_tavi_how_it_goes` → [mq02-paper-and-stone, part 11](./mq02-paper-and-stone.md#part-11)
+- `mq02_riko_watches` → [mq02-paper-and-stone, part 12](./mq02-paper-and-stone.md#part-12)
+- `mq02_tavi_how_it_goes` → [mq02-paper-and-stone, part 12](./mq02-paper-and-stone.md#part-12)
 
-<a id="part-11"></a>
+<a id="part-12"></a>
 
-## Part 11: entry `mq02_riko_watches`
+## Part 12: entry `mq02_riko_watches`
 
 14 owned nodes.
 
@@ -470,8 +488,8 @@ flowchart TD
   n152["mq02_fish_seller_mm<br/>Fish-seller: Mm. Well. You’d know."]
   n193["mq02_six_names<br/>Saltstep: By the time the clerk gets down, six people are waiti…"]
   n174["mq02_no_second_bowl<br/>Saltstep: She goes back to her fish. She does not offer a secon…"]
-  n171["mq02_market_explore — continue / part 1"]:::continuation
-  n216["mq02_two_ways — continue / part 10"]:::continuation
+  n171["mq02_market_explore — continue / part 8"]:::continuation
+  n216["mq02_two_ways — continue / part 11"]:::continuation
   n138 -->|"Next"| n192
   n151 -->|"Next"| n177
   n152 -->|"Next"| n174
@@ -495,19 +513,19 @@ flowchart TD
 
 Continuations:
 
-- `mq02_market_explore` → [mq02-paper-and-stone, part 1](./mq02-paper-and-stone.md#part-1)
-- `mq02_two_ways` → [mq02-paper-and-stone, part 10](./mq02-paper-and-stone.md#part-10)
+- `mq02_market_explore` → [mq02-paper-and-stone, part 8](./mq02-paper-and-stone.md#part-8)
+- `mq02_two_ways` → [mq02-paper-and-stone, part 11](./mq02-paper-and-stone.md#part-11)
 
-<a id="part-12"></a>
+<a id="part-13"></a>
 
-## Part 12: entry `mq02_tavi`
+## Part 13: entry `mq02_tavi`
 
 1 owned nodes.
 
 ```mermaid
 flowchart TD
   n212["mq02_tavi<br/>Tavi Ren: Ferry goes when the tide says. The company wants it t…"]:::entry
-  n171["mq02_market_explore — continue / part 1"]:::continuation
+  n171["mq02_market_explore — continue / part 8"]:::continuation
   n212 -->|"Next"| n171
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
@@ -516,4 +534,4 @@ flowchart TD
 
 Continuations:
 
-- `mq02_market_explore` → [mq02-paper-and-stone, part 1](./mq02-paper-and-stone.md#part-1)
+- `mq02_market_explore` → [mq02-paper-and-stone, part 8](./mq02-paper-and-stone.md#part-8)

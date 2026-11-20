@@ -382,6 +382,11 @@
     "sf21_sabi",
     "sf21_wet_ground",
     "sf21_won",
+    "sf22_battle",
+    "sf22_bowls",
+    "sf22_lost",
+    "sf22_rules",
+    "sf22_won",
     "sq01_choice",
     "sq01_crew",
     "sq01_families",
@@ -440,6 +445,7 @@
     "quarry_floor",
     "quarry_gate",
     "saltstep_market",
+    "saltstep_platform",
     "saltstep_pontoon"
   ],
   "encounters": [
@@ -450,7 +456,8 @@
     "enc_quarry_gate",
     "enc_sf11_the_bend",
     "enc_sf12_edge_on",
-    "enc_sf21_wet_ground"
+    "enc_sf21_wet_ground",
+    "enc_sf22_platform"
   ],
   "npcs": [
     "ambush_road:rest_keeper",
@@ -507,7 +514,8 @@
     "saltstep_market:mq02_customs_clerk",
     "saltstep_market:mq02_freight_clerk",
     "saltstep_market:mq02_miri_crates",
-    "saltstep_market:mq02_tavi"
+    "saltstep_market:mq02_tavi",
+    "saltstep_market:sf22_apprentices"
   ],
   "triggers": [
     "ambush_road:battle_ambush",
@@ -715,6 +723,8 @@
     "bandit_earthbender",
     "bandit_slinger",
     "bandit_thug",
+    "channel_hand",
+    "ferry_apprentice",
     "fire_deserter",
     "freight_handler",
     "grumbler",

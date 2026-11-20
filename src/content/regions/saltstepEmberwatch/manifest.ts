@@ -15,7 +15,13 @@ import type { RegionManifest } from '../../regions/types';
 export const SALTSTEP_EMBERWATCH: RegionManifest = {
   id: 'saltstep_emberwatch',
   name: 'Saltstep and Emberwatch',
-  mapIds: ['saltstep_market', 'saltstep_pontoon', 'emberwatch_parade', 'emberwatch_power_yard'],
+  mapIds: [
+    'saltstep_market',
+    'saltstep_pontoon',
+    'emberwatch_parade',
+    'emberwatch_power_yard',
+    'saltstep_platform',
+  ],
   // Ba Dan's coast road is this region's way in, and the market's west road its way home.
   neighbours: ['ba_dan_valley'],
   // Approved by the owner on #784 (2026-11-18): Saltstep (MQ-02) 3-4 and Emberwatch (MQ-03) 4-5.

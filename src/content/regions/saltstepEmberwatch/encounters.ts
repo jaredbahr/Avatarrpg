@@ -12,6 +12,7 @@
  */
 import type { EncounterDef, EncounterPlacement } from '../../../core/types';
 import { WINCH_BRAKE_CELLS } from './maps';
+import { SF22_XP_PER_HEAD } from './sf22';
 
 const at = (x: number, y: number, enemyId: string): EncounterPlacement => ({
   enemyId,
@@ -90,5 +91,37 @@ export const SALTSTEP_EMBERWATCH_ENCOUNTERS: readonly EncounterDef[] = [
       'The rain cistern has overflowed across the yard, and Luli’s live line runs along one side of it.',
     // The combo's first hint (the script: "something in this yard reacts to water"; #622).
     tip: 'Something in this yard reacts to water.',
+  },
+  {
+    /*
+     * SF-2.2, the tipping platform (optional; ADR 0122, `docs/places/saltstep_platform.md`): a
+     * friendly bout. 0 HP or a shove into the harbour is out, nobody is helped up, and the deck
+     * tips toward the heavier half at each round's end (the seam is column 7). A token 15 XP a head,
+     * won or carried on (owner, 2026-11-19): every other side fight played, a table ends the slice
+     * on 983 XP, and RG-02's band stops at level 5 (1,000).
+     */
+    id: 'enc_sf22_platform',
+    name: 'The tipping platform',
+    mapId: 'saltstep_platform',
+    expectedLevel: 4,
+    xpPerHead: SF22_XP_PER_HEAD,
+    enemies: [at(9, 4, 'ferry_apprentice'), at(9, 6, 'ferry_apprentice'), at(9, 5, 'channel_hand')],
+    allies: [],
+    conditionalEnemies: [],
+    baselinePartySize: 3,
+    // One more each side per extra hero, so the halves start even and nothing tips at once.
+    reinforcements: [
+      at(10, 5, 'channel_hand'),
+      at(10, 3, 'ferry_apprentice'),
+      at(10, 7, 'channel_hand'),
+    ],
+    variants: [],
+    bout: { outOn: ['water_deep'], tipping: { axis: 'x', pivot: 7 } },
+    // Hard keeps +3 power and no extra AP here, as at Edge-on: the shared profile's +2 AP is two more
+    // shoves a turn, which on a deck this size decides the bout in a round.
+    hard: { power: 3, ap: 0 },
+    intro:
+      'PLACEHOLDER (story): the bout’s opening narration on the spare platform at the midday lull.',
+    tip: 'PLACEHOLDER (story): a tip for the kids: push them into the water, and watch the blue cells where the deck will tip.',
   },
 ];

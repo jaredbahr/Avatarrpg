@@ -236,10 +236,11 @@ Frozen 2026-11-15 from commit `19340085`, history revision 1. Frozen with ADR 01
 
 Frozen 2026-11-19 from commit `3b6897bd`, history revision 1. A test fixture, like 2026-11-15-demo: the first release in snapshot format 2 (roads recorded, options named by where they lead), frozen with #813 so a road rerouted from here on is asked about.
 
-| Added                 | Where                 | Read by           | Saves of this release                                                                                                                                                                   |
-| --------------------- | --------------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| scene `sf11_the_bend` | `story:sf11_the_bend` | `map:forest_road` | **Still open.** Read only by Bessa’s own once-only gate on the Forest Road. A side fight no release had, so no older save has had it, and it waits on the road for any save past Act I. |
-| scene `sf12_the_slab` | `story:sf12_the_slab` | `map:ambush_road` | **Still open.** Read only by Tolma’s own once-only gate in the Cutting. A side fight no release had, so no older save has had it, and it waits on the road for any save past Act I.     |
+| Added                 | Where                 | Read by               | Saves of this release                                                                                                                                                                   |
+| --------------------- | --------------------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| scene `sf11_the_bend` | `story:sf11_the_bend` | `map:forest_road`     | **Still open.** Read only by Bessa’s own once-only gate on the Forest Road. A side fight no release had, so no older save has had it, and it waits on the road for any save past Act I. |
+| scene `sf12_the_slab` | `story:sf12_the_slab` | `map:ambush_road`     | **Still open.** Read only by Tolma’s own once-only gate in the Cutting. A side fight no release had, so no older save has had it, and it waits on the road for any save past Act I.     |
+| scene `sf22_rules`    | `story:sf22_rules`    | `map:saltstep_market` | **Still open.** Read only by the ferry apprentices’ own once-only gate in the market. A side fight no release had, so no older save has had it, and it waits by the ferry landing.      |
 
 ## Backfill rules
 
