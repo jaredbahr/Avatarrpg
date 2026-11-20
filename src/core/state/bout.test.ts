@@ -119,7 +119,8 @@ describe('out of the bout (ADR 0122 §2)', () => {
     const after = draft.toBattle();
     expect(byId(after, kaya.id)).toMatchObject({ pos: { x: 4, y: 10 }, hp: 0 });
     expect(after.boutOut).toEqual([kaya.id]);
-    expect(draft.events.map((e) => e.type)).toContain('unitDied');
+    // Presentation splashes rather than knocking out (the event says how the fighter went out).
+    expect(draft.events).toContainEqual({ type: 'unitDied', unitId: kaya.id, out: 'water' });
   });
 
   it('outside a bout the same shove stops at the water’s edge', () => {
