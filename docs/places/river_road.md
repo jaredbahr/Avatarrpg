@@ -173,11 +173,15 @@ end hidden until you reach it, so the three valleys are a reveal (the one thing 
 5. **The west end** (the designer's call, not asked): Scene 3.9 puts the cart on the road's west end, and the west
    mouth walks back to Emberwatch's parade ground. Emberwatch's rows do not change for it.
 6. **Layout (#922)** and **ground (#923):** approved as built.
+7. **Set pieces (stage 5):** the placement is approved as boxed ("placement's right").
+8. **Art (stage 6):** the whole kit, in batches; RG-02's credit cap rises from 1,700 to 1,850 for it. Each batch is
+   checked at 3x and the kit is shown beside Kaya before anything ships.
+9. **The bend's cliff:** a rock face baked into the plate, not a sprite. One face system in the RG-02 baker raises
+   both the cliff and the lookout rise (and serves later terraced maps); the kit list's cliff sprite (#19) is dropped.
 
 ## Open questions (stage 5)
 
-1. **The bend's cliff:** a sprite (the kit list prices one), or a rock face baked into the plate? A baked face needs a
-   face system the RG-02 baker does not have yet (it would also raise the lookout); the sprite does not.
+1. ~~The bend's cliff~~: answered, decision 9.
 2. **The landing's owner:** the boat and the drying net say someone fishes or ferries from the landing.
    `PLACEHOLDER (story)`: who, and whether they are there by day (stage 7, life).
 3. **The toll pole's look:** red-and-white, a borrowed road barrier (the brief's signature), or a plain peeled pole? The
