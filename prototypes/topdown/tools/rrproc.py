@@ -36,20 +36,6 @@ def clean(im):
     return im.crop(im.getbbox()), drop
 
 
-def across(down):
-    """`toll_bar_across`: the toll bar as it lies across the road (north-south) on the bridge. The take was drawn running
-    left to right, along the road; this turns the same striped arm's pixels a quarter turn and stands it on the same
-    crate, so the barrier reads across the deck. A stop-gap until a retake draws it running straight away from the
-    viewer (`docs/places/river_road.md`, kit list)."""
-    w, h = down.size; p = down.load()
-    split = next(x for x in range(w) if sum(1 for y in range(h) if p[x, y][3]) <= 8)
-    crate = down.crop((0, 0, split, h)); arm = down.crop((split, 0, w, h)); arm = arm.crop(arm.getbbox()).rotate(90, expand=True)
-    out = Image.new('RGBA', (max(crate.width, arm.width), crate.height + arm.height - 4))
-    out.alpha_composite(arm, ((out.width - arm.width) // 2, 0))
-    out.alpha_composite(crate, ((out.width - crate.width) // 2, out.height - crate.height))
-    return out.crop(out.getbbox())
-
-
 if __name__ == '__main__':
     mf = OUT / 'manifest.json'; man = json.load(open(mf)) if mf.exists() else {}
     L = {j['name']: j for j in pl.ledger()['jobs']}
@@ -62,8 +48,6 @@ if __name__ == '__main__':
                   'takes': sum(1 for n_ in L if n_.startswith(f'rg02_obj_rr_{k}_')),
                   'prompt': (L.get(job, {}).get('settings', {}).get('description') or '')[:230]}
         print(f'{name:18s} {im.width:3d}x{im.height:<3d} dropped {drop} outline {n}')
-    if (OUT / 'toll_bar_down.png').exists():
-        im = across(Image.open(OUT / 'toll_bar_down.png').convert('RGBA')); im.save(OUT / 'toll_bar_across.png')
-        man['toll_bar_across'] = {'w': im.width, 'h': im.height, 'derived_from': 'toll_bar_down', 'credits': 0}
-        print(f'toll_bar_across    {im.width:3d}x{im.height:<3d} (derived)')
+    # the code-cut `toll_bar_across` stood in for the lowered barrier until `toll_bar_diag` drew it on a diagonal
+    (OUT / 'toll_bar_across.png').unlink(missing_ok=True); man.pop('toll_bar_across', None)
     json.dump(man, open(mf, 'w'), indent=1)

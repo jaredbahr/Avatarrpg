@@ -209,12 +209,6 @@
   "takes": 1,
   "prompt": "a hand-lettered wooden sign on a stake, the board painted with the word TOLL and..."
  },
- "toll_bar_across": {
-  "w": 20,
-  "h": 74,
-  "derived_from": "toll_bar_down",
-  "credits": 0
- },
  "river_rowboat": {
   "w": 72,
   "h": 31,
@@ -224,5 +218,15 @@
   "credits": 5.0,
   "takes": 1,
   "prompt": "a small plain wooden river rowboat lying broadside, seen from the side: the hull..."
+ },
+ "toll_bar_diag": {
+  "w": 44,
+  "h": 47,
+  "seed": 3,
+  "ledger_job": "rg02_obj_rr_toll_bar_diag_3",
+  "job_id": "585a0355-9339-4b41-844e-7ab51095f382",
+  "credits": 10.0,
+  "takes": 2,
+  "prompt": "a borrowed official red-and-white striped road barrier lowered across a bridge, ..."
  }
 }
