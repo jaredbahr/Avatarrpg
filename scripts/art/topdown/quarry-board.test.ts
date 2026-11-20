@@ -12,12 +12,14 @@
  *   boards' object layouts fill.
  *
  * The generic checks (byte-stable bakes, `--check`, lossless pages, straight edges) run for every
- * board in `pack-ground.test.ts`; this reports the bake against the `topdown` 6 MiB family budget.
+ * board in `pack-ground.test.ts`; this reports the bake against the `topdown` folder's ceiling (ADR 0111: the shared
+ * 4.5 MiB plus 1.5 MiB for each region's boards).
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import { PNG } from 'pngjs';
 import { describe, expect, it } from 'vitest';
+import { regionAssets } from '../../region-assets';
 import { validateTopDownLayout } from '../../../src/content/schemas';
 import {
   AMBUSH_ROAD,
@@ -218,8 +220,10 @@ describe.each(QUARRY_TERRAINS.map((c) => [c.mapId, c] as const))('the %s board',
   });
 });
 
-describe('the quarry bake against the topdown family budget', () => {
-  it('fits the 6 MiB family with every board', () => {
+describe('the quarry bake against the topdown folder ceiling', () => {
+  // ADR 0111 replaced the single 6 MiB family (boards included) with 4.5 MiB shared and 1.5 MiB for each region's
+  // boards, which `check-asset-budget.mjs` gates one by one; the whole folder's ceiling is their sum.
+  it("fits the topdown folder with every board inside ADR 0111's ceiling", () => {
     const size = (dir: string): number =>
       readdirSync(dir).reduce((sum, f) => {
         const p = `${dir}/${f}`;
@@ -227,11 +231,12 @@ describe('the quarry bake against the topdown family budget', () => {
       }, 0);
     const quarry = QUARRY_BOARDS.map((b) => [b.id, size(b.out)] as const);
     const family = size('public/art/topdown');
+    const ceiling = 4.5 + 1.5 * regionAssets().regions.length;
     console.log(
-      `topdown family ${(family / 2 ** 20).toFixed(2)} MiB of 6; quarry boards: ${quarry.map(([id, n]) => `${id} ${(n / 1024).toFixed(0)} KiB`).join(', ')}`,
+      `topdown family ${(family / 2 ** 20).toFixed(2)} MiB of ${ceiling}; quarry boards: ${quarry.map(([id, n]) => `${id} ${(n / 1024).toFixed(0)} KiB`).join(', ')}`,
     );
     for (const [id, n] of quarry) expect(n, id).toBeGreaterThan(0);
-    expect(family).toBeLessThanOrEqual(6 * 2 ** 20);
+    expect(family).toBeLessThanOrEqual(ceiling * 2 ** 20);
   });
 });
 

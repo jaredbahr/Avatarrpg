@@ -44,6 +44,7 @@ export const SALTSTEP_EMBERWATCH: RegionManifest = {
       url: 'art/topdown/emberwatch-power-yard/scene.json',
       cameraCentreMargin: 1,
     },
+    river_road: { url: 'art/topdown/river-road/scene.json', cameraCentreMargin: 1 },
   },
   load: () => import('./content').then((module) => module.SALTSTEP_EMBERWATCH_CONTENT),
 };

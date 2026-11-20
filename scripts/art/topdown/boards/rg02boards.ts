@@ -4,6 +4,9 @@ import {
   EMBERWATCH_PARADE_TOPDOWN_LAYOUT,
   EMBERWATCH_POWER_YARD_TERRAIN,
   EMBERWATCH_POWER_YARD_TOPDOWN_LAYOUT,
+  RIVER_ROAD_TERRAIN,
+  RIVER_ROAD_TOPDOWN_LAYOUT,
+  RIVER_ROAD_WORN,
   SALTSTEP_MARKET_TERRAIN,
   SALTSTEP_MARKET_TOPDOWN_LAYOUT,
   SALTSTEP_PLATFORM_RAISED,
@@ -86,5 +89,15 @@ export const RG02_BOARDS: readonly TopDownBoard[] = [
     earth: 'yard',
     // the gate to the shed, and the walk along the line
     wear: { paths: [...span(1, 4, 5, 6), ...span(1, 4, 3, 4), ...span(4, 16, 6, 6)], wet: 0.3 },
+  }),
+  rg02Board({
+    id: 'river_road',
+    folder: 'river-road',
+    terrain: RIVER_ROAD_TERRAIN,
+    layout: RIVER_ROAD_TOPDOWN_LAYOUT,
+    earth: 'road',
+    stone: 'rise',
+    // the road, its pull-offs, the landing's footpath and the lookout's track; a dry morning, so little lies wet
+    wear: { paths: RIVER_ROAD_WORN, wet: 0.08, soft: true },
   }),
 ];
