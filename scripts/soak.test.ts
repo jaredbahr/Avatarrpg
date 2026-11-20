@@ -455,8 +455,8 @@ describe('the real soak matrix', () => {
     expect(report.summary.passed).toBe(true);
     expect(report.rows.every((row) => row.attempted === 2 && row.completed === 2)).toBe(true);
     expect(commands).toBeGreaterThan(CELLS * 2);
-    // Measured 1,743 commands (one per activation: a party turn or an AI turn).
-    expectWorkWithin('reducer commands applied by the soak matrix', commands, 2_700);
+    // Measured 2,795 commands over 78 cells (one per activation: a party turn or an AI turn).
+    expectWorkWithin('reducer commands applied by the soak matrix', commands, 4_200);
   });
 
   // 45 s of CPU: the matrix measured about 30 s after #570 priced AI paths like a real move.
