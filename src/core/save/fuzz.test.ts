@@ -6,6 +6,12 @@
  */
 import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
+import {
+  elapsedMs,
+  expectTimeWithin,
+  TIME_BUDGET_TAG,
+  TIME_BUDGETS,
+} from '../../../scripts/test-support/workBounds';
 import { CONTENT } from '../../content';
 import { RngCursor, seedFromString } from '../rng';
 import { DIRECTIONS } from '../rules/grid';
@@ -345,84 +351,97 @@ function checkLoaded(json: string, mustAccept: boolean): boolean {
 }
 
 describe('seeded save corruption', () => {
+  let workloadMs: number | undefined;
   it('checks 2080 mutations and usable valid saves', () => {
-    const failures: string[] = [];
-    const seen = new Map<string, number>();
-    const distinctPayloads = new Set<string>();
-    let failureCount = 0;
-    let mutations = 0;
-    let accepted = 0;
+    workloadMs = elapsedMs(() => {
+      const failures: string[] = [];
+      const seen = new Map<string, number>();
+      const distinctPayloads = new Set<string>();
+      let failureCount = 0;
+      let mutations = 0;
+      let accepted = 0;
 
-    const run = (label: string, check: () => void): void => {
-      try {
-        check();
-        ensure(({} as Raw).polluted === undefined, 'Object.prototype was polluted');
-      } catch (error) {
-        failureCount++;
-        if (failures.length < 12)
-          failures.push(`${label}: ${error instanceof Error ? error.message : String(error)}`);
-      }
-    };
-
-    ensure(({} as Raw).polluted === undefined, 'pollution predates the corpus');
-    for (let sample = 0; sample < SAMPLES; sample++) {
-      for (const fixture of fixtures(sample)) {
-        run(`${SEED}/${fixture.name}/${sample}/unmodified-control`, () => {
-          const control = deserialize(fixture.json);
-          ensure(control.ok, 'real fixture was rejected');
-          expect(stateFromBlob(control.blob)).toEqual(fixture.state);
-          ensure(checkLoaded(fixture.json, true), 'control did not load');
-        });
-
-        for (const mutation of MUTATIONS) {
-          const label = `${SEED}/${fixture.name}/${mutation.name}/${sample}`;
-          const seed = seedFromString(label);
-          mutations++;
-          seen.set(mutation.name, (seen.get(mutation.name) ?? 0) + 1);
-          run(`${label} seed=${seed}`, () => {
-            const json = mutation.mutate(object(JSON.parse(fixture.json)), new RngCursor(seed));
-            ensure(json !== fixture.json, 'mutation did not change the input');
-            // Count the exact input before loading, including cases which
-            // later throw or violate an invariant. This cannot hide repeats.
-            distinctPayloads.add(createHash('sha256').update(json).digest('hex'));
-            if (checkLoaded(json, mutation.mustAccept === true)) accepted++;
-          });
+      const run = (label: string, check: () => void): void => {
+        try {
+          check();
+          ensure(({} as Raw).polluted === undefined, 'Object.prototype was polluted');
+        } catch (error) {
+          failureCount++;
+          if (failures.length < 12)
+            failures.push(`${label}: ${error instanceof Error ? error.message : String(error)}`);
         }
+      };
 
-        if (fixture.state.battle) {
-          // Extra battle-only cases avoid inventing a battle in the other
-          // fixtures or counting a mutation of an unused field as coverage.
-          const label = `${SEED}/${fixture.name}/invalid-active-cursor/${sample}`;
-          const seed = seedFromString(label);
-          mutations++;
-          seen.set('invalid-active-cursor', (seen.get('invalid-active-cursor') ?? 0) + 1);
-          run(`${label} seed=${seed}`, () => {
-            const blob = object(JSON.parse(fixture.json));
-            const battle = object(object(blob.state).battle);
-            const count = array(battle.order).length;
-            const values = [0.5, -1, count, count + 1, 2 ** 31, '0', null];
-            battle.turnIndex = values[sample % values.length];
-            const json = JSON.stringify(blob);
-            distinctPayloads.add(createHash('sha256').update(json).digest('hex'));
-            if (checkLoaded(json, false)) accepted++;
+      ensure(({} as Raw).polluted === undefined, 'pollution predates the corpus');
+      for (let sample = 0; sample < SAMPLES; sample++) {
+        for (const fixture of fixtures(sample)) {
+          run(`${SEED}/${fixture.name}/${sample}/unmodified-control`, () => {
+            const control = deserialize(fixture.json);
+            ensure(control.ok, 'real fixture was rejected');
+            expect(stateFromBlob(control.blob)).toEqual(fixture.state);
+            ensure(checkLoaded(fixture.json, true), 'control did not load');
           });
+
+          for (const mutation of MUTATIONS) {
+            const label = `${SEED}/${fixture.name}/${mutation.name}/${sample}`;
+            const seed = seedFromString(label);
+            mutations++;
+            seen.set(mutation.name, (seen.get(mutation.name) ?? 0) + 1);
+            run(`${label} seed=${seed}`, () => {
+              const json = mutation.mutate(object(JSON.parse(fixture.json)), new RngCursor(seed));
+              ensure(json !== fixture.json, 'mutation did not change the input');
+              // Count the exact input before loading, including cases which
+              // later throw or violate an invariant. This cannot hide repeats.
+              distinctPayloads.add(createHash('sha256').update(json).digest('hex'));
+              if (checkLoaded(json, mutation.mustAccept === true)) accepted++;
+            });
+          }
+
+          if (fixture.state.battle) {
+            // Extra battle-only cases avoid inventing a battle in the other
+            // fixtures or counting a mutation of an unused field as coverage.
+            const label = `${SEED}/${fixture.name}/invalid-active-cursor/${sample}`;
+            const seed = seedFromString(label);
+            mutations++;
+            seen.set('invalid-active-cursor', (seen.get('invalid-active-cursor') ?? 0) + 1);
+            run(`${label} seed=${seed}`, () => {
+              const blob = object(JSON.parse(fixture.json));
+              const battle = object(object(blob.state).battle);
+              const count = array(battle.order).length;
+              const values = [0.5, -1, count, count + 1, 2 ** 31, '0', null];
+              battle.turnIndex = values[sample % values.length];
+              const json = JSON.stringify(blob);
+              distinctPayloads.add(createHash('sha256').update(json).digest('hex'));
+              if (checkLoaded(json, false)) accepted++;
+            });
+          }
         }
       }
-    }
 
-    // The work is the corpus, and it is exact: 2080 mutations on any machine (#796).
-    expect(mutations, 'mutations loaded, seed=' + SEED).toBe(2_080);
-    expect(
-      distinctPayloads.size,
-      'at least 2000 distinct mutated inputs, not repeated cases',
-    ).toBeGreaterThanOrEqual(2_000);
-    for (const mutation of MUTATIONS) expect(seen.get(mutation.name), mutation.name).toBe(128);
-    expect(seen.get('invalid-active-cursor')).toBe(32);
-    expect(
-      accepted,
-      'valid name/duplicate-key mutations must reach real reducer commands',
-    ).toBeGreaterThanOrEqual(256);
-    expect(failureCount, failures.join('\n')).toBe(0);
-    expect(({} as Raw).polluted).toBeUndefined();
+      // The work is the corpus, and it is exact: 2080 mutations on any machine (#796).
+      expect(mutations, 'mutations loaded, seed=' + SEED).toBe(2_080);
+      expect(
+        distinctPayloads.size,
+        'at least 2000 distinct mutated inputs, not repeated cases',
+      ).toBeGreaterThanOrEqual(2_000);
+      for (const mutation of MUTATIONS) expect(seen.get(mutation.name), mutation.name).toBe(128);
+      expect(seen.get('invalid-active-cursor')).toBe(32);
+      expect(
+        accepted,
+        'valid name/duplicate-key mutations must reach real reducer commands',
+      ).toBeGreaterThanOrEqual(256);
+      expect(failureCount, failures.join('\n')).toBe(0);
+      expect(({} as Raw).polluted).toBeUndefined();
+    });
+  });
+
+  // The 20 s budget the gate used to hold, now a nightly check on a hosted runner (#796; owner, 2026-11-20).
+  it.runIf(TIME_BUDGETS)(`finishes the workload within 20 seconds ${TIME_BUDGET_TAG}`, () => {
+    expect(workloadMs, 'the workload test did not finish').toBeDefined();
+    expectTimeWithin(
+      'the save-corruption workload (2080 mutations)',
+      workloadMs ?? Infinity,
+      20_000,
+    );
   });
 });
