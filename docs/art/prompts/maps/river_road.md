@@ -19,31 +19,31 @@ The river road, the cart road up the river from the coast to Causeway, a day lon
 40 columns by 14 rows, counted from 0 at the top-left corner. The painting is the ground and what stands on it, nothing else: the game draws its own grid, movement contours, units, props and effects over it, so every edge in the painting that matters to the rules sits exactly on a tile edge.
 
 - Road (76 tiles): 38 tiles (middle right), row 3: columns 32–39; row 4: columns 30–39; row 5: columns 21–31; row 6: columns 21–29; a 19×2 block at columns 0–18, rows 5–6 (middle left).
-- Still water (2 tiles): a 2×1 block at columns 19–20, row 8 (the centre).
-- Trees (52 tiles): 35 tiles (top left), row 0: columns 0–18; row 1: columns 0–2, 4–7 and 12–15; row 2: columns 0–1, 5–6 and 14; 14 tiles (top centre), row 0: columns 21–28; row 1: columns 24–28; row 2: column 27; one tile at column 10, row 3 (top left); one tile at column 26, row 7 (the centre); one tile at column 23, row 8 (the centre).
+- Still water (2 tiles): a 2×1 block at columns 20–21, row 8 (the centre).
+- Trees (51 tiles): 33 tiles (top left), row 0: columns 0–16; row 1: columns 0–2, 4–7 and 12–15; row 2: columns 0–1, 5–6 and 14; 15 tiles (top centre), row 0: columns 20–28; row 1: columns 24–28; row 2: column 27; one tile at column 10, row 3 (top left); one tile at column 26, row 7 (the centre); one tile at column 23, row 8 (the centre).
 - Timber walls (3 tiles): one tile at column 25, row 2 (top centre); one tile at column 12, row 3 (top left); one tile at column 23, row 3 (top centre).
-- Stone walls (168 tiles): 156 tiles (bottom centre), row 9: columns 19–20 and 33–39; row 10: columns 0–5, 9–15, 19–20 and 28–39; rows 11–13: columns 0–39; a 2×5 block at columns 19–20, rows 0–4 (top centre); a 2×1 block at columns 19–20, row 7 (the centre).
+- Stone walls (170 tiles): 157 tiles (bottom centre), row 9: columns 1, 20–21 and 33–39; row 10: columns 0–5, 9–15, 20–21 and 28–39; rows 11–13: columns 0–39; 11 tiles (top centre), row 0: columns 17–19; rows 1–2: columns 18–19; rows 3–4: columns 19–20; a 2×1 block at columns 19–20, row 7 (the centre).
 - Cut quarry rock, two steps up (13 tiles): 13 tiles (top right), rows 0–1: columns 29–33; row 2: columns 30–32.
 - Ledges, one step up (10 tiles): a 5×2 block at columns 35–39, rows 1–2 (top right).
-- Sand (20 tiles): a 7×2 block at columns 21–27, rows 9–10 (bottom centre); a 6×1 block at columns 4–9, row 9 (bottom left).
+- Sand (18 tiles): a 6×2 block at columns 22–27, rows 9–10 (bottom centre); a 6×1 block at columns 4–9, row 9 (bottom left).
 - Plank floors (7 tiles): a 2×2 block at columns 19–20, rows 5–6 (the centre); a 3×1 block at columns 6–8, row 10 (bottom left).
-- Open ground everywhere else: grass (189 tiles), bare earth (20 tiles).
+- Open ground everywhere else: grass (190 tiles), bare earth (20 tiles).
 - The party enters from the left, standing at (1, 5), (1, 6), (2, 5), (2, 6), (3, 5), (3, 6); enemies come from the right. Paint nothing there that would read as an object to walk round.
 
 The rows as the rules read them:
 
 ```
-TTTTTTTTTTTTTTTTTTTWWTTTTTTTTXXXXX,,,,,,
-TTT,TTTT,,,,TTTT,,,WW,,,TTTTTXXXXX,^^^^^
-TT,,,TT,,,,,,,T,,,,WW,...F.T,,XXX,,S^^^^
+TTTTTTTTTTTTTTTTTWWWTTTTTTTTTXXXXX,,,,,,
+TTT,TTTT,,,,TTTT,,WW,,,,TTTTTXXXXX,^^^^^
+TT,,,TT,,,,,,,T,,,WW,,...F.T,,XXX,,S^^^^
 ,,,,,,,,,,T,F,,,,,,WW,.F...,,,,,========
 ,,,,,,,,,.....,,,,,WW,.....,,,==========
 ===================ww===========,,,,,,,,
 ===================ww=========,,,,,,,,,,
 ,,,,,,,.,,,,,,,,,,,WW,,,,,U,,,,,,,,,,,,,
-,,,,,,,.,,,,,,,,,,,~~,,U,,,,,,,,,,,,,,,,
-,,,,::::::,,,,,,,,,WW:::::::,,,,,WWWWWWW
-WWWWWWwwwWWWWWWW,,,WW:::::::WWWWWWWWWWWW
+,,,,,,,.,,,,,,,,,,,,~~,U,,,,,,,,,,,,,,,,
+,W,,::::::,,,,,,,,,,WW::::::,,,,,WWWWWWW
+WWWWWWwwwWWWWWWW,,,,WW::::::WWWWWWWWWWWW
 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
