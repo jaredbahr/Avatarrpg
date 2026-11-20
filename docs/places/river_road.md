@@ -142,8 +142,17 @@ end hidden until you reach it, so the three valleys are a reveal (the one thing 
 - **What the terrain offers each side:** the guards have the bridge (a choke) and the camp's crates as cover; the
   party has the ford to flank, and the far bank's rocks. Deep river on one side bounds the fight.
 - **What reacts:** the side stream's water (lightning, ice); the camp's cold fire (fire relights it).
-- **Board:** a combat crop of view 3 (the bridge, the stream, the ford, the camp), about 19 by 12, as the freight
-  pontoon is its own board. Open question: a crop board, or fight on the explore map itself.
+- **Board:** a combat crop of view 3 (the bridge, the stream, the ford, the camp), 19 by 12 (decision 3).
+- **As built:** `river_road_bridge`, the road's rows from x 12 to 30 and y 0 to 11 (`RIVER_ROAD_BRIDGE_CROP`): the
+  trough at the west edge, the stream and the bridge, the ford two rows downstream, the camp, the far bank's boulders,
+  and the cliff's foot in the north-east corner. Its plate is the road's ground and kit, moved onto the crop, sampled
+  at the road's own noise so its banks and faces match the road's pixel for pixel. The party starts on the west bank;
+  two guards hold the bridge, a crossbow stands back in the camp behind its crates, and the corporal waits by the cold
+  fire. The camp's lamp oil (`oil_flask`) stands beside the fire: fire lights the spill. Nothing relights the cold fire
+  itself yet (it would need a fire-pit prop and its art).
+- **Later states, not built:** the road's plate cannot swap a piece on a flag, so the pole raised after a win
+  (`toll_bar_up`) and the one sack left after Carry on (`cabbage_sack`) wait for a runtime way to show scenery by
+  `Condition`.
 
 ## Set pieces
 

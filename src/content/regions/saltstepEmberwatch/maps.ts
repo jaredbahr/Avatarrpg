@@ -72,6 +72,8 @@ const SPRITE = {
   sabi: 'unit.enemy.rigger',
   // SF-2.2: the ferry apprentices borrow the riggers' sheet until their own art is approved.
   apprentices: 'unit.enemy.rigger',
+  // SF-2.3: the corporal wears the sergeant's sheet, as he does in the fight (`toll_corporal`).
+  corporal: 'unit.enemy.sergeant',
 } as const;
 
 const ARRIVED = { kind: 'visited', nodeId: 'mq02_saltstep_arrival' } as const;
@@ -560,8 +562,57 @@ export const RIVER_ROAD: MapDef = {
     { side: 'east', span: [5, 8], treatment: 'band' },
   ],
   edgeContract: 'enforce',
-  npcs: [],
+  npcs: [
+    {
+      // SF-2.3, optional: the corporal at the guards' camp, past the bridge, until the toll is fought.
+      id: 'sf23_corporal',
+      name: 'Corporal',
+      pos: { x: 24, y: 2 },
+      sprite: SPRITE.corporal,
+      node: 'sf23_toll',
+      when: { kind: 'not', of: { kind: 'visited', nodeId: 'sf23_battle' } },
+    },
+  ],
   props: [],
+};
+
+/** Where SF-2.3's board sits in the river road's rows: its top-left cell, and its size. */
+export const RIVER_ROAD_BRIDGE_CROP = { x: 12, y: 0, width: 19, height: 12 } as const;
+
+/**
+ * SF-2.3's board (`docs/places/river_road.md`, "Fight needs (SF-2.3)"; owner decision 3, 2026-11-20: "a 19 by 12 crop
+ * board of the bridge section"): the river road's own rows, cropped round view 3. The trough at the shade stop's east
+ * edge (west), the side stream with the plank bridge (`w`) carrying the road across it, the ford's shallows (`~`) two
+ * rows downstream, the guards' camp east of the bridge with its crates (`F`, cover), the far bank's boulders (`U`), and
+ * the bend's cliff (`X`) at the north-east corner. The river closes the south. The guards hold the bridge (a choke)
+ * and the camp; the party comes from the west bank and can flank by the ford.
+ */
+export const RIVER_ROAD_BRIDGE: MapDef = {
+  id: 'river_road_bridge',
+  projection: 'topdown',
+  name: 'The Plank Bridge',
+  kind: 'combat',
+  width: RIVER_ROAD_BRIDGE_CROP.width,
+  height: RIVER_ROAD_BRIDGE_CROP.height,
+  ambience: 'village',
+  legend: RG02_LEGEND,
+  rows: RIVER_ROAD.rows
+    .slice(RIVER_ROAD_BRIDGE_CROP.y, RIVER_ROAD_BRIDGE_CROP.y + RIVER_ROAD_BRIDGE_CROP.height)
+    .map((row) =>
+      row.slice(RIVER_ROAD_BRIDGE_CROP.x, RIVER_ROAD_BRIDGE_CROP.x + RIVER_ROAD_BRIDGE_CROP.width),
+    ),
+  // The west bank: on the road and the pull-off beside it, three or four cells from the bridge.
+  partySpawns: [
+    { x: 3, y: 5 },
+    { x: 3, y: 6 },
+    { x: 2, y: 5 },
+    { x: 2, y: 6 },
+    { x: 2, y: 4 },
+    { x: 2, y: 7 },
+  ],
+  npcs: [],
+  // The camp's lamp oil, by the cold fire: fire lights the spill (the brief: "fire relights it").
+  props: [{ propId: 'oil_flask', pos: { x: 13, y: 4 } }],
 };
 
 export const SALTSTEP_EMBERWATCH_MAPS: readonly MapDef[] = [
@@ -571,4 +622,5 @@ export const SALTSTEP_EMBERWATCH_MAPS: readonly MapDef[] = [
   EMBERWATCH_POWER_YARD,
   SALTSTEP_PLATFORM,
   RIVER_ROAD,
+  RIVER_ROAD_BRIDGE,
 ];

@@ -48,30 +48,30 @@ flowchart TD
   n309["reunion_waited<br/>Pella: I waited by the road."]
   n319["riverside_mira_home<br/>Elder Mira: I spent the morning moving beds. Everyone wants the…"]:::entry
   n329["sen_home<br/>Kuan: They came through just ahead of you. Filled this bench an…"]:::entry
-  n422["village_return_explore<br/>Explore ba_dan_village: The workers are home. Talk with Mira, P…"]:::entry
-  n423["welcome_home_dorin<br/>Gate Guard Dorin: The crew says you knocked on the quarry gate …"]
-  n424["welcome_home_gao<br/>Gao the Shopkeeper: Bowls are on the table, and there’s more in…"]
-  n425["welcome_home_mira<br/>Elder Mira: There you are! Dorin rang the gate bell so hard tha…"]:::entry
-  n426["welcome_home_supper<br/>Ba Dan: Lamps come on along the canal. Gao carries out a pot of…"]
+  n431["village_return_explore<br/>Explore ba_dan_village: The workers are home. Talk with Mira, P…"]:::entry
+  n432["welcome_home_dorin<br/>Gate Guard Dorin: The crew says you knocked on the quarry gate …"]
+  n433["welcome_home_gao<br/>Gao the Shopkeeper: Bowls are on the table, and there’s more in…"]
+  n434["welcome_home_mira<br/>Elder Mira: There you are! Dorin rang the gate bell so hard tha…"]:::entry
+  n435["welcome_home_supper<br/>Ba Dan: Lamps come on along the canal. Gao carries out a pot of…"]
   n316["riverside_explore — exit to riverside / part 1"]:::external
   n13 -->|"Next"| n33
   n18 -->|"Legacy/audit exit (live map exits differ)"| n58
   n31 -->|"Next"| n47
-  n33 -->|"Continue after ending"| n422
-  n38 -->|"Next"| n422
+  n33 -->|"Continue after ending"| n431
+  n38 -->|"Next"| n431
   n45 -->|"Next"| n46
-  n46 -->|"set: (none); resident profiles: lw.npc.amri=#quot;resting#quot;, lw.npc.bo_shan=#quot;resting#quot;, lw.npc.hesra=#quot;resting#quot;, lw.npc.leto=#quot;resting#quot;, lw.npc.senn_messenger=#quot;resting#quot;"| n422
+  n46 -->|"set: (none); resident profiles: lw.npc.amri=#quot;resting#quot;, lw.npc.bo_shan=#quot;resting#quot;, lw.npc.hesra=#quot;resting#quot;, lw.npc.leto=#quot;resting#quot;, lw.npc.senn_messenger=#quot;resting#quot;"| n431
   n47 -->|"Legacy/audit exit (live map exits differ)"| n45
-  n50 -->|"Next"| n422
-  n51 -->|"Next"| n422
+  n50 -->|"Next"| n431
+  n51 -->|"Next"| n431
   n58 -->|"Legacy/audit exit (live map exits differ)"| n47
-  n257 -->|"Next"| n422
+  n257 -->|"Next"| n431
   n272 -->|"Legacy/audit exit (live map exits differ)"| n18
   n297 -->|"Next"| n303
   n298 -->|"Next"| n299
   n299 -->|"Next"| n307
   n300 -->|"Next"| n309
-  n301 -->|"Next"| n424
+  n301 -->|"Next"| n433
   n302 -->|"Next"| n297
   n303 -->|"Next"| n304
   n304 -->|"Next"| n305
@@ -82,11 +82,11 @@ flowchart TD
   n309 -->|"Next"| n306
   n319 -->|"Next"| n316
   n329 -->|"Next"| n18
-  n422 -->|"Legacy/audit exit (live map exits differ)"| n425
-  n423 -->|"Next"| n426
-  n424 -->|"Next"| n423
-  n425 -->|"Next"| n302
-  n426 -->|"Next"| n13
+  n431 -->|"Legacy/audit exit (live map exits differ)"| n434
+  n432 -->|"Next"| n435
+  n433 -->|"Next"| n432
+  n434 -->|"Next"| n302
+  n435 -->|"Next"| n13
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

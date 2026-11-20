@@ -98,6 +98,7 @@ export function shippedFiles(): string[] {
             'emberwatch-parade',
             'emberwatch-power-yard',
             'river-road',
+            'river-road-bridge',
             'props',
           ].includes(f),
       )

@@ -154,6 +154,12 @@ Flags read in one part and written in another. A reader in a later region depend
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------------- | -------------------- | ------------------- |
 | `act1_lost` | The party lost to the Driller and carried on: the quarry stays occupied, the five stay held, and Dorin drives the cart until MQ-11. | Ba Dan valley: Act 1 | `story:sf21_driver` |
 
+### Saltstep and Emberwatch: SF-2.3 The bridge toll
+
+| Flag        | Means                                                                                                                               | Written in           | Read here by        |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------- | -------------------- | ------------------- |
+| `act1_lost` | The party lost to the Driller and carried on: the quarry stays occupied, the five stay held, and Dorin drives the cart until MQ-11. | Ba Dan valley: Act 1 | `story:sf23_driver` |
+
 ### Shared (disciplines, followers, the journal, the app)
 
 | Flag                             | Means                                                                                                                               | Written in                 | Read here by                                                       |
@@ -241,6 +247,7 @@ Frozen 2026-11-19 from commit `3b6897bd`, history revision 1. A test fixture, li
 | scene `sf11_the_bend` | `story:sf11_the_bend` | `map:forest_road`     | **Still open.** Read only by Bessa’s own once-only gate on the Forest Road. A side fight no release had, so no older save has had it, and it waits on the road for any save past Act I. |
 | scene `sf12_the_slab` | `story:sf12_the_slab` | `map:ambush_road`     | **Still open.** Read only by Tolma’s own once-only gate in the Cutting. A side fight no release had, so no older save has had it, and it waits on the road for any save past Act I.     |
 | scene `sf22_rules`    | `story:sf22_rules`    | `map:saltstep_market` | **Still open.** Read only by the ferry apprentices’ own once-only gate in the market. A side fight no release had, so no older save has had it, and it waits by the ferry landing.      |
+| scene `sf23_battle`   | `story:sf23_battle`   | `map:river_road`      | **Still open.** Read only by the corporal’s own once-only gate on the river road. A side fight no release had, so no older save has had it, and it waits at the guards’ camp.           |
 
 ## Backfill rules
 

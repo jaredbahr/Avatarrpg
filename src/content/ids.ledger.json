@@ -390,6 +390,15 @@
     "sf22_lost",
     "sf22_rules",
     "sf22_won",
+    "sf23_battle",
+    "sf23_choice",
+    "sf23_driver",
+    "sf23_lost",
+    "sf23_not_now",
+    "sf23_one_sack",
+    "sf23_pole_up",
+    "sf23_toll",
+    "sf23_won",
     "sq01_choice",
     "sq01_crew",
     "sq01_families",
@@ -448,6 +457,7 @@
     "quarry_floor",
     "quarry_gate",
     "river_road",
+    "river_road_bridge",
     "saltstep_market",
     "saltstep_platform",
     "saltstep_pontoon"
@@ -461,7 +471,8 @@
     "enc_sf11_the_bend",
     "enc_sf12_edge_on",
     "enc_sf21_wet_ground",
-    "enc_sf22_platform"
+    "enc_sf22_platform",
+    "enc_sf23_bridge_toll"
   ],
   "npcs": [
     "ambush_road:rest_keeper",
@@ -515,6 +526,7 @@
     "quarry_gate:gate_watch_hauler",
     "quarry_gate:gate_watch_worker",
     "quarry_gate:reason_jinu",
+    "river_road:sf23_corporal",
     "saltstep_market:mq02_bowl_seller",
     "saltstep_market:mq02_customs_clerk",
     "saltstep_market:mq02_freight_clerk",
@@ -739,6 +751,9 @@
     "merc_crossbow",
     "merc_sergeant",
     "ruon_ally",
+    "toll_corporal",
+    "toll_crossbow",
+    "toll_guard",
     "veyra_guest"
   ],
   "props": ["brazier", "cabbage_cart", "hay_bale", "oil_flask", "rubble_pile", "water_barrel"],

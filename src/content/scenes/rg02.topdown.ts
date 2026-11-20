@@ -11,6 +11,8 @@ import {
   SALTSTEP_MARKET,
   SALTSTEP_PLATFORM,
   RIVER_ROAD,
+  RIVER_ROAD_BRIDGE,
+  RIVER_ROAD_BRIDGE_CROP,
   SALTSTEP_PONTOON,
 } from '../regions/saltstepEmberwatch/maps';
 import { MOUTH_REACH, RG, Rg02Terrain, mouth } from './rg02.topdown.terrain';
@@ -883,5 +885,66 @@ export const RIVER_ROAD_TOPDOWN_LAYOUT: TopDownLayout = {
     mouthReach: MOUTH_REACH,
   },
   objects: RIVER_ROAD_OBJECTS,
+  slots: [],
+};
+
+/* ------------------------------------------------------------------ */
+/* SF-2.3's board: the river road's bridge section, cropped            */
+/* ------------------------------------------------------------------ */
+
+const CROP = RIVER_ROAD_BRIDGE_CROP;
+
+/** The river road's ground, on the crop's rows: the same classes, the same raised rock, no road mouths (a fight). */
+export const RIVER_ROAD_BRIDGE_TERRAIN = new Rg02Terrain({
+  ...RIVER_ROAD_TERRAIN.config,
+  mapId: 'river_road_bridge',
+  rows: RIVER_ROAD_BRIDGE.rows,
+  mouths: [],
+  // the road's own noise, so the crop's edges, banks and faces are the road's to the pixel
+  noiseOffset: { x: CROP.x * C, y: CROP.y * C },
+});
+
+/** The river road's worn cells that fall inside the crop, moved onto the crop's grid. */
+export const RIVER_ROAD_BRIDGE_WORN: readonly (readonly [number, number])[] =
+  RIVER_ROAD_WORN.flatMap(([x, y]): [number, number][] => {
+    const cx = x - CROP.x,
+      cy = y - CROP.y;
+    return cx >= 0 && cy >= 0 && cx < CROP.width && cy < CROP.height ? [[cx, cy]] : [];
+  });
+
+/**
+ * The river road's own pieces, moved onto the crop: everything that stands on a cell of it, and, past its west and east
+ * edges, what stands within the plate's two-cell margin, so the trees and the shade stop carry on past the board's edge
+ * as they do on the road. A piece that is not wholly on the board is `exterior`; one wholly off it stops no feet.
+ */
+export const RIVER_ROAD_BRIDGE_OBJECTS: readonly TopDownObject[] = RIVER_ROAD_OBJECTS.flatMap(
+  (o): TopDownObject[] => {
+    const cells = o.footprint.map((c) => ({ x: c.x - CROP.x, y: c.y - CROP.y }));
+    const on = (c: Vec2): boolean => c.x >= 0 && c.y >= 0 && c.x < CROP.width && c.y < CROP.height;
+    const near = cells.every(
+      (c) => c.x >= -2 && c.x < CROP.width + 2 && c.y >= 0 && c.y < CROP.height,
+    );
+    if (!cells.some(on) && !near) return [];
+    const moved: TopDownObject = {
+      ...o,
+      x: o.x - CROP.x * C,
+      base: o.base - CROP.y * C,
+      footprint: cells,
+      depth: { x: o.depth.x - CROP.x, y: o.depth.y - CROP.y },
+    };
+    if (cells.every(on)) return [moved];
+    return [{ ...moved, exterior: true, solid: o.solid && cells.some(on) }];
+  },
+);
+
+export const RIVER_ROAD_BRIDGE_TOPDOWN_LAYOUT: TopDownLayout = {
+  mapId: 'river_road_bridge',
+  terrain: {
+    kind: 'classified',
+    classify: RIVER_ROAD_BRIDGE_TERRAIN.classify,
+    mouths: [],
+    mouthReach: MOUTH_REACH,
+  },
+  objects: RIVER_ROAD_BRIDGE_OBJECTS,
   slots: [],
 };

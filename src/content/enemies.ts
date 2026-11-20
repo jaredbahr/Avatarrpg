@@ -275,6 +275,56 @@ export const ENEMIES: readonly EnemyDef[] = [
     description:
       'Hauls barges through the channel for a living. Slow to move and very hard to shift.',
   },
+  /*
+   * SF-2.3, the bridge toll: a corporal and six guards from another quarry, unpaid for two months
+   * (the script). They pay their XP through the encounter's `xpPerHead`, so their own `xp` is a
+   * token that never pays. They wear the Cutting's mercenary sheets until their own art is made: the
+   * blade, the crossbow and the sergeant. Lighter than Jin's crew, whose stats they started from: with
+   * the blades' Slow, Story won 33% at one player and 94% at three (sim, 2026-11-20); at these numbers,
+   * with clubs, Story wins every trial at one, three and six players. The descriptions say only what they do in a fight; who
+   * they are waits for the writing pass.
+   */
+  {
+    id: 'toll_guard',
+    name: 'Quarry Guard',
+    shortName: 'Guard',
+    element: 'nonbender',
+    size: 1,
+    stats: { maxHp: 26, maxAp: 4, maxMove: 4, power: 5, defense: 1, speed: 6, focus: 10 },
+    abilities: ['club_swing'],
+    ai: 'aggressive',
+    xp: 1,
+    sprite: 'unit.enemy.merc',
+    description:
+      'Holds the bridge with a club. Not sturdy; two of them side by side fill the planks.',
+  },
+  {
+    id: 'toll_crossbow',
+    name: 'Quarry Guard Crossbow',
+    shortName: 'Crossbow',
+    element: 'nonbender',
+    size: 1,
+    stats: { maxHp: 24, maxAp: 4, maxMove: 4, power: 4, defense: 0, speed: 7, focus: 15 },
+    abilities: ['merc_crossbow'],
+    ai: 'cautious',
+    xp: 1,
+    sprite: 'unit.enemy.crossbow',
+    description:
+      'Shoots up to eight tiles from the camp. Cover makes it miss more often; it is frail once you reach it.',
+  },
+  {
+    id: 'toll_corporal',
+    name: 'Corporal',
+    element: 'nonbender',
+    size: 1,
+    stats: { maxHp: 40, maxAp: 4, maxMove: 4, power: 5, defense: 2, speed: 6, focus: 10 },
+    abilities: ['merc_blade', 'rally'],
+    ai: 'support',
+    xp: 1,
+    sprite: 'unit.enemy.sergeant',
+    description:
+      'Rally gives another guard an extra AP and makes them hit harder. Deal with the corporal first.',
+  },
   {
     /*
      * Veyra (AN-01) as a guest ally (ADR 0116), built from an enemy record because a character
