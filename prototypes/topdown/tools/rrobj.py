@@ -27,7 +27,9 @@ IT = {
                     'wooden post with rope, a wooden crate at its foot' + EK, 20, 72, 48, 80),
     'cold_fire': ('a cold campfire: a ring of grey stones round grey ash and a few charred sticks, no flames, lying flat on '
                   'the ground', 40, 20, 48, 48),
-    'bedroll': ('a rolled-up brown blanket bedroll tied with two straps lying on the ground, a little folded tunic on top', 40, 20, 48, 48),
+    # the first take (seed 3) read as a barrel or a chest at 3x: say it is soft, long and low, and what it is not
+    'bedroll': ('a rolled canvas bedroll tied with two leather straps, lying flat on the ground, long and low, seen from a '
+                'low top-down angle; a soft fabric roll, not a barrel, not a chest, not a box', 40, 20, 48, 48),
     'rubbish_heap': ('a small untidy heap of camp rubbish on the ground: empty sacks, a broken crate slat, an empty tin, '
                      'cabbage leaves and rice husks', 40, 20, 48, 48),
     'cook_pot': ('a small dented iron cooking pot with a lid and a wire handle, a wooden spoon resting on it', 16, 16, 48, 48),

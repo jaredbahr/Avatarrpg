@@ -1,13 +1,13 @@
 {
  "bedroll": {
-  "w": 34,
-  "h": 22,
-  "seed": 3,
-  "ledger_job": "rg02_obj_rr_bedroll_3",
-  "job_id": "96232287-c200-426e-b0ca-ea3ecf63a6ce",
-  "credits": 5.0,
-  "takes": 1,
-  "prompt": "a rolled-up brown blanket bedroll tied with two straps lying on the ground, a li..."
+  "w": 43,
+  "h": 21,
+  "seed": 11,
+  "ledger_job": "rg02_obj_rr_bedroll_11",
+  "job_id": "c51b0466-6623-408c-b299-9ca48f4c3980",
+  "credits": 10.0,
+  "takes": 2,
+  "prompt": "a rolled canvas bedroll tied with two leather straps, lying flat on the ground, ..."
  },
  "bent_tree": {
   "w": 39,
