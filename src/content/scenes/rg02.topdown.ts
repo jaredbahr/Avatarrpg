@@ -8,6 +8,7 @@ import {
   EMBERWATCH_PARADE,
   EMBERWATCH_POWER_YARD,
   SALTSTEP_MARKET,
+  SALTSTEP_PLATFORM,
   SALTSTEP_PONTOON,
 } from '../regions/saltstepEmberwatch/maps';
 import { MOUTH_REACH, RG, Rg02Terrain, mouth } from './rg02.topdown.terrain';
@@ -332,6 +333,76 @@ export const SALTSTEP_PONTOON_OBJECTS: readonly TopDownObject[] = [
   ext('far_rowboat', 'rowboat', 'flat', [[14, 13]]),
   ext('far_gulls', 'gulls', 'flat', [[20, 10]]),
 ];
+
+/* ------------------------------------------------------------------ */
+/* SF-2.2's tipping platform (`docs/places/saltstep_platform.md`)      */
+/* ------------------------------------------------------------------ */
+
+export const SALTSTEP_PLATFORM_TERRAIN = new Rg02Terrain({
+  mapId: 'saltstep_platform',
+  rows: SALTSTEP_PLATFORM.rows,
+  // the deck, its raised north step (`h`, ramps `H`) and the cells its counter stub and bollards stand on (`F`)
+  chars: { W: RG.water, w: RG.deck, h: RG.deck, H: RG.deck, F: RG.deck },
+  beyond: RG.water,
+  mouths: [],
+});
+
+/** The north step, one up (the map's elevation 1), a ramp at each end: drawn by the board's `raised`. */
+export const SALTSTEP_PLATFORM_RAISED: readonly (readonly [number, number, boolean])[] = [
+  3, 4, 5, 6, 7, 8, 9, 10, 11,
+].map((x) => [x, 2, x === 3 || x === 11] as const);
+
+export const SALTSTEP_PLATFORM_OBJECTS: readonly TopDownObject[] = [
+  // The focal point: the old stall's counter stub down the seam the deck tips on, open at both ends.
+  piece(
+    'counter',
+    'counter_side',
+    'prop',
+    [
+      [7, 4],
+      [7, 5],
+      [7, 6],
+    ],
+    true,
+  ),
+  // Two mooring bollards at diagonal corners, where boats tie on.
+  piece('bollard_nw', 'bollard', 'prop', [[3, 3]], true),
+  flip(piece('bollard_se', 'bollard', 'prop', [[11, 7]], true)),
+  // The market's signature, seen from here: a painted tide pole in the water off the north-east corner.
+  piece('tide_pole', 'level_pole', 'prop', [[12, 1]], false),
+  // Moored loose: piles in the water round it, a buoy or two, gulls, and Tavi's boat off the south side.
+  ...(
+    [
+      [2, 3],
+      [2, 7],
+      [12, 4],
+      [12, 7],
+      [5, 8],
+      [10, 8],
+    ] as const
+  ).map(([x, y], i) => {
+    const pile = piece(`pile_${x}_${y}`, 'pilings', 'flat', [[x, y]], false);
+    return i % 2 ? flip(pile) : pile;
+  }),
+  piece('rowboat', 'rowboat', 'flat', [[7, 9]], false),
+  piece('buoy_a', 'buoy', 'flat', [[1, 1]], false),
+  piece('buoy_b', 'buoy', 'flat', [[13, 9]], false),
+  piece('gulls', 'gulls', 'flat', [[2, 9]], false),
+  ext('far_sailboat', 'sailboat', 'flat', [[11, 12]]),
+  ext('far_rowboat', 'rowboat', 'flat', [[1, 12]]),
+];
+
+export const SALTSTEP_PLATFORM_TOPDOWN_LAYOUT: TopDownLayout = {
+  mapId: 'saltstep_platform',
+  terrain: {
+    kind: 'classified',
+    classify: SALTSTEP_PLATFORM_TERRAIN.classify,
+    mouths: [],
+    mouthReach: MOUTH_REACH,
+  },
+  objects: SALTSTEP_PLATFORM_OBJECTS,
+  slots: [],
+};
 
 export const SALTSTEP_MARKET_TOPDOWN_LAYOUT: TopDownLayout = {
   mapId: 'saltstep_market',
