@@ -64,9 +64,10 @@ jobs:
   verify:
     name: Typecheck, lint, unit tests
     runs-on: ubuntu-latest
-    # The whole verify mirror ran 14m25s and 14m49s on main on 2026-11-10, and runs past 15 were
-    # cancelled mid-balance. 25 leaves room for the suite to grow; a hang still stops.
-    timeout-minutes: 25
+    # A hang guard, not a budget (#796): the verify mirror ran about 16 minutes on 2026-11-20 and
+    # 25m on a slow runner the same day (tests 11.5m, balance past 10.5m), when 25 cancelled it. 45
+    # covers a slow runner plus one test held for the ten-minute HANG_GUARD_MS; a real hang still stops.
+    timeout-minutes: 45
     outputs:
       # `true` when HEAD is younger than 24 hours; the nightly suites key on it.
       fresh: ${{ steps.fresh.outputs.fresh }}

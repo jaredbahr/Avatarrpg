@@ -24,7 +24,7 @@ import { performance } from 'node:perf_hooks';
  * Ten minutes. The slowest single test in the suite (one board of the top-down ground pack) took
  * 39 s on a shared 4-core container and 194 s with eight busy processes beside it, so this is
  * fifteen times the first and three times the second. A real hang is still stopped and named by
- * Vitest inside the CI job's own 25-minute limit.
+ * Vitest inside the CI job's own 45-minute limit.
  */
 export const HANG_GUARD_MS = 10 * 60_000;
 
