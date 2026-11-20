@@ -3,6 +3,7 @@
  * beside the maps' rows, which stay the authority for collision. CI and the ground packer read these
  * (`scripts/art/topdown/boards/rg02.ts`); the shipped runtime draws the packed scene and never imports them.
  */
+import type { Vec2 } from '../../core/types';
 import type { TopDownLayout, TopDownObject } from '../topdownLayout';
 import {
   EMBERWATCH_PARADE,
@@ -676,7 +677,7 @@ export const RIVER_ROAD_TERRAIN = new Rg02Terrain({
   rows: RIVER_ROAD.rows,
   // Open countryside: grass under the trees (`T`) and the bank's boulders (`U`), the packed-earth road (`=`) and its
   // pull-offs (`.`, and the camp's crates `F`), the gravel bars and the ford (`:`, `~`), the plank bridge and the
-  // landing (`w`), and the cliff at the bend and the lookout's rise (`X`, `^`, `S`) as bare stone. Past the grid the
+  // landing (`w`, water under their pieces), and the cliff at the bend and the lookout's rise (`X`, `^`, `S`) as bare stone. Past the grid the
   // rows carry on: the wooded hills to the north, the river to the south, the road out of each end.
   chars: {
     ',': RG.grass,
@@ -688,7 +689,10 @@ export const RIVER_ROAD_TERRAIN = new Rg02Terrain({
     ':': RG.sand,
     '~': RG.puddle, // the ford's clear shallows over pebbles
     W: RG.water,
-    w: RG.deck,
+    // The plank bridge and the landing's jetty are pieces (`plank_bridge`, `country_jetty`) laid over the water, so
+    // the plate paints water under them rather than a baked plank patch round their edges. The cells still read as
+    // deck on the map, so the party walks across.
+    w: RG.water,
     X: RG.stone,
     '^': RG.stone,
     S: RG.stone,
@@ -726,33 +730,156 @@ const cellHash = (x: number, y: number): number => ((x * 73856093) ^ (y * 193496
  * the bend (`X`, two cells a spur), and a crate stack on each of the camp's and the shade stop's crates (`F`). Stage 5
  * replaces them with the brief's pieces (the shade stop's big tree, the bridge's rails and pole, the camp).
  */
-export const RIVER_ROAD_OBJECTS: readonly TopDownObject[] = RIVER_ROAD.rows.flatMap((row, y) =>
-  [...row].flatMap((ch, x): TopDownObject[] => {
-    const h = cellHash(x, y);
-    const turn = (o: TopDownObject): TopDownObject => (h % 2 ? flip(o) : o);
-    if (ch === 'T')
-      return [
-        turn(
-          piece(`pine_${x}_${y}`, 'harbour_tree', 'tree', [[x, y]], true, {
-            // a pine beside the stream leans its trunk away from the water, where its roots are
-            x: row[x - 1] === 'W' ? 8 : row[x + 1] === 'W' ? -8 : (h % 9) - 4,
-            base: -((h >> 4) % 5),
-          }),
-        ),
-      ];
-    if (ch === 'U') return [turn(piece(`boulders_${x}_${y}`, 'boulders', 'prop', [[x, y]], true))];
-    if (ch === 'F') return [piece(`crates_${x}_${y}`, 'crate_stack', 'prop', [[x, y]], true)];
-    if (ch !== 'X' || (row[x - 1] === 'X' && (x - row.indexOf('X')) % 2 === 1)) return [];
-    const cells: [number, number][] =
-      row[x + 1] === 'X'
-        ? [
-            [x, y],
-            [x + 1, y],
-          ]
-        : [[x, y]];
-    return [turn(piece(`spur_${x}_${y}`, 'rock_spur', 'prop', cells, true))];
-  }),
-);
+/**
+ * A kit piece placed on a stage-5 plan member's box (`riverRoad.setpieces.ts`): centred on the box, standing on its
+ * south edge, its footprint the cells the box covers. Sizes and positions are the plan's, so the art lands where the
+ * boxes were approved.
+ */
+function onBox(
+  id: string,
+  sprite: string,
+  kind: TopDownObject['kind'],
+  box: { readonly x: number; readonly y: number; readonly w: number; readonly h: number },
+  extra: {
+    readonly solid?: boolean;
+    readonly deck?: boolean;
+    readonly flip?: boolean;
+    readonly base?: number;
+  } = {},
+): TopDownObject {
+  // whole world pixels: a fractional box (9.2 + 0.6 cells) would put the piece between pixels, and the plate's
+  // raster drops a piece drawn at a fractional row
+  const x = Math.round((box.x + box.w / 2) * C);
+  const base = Math.round((box.y + box.h) * C) + (extra.base ?? 0);
+  const cells: Vec2[] = [];
+  for (let cy = Math.floor(box.y); cy < Math.ceil(box.y + box.h - 1e-9); cy++)
+    for (let cx = Math.floor(box.x); cx < Math.ceil(box.x + box.w - 1e-9); cx++)
+      cells.push({ x: cx, y: cy });
+  return {
+    id,
+    sprite,
+    kind,
+    x,
+    base,
+    footprint: cells,
+    solid: extra.solid ?? false,
+    ...(extra.deck ? { deck: true } : {}),
+    ...(extra.flip ? { flip: true } : {}),
+    depth: { x: x / C, y: base / C },
+  };
+}
+
+/**
+ * The river road's pieces (stage 6 of `docs/level-design.md`): the kit made for it (`tools/rrobj.py`, cleaned into
+ * `assets/objects_rr/`), Ba Dan's valley trees and trough for the wooded hills and the shade stop, and the coast's crates
+ * and boulders, each on the stage-5 box it was planned as. The blocked cells come from the rows: a tree on every `T`
+ * (the big shade tree on the shade stop's), a boulder on every `U`, crates or the trough on every `F`, and the cliff's
+ * `X` cells under rock until the RG-02 baker raises a rock face there (the owner's choice, 2026-11-20); its foot is the
+ * rockfall. Later states are not laid here: `toll_bar_up` (the pole raised after SF-2.3) and `cabbage_sack` (the one sack
+ * left after SF-2.3's Carry on) are in the kit for the story work to place.
+ */
+export const RIVER_ROAD_OBJECTS: readonly TopDownObject[] = [
+  ...RIVER_ROAD.rows.flatMap((row, y) =>
+    [...row].flatMap((ch, x): TopDownObject[] => {
+      const h = cellHash(x, y);
+      const turn = (o: TopDownObject): TopDownObject => (h % 2 ? flip(o) : o);
+      if (ch === 'T') {
+        if (x === 10 && y === 3)
+          return [piece('shade-tree', 'shade_tree', 'tree', [[x, y]], true, { base: -2 })];
+        return [
+          turn(
+            piece(
+              `pine_${x}_${y}`,
+              h % 3 === 0 ? 'tree_broadleaf' : 'tree_pine',
+              'tree',
+              [[x, y]],
+              true,
+              {
+                // a tree beside the stream leans its trunk away from the water, where its roots are
+                x: row[x - 1] === 'W' ? 8 : row[x + 1] === 'W' ? -8 : (h % 9) - 4,
+                base: -((h >> 4) % 5),
+              },
+            ),
+          ),
+        ];
+      }
+      if (ch === 'U')
+        return [turn(piece(`boulders_${x}_${y}`, 'boulders', 'prop', [[x, y]], true))];
+      if (ch === 'F')
+        return x === 12 && y === 3
+          ? [piece('shade-trough', 'trough_ek', 'prop', [[x, y]], true)]
+          : [piece(`crates_${x}_${y}`, 'crate_stack', 'prop', [[x, y]], true)];
+      if (ch !== 'X') return [];
+      // the cliff's foot: one fallen heap along row 2's three cells
+      if (y === 2)
+        return x === 30
+          ? [
+              piece(
+                'bend-cliff-foot',
+                'rockfall',
+                'prop',
+                [
+                  [30, 2],
+                  [31, 2],
+                  [32, 2],
+                ],
+                true,
+              ),
+            ]
+          : [];
+      if (row[x - 1] === 'X' && (x - row.indexOf('X')) % 2 === 1) return [];
+      const cells: [number, number][] =
+        row[x + 1] === 'X'
+          ? [
+              [x, y],
+              [x + 1, y],
+            ]
+          : [[x, y]];
+      return [turn(piece(`spur_${x}_${y}`, 'rock_spur', 'prop', cells, true))];
+    }),
+  ),
+  // the landing
+  // the jetty's boards meet the gravel: stood 10 px up its row, so no strip of water opens between bank and planks
+  onBox(
+    'landing-jetty',
+    'country_jetty',
+    'walkway',
+    { x: 6, y: 10, w: 3, h: 1 },
+    { deck: true, base: -10 },
+  ),
+  onBox('landing-boat', 'river_rowboat', 'flat', { x: 3.6, y: 10.1, w: 2.2, h: 0.8 }),
+  onBox('landing-net-rack', 'net_rack', 'prop', { x: 8.2, y: 9.1, w: 1.6, h: 0.6 }),
+  // the shade stop
+  onBox('shade-log-bench', 'log_bench', 'prop', { x: 8.2, y: 3.35, w: 1.6, h: 0.5 }),
+  onBox('shade-hitching-post', 'hitching_post', 'prop', { x: 13.4, y: 3.4, w: 0.25, h: 0.25 }),
+  // the bridge (a walkway: the RG-02 baker lays it flat into the plate, no cast), and the borrowed barrier across it
+  onBox('bridge-deck', 'plank_bridge', 'walkway', { x: 19, y: 5, w: 2, h: 2 }, { deck: true }),
+  // its foot stands on the planks (a deck piece: the plate under the bridge is water), clear of the deck's south edge
+  onBox(
+    'bridge-toll-pole',
+    'toll_bar_across',
+    'prop',
+    { x: 20.6, y: 5.1, w: 0.2, h: 1.8 },
+    { deck: true, base: -8 },
+  ),
+  // the guards' camp
+  onBox('camp-cold-fire', 'cold_fire', 'flat', { x: 24, y: 3, w: 1, h: 1 }),
+  onBox('camp-bedroll-1', 'bedroll', 'flat', { x: 22, y: 2, w: 1, h: 1 }),
+  onBox('camp-bedroll-2', 'bedroll', 'flat', { x: 26, y: 3, w: 1, h: 1 }, { flip: true }),
+  onBox('camp-bedroll-3', 'bedroll', 'flat', { x: 24, y: 4, w: 1, h: 1 }),
+  onBox('camp-rubbish', 'rubbish_heap', 'flat', { x: 26, y: 2, w: 1, h: 1 }),
+  onBox('camp-pot', 'cook_pot', 'prop', { x: 21.3, y: 2.4, w: 0.4, h: 0.4 }),
+  onBox('camp-toll-sign', 'toll_sign', 'prop', { x: 21.2, y: 3.5, w: 0.6, h: 0.3 }),
+  // the ford, and the far bank
+  onBox('ford-stones', 'stepping_stones', 'flat', { x: 20, y: 8, w: 2, h: 1 }),
+  onBox('ford-log', 'fallen_log', 'flat', { x: 20, y: 9.2, w: 2, h: 0.6 }),
+  onBox('far-bank-driftwood', 'driftwood', 'flat', { x: 26, y: 8, w: 1, h: 1 }),
+  // the lookout
+  onBox('lookout-rock', 'flat_rock', 'prop', { x: 36.4, y: 2.2, w: 1.4, h: 0.6 }),
+  onBox('lookout-milestone', 'milestone', 'prop', { x: 35.3, y: 1.4, w: 0.4, h: 0.4 }),
+  // the plan's box is on the rise's rock, where no tree roots: it grows from the last grass at the rise's west foot
+  onBox('lookout-tree', 'bent_tree', 'tree', { x: 34, y: 0, w: 1, h: 1 }, { base: -8 }),
+];
 
 export const RIVER_ROAD_TOPDOWN_LAYOUT: TopDownLayout = {
   mapId: 'river_road',
