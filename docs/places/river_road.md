@@ -236,10 +236,10 @@ owner's credit OK before stage 6.
 ## The kit as made (stage 6)
 
 The owner raised RG-02's cap to 1,850 on 2026-11-20. Every new piece was made once with `create-object-pro-flash`
-(`prototypes/topdown/tools/rrobj.py`, seed 3), with a second take at seed 11 for the jetty and the bent tree; the
+(`prototypes/topdown/tools/rrobj.py`, seed 3), with a second take at seed 11 for the jetty, the bent tree and the bedroll (seed 3's read as a barrel or a chest); the
 takes are cleaned by `tools/rrproc.py` into `prototypes/topdown/assets/objects_rr/` (alpha cut at 128, trimmed,
 `manifest.json` naming each piece's job, seed and credits), and the RG-02 baker looks there after the region's own
-folder. **Spent: 125 credits over 24 jobs** (the ledger's `rg02_obj_rr_*`), against about 113 planned.
+folder. **Spent: 130 credits over 25 jobs** (the ledger's `rg02_obj_rr_*`), against about 113 planned.
 
 | Art (# above)               | Shipped as                              | Take chosen | Native px |      Credits |
 | --------------------------- | --------------------------------------- | ----------- | --------- | -----------: |
@@ -253,7 +253,7 @@ folder. **Spent: 125 credits over 24 jobs** (the ledger's `rg02_obj_rr_*`), agai
 | Toll pole, raised (8)       | `toll_bar_up` (not placed: SF-2.3)      | seed 3      | 22 x 74   |            5 |
 | Cold fire (9)               | `cold_fire`                             | seed 3      | 42 x 30   |            5 |
 | Crate stack (10)            | `crate_stack` (rg02)                    | existing    |           |            0 |
-| Bedroll (11)                | `bedroll`, one flipped                  | seed 3      | 34 x 22   |            5 |
+| Bedroll (11)                | `bedroll`, one flipped                  | seed 11     | 43 x 21   | 10 (2 takes) |
 | Rubbish heap (12)           | `rubbish_heap`                          | seed 3      | 37 x 30   |            5 |
 | Cooking pot (13)            | `cook_pot`                              | seed 3      | 26 x 29   |            5 |
 | Toll sign (14)              | `toll_sign` (new: hand-lettered)        | seed 3      | 24 x 41   |            5 |
