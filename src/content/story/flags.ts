@@ -883,6 +883,18 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     readBy: ['map:saltstep_market', 'story:mq02_market_explore'],
   },
   {
+    key: 'mq03.invited',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'V. Sen’s card has invited the party to Causeway: the cart takes the river road (Scene 3.9).',
+    arc: 'Act II · Saltstep',
+    status: 'pending',
+    note: 'Set by Scene 3.9, An invitation, which is not built yet; it shows the river road sign at Emberwatch.',
+    setBy: [],
+    readBy: ['map:emberwatch_parade'],
+  },
+  {
     key: 'standing.earth',
     type: 'number',
     meaning: 'How the Earth Kingdom feels about the party, from -5 (hostile) to 5 (trusted).',

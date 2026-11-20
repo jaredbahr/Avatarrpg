@@ -103,6 +103,12 @@ const SCENES: Readonly<Record<string, Scene>> = {
       'A small square deck of market planking alone on the water, with deep harbour water all round it. Down its middle runs the short stub of an old stall counter, open at both ends. A low step of planks runs along the top edge, sloping down at each end. Two mooring bollards with looped rope stand at the top-left and bottom-right corners of the deck.',
     light: 'Bright midday light, calm water.',
   },
+  river_road: {
+    place: 'The river road, the cart road up the river from the coast to Causeway, a day long.',
+    scene:
+      'A packed-earth road runs left to right across the middle, a wide slow river along the whole bottom edge and a wooded hillside along the top. Halfway along, a side stream comes down from the hills to the river; a plank bridge carries the road over it, with stepping stones a little downstream. A big shade tree and a trough stand by the road on the left, a footpath leads down to a small jetty, and a camp with a cold fire sits past the bridge. At the right the road climbs past a rock face to a rise looking out over open country.',
+    light: 'Bright morning light, a little haze over the river.',
+  },
   emberwatch_parade: {
     place: 'Emberwatch, an old military outpost across the bay, reopened for civilians.',
     scene:

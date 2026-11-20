@@ -21,6 +21,7 @@ export const SALTSTEP_EMBERWATCH: RegionManifest = {
     'emberwatch_parade',
     'emberwatch_power_yard',
     'saltstep_platform',
+    'river_road',
   ],
   // Ba Dan's coast road is this region's way in, and the market's west road its way home.
   neighbours: ['ba_dan_valley'],
