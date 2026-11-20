@@ -25,6 +25,13 @@ IT = {
                       + EK, 72, 24, 80, 48),
     'toll_bar_up': ('a borrowed official red-and-white striped road barrier arm raised upright, its foot lashed to a short '
                     'wooden post with rope, a wooden crate at its foot' + EK, 20, 72, 48, 80),
+    # The owner asked for a clearer lowered barrier (2026-11-20): an arm lying straight across an east-west bridge is
+    # foreshortened into a vertical post from this camera, so this one angles back across the deck on a diagonal.
+    'toll_bar_diag': ('a borrowed official red-and-white striped road barrier lowered across a bridge, seen from a low '
+                      'front-on top-down camera: a short wooden pivot post with a wooden crate counterweight at the bottom '
+                      'left, and the long striped barrier arm angling up and away to the upper right on a clear diagonal, '
+                      'as if it lies across a road running away from the viewer, its far tip resting on a small forked '
+                      'stick' + EK, 44, 72, 48, 80),
     'cold_fire': ('a cold campfire: a ring of grey stones round grey ash and a few charred sticks, no flames, lying flat on '
                   'the ground', 40, 20, 48, 48),
     # the first take (seed 3) read as a barrel or a chest at 3x: say it is soft, long and low, and what it is not
