@@ -748,6 +748,8 @@ function onBox(
     readonly base?: number;
     /** Shown only while the map's gate holds (ADR 0123). */
     readonly gate?: string;
+    /** A flat piece with height: grounded into the plate with its own contact and cast (owner, 2026-11-21). */
+    readonly grounded?: boolean;
   } = {},
 ): TopDownObject {
   // whole world pixels: a fractional box (9.2 + 0.6 cells) would put the piece between pixels, and the plate's
@@ -769,6 +771,7 @@ function onBox(
     ...(extra.deck ? { deck: true } : {}),
     ...(extra.flip ? { flip: true } : {}),
     ...(extra.gate !== undefined ? { gate: extra.gate } : {}),
+    ...(extra.grounded ? { grounded: true } : {}),
     depth: { x: x / C, y: base / C },
   };
 }
@@ -841,7 +844,13 @@ export const RIVER_ROAD_OBJECTS: readonly TopDownObject[] = [
     { x: 6, y: 10, w: 3, h: 1 },
     { deck: true, base: -10 },
   ),
-  onBox('landing-boat', 'river_rowboat', 'flat', { x: 3.6, y: 10.1, w: 2.2, h: 0.8 }),
+  onBox(
+    'landing-boat',
+    'river_rowboat',
+    'flat',
+    { x: 3.6, y: 10.1, w: 2.2, h: 0.8 },
+    { grounded: true },
+  ),
   onBox('landing-net-rack', 'net_rack', 'prop', { x: 8.2, y: 9.1, w: 1.6, h: 0.6 }),
   // the shade stop
   onBox('shade-log-bench', 'log_bench', 'prop', { x: 8.2, y: 3.35, w: 1.6, h: 0.5 }),
@@ -869,18 +878,43 @@ export const RIVER_ROAD_OBJECTS: readonly TopDownObject[] = [
     { x: 19.1, y: 6.5, w: 0.6, h: 0.3 },
     { deck: true, gate: 'pole_up' },
   ),
-  // the guards' camp
-  onBox('camp-cold-fire', 'cold_fire', 'flat', { x: 24, y: 3, w: 1, h: 1 }, { gate: 'camp' }),
-  onBox('camp-bedroll-1', 'bedroll', 'flat', { x: 22, y: 2, w: 1, h: 1 }, { gate: 'camp' }),
+  // the guards' camp. Every piece with height is grounded, its contact line and a short cast from its own base
+  // (owner, 2026-11-21: "almost everything gets a shadow"); the low ones stay in the plate, under the figures.
+  onBox(
+    'camp-cold-fire',
+    'cold_fire',
+    'flat',
+    { x: 24, y: 3, w: 1, h: 1 },
+    { gate: 'camp', grounded: true },
+  ),
+  onBox(
+    'camp-bedroll-1',
+    'bedroll',
+    'flat',
+    { x: 22, y: 2, w: 1, h: 1 },
+    { gate: 'camp', grounded: true },
+  ),
   onBox(
     'camp-bedroll-2',
     'bedroll',
     'flat',
     { x: 26, y: 3, w: 1, h: 1 },
-    { flip: true, gate: 'camp' },
+    { flip: true, gate: 'camp', grounded: true },
   ),
-  onBox('camp-bedroll-3', 'bedroll', 'flat', { x: 24, y: 4, w: 1, h: 1 }, { gate: 'camp' }),
-  onBox('camp-rubbish', 'rubbish_heap', 'flat', { x: 26, y: 2, w: 1, h: 1 }, { gate: 'camp' }),
+  onBox(
+    'camp-bedroll-3',
+    'bedroll',
+    'flat',
+    { x: 24, y: 4, w: 1, h: 1 },
+    { gate: 'camp', grounded: true },
+  ),
+  onBox(
+    'camp-rubbish',
+    'rubbish_heap',
+    'flat',
+    { x: 26, y: 2, w: 1, h: 1 },
+    { gate: 'camp', grounded: true },
+  ),
   // the pot sits on the ground at the fire's east side, clear of the toll sign
   onBox('camp-pot', 'cook_pot', 'prop', { x: 25.05, y: 3.35, w: 0.4, h: 0.4 }, { gate: 'camp' }),
   onBox(
@@ -899,9 +933,9 @@ export const RIVER_ROAD_OBJECTS: readonly TopDownObject[] = [
     { gate: 'sack' },
   ),
   // the ford, and the far bank
-  onBox('ford-stones', 'stepping_stones', 'flat', { x: 20, y: 8, w: 2, h: 1 }),
-  onBox('ford-log', 'fallen_log', 'flat', { x: 20, y: 9.2, w: 2, h: 0.6 }),
-  onBox('far-bank-driftwood', 'driftwood', 'flat', { x: 26, y: 8, w: 1, h: 1 }),
+  onBox('ford-stones', 'stepping_stones', 'flat', { x: 20, y: 8, w: 2, h: 1 }, { grounded: true }),
+  onBox('ford-log', 'fallen_log', 'flat', { x: 20, y: 9.2, w: 2, h: 0.6 }, { grounded: true }),
+  onBox('far-bank-driftwood', 'driftwood', 'flat', { x: 26, y: 8, w: 1, h: 1 }, { grounded: true }),
   // the lookout
   // the flat rock stands on the rise's top, back from its lip (the plan's box, 0.3 of a cell north)
   onBox('lookout-rock', 'flat_rock', 'prop', { x: 36.4, y: 1.9, w: 1.4, h: 0.6 }),

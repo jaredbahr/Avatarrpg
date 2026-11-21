@@ -92,13 +92,12 @@ describe('the story over the scene (ADR 0123)', () => {
         ?.scenery.filter((s) => s.gate !== undefined)
         .map((s) => s.id.replace('river_road.td.', ''))
         .sort();
-    expect(at([])).toEqual(['bridge-toll-pole', 'camp-pot', 'camp-toll-sign']);
+    // the packs, the ring and the rubbish are grounded flats in the camp's overlay; these are its uprights
+    const camp = ['camp-pot', 'camp-toll-sign'];
+    expect(at([])).toEqual(['bridge-toll-pole', ...camp].sort());
     expect(at(['sf23_battle', 'sf23_pole_up', 'sf23_won'])).toEqual(['bridge-toll-pole-up']);
-    expect(at(['sf23_battle', 'sf23_lost', 'sf23_one_sack'])).toEqual([
-      'bridge-toll-pole-up',
-      'camp-cabbage-sack',
-      'camp-pot',
-      'camp-toll-sign',
-    ]);
+    expect(at(['sf23_battle', 'sf23_lost', 'sf23_one_sack'])).toEqual(
+      ['bridge-toll-pole-up', 'camp-cabbage-sack', ...camp].sort(),
+    );
   });
 });
