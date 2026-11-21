@@ -43,6 +43,12 @@ export interface TopDownObject {
   /** Drawn mirrored left to right (the prototype flips some of its dressing). */
   readonly flip?: boolean;
   /**
+   * A `flat` piece with height (stepping stones, a log, a fire ring, a rolled pack): still baked into the plate under
+   * the figures, but grounded first, with its contact line and a short cast from its own base, as a prop is. "Almost
+   * everything gets a shadow" (owner, 2026-11-21); only truly flat marks (ash, a stain, a mat) go without.
+   */
+  readonly grounded?: boolean;
+  /**
    * Shown only while the map's `sceneGates[gate]` holds (ADR 0123): the camp at the bridge until the fight. Never
    * baked into the plate; its ground (its flat art, cast and contact) ships as an overlay. Never solid.
    */

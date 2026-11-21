@@ -48,8 +48,9 @@ the plate while its gate holds. A gated standing piece's upright goes into the b
 with its gate.
 
 The plate plus an overlay is the plate that piece would have been baked into, so a gated piece is grounded exactly as
-a baked one is. On the river road, the plate with the `camp` and `pole_down` overlays laid on it is byte for byte the
-plate shipped before this ADR.
+a baked one is. On the river road, the plate with the `camp` and `pole_down` overlays laid on it was byte for byte the
+plate shipped before this ADR. It now differs only where the owner's "almost everything gets a shadow" (2026-11-21) gave
+the camp's packs, fire ring and rubbish their contact and cast (`TopDownObject.grounded`).
 
 ### 4. What the checks hold
 

@@ -49,7 +49,8 @@ import { cleanSprite } from '../lib/sprites';
  * moved a few of their cast pixels and dropped them just under it, so they take the long contact band a
  * tall prop already takes at runtime (`objectShadowMask`): more of the shadow is the dark seam and band.
  */
-const RG02_PROP_FOOT = { lobster_pots: { band: 6 } } as const;
+// The river road's rolled packs lie low, so their cast stays at the shortest a prop's goes (owner, 2026-11-21).
+const RG02_PROP_FOOT = { lobster_pots: { band: 6 }, bedroll: { reach: 12, band: 4 } } as const;
 
 /**
  * Where a piece's sprite lives: the region's own objects (`assets/objects_rg02/`), the river road's kit
@@ -398,8 +399,19 @@ export function bake(cfg: Rg02BoardConfig): Baked {
   // The plate takes the pieces that are always there; a gated piece (ADR 0123) is never baked into it.
   const always = placed.filter((p) => p.o.gate === undefined);
   const ground = (plate: RgbaImage, pieces: readonly Placed[]): Baked['shadows'][number][] => {
-    for (const p of pieces) if (FLAT_KINDS.has(p.o.kind)) draw(plate, p.img, p.x, p.y);
     const records: Baked['shadows'][number][] = [];
+    for (const p of pieces) {
+      if (!FLAT_KINDS.has(p.o.kind)) continue;
+      // a flat piece with height (owner, 2026-11-21: "almost everything gets a shadow"): its contact and short cast
+      // laid first, as a prop's, and the piece over them, still in the plate under the figures
+      if (p.o.grounded) {
+        const asProp: Placed = { ...p, o: { ...p.o, kind: 'prop' } };
+        records.push(
+          groundObject(plate, asProp, classes, false, shadowOptions(asProp, RG02_PROP_FOOT)).record,
+        );
+      }
+      draw(plate, p.img, p.x, p.y);
+    }
     for (const p of pieces) {
       if (FLAT_KINDS.has(p.o.kind)) continue;
       records.push(groundObject(plate, p, classes, false, shadowOptions(p, RG02_PROP_FOOT)).record);

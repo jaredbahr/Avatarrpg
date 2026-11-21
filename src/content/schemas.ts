@@ -1785,8 +1785,13 @@ const topDownObjectSchema = z
     revealOccluded: z.boolean().optional(),
     flip: z.boolean().optional(),
     gate: z.string().min(1).optional(),
+    grounded: z.literal(true).optional(),
   })
-  .strict();
+  .strict()
+  .refine((o) => !o.grounded || o.kind === 'flat', {
+    path: ['grounded'],
+    message: 'only a flat piece is grounded into the plate; a standing piece is grounded already',
+  });
 
 /** The top-down cell, in world px. */
 const TOPDOWN_CELL = 40;
