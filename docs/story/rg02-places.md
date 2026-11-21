@@ -1,9 +1,11 @@
-# Saltstep market and the river road: who is there, and what the places are
+# The river road: who is there, and what the places are (with draft lines for Saltstep market)
 
 **Status: DRAFT for the owner (the writing pass, 2026-11-21). Nothing here is approved.** These are the story's
-answers to every `PLACEHOLDER (story)` in the two place briefs (`docs/places/river_road.md`,
-`docs/places/saltstep_market.md`), in the form `docs/story/ba-dan-places.md` used for Ba Dan: facts for the level
-design to build on, then first-draft lines for the people and finds those facts create. Where a fact was already in
+answers to every `PLACEHOLDER (story)` in the river road's place brief (`docs/places/river_road.md`), in the form
+`docs/story/ba-dan-places.md` used for Ba Dan: facts for the level design to build on, then first-draft lines for
+the people and finds those facts create. **Saltstep market's facts are not here:** they are in
+[saltstep-places.md](saltstep-places.md) (approved, owner, 2026-11-19), and this file adds only draft lines written
+to them. Where a fact was already in
 the game, a script or the bible it is marked **(shipped)**, **(script)** or **(bible)**. Everything unmarked is new
 and is listed again at the end for a yes or a no.
 
@@ -16,8 +18,8 @@ resident that the build has not made yet; the lines are written so the build can
 **Theme card:** the river road and Saltstep market (found scenes; SF-2.3's choice)
 
 Themes: responsibility, equality among all people, belonging. A corporal makes his guards fold their coats before
-they take a sack off a cart. A woman with a boat too small for a licence leaves fish by their pot. A bell rope has
-a second knot tied low, where the people who stand under it all day can reach it.
+they take a sack off a cart. A woman with a boat too small for a licence leaves fish by their pot. A carter stops
+beside the man who held her up all morning and tells him where the hot food is.
 
 - [x] No nation, element or culture stereotype
 - [x] Every valid party, non-benders included, has a real route through (nothing here needs an element; every hero
@@ -271,44 +273,25 @@ Suggested seen flags, in the shipped `world.discovered.*` family: `river_still_w
 
 ## Saltstep market
 
-### The four answers
-
-- **The bell hangs on its own post where the pole walk meets the shore,** at the first plank. It can be reached
-  from the land at any tide, and it is the one thing in the market that does not float. **The rope has two
-  knots.** The lower one was tied on later, at the height of a child's hand, because the children are the ones
-  under it all day.
-- **The painted board beside it shows the pattern in pictures,** for anyone new and anyone who cannot read:
-  four strokes, a gap, four strokes; then a row of small people walking off planks onto stone.
-- **The pattern is "four and stop".** Four strokes, a rest, four strokes, until everyone is off the platforms and
-  onto the quay. It is rung when a surge may break the moorings. It is the only pattern; every child knows it
-  **(bible)**, and several adults remember it differently **(bible: "several adults insist on arguing about
-  it")**.
-- **The gap between the houses** belongs to nobody and is used by everybody. The two houses either side of it are
-  shared by three families who came to the shore in the last year or two **(bible: "recently arrived families
-  share the shore")**. Their washing hangs across the gap on three lines, each pegged a different way, and under
-  it the short cut is kept swept. Nobody is named; do not name them on the board.
-- **The gulls on the posts** are how the market tells the tide. The level poles are for visitors. The gulls take
-  the posts at the waste end a few minutes before the tide turns, because the fish-seller empties her bucket on
-  the turn **(script, SF-2.2: "The right's where the fish-seller empties her bucket")**.
-
-### Found around the market (not in the game yet)
-
-Each stands alone, as the three in Scene 2.2 do.
+**The facts are in [saltstep-places.md](saltstep-places.md) (approved, owner, 2026-11-19), and only there:** where
+the bell hangs and what it rings, the children's game, the washing gap, the gulls' post, who lives and works where.
+This file states none of them. Below are first-draft lines written to those facts, for the found scenes they
+create. Each stands alone, as the three in Scene 2.2 do. None is in the game yet.
 
 **Children under the bell.** **Shown:** found.
 
-**Child:** Four and stop. Four and stop. That means off the planks and onto the stone. Even if you're winning.
+**Child:** Three and a gap. Three and a gap. That means off the planks and up the steps. Even if you're winning.
 
-**Smaller child:** I'm allowed to ring it now. If it's real. I can reach.
+**Smaller child:** We're not allowed to ring it. So we clap it. I'm the best at clapping it.
 
 > **A second visit —**
-> **Old woman:** It was five when I was small.
+> **Old woman:** The gap comes after four.
 >
-> **Child:** It was never five. You were small. You couldn't count to five.
+> **Child:** After three. We do it every day. You do it never.
 >
-> **Old woman:** ...It might have been four.
+> **Old woman:** ...It might be three.
 
-**At the fish racks.**
+**At the fish racks and the freight side.**
 
 - **Net-mender:** Hold this. No, the other end. Good. You're good at that. Stay there till noon.
 
@@ -317,23 +300,23 @@ Each stands alone, as the three in Scene 2.2 do.
 
 - **Dock worker, carrying a crate:** Mind your backs! ...It's empty. I say it anyway, or nobody moves.
 
-**The washing in the gap** (a find).
+**The washing gap** (a find).
 
-**Narrator:** Washing on three lines, strung house to house. Every line is pegged a different way. Underneath, the
-short cut has been swept.
+**Narrator:** One washing line, from the house to the net store. One end is faded and patched. The other end has
+more small shirts on it than seems possible. Underneath, the ground is worn smooth.
 
-**The gulls** (a find).
+**The gulls' post** (a find; its journal note can be the first line).
 
-**Narrator:** Six gulls on six posts, all facing the same way. They are not looking at the sea. They are looking
-at the fish-seller's bucket.
+**Narrator:** A post with no paint left on it, and gulls along the top. The weed on it stops a hand higher than
+the top band on the new poles.
 
-> **A minute later, if the party waits —**
-> **Narrator:** The fish-seller tips her bucket. Down the pole walk, three people look up at the gulls, and then
-> go and move their boats.
+> **If the party waits —**
+> **Narrator:** The gulls go, all at once. A moment later the bell rings, one stroke. Along the platforms, people
+> bend to their mooring ropes.
 
 > **If Sura is in the party —**
-> **Sura:** At home we read the ice for that. They've got a bucket. ...The bucket's better. You can't see ice from
-> the far end of a market.
+> **Sura:** That weed's above their top band. So the water's been up there. ...Who do you ask, here, about a thing
+> like that?
 
 Suggested seen flags: `world.discovered.saltstep_washing`, `world.discovered.saltstep_gulls`.
 
@@ -356,8 +339,8 @@ Suggested seen flags: `world.discovered.saltstep_washing`, `world.discovered.sal
 4. A carter from Causeway is the one who tells the corporal about the late shelf (one new narrator line in the
    game).
 5. The still water behind the jetty, and the ring only after Scene 5.7.
-6. Saltstep's bell: its post, the second knot, the picture board, and "four and stop".
-7. The gap's three families, unnamed; the gulls and the bucket.
+
+Saltstep adds no new fact: its lines above are written to `saltstep-places.md`.
 
 ## Questions only the owner can answer
 
