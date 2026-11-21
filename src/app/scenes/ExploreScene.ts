@@ -366,9 +366,7 @@ export class ExploreScene implements Scene {
         this.renderer.camera.centreMargin = map.cameraCentreMargin;
         this.renderer.camera.viewExtent = map.scene?.paintExtent;
       }
-      this.renderer?.camera.fitExplore(
-        exploreTilePx(map.projection ?? 'orthographic', this.renderer.camera.viewport.width),
-      );
+      this.renderer?.camera.fitExplore(exploreTilePx(map.projection ?? 'orthographic'));
       this.frameArrival(state);
       this.rememberViewSize();
     }
@@ -1069,9 +1067,9 @@ export class ExploreScene implements Scene {
       !state.story.visited.includes(shot.unlessVisited);
     if (this.framingArrival && shot) {
       // Fit the shot's rows, keeping whole pixel zoom and the camera's normal minimum tile size.
-      const { width, height, dpr } = camera.viewport;
+      const { height, dpr } = camera.viewport;
       const tilePx = (Math.floor((height * dpr) / (shot.rows * camera.tile)) * camera.tile) / dpr;
-      camera.fitExplore(Math.min(exploreTilePx('topdown', width), tilePx));
+      camera.fitExplore(Math.min(exploreTilePx('topdown'), tilePx));
     }
     const vergeFits =
       this.framingArrival &&
@@ -1374,9 +1372,7 @@ export class ExploreScene implements Scene {
     this.renderer.camera.centreMargin = map.cameraCentreMargin;
     this.renderer.camera.viewExtent = map.scene?.paintExtent;
     this.app.animator.setProjection(this.renderer.camera.projection);
-    this.renderer.camera.fitExplore(
-      exploreTilePx(map.projection ?? 'orthographic', this.renderer.camera.viewport.width),
-    );
+    this.renderer.camera.fitExplore(exploreTilePx(map.projection ?? 'orthographic'));
     this.frameArrival(state);
     this.rememberViewSize();
 

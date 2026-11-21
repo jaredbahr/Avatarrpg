@@ -408,6 +408,22 @@ at commit ecfcea1 (#892, issue #881), the only change that file has had since th
   (c4fad0b, dedd664) are an Imagination world-entity draw-order change (shadows before bodies); our awnings,
   stalls and tables are props whose `under` cast is already the silhouette, baked into the ground.
 
+## Amendment: the explore camera pulled back one step (owner, 2026-11-21)
+
+Exploration on the top-down board now opens at **N = 2 on every screen** (80 CSS px a cell; 4 device px per world px
+on a 2x iPad), one integer-zoom step back from the N = 3 above. Combat is unchanged (it already opened at N = 2).
+
+- **Why.** Playing the Saltstep market blockout (#869) on an iPad in landscape, the map area showed about 11.8 by 5.6
+  cells, and the next goal of a level was usually off screen. One step back shows about 14.8 by 7.0 there, 17 by 8 in a
+  1368 by 912 window and 24 by 10 in a 1920 by 1080 one, and the owner approved it after seeing both views.
+- **What holds.** The art stays on whole device pixels (`camera.integerZoom`, ADR 0088); a cell (80 CSS px) is well
+  over the tap target and `MIN_TILE_PX`; a pinch still reaches every other whole step, and a refit still never eats it;
+  an authored `arrivalShot` still fits its rows (it can only tighten the view, never widen it past N = 2).
+- **The upright phone** already opened at N = 2 and stays there: N = 1 would put a cell (40 CSS px) under the tap target.
+  `exploreTilePx` no longer reads the viewport width.
+- **Levels.** One explore view is now about 15 by 7 cells (`docs/level-design.md` §2). Places planned at the old size
+  keep their layouts; each view shows more of its neighbours.
+
 ## Consequences
 
 - The oblique rules in CLAUDE.md stay authoritative until T6 and are rewritten there. Ba Dan "one continuous

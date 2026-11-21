@@ -233,19 +233,22 @@ describe('top-down integer zoom: N >= dpr', () => {
   });
 
   it('is what exploration asks for on a top-down map, and the flat ask is unchanged', () => {
-    expect(exploreTilePx('topdown')).toBe(120);
+    // N = 2 everywhere since the owner pulled the explore camera back a step (2026-11-21, ADR 0104 amendment).
+    expect(exploreTilePx('topdown')).toBe(80);
     expect(exploreTilePx('orthographic')).toBe(48);
-    // An upright phone steps down to N = 2 so it shows more than three tiles across.
-    expect(exploreTilePx('topdown', 390)).toBe(80);
-    expect(exploreTilePx('topdown', 1180)).toBe(120);
     const phone = topdown({ width: 390, height: 844, dpr: 1 }, { width: 24, height: 16 });
-    phone.fitExplore(exploreTilePx('topdown', 390));
+    phone.fitExplore(exploreTilePx('topdown'));
     expect(phone.deviceScale).toBe(2);
     for (const board of BOARDS) {
       const camera = topdown({ width: 1368, height: 912, dpr: 1 }, board);
       camera.fitExplore(exploreTilePx('topdown'));
-      expect(camera.deviceScale, board.name).toBe(3);
+      expect(camera.deviceScale, board.name).toBe(2);
     }
+    // The iPad in landscape opens at 4 device px per world px: about 15 by 7 cells of a 1180 by 820 screen.
+    const ipad = topdown({ width: 1180, height: 820, dpr: 2 }, { width: 32, height: 18 });
+    ipad.fitExplore(exploreTilePx('topdown'));
+    expect(ipad.deviceScale).toBe(4);
+    expect(ipad.tile * ipad.scale).toBe(80);
     // Other screens still open on whole device px, never under a fingertip.
     for (const viewport of VIEWPORTS) {
       const camera = topdown(viewport, { width: 24, height: 16 });
