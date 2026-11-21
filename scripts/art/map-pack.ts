@@ -87,7 +87,7 @@ const SCENES: Readonly<Record<string, Scene>> = {
   saltstep_market: {
     place: 'Saltstep, a market town built out over a grey bay.',
     scene:
-      'A packed-sand quay crosses the picture left to right just above the middle, with a road of flagstones coming in at the left edge. North of it a strip of grass holds two timber warehouses, the right one a freight office with a clean brass plate. South of the quay the bay is deep, still water, and plank platforms stand out in it on piles: three near the quay, one further out on a narrow walk, and a ferry landing on the right. Tall painted level poles stand along the platform edges. Trees close the top corners and edges.',
+      'A packed-sand quay runs along the top third, with a road of flagstones coming in at the left edge and a dirt lane behind it. North of it a strip of grass holds three buildings of different sizes: an L-shaped house on the left, a freight office with a clean brass plate in the middle and a small house on the right. South of the quay the bay is deep, still water. A two-plank-wide walk runs out from the left of the quay to a ring of plank platforms on piles round an open basin, and a ferry jetty on the right joins the ring back to the shore. A short side jetty points out to sea from the bottom of the ring. Tall painted level poles stand in the basin and along the walk. Trees close the top corners and edges.',
     light: 'Flat grey coastal daylight; the water darker than the planks.',
   },
   saltstep_pontoon: {

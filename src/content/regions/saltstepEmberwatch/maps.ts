@@ -5,7 +5,7 @@
  * shared legend until the region's PixelLab art is generated and approved (a later, separate art
  * PR). The rows are the rules; the art will be drawn to them, not the other way round.
  *
- * - `saltstep_market` (explore, 24 x 16): the market on the water. Stalls on platforms, the quay,
+ * - `saltstep_market` (explore, 32 x 18; a grey blockout, see `docs/places/saltstep_market.md`): the market on the water. Stalls on platforms, the quay,
  *   the ferry landing, Jin's freight office and Miri's lantern crates. Its west mouth is the coast
  *   road home to Ba Dan.
  * - `saltstep_pontoon` (combat, 19 x 12): the freight pontoon, the winch fight's board (Scene 2.5).
@@ -96,40 +96,41 @@ export const SALTSTEP_MARKET: MapDef = {
   projection: 'topdown',
   name: 'Saltstep',
   kind: 'explore',
-  width: 24,
-  height: 16,
+  width: 32,
+  height: 18,
   ambience: 'village',
   legend: RG02_LEGEND,
   /*
-   * A fish quay curving along the bay, an outer Earth Kingdom harbour town (the story bible's
-   * Tidemark Reach). The town spills off the top edge (`U`: houses, trees, a well, a shrine), with
-   * Jin's freight office and the warehouse on the lane behind the quay (`B`); the sand quay runs
-   * west to east on rows 4-7, the coast road coming in on its west end (rows 5-6), and the water
-   * bites into it at an inlet (row 7). The jetties reach out at different lengths: the broth
-   * stall's, the customs pier (the longest), a crooked landing stage and the ferry landing to the
-   * east. Stalls (`G`), bollards and the tide pole (`F`) and the quay's scatter (`n`, `u`) are
-   * blocked cells their pieces stand on; the quay's middle is dressed with stalls, carts and crates staggered between
-   * rows 5 and 6 so one row of the lane is always open (each island has a gap of both rows beside it), column 3 stays
-   * open, and the rim walkable
-   * only at the coast road's mouth.
+   * GREY BLOCKOUT (stage 3 of `docs/level-design.md`; the brief is `docs/places/saltstep_market.md`). The market is
+   * out on the water. The town's backs run off the top edge (`U`), with three buildings of different sizes (`B`): an
+   * L-shaped house to the west, Jin's freight office in the middle (x 15-19) and a small house to the east. A dirt
+   * shore lane (rows 4-5) runs under them. The sand quay (rows 5-6, two rows deep) takes the coast road in at its west end (rows
+   * 5-6); the one blocked cell on it (`n`, 5,6) is the bowl stall's body, where the cart stops. The pole walk (x 7-8,
+   * rows 7-10) runs out to the west platform; the platforms ring a basin (x 13-20, rows 11-13) and the south walk
+   * (row 14) closes the loop, its cells at x 15-16 being the plank bridge the boats pass under. The east platform
+   * joins the ferry jetty (x 25-28) back to the shore. `k` cells are rack and stall bodies on the platforms, and the
+   * side jetty (x 16-19, row 15) looks out toward the freight pontoon. Every blocked cell comes from the brief's plan;
+   * none is there for scatter. The rim is walkable only at the coast road's mouth.
    */
   rows: [
-    'UUUUUUUUUUUUUUUUUUUUUUUU',
-    'U,,,uBBBBu,UUuBBBBBu,UUU',
-    'U,u,,BBBBu,,u,BBBBB,,u,U',
-    'U,,,,,,,,,,,,,,,,,,,,,,U',
-    'U:::::nnn:nnnnn:::nnnnUU',
-    '==::::::n:nn:::nn:n:::wU',
-    '==::::n:::::::::::::::wU',
-    'U:n:n:nWWn::nnn:n:nnn:wU',
-    'WWWwwwwWWWwwGwWwWwwGGwwW',
-    'WWWwwGGWWWwwwwWwwWwwwwWW',
-    'WWWWwFWWWWWwwWWWwWFwwWWW',
-    'WWWWWWWWWWWwwWWWwWWWWWWW',
-    'WWWWWWWWWWWwwWWWWWWWWWWW',
-    'WWWWWWWWWWWwFWWWWWWWWWWW',
-    'WWWWWWWWWWWWWWWWWWWWWWWW',
-    'WWWWWWWWWWWWWWWWWWWWWWWW',
+    'UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU',
+    'UU,,BBBB,,,UUU,BBBBB,,,BBB,,UUUU',
+    'U,,,BBBB,,,,U,,BBBBB,,,BBB,,,UUU',
+    'U,,,,BB,,,,,,,,BBBBB,,,,,,,,,,UU',
+    'U,..........,,,.......,,,,,,,,UU',
+    '==::::::::::::......::::::,,,,UU',
+    '==:::n:::::::::::::::::::::,,,UU',
+    'UW:::::wwWWWW::::::WWWW:::ww:,UU',
+    'WWWW:::wwWWWWWWWWWWWWWWWWWwwWWWW',
+    'WWWWWWWwwWWWWWWWWWWWWWWWWWwwwWWW',
+    'WWWWWWWwwWWWWWWWWWWWWWWWWwwwwWWW',
+    'WWWWWWwwwwwwkWWWWWWWWwwwwwwwwWWW',
+    'WWWWWwwwwwwwwWWWWWWWWwwkwwwWWWWW',
+    'WWWWWwwkwwwwwwWWWWWWwwwwwWWWWWWW',
+    'WWWWWWwwwwwwwwwwwwwwwwwwWWWWWWWW',
+    'WWWWWWWWwwkwwWWWwwwwWWWWWWWWWWWW',
+    'WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW',
+    'WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW',
   ],
   // West of the coast-road crossing (column 3), so a fresh arrival still walks through it.
   partySpawns: [
@@ -141,6 +142,14 @@ export const SALTSTEP_MARKET: MapDef = {
     { x: 2, y: 4 },
   ],
   objective: 'Stop at the bowl stall on the quay.',
+  // The first framing sits lower than the party, so the pole walk's root and the water beyond it are in the entry
+  // view (the brief's entry view; blockout v1 missed it). 4.5 rows keeps the normal explore zoom on an iPad.
+  arrivalShot: {
+    at: { x: 1, y: 5 },
+    unlessVisited: 'mq02_saltstep_arrival',
+    rows: 4.5,
+    centreY: 6.6,
+  },
   props: [],
   exits: [
     {
@@ -170,7 +179,7 @@ export const SALTSTEP_MARKET: MapDef = {
       },
       once: true,
       // The whole walkable column, so no route east from the coast road slips past it.
-      area: [1, 2, 3, 4, 5, 6, 7, 8, 9].map((y) => ({ x: 3, y })),
+      area: [1, 2, 3, 4, 5, 6, 7].map((y) => ({ x: 3, y })),
     },
     {
       // The same first sight, for a table that sorted Bo-shan's load (SQ-01): only the cart's picture differs.
@@ -180,7 +189,8 @@ export const SALTSTEP_MARKET: MapDef = {
       sprite: 'world.parcel_cart_tidy',
       when: { kind: 'all', of: [{ kind: 'not', of: ARRIVED }, SQ01_RESOLVED] },
       once: true,
-      area: [1, 2, 3, 4, 5, 6, 7, 8, 9].map((y) => ({ x: 3, y })),
+      // The same column as the plain arrival: rows 8-9 at x 3 are the harbour in the blockout's rows.
+      area: [1, 2, 3, 4, 5, 6, 7].map((y) => ({ x: 3, y })),
     },
   ],
   npcs: [
@@ -188,14 +198,14 @@ export const SALTSTEP_MARKET: MapDef = {
       // Scene 2.2: she stands where the cart stops.
       id: 'mq02_bowl_seller',
       name: 'Bowl-seller',
-      pos: { x: 5, y: 4 },
+      pos: { x: 6, y: 6 },
       sprite: SPRITE.bowlSeller,
       node: 'mq02_bowl_seller',
     },
     {
       id: 'mq02_tavi',
       name: 'Tavi Ren',
-      pos: { x: 20, y: 9 },
+      pos: { x: 27, y: 9 },
       sprite: SPRITE.tavi,
       node: 'mq02_tavi',
       // Scene 2.9: once the complaint has started, the ferry goes.
@@ -204,7 +214,7 @@ export const SALTSTEP_MARKET: MapDef = {
     {
       id: 'mq02_freight_clerk',
       name: 'Freight clerk',
-      pos: { x: 16, y: 3 },
+      pos: { x: 17, y: 4 },
       sprite: SPRITE.freightClerk,
       node: 'mq02_freight_office',
       routes: [
@@ -216,7 +226,7 @@ export const SALTSTEP_MARKET: MapDef = {
     {
       id: 'mq02_miri_crates',
       name: 'Lantern crates',
-      pos: { x: 21, y: 7 },
+      pos: { x: 25, y: 10 },
       sprite: SPRITE.crates,
       node: 'mq02_miri_crates',
       // Kaya's opening (the slice's first exchange only): the crates are her sister's shop's.
@@ -226,7 +236,7 @@ export const SALTSTEP_MARKET: MapDef = {
       // needs it). Afterwards the clerk is busy with the packet, and the stall is not shown.
       id: 'mq02_customs_clerk',
       name: 'Customs clerk',
-      pos: { x: 12, y: 9 },
+      pos: { x: 12, y: 12 },
       sprite: SPRITE.customsClerk,
       node: 'mq02_stall_drifts',
       when: {
@@ -235,10 +245,11 @@ export const SALTSTEP_MARKET: MapDef = {
       },
     },
     {
-      // SF-2.2, optional: Tavi's apprentices by the ferry landing, until the bout has started.
+      // SF-2.2, optional: Tavi's apprentices by the ferry landing, until the bout has started. On the east platform at
+      // the jetty's foot (the blockout's rows put 18,9 in the basin's water).
       id: 'sf22_apprentices',
       name: 'Ferry apprentices',
-      pos: { x: 18, y: 9 },
+      pos: { x: 24, y: 11 },
       sprite: SPRITE.apprentices,
       node: 'sf22_challenge',
       when: { kind: 'not', of: { kind: 'visited', nodeId: 'sf22_rules' } },

@@ -1,14 +1,14 @@
 # Map painting: Saltstep (`saltstep_market`)
 
-**Deliver** one PNG of 1920×1280 pixels or a whole multiple of it (3840×2560 is the comfortable size to generate at), landscape 3:2, saved as `art/raw/maps/saltstep_market.png`. `art:map` downsizes it with a box filter and never upscales.
+**Deliver** one PNG of 1792×1008 pixels or a whole multiple of it (3584×2016 is the comfortable size to generate at), landscape 16:9, saved as `art/raw/maps/saltstep_market.png`. `art:map` downsizes it with a box filter and never upscales.
 
-**Ships as** `public/art/maps/saltstep_market.webp`, 80 px a tile, under 1 MB.
+**Ships as** `public/art/maps/saltstep_market.webp`, 56 px a tile, under 1 MB.
 
-**Map** `backdrop: { url: 'art/maps/saltstep_market.webp', pixelsPerTile: 80 },` on the map's definition in `src/content/maps/`.
+**Map** `backdrop: { url: 'art/maps/saltstep_market.webp', pixelsPerTile: 56 },` on the map's definition in `src/content/maps/`.
 
 **Layout** `saltstep_market-layout.png` beside this file: the tile grid as flat colour blocks at 32 px a tile, with the grid drawn. Hand it to the generator as the composition reference (image-to-image or a structure control) at a strength that keeps every edge where it is; upscale it to the delivery size first so the generator does not invent a border.
 
-**Palette** hue anchors from the game's own ground (`src/render/palettes.ts`): grass `#6f9e4c`, wood `#6b4f33`, sand `#c7a87d`, road `#b39064`, water deep `#1f4a5e`. The painting replaces those tones outright, so lighter and more saturated is fine; stay in the same families so the effects and the parchment HUD still read over it.
+**Palette** hue anchors from the game's own ground (`src/render/palettes.ts`): grass `#6f9e4c`, wood `#6b4f33`, dirt `#b39064`, road `#b39064`, sand `#c7a87d`, water deep `#1f4a5e`. The painting replaces those tones outright, so lighter and more saturated is fine; stay in the same families so the effects and the parchment HUD still read over it.
 
 ## Where
 
@@ -16,46 +16,47 @@ Saltstep, a market town built out over a grey bay.
 
 ## The grid
 
-24 columns by 16 rows, counted from 0 at the top-left corner. The painting is the ground and what stands on it, nothing else: the game draws its own grid, movement contours, units, props and effects over it, so every edge in the painting that matters to the rules sits exactly on a tile edge.
+32 columns by 18 rows, counted from 0 at the top-left corner. The painting is the ground and what stands on it, nothing else: the game draws its own grid, movement contours, units, props and effects over it, so every edge in the painting that matters to the rules sits exactly on a tile edge.
 
 - Road (4 tiles): a 2×2 block at columns 0–1, rows 5–6 (middle left).
-- Trees (49 tiles): 47 tiles (top centre), row 0: columns 0–23; row 1: columns 0, 4, 9, 11–13, 19 and 21–23; row 2: columns 0, 9, 12, 21 and 23; row 3: columns 0 and 23; row 4: columns 0 and 22–23; rows 5–7: column 23; one tile at column 2, row 2 (top left); one tile at column 0, row 7 (middle left).
-- Timber walls (21 tiles): a 5×2 block at columns 14–18, rows 1–2 (top right); a 4×2 block at columns 5–8, rows 1–2 (top left); one tile at column 5, row 10 (middle left); one tile at column 18, row 10 (middle right); one tile at column 12, row 13 (bottom centre).
-- Barred timber gates (5 tiles): a 2×1 block at columns 19–20, row 8 (middle right); a 2×1 block at columns 5–6, row 9 (middle left); one tile at column 12, row 8 (the centre).
-- Stone walls (180 tiles): 156 tiles (bottom centre), row 6: column 6; row 7: columns 2, 6–9 and 12–14; row 8: columns 0–2, 7–9, 14 and 23; row 9: columns 0–2, 7–9, 14, 17 and 22–23; row 10: columns 0–3, 6–10, 13–15, 17 and 21–23; row 11: columns 0–10, 13–15 and 17–23; rows 12–13: columns 0–10 and 13–23; rows 14–15: columns 0–23; 7 tiles (top centre), row 4: columns 10–14; row 5: columns 10–11; 5 tiles (top right), row 4: columns 18–21; row 5: column 18; 4 tiles (top left), row 4: columns 6–8; row 5: column 8; a 3×1 block at columns 18–20, row 7 (middle right); a 2×1 block at columns 15–16, row 5 (the centre); a 1×2 block at column 16, rows 7–8 (middle right); one tile at column 4, row 7 (middle left).
-- Sand (50 tiles): 49 tiles (the centre), row 4: columns 1–5, 9 and 15–17; row 5: columns 2–7, 9, 12–14, 17 and 19–21; row 6: columns 2–5 and 7–21; row 7: columns 3, 5, 10–11, 15, 17 and 21; one tile at column 1, row 7 (middle left).
-- Plank floors (39 tiles): 14 tiles (bottom centre), row 8: columns 10–11 and 13; row 9: columns 10–13; rows 10–12: columns 11–12; row 13: column 11; 13 tiles (middle right), rows 5–7: column 22; row 8: columns 17–18 and 21–22; row 9: columns 18–21; row 10: columns 19–20; 7 tiles (middle left), row 8: columns 3–6; row 9: columns 3–4; row 10: column 4; 5 tiles (the centre), row 8: column 15; row 9: columns 15–16; rows 10–11: column 16.
-- Open ground everywhere else: grass (36 tiles).
+- Trees (59 tiles): 58 tiles (top centre), row 0: columns 0–31; row 1: columns 0–1, 11–13 and 28–31; row 2: columns 0, 12 and 29–31; rows 3–4: columns 0 and 30–31; rows 5–7: columns 30–31; one tile at column 0, row 7 (middle left).
+- Timber walls (35 tiles): a 5×3 block at columns 15–19, rows 1–3 (top centre); 10 tiles (top left), rows 1–2: columns 4–7; row 3: columns 5–6; a 3×2 block at columns 23–25, rows 1–2 (top right); one tile at column 12, row 11 (the centre); one tile at column 23, row 12 (bottom right); one tile at column 7, row 13 (bottom left); one tile at column 10, row 15 (bottom left).
+- Stone walls (242 tiles): 161 tiles (bottom centre), row 7: column 1; row 8: columns 0–3 and 28–31; rows 9–10: columns 0–6 and 29–31; row 11: columns 0–5 and 29–31; row 12: columns 0–4 and 27–31; row 13: columns 0–4 and 25–31; row 14: columns 0–5 and 24–31; row 15: columns 0–7, 13–15 and 20–31; rows 16–17: columns 0–31; 80 tiles (the centre), row 7: columns 9–12 and 19–22; rows 8–9: columns 9–25; row 10: columns 9–24; rows 11–12: columns 13–20; row 13: columns 14–19; one tile at column 5, row 6 (middle left).
+- Sand (60 tiles): 59 tiles (the centre), row 5: columns 2–13 and 20–25; row 6: columns 2–4 and 6–26; row 7: columns 2–6, 13–18 and 23–25; row 8: columns 4–6; one tile at column 28, row 7 (middle right).
+- Plank floors (85 tiles): 85 tiles (the centre), rows 7–8: columns 7–8 and 26–27; row 9: columns 7–8 and 26–28; row 10: columns 7–8 and 25–28; row 11: columns 6–11 and 21–28; row 12: columns 5–12, 21–22 and 24–26; row 13: columns 5–6, 8–13 and 20–24; row 14: columns 6–23; row 15: columns 8–9, 11–12 and 16–19.
+- Open ground everywhere else: grass (68 tiles), bare earth (23 tiles).
 - The party enters from the left, standing at (1, 5), (1, 6), (2, 5), (2, 6), (1, 4), (2, 4); enemies come from the right. Paint nothing there that would read as an object to walk round.
 
 The rows as the rules read them:
 
 ```
-UUUUUUUUUUUUUUUUUUUUUUUU
-U,,,uBBBBu,UUuBBBBBu,UUU
-U,u,,BBBBu,,u,BBBBB,,u,U
-U,,,,,,,,,,,,,,,,,,,,,,U
-U:::::nnn:nnnnn:::nnnnUU
-==::::::n:nn:::nn:n:::wU
-==::::n:::::::::::::::wU
-U:n:n:nWWn::nnn:n:nnn:wU
-WWWwwwwWWWwwGwWwWwwGGwwW
-WWWwwGGWWWwwwwWwwWwwwwWW
-WWWWwFWWWWWwwWWWwWFwwWWW
-WWWWWWWWWWWwwWWWwWWWWWWW
-WWWWWWWWWWWwwWWWWWWWWWWW
-WWWWWWWWWWWwFWWWWWWWWWWW
-WWWWWWWWWWWWWWWWWWWWWWWW
-WWWWWWWWWWWWWWWWWWWWWWWW
+UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU
+UU,,BBBB,,,UUU,BBBBB,,,BBB,,UUUU
+U,,,BBBB,,,,U,,BBBBB,,,BBB,,,UUU
+U,,,,BB,,,,,,,,BBBBB,,,,,,,,,,UU
+U,..........,,,.......,,,,,,,,UU
+==::::::::::::......::::::,,,,UU
+==:::n:::::::::::::::::::::,,,UU
+UW:::::wwWWWW::::::WWWW:::ww:,UU
+WWWW:::wwWWWWWWWWWWWWWWWWWwwWWWW
+WWWWWWWwwWWWWWWWWWWWWWWWWWwwwWWW
+WWWWWWWwwWWWWWWWWWWWWWWWWwwwwWWW
+WWWWWWwwwwwwkWWWWWWWWwwwwwwwwWWW
+WWWWWwwwwwwwwWWWWWWWWwwkwwwWWWWW
+WWWWWwwkwwwwwwWWWWWWwwwwwWWWWWWW
+WWWWWWwwwwwwwwwwwwwwwwwwWWWWWWWW
+WWWWWWWWwwkwwWWWwwwwWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
 ```
 
-Legend: `U` trees; `,` grass; `u` trees; `B` timber walls; `:` sand; `n` stone walls; `=` road; `w` plank floors; `W` stone walls; `G` barred timber gates; `F` timber walls.
+Legend: `U` trees; `,` grass; `B` timber walls; `.` bare earth; `=` road; `:` sand; `n` stone walls; `W` stone walls; `w` plank floors; `k` timber walls.
 
 ## Prompt
 
 **Live surfaces:** the layout marks water, oil, mud and rubble that the game draws. Paint dry earth beneath water and mud, clean flat stone beneath oil, and only the fixed cover silhouette beneath rubble. Do not bake liquid, flame or smoke into the painting. Keep interactable props separate. Village houses are open cutaways: walls fill their blocking cells and plank interiors remain visible and clear.
 
-> Top-down painted ground for a tactics battlefield, seen straight from above with the faintest three-quarter tilt so anything that stands up shows a sliver of its south face; north is up; every tile the same size; no perspective convergence, no horizon, no sky. A packed-sand quay crosses the picture left to right just above the middle, with a road of flagstones coming in at the left edge. North of it a strip of grass holds two timber warehouses, the right one a freight office with a clean brass plate. South of the quay the bay is deep, still water, and plank platforms stand out in it on piles: three near the quay, one further out on a narrow walk, and a ferry landing on the right. Tall painted level poles stand along the platform edges. Trees close the top corners and edges. Flat grey coastal daylight; the water darker than the planks. Painterly ground with soft transitions inside a region and clean edges between regions; a clean, uniform dark-brown ink line (`#1b1410`) only where an edge is drawn, never black; two flat tones plus a thin rim light per material on the things that stand up (rocks, trunks, walls, crates); evenly lit, no vignette, no darkened corners, no cast shadows longer than a tile. Nothing the game draws itself: no characters, no creatures, no barrels, carts or braziers, no user interface, no text, no border, no grid lines. Landscape 3:2, 3840×2560.
+> Top-down painted ground for a tactics battlefield, seen straight from above with the faintest three-quarter tilt so anything that stands up shows a sliver of its south face; north is up; every tile the same size; no perspective convergence, no horizon, no sky. A packed-sand quay runs along the top third, with a road of flagstones coming in at the left edge and a dirt lane behind it. North of it a strip of grass holds three buildings of different sizes: an L-shaped house on the left, a freight office with a clean brass plate in the middle and a small house on the right. South of the quay the bay is deep, still water. A two-plank-wide walk runs out from the left of the quay to a ring of plank platforms on piles round an open basin, and a ferry jetty on the right joins the ring back to the shore. A short side jetty points out to sea from the bottom of the ring. Tall painted level poles stand in the basin and along the walk. Trees close the top corners and edges. Flat grey coastal daylight; the water darker than the planks. Painterly ground with soft transitions inside a region and clean edges between regions; a clean, uniform dark-brown ink line (`#1b1410`) only where an edge is drawn, never black; two flat tones plus a thin rim light per material on the things that stand up (rocks, trunks, walls, crates); evenly lit, no vignette, no darkened corners, no cast shadows longer than a tile. Nothing the game draws itself: no characters, no creatures, no barrels, carts or braziers, no user interface, no text, no border, no grid lines. Landscape 16:9, 3584×2016.
 
 ## Negative prompt
 
@@ -64,7 +65,7 @@ Legend: `U` trees; `,` grass; `u` trees; `B` timber walls; `:` sand; `n` stone w
 ## Commands
 
 ```
-npm run art:map -- --map saltstep_market --px 80
+npm run art:map -- --map saltstep_market --px 56
 npm run art:validate
 npm run check:assets
 ```

@@ -1,7 +1,12 @@
 # Place brief: `saltstep_market`
 
-**Status (2026-11-17):** stages 0 to 2 of `docs/level-design.md`, waiting for the owner's yes. No rows, layout or
-art are changed by this brief. It is the first brief written under the guide, and the pilot for the method.
+**Status (2026-11-17):** stage 3 of `docs/level-design.md`: a grey blockout, waiting for the owner to walk it. The
+rows, people and exits are moved; there is no ground art or dressing yet, so the map draws its bare board.
+
+**Owner (2026-11-17):** the open questions are delegated; plan 2, 32 by 18, rise and fall told not shown, no new
+track for now.
+
+`blockout: 07c50f3b5b6a9c284b7ce18328ae32471aaf66f988032fc5fc542c68bfc51790` (sha256 of the rows joined by newlines)
 
 **One line:** a market that floats: you walk out over the water on planks to buy your lunch, and the shops move
 with the tide.
@@ -121,7 +126,8 @@ happen across the basin instead of something you are told.
   arrival view down the pole walk, and from every platform.
 - **Entry view:** the coast road levels out; the bowl stall and the cart stop are in front; past them the pole
   walk runs out to the bright poles and the flag. One living thing: the bowl-seller.
-- **Views** (10 by 7 cells each) and their one idea:
+- **Views** (about 10 by 5 cells each on an iPad; six named ideas across about eleven screens, the rest being
+  open water kept quiet on purpose) and their one idea:
   1. _Arrival:_ the road becomes a town.
   2. _The bowl stall:_ sit down, here is the custom.
   3. _The shore lane:_ the half-shut office with the brass plate.
@@ -141,8 +147,9 @@ happen across the basin instead of something you are told.
   an uneven ring, not a grid of squares.
 - **Exits:** the coast road mouth (west) keeps all three cues. The ferry is a story exit at the landing: the ramp
   and the post make it read as a way out before the story opens it.
-- **Size:** six views, about **32 by 18** cells, up from 24 by 16. That would make it the largest top-down board,
-  so the perf bench needs a new measurement (ADR 0106) and the region's board budget needs checking.
+- **Size:** **32 by 18** cells, up from 24 by 16: about eleven screens at the real view size, six of them named
+  views. When its board is baked it will be the largest top-down board alone, so the perf bench needs new frozen
+  limits (ADR 0106) and the region's board budget needs checking.
 
 ## Look and sound
 
@@ -192,10 +199,57 @@ Pieces marked _have_ are in the art merged with #844; the rest are for the kit l
 - **Blocked cells come from this plan only:** buildings, stall bodies, racks, posts, boats. No scatter cells. The
   `n` and `u` cells on today's quay go.
 
-## Open questions for the owner
+## Blockout v1 findings (2026-11-17)
 
-1. Is "out on the water" (plan 2) right, or should the market stay on the shore?
-2. Is a bigger board (about 32 by 18) fine here?
-3. Should the platforms visibly rise and fall, or is that told and not shown? (Motion would be ambience only and
-   would freeze under reduced motion.)
-4. Does Saltstep get its own music track? That is a Suno credit decision.
+- **The entry view missed the pole walk.** It showed the bowl stall and a house; the walk started at row 8, off the
+  bottom of the screen.
+- **The quay was too deep.** Four rows of sand across the whole width still read as the main place.
+- **The real view is about 10 by 4.7 cells,** not 10 by 7: the header, objective box and dock take about a third of
+  the screen height.
+
+Blockout v2 thins the quay to two rows, roots the pole walk at row 7, moves everything below up one row, and adds
+an arrival shot that frames the first view lower. The board stays 32 by 18; the two bottom rows are open water.
+
+## Blockout v2 playtest (2026-11-21)
+
+Played on v2 after bringing it up to date with main, in Chromium at the iPad view (1180 by 820) and at PC windows
+(1368 by 912, 1920 by 1080).
+
+- **The loop walks clean.** All 240 walkable cells are reachable from the coast road and there are no dead ends but
+  one, the one-cell nook at (14, 1) between the town backs and the freight office. The loop (quay, pole walk, west
+  platform, south walk, east platform, ferry jetty, shore) is 70 steps, about 44 seconds at the explore pace.
+- **Everyone answers.** The arrival plays on the first walk in, all six NPCs open their scenes, and the west exit
+  leads to Ba Dan.
+- **Fixed:** SF-2.2's apprentices, added on main after the blockout was drawn, stood at (18, 9), which the v2 rows
+  make open water in the basin. They now stand at (24, 11), on the east platform at the ferry jetty's foot.
+- **Fixed:** the tidy-cart arrival (SQ-01's, also added on main after the blockout) reached down column 3 to rows 8
+  and 9, open water in the v2 rows; it now covers rows 1-7, the same column as the plain arrival.
+- **For the owner:** on the south walk the view holds only planks and water: neither platform's people nor the ferry
+  jetty is in sight. Set pieces will give it its own idea; a camera one step back would also show both ends.
+
+**The camera, measured** (the map area between the objective box and the dock, at the explore zoom now and one
+whole zoom step back; the art stays sharp at both):
+
+| Screen            | Now: cells, device px per art px | One step back                       |
+| ----------------- | -------------------------------- | ----------------------------------- |
+| iPad, 1180 by 820 | 11.8 by 5.6 cells, 5             | 14.8 by 7.0 cells, 4 (80 px cells)  |
+| PC, 1368 by 912   | 11.4 by 5.5 cells, 3             | 17.1 by 8.2 cells, 2 (80 px cells)  |
+| PC, 1920 by 1080  | 16.0 by 6.9 cells, 3             | 24.0 by 10.3 cells, 2 (80 px cells) |
+
+A cell one step back is still 80 CSS px, well over the 3rem tap target.
+
+**For the dressing stage:** every piece with height gets a contact line and a short hard cast, water pieces
+included (the owner, 2026-11-21: "almost everything gets a shadow"; `docs/art-lessons.md`). The market's old boats,
+rocks and gulls were grounded on main (#933) before this blockout's layout came back; when the pieces return as set
+pieces, each one is grounded the same way.
+
+## What the blockout review should ask
+
+Walk it grey, at the explore zoom, and answer one at a time:
+
+1. From the coast road, does the pole walk pull you out onto the water, or do you drift along the shore?
+2. Does each of the six views have its one idea, or is one empty and the next crowded?
+3. Is the loop (shore, pole walk, platforms, ferry landing, shore) a good length, or a trudge?
+4. Is the basin the right size to watch the customs stall drift across?
+5. Is the shore lane worth walking, or should the freight office come closer to the quay?
+6. Does the side jetty earn its place before the pontoon can be seen from it?

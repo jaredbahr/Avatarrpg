@@ -17,13 +17,13 @@ describe('region assets (ADR 0111 §4)', () => {
     for (const path of sharedMusic) expect(seen.has(path), path).toBe(false);
   });
 
-  it("gives the demo region its five baked boards and its three area tracks; the title's is shared; RG-02 its seven boards", () => {
+  it("gives the demo region its five baked boards and its three area tracks; the title's is shared; RG-02 its six baked boards", () => {
     const { regions, sharedMusic } = regionAssets();
     expect(regions.map((region) => region.id)).toEqual(['ba_dan_valley', 'saltstep_emberwatch']);
-    // RG-02, the pipeline trial: its seven boards (SF-2.2's platform the fifth, the river road the sixth, SF-2.3's
-    // bridge the seventh), and no area track yet.
+    // RG-02, the pipeline trial: its six baked boards (SF-2.2's platform, the river road and SF-2.3's bridge among
+    // them), and no area track yet. The Saltstep market is a grey blockout with no plates until its ground and
+    // dressing stages (`docs/places/saltstep_market.md`).
     expect(regions[1]?.artDirs).toEqual([
-      'art/topdown/saltstep-market/',
       'art/topdown/saltstep-pontoon/',
       'art/topdown/saltstep-platform/',
       'art/topdown/emberwatch-parade/',
