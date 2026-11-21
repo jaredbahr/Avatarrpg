@@ -339,7 +339,7 @@ const PIECES: readonly PlannedSetPiece[] = [
   {
     id: 'hanru_house',
     purpose:
-      "Hanru's house with its shutters closed, for the night watch who sleeps by day, and her drying rack at the end wall.",
+      "Hanru's house with its shutters closed, for the night watch who sleeps by day, and their drying rack at the end wall.",
     anchor: 'hanru-house',
     members: [
       building('hanru-house', "Hanru's house", 26, 16, 2, 2, 1.35),

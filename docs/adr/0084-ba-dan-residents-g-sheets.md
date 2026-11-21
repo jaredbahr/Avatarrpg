@@ -23,7 +23,7 @@ for a playable Ba Dan demo with walk and idle animation on 27 October 2026 (Rout
    solved, not hand set, against the bounds `art:validate` holds every eight-way sheet to (the enemy packer's rules,
    `enemy-g.ts`). The manifest's `residentGSheet` registers them under the residents' existing keys: `npc.household`,
    `npc.guard` (the relief watch), `npc.elder` (Mira), `npc.shopkeeper` (Gao), `npc.kid` (Pella), `npc.dorin`. They
-   declare eight-way locomotion and share the enemy G walk's eight-cel stride timing. Hanru keeps his painter figure (his
+   declare eight-way locomotion and share the enemy G walk's eight-cel stride timing. Hanru keeps their painter figure (their
    look is an owner decision); the returnees keep sharing the household and watch keys, now on these sheets, as do Dema
    (Mira's) and Sen (Gao's).
    The grid is one number, `RESIDENT_SHEET_PX_PER_WORLD_PX` in `src/content/assets/residentGrid.ts`, which the packer
