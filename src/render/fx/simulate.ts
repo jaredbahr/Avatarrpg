@@ -286,7 +286,10 @@ export function glintExtent(def: StrokeEmitterDef, drift: Vec2): GlintExtent {
   };
 }
 
-/** The strokes of one emitter at `elapsed` ms, none once it is over. */
+/**
+ * The strokes of one emitter at `elapsed` ms, none once it is over. An emitter's `drop` starts it that many tiles
+ * lower (a status lick rises from the feet, not the chest) and its `opacity` caps every stroke's alpha.
+ */
 export function sampleStrokes(
   def: StrokeEmitterDef,
   elapsed: number,
@@ -294,6 +297,27 @@ export function sampleStrokes(
   from: Vec2,
   to: Vec2,
   arc = 0,
+): Stroke[] {
+  const drop = def.drop ?? 0;
+  const strokes = drawnStrokes(
+    def,
+    elapsed,
+    seed,
+    drop ? { x: from.x, y: from.y + drop } : from,
+    drop ? { x: to.x, y: to.y + drop } : to,
+    arc,
+  );
+  const opacity = def.opacity ?? 1;
+  return opacity === 1 ? strokes : strokes.map((s) => ({ ...s, alpha: s.alpha * opacity }));
+}
+
+function drawnStrokes(
+  def: StrokeEmitterDef,
+  elapsed: number,
+  seed: number,
+  from: Vec2,
+  to: Vec2,
+  arc: number,
 ): Stroke[] {
   if (elapsed < 0 || elapsed > def.duration) return [];
   const t = elapsed / def.duration;

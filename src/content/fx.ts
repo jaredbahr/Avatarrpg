@@ -173,6 +173,10 @@ export const strokeEmitterSchema = z.object({
   ink: z.boolean(),
   blend: z.enum(['normal', 'add']),
   layer: z.enum(['under', 'over']),
+  /** Peak alpha, for a stroke that should only ever lie light over a figure. Default 1. */
+  opacity: z.number().min(0).max(1).optional(),
+  /** Tiles below its anchor the stroke starts: a lick at a figure's feet rather than its centre. Default 0. */
+  drop: z.number().min(-1).max(1).optional(),
 });
 
 export const emitterSchema = z.discriminatedUnion('kind', [
@@ -1378,7 +1382,28 @@ const DRAWN_RECIPES: Readonly<Record<string, FxRecipeInput>> = {
   },
   'fx.enemy.order': { palette: 'neutral', impact: [flashRing('accent', 0.35)], flash: 0 },
 
-  'fx.status.burning': { palette: 'fire', impact: [embers(8), fireLicks(2, 300)], flash: 0 },
+  // Burning shows on the figure without hiding it (owner, 2026-11-21: "lighten it"): two thin licks rise from the
+  // feet over the lower half of the body at partial strength, and the small embers carry it above the head.
+  'fx.status.burning': {
+    palette: 'fire',
+    impact: [
+      embers(8),
+      strokes({
+        shape: 'ribbon',
+        duration: 300,
+        count: 2,
+        width: 0.08,
+        reach: 0.55,
+        color: 'light',
+        ink: true,
+        blend: 'normal',
+        layer: 'over',
+        opacity: 0.7,
+        drop: 0.3,
+      }),
+    ],
+    flash: 0,
+  },
   'fx.status.wet': { palette: 'water', impact: [droplets(8)], flash: 0 },
   'fx.status.chilled': { palette: 'water', impact: [iceFacets(6)], flash: 0 },
   'fx.status.frozen': {

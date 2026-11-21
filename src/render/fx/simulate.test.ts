@@ -242,3 +242,30 @@ describe('clearFigure', () => {
     expect(alpha(out, 2)).toBe(1);
   });
 });
+
+describe('a stroke emitter’s drop and opacity', () => {
+  const lick: StrokeEmitterDef = {
+    kind: 'strokes',
+    shape: 'ribbon',
+    duration: 300,
+    count: 2,
+    width: 0.08,
+    reach: 0.55,
+    color: 'light',
+    ink: true,
+    blend: 'normal',
+    layer: 'over',
+  };
+  const at = { x: 3, y: 3 };
+
+  it('starts the strokes `drop` tiles lower and caps their alpha at `opacity`', () => {
+    const plain = sampleStrokes(lick, 100, 7, at, at);
+    const lowered = sampleStrokes({ ...lick, drop: 0.3, opacity: 0.7 }, 100, 7, at, at);
+    expect(lowered).toHaveLength(plain.length);
+    lowered.forEach((stroke, i) => {
+      const before = plain[i];
+      expect(stroke.points[1]).toBeCloseTo((before?.points[1] ?? 0) + 0.3);
+      expect(stroke.alpha).toBeCloseTo((before?.alpha ?? 0) * 0.7);
+    });
+  });
+});
