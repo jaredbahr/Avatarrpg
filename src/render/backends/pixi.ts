@@ -78,6 +78,7 @@ import { bendFxSource } from '../fx/bendFxDraw';
 import { syncBendFx } from '../fx/bendFxPixi';
 import {
   activeGroundCue,
+  actorBodyBounds,
   actorReticleX,
   actorSilhouetteGeometry,
   combatActorSilhouetteGeometry,
@@ -86,10 +87,11 @@ import {
   floaterOwner,
   floaterStartY,
   floaterVisibleY,
+  healthBarBelowFeet,
   healthBarCap,
   HealthBarStagger,
 } from '../geometry/actorSilhouette';
-import type { HealthBarPlacement } from '../geometry/actorSilhouette';
+import type { ActorBodyBounds, HealthBarPlacement } from '../geometry/actorSilhouette';
 import { DECOR_CHUNK, decorChunks } from '../geometry/board';
 import { contourLoops, isHole, traceRegions } from '../geometry/contour';
 import type { Curve } from '../geometry/curve';
@@ -2376,6 +2378,8 @@ export class PixiBackend implements RenderBackend {
       readonly unit: RenderUnit;
       readonly actorX: number;
     })[] = [];
+    // Every standing figure's body, which no other unit's bar may lie on (`HealthBarStagger.place`).
+    const bodies = new Map<string, ActorBodyBounds>();
 
     for (const npc of view.npcs) {
       // Keyed by who, not where: a walking resident keeps one sprite (ADR 0047 §7).
@@ -2730,8 +2734,16 @@ export class PixiBackend implements RenderBackend {
         continue;
       }
 
+      const figure = { x, y, size: this.tile, width };
+      bodies.set(unit.id, actorBodyBounds(figure, heightTiles, frame?.headroom ?? null, scale));
       if (unit.showHealth !== false)
-        pendingHealthBars.push({ id: unit.id, unit, bar: silhouette.bar, actorX: x });
+        pendingHealthBars.push({
+          id: unit.id,
+          unit,
+          bar: silhouette.bar,
+          below: healthBarBelowFeet(silhouette.bar, figure, heightTiles),
+          actorX: x,
+        });
       badgeIndex = this.drawStatusBadges(g, unit, x, width, badgeIndex, silhouette.badgeY);
     }
 
@@ -2742,11 +2754,16 @@ export class PixiBackend implements RenderBackend {
       const text = this.badgeText[i];
       if (text) text.visible = false;
     }
-    const placements = this.healthBarStagger.place(pendingHealthBars);
+    const placements = this.healthBarStagger.place(pendingHealthBars, {
+      bodies,
+      // The visible bottom edge in world px: the board is drawn at (world * scale - offset).
+      bottom: (camera.viewport.height + camera.offsetY) / camera.scale,
+    });
     for (const candidate of pendingHealthBars) {
       const bar = placements.get(candidate.id);
       if (!bar) continue;
-      this.barTops.set(candidate.id, bar.y);
+      // A number still rises from over the head when its bar has moved under the feet.
+      this.barTops.set(candidate.id, Math.min(bar.y, candidate.bar.y));
       this.drawHealthBar(
         g,
         candidate.unit,

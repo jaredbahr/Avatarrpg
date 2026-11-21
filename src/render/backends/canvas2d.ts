@@ -22,16 +22,18 @@ import { boardRelief, decorSignature, surfaceEdges } from '../geometry/board';
 import { contourLoops, traceRegions } from '../geometry/contour';
 import {
   activeGroundCue,
+  actorBodyBounds,
   actorReticleX,
   actorSilhouetteGeometry,
   combatActorSilhouetteScreenGeometry,
   fallbackBarTop,
   floaterOwner,
   floaterStartY,
+  healthBarBelowFeet,
   healthBarCap,
   HealthBarStagger,
 } from '../geometry/actorSilhouette';
-import type { HealthBarPlacement } from '../geometry/actorSilhouette';
+import type { ActorBodyBounds, HealthBarPlacement } from '../geometry/actorSilhouette';
 import { resolveActorEmitters } from '../geometry/actorAttachments';
 import type { Curve } from '../geometry/curve';
 import { smoothPath } from '../geometry/curve';
@@ -178,6 +180,8 @@ export class Canvas2DBackend implements RenderBackend {
     readonly actorX: number;
     readonly hatch: boolean;
   })[] = [];
+  /** Every standing figure's body this pass, which no other unit's bar may lie on (`HealthBarStagger.place`). */
+  private pendingBodies = new Map<string, ActorBodyBounds>();
   /**
    * Contours per overlay layer and the curve per path, keyed by identity: the
    * scene memoises its overlays, so the same objects come back frame after
@@ -240,6 +244,7 @@ export class Canvas2DBackend implements RenderBackend {
   draw(view: MapView, camera: Camera): void {
     const { ctx } = this;
     this.pendingHealthBars = [];
+    this.pendingBodies.clear();
     this.barTops.clear();
     const dpr = camera.viewport.dpr;
     this.pixelMarkDrawables.beginFrame();
@@ -1901,11 +1906,17 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.restore();
 
       if (!unit.fallen) {
+        const figure = { x: box.x, y: box.y, size: box.size, width };
+        this.pendingBodies.set(
+          unit.id,
+          actorBodyBounds(figure, heightTiles, frame?.headroom ?? null, scale),
+        );
         if (unit.showHealth !== false) {
           this.pendingHealthBars.push({
             id: unit.id,
             unit,
             bar: silhouette.bar,
+            below: healthBarBelowFeet(silhouette.bar, figure, heightTiles),
             actorX: box.x,
             hatch: view.hatch,
           });
@@ -1991,11 +2002,15 @@ export class Canvas2DBackend implements RenderBackend {
   }
 
   private flushHealthBars(camera: Camera, nudge: Vec2): void {
-    const placements = this.healthBarStagger.place(this.pendingHealthBars);
+    const placements = this.healthBarStagger.place(this.pendingHealthBars, {
+      bodies: this.pendingBodies,
+      bottom: camera.viewport.height,
+    });
     for (const candidate of this.pendingHealthBars) {
       const bar = placements.get(candidate.id);
       if (!bar) continue;
-      this.barTops.set(candidate.id, bar.y);
+      // A number still rises from over the head when its bar has moved under the feet.
+      this.barTops.set(candidate.id, Math.min(bar.y, candidate.bar.y));
       this.drawHealthBar(candidate.unit, bar, candidate.actorX, candidate.hatch, camera, nudge);
     }
     this.pendingHealthBars = [];
