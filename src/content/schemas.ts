@@ -500,6 +500,7 @@ const sceneImageBaseSchema = z.object({
   y: z.number(),
   width: z.number().positive(),
   height: z.number().positive(),
+  gate: id.optional(),
   feather: z
     .object({
       left: z.number().int().positive().optional(),
@@ -636,6 +637,8 @@ export const mapSchema = z
     // A painting under the grid (ADR 0009). Between 32 px a tile (the probe) and
     // 256, so a 24-wide map stays inside the 2048 px texture every iPad takes.
     projection: z.literal('topdown').optional(),
+    // The story's say over the scene's dressing (ADR 0123): a gate's name to the condition it draws under.
+    sceneGates: z.record(id, conditionSchema).optional(),
     scene: z
       .object({
         paintedWater: z.boolean().optional(),
@@ -1781,6 +1784,7 @@ const topDownObjectSchema = z
     fadeWhenOccluding: z.boolean().optional(),
     revealOccluded: z.boolean().optional(),
     flip: z.boolean().optional(),
+    gate: z.string().min(1).optional(),
   })
   .strict();
 
@@ -1848,6 +1852,18 @@ export function validateTopDownLayout(map: MapDef, layout: TopDownLayout): strin
     }
     if (ids.has(object.id)) problems.push(`${where} repeats object "${object.id}"`);
     ids.add(object.id);
+    // A gated piece comes and goes with the story (ADR 0123), and the rows are fixed: so it never blocks, and never
+    // carries a way over water that its absence would take away.
+    if (object.gate !== undefined) {
+      if (!map.sceneGates?.[object.gate])
+        problems.push(
+          `${where} object "${object.id}" names gate "${object.gate}", which the map's sceneGates do not define`,
+        );
+      if (object.solid)
+        problems.push(
+          `${where} gated object "${object.id}" is solid: the rows block a cell for good, so a piece that comes and goes cannot be what blocks it`,
+        );
+    }
     for (const cell of object.footprint) {
       if (!onMap(cell)) {
         if (!object.exterior)
@@ -1863,7 +1879,8 @@ export function validateTopDownLayout(map: MapDef, layout: TopDownLayout): strin
             `${where} solid object "${object.id}" stands on open cell (${cell.x},${cell.y})`,
           );
       }
-      if (object.deck) deckCells.add(key(cell.x, cell.y));
+      // only a piece that is always there carries the way
+      if (object.deck && object.gate === undefined) deckCells.add(key(cell.x, cell.y));
     }
   }
   // The foot: the object's base line (the row above `base`) across its footprint's columns, a few

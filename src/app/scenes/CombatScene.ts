@@ -151,6 +151,7 @@ import {
   type CombatTipFeature,
 } from './combatGuidance';
 import { defendHintFlag, defendHintFor, type DefendHint } from './defendHint';
+import { sceneForStory } from '../world/sceneGates';
 
 /** An ability that stands a downed friend up (ADR 0118): aimed at the fallen, not the living. */
 function isDownedAbility(ability: Ability): boolean {
@@ -3786,7 +3787,9 @@ export class CombatScene implements Scene {
       crispOverlays: this.app.settings.highContrast,
       atmosphere: !this.app.settings.highContrast,
       backdrop: this.app.backdropFor(battle.mapId),
-      scene: this.app.content.maps.get(battle.mapId)?.scene,
+      scene: ((m) => (m ? sceneForStory(m, this.app.state) : undefined))(
+        this.app.content.maps.get(battle.mapId),
+      ),
       time: now,
       reducedMotion: motionReduced(),
       flushedAt: this.flushedAt,

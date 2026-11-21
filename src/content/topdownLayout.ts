@@ -42,6 +42,11 @@ export interface TopDownObject {
   readonly revealOccluded?: boolean;
   /** Drawn mirrored left to right (the prototype flips some of its dressing). */
   readonly flip?: boolean;
+  /**
+   * Shown only while the map's `sceneGates[gate]` holds (ADR 0123): the camp at the bridge until the fight. Never
+   * baked into the plate; its ground (its flat art, cast and contact) ships as an overlay. Never solid.
+   */
+  readonly gate?: string;
 }
 
 /** A reserved cell for art another change supplies (the route sign, the school notice). */
