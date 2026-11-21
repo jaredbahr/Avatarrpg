@@ -116,6 +116,14 @@ This proof changes the implementation sequence, not the full delivery finish lin
 | 5. Connected regional world       | Authored routes, discoveries, recurring residents and consequences through the first region               | Revisit places after choices; validate world connections, progression and saves                                  |
 | 6. Wider destinations             | Distinct city, marsh, industrial and mountain spaces, then meaningful journeys beyond the Reach           | A validated playable slice per destination, with era, lore, art and performance review                           |
 
+**Reviewing combat juice** (milestone 4): `npm run review:juice` stages every hero ability and every fielded
+enemy's attack on a clear patch of a real board, plays it through the real rules and animator, and writes one
+frame strip per ability and heading under `.review/juice/<commit>/` (gitignored), with an `index.html` to page
+through. Narrow it with `FNT_JUICE_UNIT`, `FNT_JUICE_ABILITY` and `FNT_JUICE_HEADING` (`all` for the eight);
+`FNT_JUICE_MOTION=1` adds a GIF of each exchange at 30 fps, and `FNT_JUICE_RENDERER=webgl` or `both` switches
+backends. The options are listed in `e2e/juice.review.ts`. It replaces the feel-pass and combat-clips reviews,
+whose staging went stale when the Forest Road changed. It is a review, not a gate: the owner judges the strips.
+
 Finish and compare one playable slice before multiplying locations. Preserve the
 ongoing directional-animation and connected-world work; do not replace it with
 a separate prototype. The source illustrations live outside `public/` so they
