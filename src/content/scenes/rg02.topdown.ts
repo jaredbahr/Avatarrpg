@@ -746,6 +746,8 @@ function onBox(
     readonly deck?: boolean;
     readonly flip?: boolean;
     readonly base?: number;
+    /** Shown only while the map's gate holds (ADR 0123). */
+    readonly gate?: string;
   } = {},
 ): TopDownObject {
   // whole world pixels: a fractional box (9.2 + 0.6 cells) would put the piece between pixels, and the plate's
@@ -766,6 +768,7 @@ function onBox(
     solid: extra.solid ?? false,
     ...(extra.deck ? { deck: true } : {}),
     ...(extra.flip ? { flip: true } : {}),
+    ...(extra.gate !== undefined ? { gate: extra.gate } : {}),
     depth: { x: x / C, y: base / C },
   };
 }
@@ -776,8 +779,8 @@ function onBox(
  * and boulders, each on the stage-5 box it was planned as. The blocked cells come from the rows: a tree on every `T`
  * (the big shade tree on the shade stop's), a boulder on every `U` and crates or the trough on every `F`. The cliff's
  * `X` cells are the RG-02 baker's raised rock (`raised` on the terrain; the owner's choice, 2026-11-20), blocked terrain
- * with no piece on them but the rockfall at its foot. Later states are not laid here: `toll_bar_up` (the pole raised after SF-2.3) and `cabbage_sack` (the one sack
- * left after SF-2.3's Carry on) are in the kit for the story work to place.
+ * with no piece on them but the rockfall at its foot. SF-2.3's camp and pole come and go with the story through the
+ * map's `sceneGates` (ADR 0123): never baked into the plate, each gate's ground ships as an overlay.
  */
 export const RIVER_ROAD_OBJECTS: readonly TopDownObject[] = [
   ...RIVER_ROAD.rows.flatMap((row, y) =>
@@ -848,22 +851,53 @@ export const RIVER_ROAD_OBJECTS: readonly TopDownObject[] = [
   // the lowered barrier (`toll_bar_diag`): its post and crate at the deck's south-west corner, inside the rails, and
   // the striped arm angling across the planks to its forked stick at the north-east; a deck piece, since the plate
   // under the bridge is water
+  // SF-2.3's states come and go with the story (ADR 0123; the gates are `RIVER_ROAD.sceneGates`): the pole is down
+  // until the cart goes through, the camp stands until the toll is won, and Carry on leaves one sack by the fire. The
+  // camp's crates (`F`) stay whatever happens: the rows block their cells for good.
   onBox(
     'bridge-toll-pole',
     'toll_bar_diag',
     'prop',
     { x: 19.2, y: 5.5, w: 1.1, h: 1.3 },
-    { deck: true },
+    { deck: true, gate: 'pole_down' },
+  ),
+  // the pole raised (`toll_bar_up`), its post and crate where the lowered one's stand
+  onBox(
+    'bridge-toll-pole-up',
+    'toll_bar_up',
+    'prop',
+    { x: 19.1, y: 6.5, w: 0.6, h: 0.3 },
+    { deck: true, gate: 'pole_up' },
   ),
   // the guards' camp
-  onBox('camp-cold-fire', 'cold_fire', 'flat', { x: 24, y: 3, w: 1, h: 1 }),
-  onBox('camp-bedroll-1', 'bedroll', 'flat', { x: 22, y: 2, w: 1, h: 1 }),
-  onBox('camp-bedroll-2', 'bedroll', 'flat', { x: 26, y: 3, w: 1, h: 1 }, { flip: true }),
-  onBox('camp-bedroll-3', 'bedroll', 'flat', { x: 24, y: 4, w: 1, h: 1 }),
-  onBox('camp-rubbish', 'rubbish_heap', 'flat', { x: 26, y: 2, w: 1, h: 1 }),
+  onBox('camp-cold-fire', 'cold_fire', 'flat', { x: 24, y: 3, w: 1, h: 1 }, { gate: 'camp' }),
+  onBox('camp-bedroll-1', 'bedroll', 'flat', { x: 22, y: 2, w: 1, h: 1 }, { gate: 'camp' }),
+  onBox(
+    'camp-bedroll-2',
+    'bedroll',
+    'flat',
+    { x: 26, y: 3, w: 1, h: 1 },
+    { flip: true, gate: 'camp' },
+  ),
+  onBox('camp-bedroll-3', 'bedroll', 'flat', { x: 24, y: 4, w: 1, h: 1 }, { gate: 'camp' }),
+  onBox('camp-rubbish', 'rubbish_heap', 'flat', { x: 26, y: 2, w: 1, h: 1 }, { gate: 'camp' }),
   // the pot sits on the ground at the fire's east side, clear of the toll sign
-  onBox('camp-pot', 'cook_pot', 'prop', { x: 25.05, y: 3.35, w: 0.4, h: 0.4 }),
-  onBox('camp-toll-sign', 'toll_sign', 'prop', { x: 21.2, y: 3.5, w: 0.6, h: 0.3 }),
+  onBox('camp-pot', 'cook_pot', 'prop', { x: 25.05, y: 3.35, w: 0.4, h: 0.4 }, { gate: 'camp' }),
+  onBox(
+    'camp-toll-sign',
+    'toll_sign',
+    'prop',
+    { x: 21.2, y: 3.5, w: 0.6, h: 0.3 },
+    { gate: 'camp' },
+  ),
+  // the one sack the guards took on Carry on, set down by the cold fire
+  onBox(
+    'camp-cabbage-sack',
+    'cabbage_sack',
+    'prop',
+    { x: 24.1, y: 2.45, w: 0.6, h: 0.4 },
+    { gate: 'sack' },
+  ),
   // the ford, and the far bank
   onBox('ford-stones', 'stepping_stones', 'flat', { x: 20, y: 8, w: 2, h: 1 }),
   onBox('ford-log', 'fallen_log', 'flat', { x: 20, y: 9.2, w: 2, h: 0.6 }),
@@ -912,13 +946,27 @@ export const RIVER_ROAD_BRIDGE_WORN: readonly (readonly [number, number])[] =
     return cx >= 0 && cy >= 0 && cx < CROP.width && cy < CROP.height ? [[cx, cy]] : [];
   });
 
+/** The river road's gates (`RIVER_ROAD.sceneGates`) that hold while the toll is being fought. */
+const BEFORE_THE_TOLL: ReadonlySet<string> = new Set(['camp', 'pole_down']);
+
+/** A piece without its gate. */
+function ungated(o: TopDownObject): TopDownObject {
+  if (o.gate === undefined) return o;
+  const copy: { -readonly [K in keyof TopDownObject]?: TopDownObject[K] } = { ...o };
+  delete copy.gate;
+  return copy as TopDownObject;
+}
+
 /**
  * The river road's own pieces, moved onto the crop: everything that stands on a cell of it, and, past its west and east
  * edges, what stands within the plate's two-cell margin, so the trees and the shade stop carry on past the board's edge
  * as they do on the road. A piece that is not wholly on the board is `exterior`; one wholly off it stops no feet.
  */
 export const RIVER_ROAD_BRIDGE_OBJECTS: readonly TopDownObject[] = RIVER_ROAD_OBJECTS.flatMap(
-  (o): TopDownObject[] => {
+  (gated): TopDownObject[] => {
+    // the fight is the toll as it stands: the camp and the lowered pole, always (ADR 0123); never what comes after
+    if (gated.gate !== undefined && !BEFORE_THE_TOLL.has(gated.gate)) return [];
+    const o = ungated(gated);
     const cells = o.footprint.map((c) => ({ x: c.x - CROP.x, y: c.y - CROP.y }));
     const on = (c: Vec2): boolean => c.x >= 0 && c.y >= 0 && c.x < CROP.width && c.y < CROP.height;
     const near = cells.every(
