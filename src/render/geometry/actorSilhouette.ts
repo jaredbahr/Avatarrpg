@@ -157,9 +157,77 @@ export const COMBAT_HEALTH_BAR_MIN_HEIGHT = 8;
 export interface HealthBarPlacement {
   readonly id: string;
   readonly bar: ReturnType<typeof actorHealthBar>;
+  /**
+   * The same bar moved under its own figure's feet (`healthBarBelowFeet`): where it goes when the slot over the head
+   * lies on a bunched neighbour's body and this one is clearer.
+   */
+  readonly below?: ReturnType<typeof actorHealthBar>;
+}
+
+/** What a bar must keep clear of: every standing figure, and the canvas's visible bottom edge. */
+export interface HealthBarSurroundings {
+  /** Each standing figure's body (`actorBodyBounds`), keyed by unit id; a bar never counts its own. */
+  readonly bodies: ReadonlyMap<string, ActorBodyBounds>;
+  /** The visible bottom edge, in the bars' units; a slot under the feet that runs past it is not used. */
+  readonly bottom?: number;
 }
 
 const STAGGER_MAX_STEPS = 4;
+/** The upper share of a body that is its head and shoulders, which a bar must cover least of all. */
+const HEAD_SHARE = 0.4;
+const HEAD_WEIGHT = 3;
+/** The share of a body envelope's width the figure's art really fills (the envelope is a whole tile wide). */
+const BODY_CORE = 0.6;
+/** How much clearer, in bar areas, the slot under the feet must be before a bar moves there. */
+const BELOW_MARGIN = 0.25;
+/**
+ * How much of another figure, in (weighted) bar areas, the slot over the head must cover before the bar moves at all:
+ * a wide boss bar whose tip touches a shoulder stays where the eye looks for it.
+ */
+const COVER_TO_MOVE = 0.5;
+/** Below this much (in bar areas) a bar under the feet goes back over the head. */
+const COVER_TO_STAY = 0.25;
+
+const overlap = (a0: number, a1: number, b0: number, b1: number): number =>
+  Math.max(0, Math.min(a1, b1) - Math.max(a0, b0));
+
+/** How much of the other figures' bodies a bar covers, a head counting three times its area. */
+function bodyCover(
+  bar: HealthBarPlacement['bar'],
+  own: string,
+  bodies: ReadonlyMap<string, ActorBodyBounds>,
+): number {
+  let cover = 0;
+  for (const [id, body] of bodies) {
+    if (id === own) continue;
+    const inset = ((body.right - body.left) * (1 - BODY_CORE)) / 2;
+    const across = overlap(bar.x, bar.x + bar.width, body.left + inset, body.right - inset);
+    if (across <= 0) continue;
+    const neck = body.top + (body.bottom - body.top) * HEAD_SHARE;
+    const head = overlap(bar.y, bar.y + bar.height, body.top, neck);
+    const rest = overlap(bar.y, bar.y + bar.height, neck, body.bottom);
+    cover += across * (head * HEAD_WEIGHT + rest);
+  }
+  return cover;
+}
+
+/**
+ * The bar moved under its figure's feet, by whole world pixels so it keeps the bar's pixel phase: clear of a one-tile
+ * figure's status badges (`badgeY`, just under the foot line) or, on a two-tile figure (whose badges sit over its
+ * head), of the foot line itself.
+ */
+export function healthBarBelowFeet(
+  bar: ReturnType<typeof actorHealthBar>,
+  box: ActorSpriteBox,
+  heightTiles: 1 | 2,
+): ReturnType<typeof actorHealthBar> {
+  const badgeRadius = Math.max(4, box.size * 0.09);
+  const clear =
+    heightTiles > 1 ? box.y + FOOT_LINE * box.size : box.y + box.size * 0.97 + badgeRadius;
+  const target = clear + Math.max(1.8, box.size * 0.028);
+  const steps = Math.ceil((target - bar.y) / bar.pixelSize - 1e-9);
+  return { ...bar, y: bar.y + steps * bar.pixelSize };
+}
 
 function barsCollide(
   a: HealthBarPlacement['bar'],
@@ -184,14 +252,30 @@ function barsCollide(
  * the collision boundary would otherwise flip by a step on alternate frames.
  * A bar rises on any real overlap, and with hysteresis drops back only once it
  * clears by more than one step.
+ *
+ * Given the figures around it (`around`), a bar that would lie on a bunched neighbour's body, as a bar over the head
+ * of a figure standing just in front of another does, moves under its own figure's feet when that slot is clearer by
+ * a margin and stays inside the view (owner: nothing may cover who got hit). It moves back once the slot over the head
+ * is clear by a step all round, so a neighbour's idle pose cannot flip it. Without `around`, bars place exactly as
+ * before.
  */
 export class HealthBarStagger {
   private levels = new Map<string, number>();
+  /**
+   * Each bar under its feet, and the lowest its slot over the head has sat while there, measured from its own feet: a
+   * figure's idle pose moves that slot (the Driller's by 17 px), and judging the slot at its lowest stops the bar
+   * flipping with the pose.
+   */
+  private underFeet = new Map<string, number>();
 
-  place<T extends HealthBarPlacement>(bars: readonly T[]): Map<string, T['bar']> {
+  place<T extends HealthBarPlacement>(
+    bars: readonly T[],
+    around?: HealthBarSurroundings,
+  ): Map<string, T['bar']> {
     const placed: T['bar'][] = [];
     const result = new Map<string, T['bar']>();
     const next = new Map<string, number>();
+    const nextUnder = new Map<string, number>();
     for (const candidate of bars) {
       // A fractional step would move an otherwise snapped bar off the world
       // pixel grid. Subtracting whole pixels preserves its camera-offset phase.
@@ -211,12 +295,37 @@ export class HealthBarStagger {
       // the frame it first appears.
       while (level < STAGGER_MAX_STEPS && placed.some((other) => barsCollide(at(level), other, 0)))
         level++;
-      const bar = at(level);
+      let bar = at(level);
+      const below = candidate.below;
+      if (around && below) {
+        const fits =
+          (around.bottom === undefined || below.y + below.height <= around.bottom) &&
+          !placed.some((other) => barsCollide(below, other, 0));
+        const cover = (b: T['bar']) => bodyCover(b, candidate.id, around.bodies);
+        const margin = below.width * below.height * BELOW_MARGIN;
+        const area = below.width * below.height;
+        const feet = around.bodies.get(candidate.id)?.bottom ?? 0;
+        const was = this.underFeet.get(candidate.id);
+        const depth = Math.max(was ?? -Infinity, bar.y - feet);
+        // A band, so a neighbour's idle pose cannot flip the bar: it moves once the slot over the head covers half a
+        // bar of another figure, and comes back once that falls under a quarter (judged at the slot's lowest) or the
+        // feet's slot is the worse one.
+        const covered = cover(was === undefined ? bar : { ...bar, y: feet + depth });
+        const under =
+          fits &&
+          covered >= area * (was === undefined ? COVER_TO_MOVE : COVER_TO_STAY) &&
+          cover(below) + (was === undefined ? margin : -margin) < covered;
+        if (under) {
+          bar = below;
+          nextUnder.set(candidate.id, depth);
+        }
+      }
       placed.push(bar);
       next.set(candidate.id, level);
       result.set(candidate.id, bar);
     }
     this.levels = next;
+    this.underFeet = nextUnder;
     return result;
   }
 }

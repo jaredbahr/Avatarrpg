@@ -141,8 +141,10 @@ export const SALTSTEP_EMBERWATCH_ENCOUNTERS: readonly EncounterDef[] = [
     enemies: [
       at(8, 5, 'toll_guard'),
       at(8, 6, 'toll_guard'),
-      // the camp's bare earth, clear of its bedrolls, rubbish heap, fire, pot and lamp oil
-      at(11, 2, 'toll_crossbow'),
+      // the camp's bare earth, clear of its bedrolls, rubbish heap, fire, pot and lamp oil. The crossbow stands level
+      // with the crate stack at (11, 3), on its west side: one row behind it, the stack hid its legs (owner,
+      // 2026-11-21). The second crossbow, at (12, 2), is clear of both stacks and the pot.
+      at(10, 3, 'toll_crossbow'),
       at(14, 4, 'toll_corporal'),
     ],
     allies: [],
