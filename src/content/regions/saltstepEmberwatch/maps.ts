@@ -244,10 +244,11 @@ export const SALTSTEP_MARKET: MapDef = {
       },
     },
     {
-      // SF-2.2, optional: Tavi's apprentices by the ferry landing, until the bout has started.
+      // SF-2.2, optional: Tavi's apprentices by the ferry landing, until the bout has started. On the east platform at
+      // the jetty's foot (the blockout's rows put 18,9 in the basin's water).
       id: 'sf22_apprentices',
       name: 'Ferry apprentices',
-      pos: { x: 18, y: 9 },
+      pos: { x: 24, y: 11 },
       sprite: SPRITE.apprentices,
       node: 'sf22_challenge',
       when: { kind: 'not', of: { kind: 'visited', nodeId: 'sf22_rules' } },
