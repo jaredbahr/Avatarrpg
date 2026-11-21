@@ -41,8 +41,9 @@ may be Causeway's own end of the road). See open questions.
 
 - **Why the player comes here:** the journey between Act II's coast and its city. The cart leaves the places the
   party knows. The first half of the road is still the coast's; the far end looks into the rest of the game.
-- **What it was before:** a carters' road beside a river, older than the new works. PLACEHOLDER (story): anything
-  else about its past.
+- **What it was before:** a carters' road beside a river, older than the new works. Drafted by the writing pass: the
+  second half of the stone road, with Stoneback milestones (`docs/story/rg02-places.md`; a draft until the owner says
+  yes).
 - **Feeling on arrival:** open, a long way to go. **On leaving (the lookout):** the world is bigger than the bay.
 - **Later states:**
   - before SF-2.3 -> the pole across the bridge and the guards' camp; after a win -> pole up, camp gone; after Carry
@@ -54,12 +55,12 @@ may be Causeway's own end of the road). See open questions.
 
 Roles only. Names and lines belong to the writing pass.
 
-| Who (role)                    | Lives / works where      | What they do in a day                       | Why the player would talk to them |
-| ----------------------------- | ------------------------ | ------------------------------------------- | --------------------------------- |
-| Bo-shan (or Dorin) and Parcel | The cart, on the road    | Drive; stop at the third stop for the shade | The trip's company; Parcel's stop |
-| The corporal and six guards   | A camp at the bridge     | Hold the pole, wait, go hungry              | SF-2.3                            |
-| Travellers on the road        | Passing both ways        | Carry, herd, cart goods to Causeway         | `PLACEHOLDER (story)`: any lines  |
-| Someone who works the river   | A landing below the road | Fish, ferry, or tend a weir                 | `PLACEHOLDER (story)`: who        |
+| Who (role)                    | Lives / works where      | What they do in a day                       | Why the player would talk to them          |
+| ----------------------------- | ------------------------ | ------------------------------------------- | ------------------------------------------ |
+| Bo-shan (or Dorin) and Parcel | The cart, on the road    | Drive; stop at the third stop for the shade | The trip's company; Parcel's stop          |
+| The corporal and six guards   | A camp at the bridge     | Hold the pole, wait, go hungry              | SF-2.3                                     |
+| Travellers on the road        | Passing both ways        | Carry, herd, cart goods to Causeway         | Barks: DRAFT (`docs/story/rg02-places.md`) |
+| Someone who works the river   | A landing below the road | Fish, ferry, or tend a weir                 | Nuo: DRAFT (`docs/story/rg02-places.md`)   |
 
 ## Daily life
 
@@ -160,22 +161,22 @@ end hidden until you reach it, so the three valleys are a reveal (the one thing 
 
 ## Set pieces
 
-| Name              | Anchor                 | Belongs with it                         | Ground under it                     | Whose / why here               |
-| ----------------- | ---------------------- | --------------------------------------- | ----------------------------------- | ------------------------------ |
-| The plank bridge  | Bridge over the stream | Rails, the pole across it               | Ruts on the planks, worn approaches | The road's; the toll is on it  |
-| The guards' camp  | Cold fire              | Bedrolls, a pot, crates, the toll sign? | Trampled grass, ash                 | The corporal's six             |
-| The shade stop    | A big old tree         | Trough, a bench or log, a hitching post | A worn pull-off loop, hoofprints    | Carters; Parcel's third stop   |
-| The river landing | A small jetty          | A boat, a net or a weir post            | Wet mud, a footpath down the bank   | `PLACEHOLDER (story)`: whose   |
-| The ford          | Stepping stones        | Shallow water, a fallen log             | Gravel bars                         | The way round                  |
-| The lookout       | A flat rock or a bench | A milestone, a wind-bent tree           | A worn patch where carts pull off   | Everyone stops here; Scene 5.6 |
+| Name              | Anchor                 | Belongs with it                         | Ground under it                     | Whose / why here                           |
+| ----------------- | ---------------------- | --------------------------------------- | ----------------------------------- | ------------------------------------------ |
+| The plank bridge  | Bridge over the stream | Rails, the pole across it               | Ruts on the planks, worn approaches | The road's; the toll is on it              |
+| The guards' camp  | Cold fire              | Bedrolls, a pot, crates, the toll sign? | Trampled grass, ash                 | The corporal's six                         |
+| The shade stop    | A big old tree         | Trough, a bench or log, a hitching post | A worn pull-off loop, hoofprints    | Carters; Parcel's third stop               |
+| The river landing | A small jetty          | A boat, a net or a weir post            | Wet mud, a footpath down the bank   | Nuo's: DRAFT (`docs/story/rg02-places.md`) |
+| The ford          | Stepping stones        | Shallow water, a fallen log             | Gravel bars                         | The way round                              |
+| The lookout       | A flat rock or a bench | A milestone, a wind-bent tree           | A worn patch where carts pull off   | Everyone stops here; Scene 5.6             |
 
 ## Finds
 
-| What draws the eye              | Where             | What the player gets     | What it should reveal (a need for the writing pass) |
-| ------------------------------- | ----------------- | ------------------------ | --------------------------------------------------- |
-| A ring spreading on still water | The river landing | The echo cutscene's ring | `PLACEHOLDER (story)`: what makes it                |
-| Something left on the far bank  | Past the ford     | A discovery spot         | `PLACEHOLDER (story)`: the guards' quarry, or home  |
-| The view from the rock          | The lookout       | The three valleys, named | The three spokes, before the vote                   |
+| What draws the eye              | Where             | What the player gets     | What it should reveal (a need for the writing pass)                     |
+| ------------------------------- | ----------------- | ------------------------ | ----------------------------------------------------------------------- |
+| A ring spreading on still water | The river landing | The echo cutscene's ring | Nothing seen; only after Scene 5.7: DRAFT (`docs/story/rg02-places.md`) |
+| Something left on the far bank  | Past the ford     | A discovery spot         | The guards' folded coats: DRAFT (`docs/story/rg02-places.md`)           |
+| The view from the rock          | The lookout       | The three valleys, named | The three spokes, before the vote                                       |
 
 ## Decisions (owner, 2026-11-20)
 
@@ -197,7 +198,7 @@ end hidden until you reach it, so the three valleys are a reveal (the one thing 
 
 1. ~~The bend's cliff~~: answered, decision 9.
 2. **The landing's owner:** the boat and the drying net say someone fishes or ferries from the landing.
-   `PLACEHOLDER (story)`: who, and whether they are there by day (stage 7, life).
+   Drafted: Nuo, there by day, gone at evening (`docs/story/rg02-places.md`; a draft until the owner says yes).
 3. **The toll pole's look:** red-and-white, a borrowed road barrier (the brief's signature), or a plain peeled pole? The
    kit list prices one pole in two states.
 

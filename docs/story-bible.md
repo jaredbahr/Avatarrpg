@@ -767,3 +767,8 @@ shipped demo, disagree. Each stays proposed until the owner says yes.
 6. **The cutscene notes follow the canon.** `docs/story-cutscenes.md` was written against bible 1.0. Where it
    still stages the retired SQ-35 or the old Deputy exchange, the bible and the outline win; the file is brought
    up to date with the next scene plan.
+7. **Saltstep market and the river road: who is there (2026-11-21).** The writing pass's answers to the two place
+   briefs' story placeholders, with first-draft lines, are in [story/rg02-places.md](story/rg02-places.md): Nuo at
+   the river landing, the river road as the second half of the stone road, the toll pole as the guards' own gate
+   bar, the carter who names the late shelf in SF-2.3, the still water, and Saltstep's bell ("four and stop"). Its
+   "New here" list is the list to approve.

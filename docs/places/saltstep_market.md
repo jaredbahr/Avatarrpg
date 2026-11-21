@@ -62,15 +62,15 @@ board. The dressing passes then filled the quay, the one strip people need to wa
 
 Roles only. Names and lines belong to the writing pass.
 
-| Who (role)                           | Lives / works where                  | What they do in a day                  | Why talk to them                  |
-| ------------------------------------ | ------------------------------------ | -------------------------------------- | --------------------------------- |
-| Bowl-seller (`mq02_bowl_seller`)     | Her stall, where the cart stops      | Cooks, serves, refuses to wash bowls   | Scene 2.2: the custom             |
-| Tavi Ren (`mq02_tavi`)               | The ferry landing                    | Waits on the tide, tows drifted stalls | Scene 2.2, 2.3 tow, 2.9 the ferry |
-| Freight clerk (`mq02_freight_clerk`) | The freight office on the shore lane | Minds a half-shut office               | Scene 2.2, 2.8                    |
-| Customs clerk (`mq02_customs_clerk`) | The floating customs stall           | Counts crates, drifts                  | Scene 2.3                         |
-| Two boat sellers                     | Boats in the basin                   | Argue across a widening gap            | Colour; a bark                    |
-| Fishers and dock workers             | The racks and the freight side       | Land fish, mend nets, carry            | `PLACEHOLDER (story)`: any lines  |
-| Children                             | Under the bell                       | Know the bell pattern                  | `PLACEHOLDER (story)`: any lines  |
+| Who (role)                           | Lives / works where                  | What they do in a day                  | Why talk to them                                     |
+| ------------------------------------ | ------------------------------------ | -------------------------------------- | ---------------------------------------------------- |
+| Bowl-seller (`mq02_bowl_seller`)     | Her stall, where the cart stops      | Cooks, serves, refuses to wash bowls   | Scene 2.2: the custom                                |
+| Tavi Ren (`mq02_tavi`)               | The ferry landing                    | Waits on the tide, tows drifted stalls | Scene 2.2, 2.3 tow, 2.9 the ferry                    |
+| Freight clerk (`mq02_freight_clerk`) | The freight office on the shore lane | Minds a half-shut office               | Scene 2.2, 2.8                                       |
+| Customs clerk (`mq02_customs_clerk`) | The floating customs stall           | Counts crates, drifts                  | Scene 2.3                                            |
+| Two boat sellers                     | Boats in the basin                   | Argue across a widening gap            | Colour; a bark                                       |
+| Fishers and dock workers             | The racks and the freight side       | Land fish, mend nets, carry            | Barks: DRAFT (`docs/story/rg02-places.md`)           |
+| Children                             | Under the bell                       | Know the bell pattern                  | "Four and stop": DRAFT (`docs/story/rg02-places.md`) |
 
 ## Daily life
 
@@ -159,26 +159,26 @@ happen across the basin instead of something you are told.
 
 Pieces marked _have_ are in the art merged with #844; the rest are for the kit list after the blockout.
 
-| Name               | Anchor                  | Belongs with it                                              | Ground under it                        | Whose / why here                      |
-| ------------------ | ----------------------- | ------------------------------------------------------------ | -------------------------------------- | ------------------------------------- |
-| The bowl stall     | Stall (_have_)          | Bench, stack of bowls, broth pot, an unwashed tub            | Trodden sand, a wet patch by the tub   | The bowl-seller; where the cart stops |
-| The cart stop      | Handcart (_have_), post | A sack, a wheel rut                                          | Ruts and a turning patch               | Where the road ends for wheels        |
-| A tide pole        | Painted pole (_have_)   | Mooring ring, a looped rope, a ladder                        | Weed line on the pole; ripples         | The town; the landmark, repeated      |
-| The customs berth  | Customs stall (_have_)  | Flag, stool, seal on a chain, one crate, mooring post        | Its own floating deck                  | The clerk; it must be able to leave   |
-| Fish racks         | Drying rack (_have_)    | Net pile (_have_), baskets (_have_), a gutting board         | Dark wet planks, scales                | The fishers; between boats and stalls |
-| A trading boat     | Small boat (_have_)     | Baskets, a pole, an awning                                   | Water, a mooring line                  | The boat sellers; they move           |
-| The freight office | Office front            | Brass plate, a half-down shutter, a step                     | Packed apron, cart ruts past the door  | Jin's clerk                           |
-| The ferry landing  | Ramp and post           | Dock lamps (_have_), bollards (_have_), coiled rope (_have_) | Worn planks, lamp pools at dusk        | Tavi                                  |
-| The lantern crates | Crate stack (_have_)    | The chalked note                                             | Planks; nothing else, so it stands out | Named in the story; by the ferry      |
-| The bell           | Bell post               | A rope, a painted board                                      | A worn ring where children stand       | `PLACEHOLDER (story)`: where it hangs |
+| Name               | Anchor                  | Belongs with it                                              | Ground under it                        | Whose / why here                                                         |
+| ------------------ | ----------------------- | ------------------------------------------------------------ | -------------------------------------- | ------------------------------------------------------------------------ |
+| The bowl stall     | Stall (_have_)          | Bench, stack of bowls, broth pot, an unwashed tub            | Trodden sand, a wet patch by the tub   | The bowl-seller; where the cart stops                                    |
+| The cart stop      | Handcart (_have_), post | A sack, a wheel rut                                          | Ruts and a turning patch               | Where the road ends for wheels                                           |
+| A tide pole        | Painted pole (_have_)   | Mooring ring, a looped rope, a ladder                        | Weed line on the pole; ripples         | The town; the landmark, repeated                                         |
+| The customs berth  | Customs stall (_have_)  | Flag, stool, seal on a chain, one crate, mooring post        | Its own floating deck                  | The clerk; it must be able to leave                                      |
+| Fish racks         | Drying rack (_have_)    | Net pile (_have_), baskets (_have_), a gutting board         | Dark wet planks, scales                | The fishers; between boats and stalls                                    |
+| A trading boat     | Small boat (_have_)     | Baskets, a pole, an awning                                   | Water, a mooring line                  | The boat sellers; they move                                              |
+| The freight office | Office front            | Brass plate, a half-down shutter, a step                     | Packed apron, cart ruts past the door  | Jin's clerk                                                              |
+| The ferry landing  | Ramp and post           | Dock lamps (_have_), bollards (_have_), coiled rope (_have_) | Worn planks, lamp pools at dusk        | Tavi                                                                     |
+| The lantern crates | Crate stack (_have_)    | The chalked note                                             | Planks; nothing else, so it stands out | Named in the story; by the ferry                                         |
+| The bell           | Bell post               | A rope, a painted board                                      | A worn ring where children stand       | Where the pole walk meets the shore: DRAFT (`docs/story/rg02-places.md`) |
 
 ## Finds
 
-| What draws the eye                      | Where                          | What the player gets             | What it should reveal (a need for the writing pass) |
-| --------------------------------------- | ------------------------------ | -------------------------------- | --------------------------------------------------- |
-| The pontoon, small and far across water | End of the side jetty          | A view; the second bowl's errand | Nothing new: it points at Scene 2.4                 |
-| A gap between houses with washing in it | The shore lane's back way      | A short cut back to the arrival  | `PLACEHOLDER (story)`: who lives here               |
-| Gulls on a post                         | The waste end of the platforms | A discovery spot                 | `PLACEHOLDER (story)`: something about the tide     |
+| What draws the eye                      | Where                          | What the player gets             | What it should reveal (a need for the writing pass)                        |
+| --------------------------------------- | ------------------------------ | -------------------------------- | -------------------------------------------------------------------------- |
+| The pontoon, small and far across water | End of the side jetty          | A view; the second bowl's errand | Nothing new: it points at Scene 2.4                                        |
+| A gap between houses with washing in it | The shore lane's back way      | A short cut back to the arrival  | Three newly arrived families, unnamed: DRAFT (`docs/story/rg02-places.md`) |
+| Gulls on a post                         | The waste end of the platforms | A discovery spot                 | The market tells the tide by them: DRAFT (`docs/story/rg02-places.md`)     |
 
 ## Things the blockout must settle
 
