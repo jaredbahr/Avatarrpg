@@ -11,8 +11,37 @@ import { decodeWebp, isLosslessWebp } from '../lib/webp';
 import { measureStyle } from '../lib/colours';
 import { haloPixels, seatingTable, shadowTable, straightEdge, terrainEdge } from './ground-checks';
 import { BOARDS } from './boards/index';
-import { packBoard, type Baked, type TopDownBoard } from './lib/board';
+import { bakedWith, packBoard, type Baked, type TopDownBoard } from './lib/board';
 import { bakedDisc, bakedMound, dehalo } from './lib/sprites';
+import { ALL_MAPS } from '../../../src/content/index';
+import type { Condition } from '../../../src/core/types';
+
+/**
+ * Whether two conditions can both hold, over every truth assignment of the leaves they read (a flag, a visit, a
+ * party test: each leaf is free). Conservative: two leaves the story can never set together still count as free.
+ */
+function canBoth(a: Condition, b: Condition): boolean {
+  const leaves = new Map<string, number>();
+  const collect = (c: Condition): void => {
+    if (c.kind === 'all' || c.kind === 'any') c.of.forEach(collect);
+    else if (c.kind === 'not') collect(c.of);
+    else if (!leaves.has(JSON.stringify(c))) leaves.set(JSON.stringify(c), leaves.size);
+  };
+  collect(a);
+  collect(b);
+  if (leaves.size > 12) return true;
+  const holds = (c: Condition, bits: number): boolean =>
+    c.kind === 'all'
+      ? c.of.every((x) => holds(x, bits))
+      : c.kind === 'any'
+        ? c.of.some((x) => holds(x, bits))
+        : c.kind === 'not'
+          ? !holds(c.of, bits)
+          : Boolean(bits & (1 << (leaves.get(JSON.stringify(c)) ?? 0)));
+  for (let bits = 0; bits < 1 << leaves.size; bits++)
+    if (holds(a, bits) && holds(b, bits)) return true;
+  return false;
+}
 
 interface Packed {
   readonly board: TopDownBoard;
@@ -92,6 +121,60 @@ describe.each(PACKED.map((p) => [p.board.id, p] as const))('the %s board', (_id,
       expect(failures, JSON.stringify(failures)).toEqual([]);
     },
   );
+
+  // Every state the story can put the board in (ADR 0123): each gate's pieces seated, shaded and clean on the plate
+  // with that state's overlays, whichever other gates are open beside them.
+  const gates = (baked.overlays ?? []).map((o) => o.gate);
+  it.runIf(gates.length > 0)('seats, shades and strips every gated piece in every state', () => {
+    expect(gates.length).toBeLessThanOrEqual(6);
+    const failures: unknown[] = [];
+    for (let mask = 1; mask < 1 << gates.length; mask++) {
+      const open = new Set(gates.filter((_, i) => mask & (1 << i)));
+      const state = bakedWith(baked, open);
+      const mine = new Set(
+        (baked.overlays ?? [])
+          .filter((o) => open.has(o.gate))
+          .flatMap((o) => o.placed.map((p) => p.o.id)),
+      );
+      const seated = seatingTable(state).filter(
+        (r) => mine.has(r.id) && (r.gap.length || r.weak.length || r.loose || r.hover > 1),
+      );
+      const shaded = shadowTable(state).filter(
+        (r) => mine.has(r.id) && r.visible >= 20 && r.darker < r.needed,
+      );
+      const halos = state.placed.filter((p) => mine.has(p.o.id) && haloPixels(p.img));
+      if (seated.length || shaded.length || halos.length)
+        failures.push({ open: [...open], seated, shaded, halos: halos.map((p) => p.o.id) });
+    }
+    expect(failures, JSON.stringify(failures)).toEqual([]);
+  });
+
+  // Each overlay is cut against the plate without the others, so two that touch are right only apart.
+  it.runIf(gates.length > 1)('never shows together two gates whose ground touches', () => {
+    const when = ALL_MAPS.find((m) => m.id === board.id)?.sceneGates ?? {};
+    const pixels = (baked.overlays ?? []).map((o) => {
+      const set = new Set<number>();
+      for (let y = 0; y < o.image.height; y++)
+        for (let x = 0; x < o.image.width; x++)
+          if ((o.image.data[(y * o.image.width + x) * 4 + 3] ?? 0) >= 128)
+            set.add((o.y + y) * 100_000 + o.x + x);
+      return { gate: o.gate, set };
+    });
+    const clashes: string[] = [];
+    for (const [i, a] of pixels.entries())
+      for (const b of pixels.slice(i + 1)) {
+        const ca = when[a.gate],
+          cb = when[b.gate];
+        if (!ca || !cb) {
+          clashes.push(`${!ca ? a.gate : b.gate} is not one of the map's sceneGates`);
+          continue;
+        }
+        const touch = [...a.set].some((k) => b.set.has(k));
+        if (touch && canBoth(ca, cb))
+          clashes.push(`${a.gate} and ${b.gate} touch and can show together`);
+      }
+    expect(clashes).toEqual([]);
+  });
 
   it('keeps every terrain edge under two tiles straight, as the eye sees it', () => {
     expect(terrainEdge(baked).tiles).toBeLessThanOrEqual(2);

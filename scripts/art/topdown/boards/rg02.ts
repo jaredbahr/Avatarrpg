@@ -33,12 +33,14 @@ import {
   ASSETS,
   CLASS,
   type Baked,
+  type Overlay,
+  type OverlayData,
   type Placed,
   type TopDownBoard,
   type UprightData,
 } from '../lib/board';
 import { FLAT_KINDS, groundObject, shadowOptions, standingUprights } from '../lib/grounding';
-import { at, blank, draw, load } from '../lib/raster';
+import { at, blank, draw, load, trim } from '../lib/raster';
 import { cleanSprite } from '../lib/sprites';
 
 /**
@@ -393,18 +395,21 @@ export function bake(cfg: Rg02BoardConfig): Baked {
       base,
     };
   });
-  for (const p of placed)
-    if (FLAT_KINDS.has(p.o.kind)) {
-      draw(g, p.img, p.x, p.y);
-      draw(bare, p.img, p.x, p.y);
+  // The plate takes the pieces that are always there; a gated piece (ADR 0123) is never baked into it.
+  const always = placed.filter((p) => p.o.gate === undefined);
+  const ground = (plate: RgbaImage, pieces: readonly Placed[]): Baked['shadows'][number][] => {
+    for (const p of pieces) if (FLAT_KINDS.has(p.o.kind)) draw(plate, p.img, p.x, p.y);
+    const records: Baked['shadows'][number][] = [];
+    for (const p of pieces) {
+      if (FLAT_KINDS.has(p.o.kind)) continue;
+      records.push(groundObject(plate, p, classes, false, shadowOptions(p, RG02_PROP_FOOT)).record);
     }
-  const shadows: Baked['shadows'][number][] = [];
-  for (const p of placed) {
-    if (FLAT_KINDS.has(p.o.kind)) continue;
-    const { record } = groundObject(g, p, classes, false, shadowOptions(p, RG02_PROP_FOOT));
-    shadows.push(record);
-  }
-  const { cover, uprights } = standingUprights(placed, new Map(), g, tr.origin);
+    return records;
+  };
+  for (const p of always) if (FLAT_KINDS.has(p.o.kind)) draw(bare, p.img, p.x, p.y);
+  const shadows = ground(g, always);
+  const overlays = gateOverlays(clean, g, placed, ground, tr.origin);
+  const { cover, uprights } = standingUprights(always, new Map(), g, tr.origin);
   // The edge check's key. A deck's side over the harbour is built timber, ruled as straight as its boards, so it is
   // left out as the canal's kerbs are (`terrainEdge`): the planks and the water share a key, and every other
   // boundary counts.
@@ -420,8 +425,61 @@ export function bake(cfg: Rg02BoardConfig): Baked {
     shadows,
     bridgeShadows: [],
     uprights,
-    placed,
+    placed: always,
+    ...(overlays.length > 0 && { overlays }),
   };
+}
+
+/**
+ * Each gate's ground (ADR 0123): the plate baked again with the gate's pieces added in their layout order, and every
+ * pixel that differs from the plate without them kept, opaque, in one trimmed image. Laid over the plate, it is the
+ * plate those pieces would have been baked into, so a gated piece is grounded exactly as a baked one: flat art, cast,
+ * contact line and all. Two gates whose ground would touch are refused unless they never show together, which the
+ * content tests decide from the map's conditions; here the overlap is only measured.
+ */
+function gateOverlays(
+  clean: RgbaImage,
+  plate: RgbaImage,
+  placed: readonly Placed[],
+  ground: (plate: RgbaImage, pieces: readonly Placed[]) => Baked['shadows'][number][],
+  origin: { readonly x: number; readonly y: number },
+): Overlay[] {
+  const gates = [...new Set(placed.flatMap((p) => (p.o.gate === undefined ? [] : [p.o.gate])))];
+  return gates.map((gate) => {
+    const withGate: RgbaImage = {
+      width: clean.width,
+      height: clean.height,
+      data: new Uint8ClampedArray(clean.data),
+    };
+    const mine = placed.filter((p) => p.o.gate === gate);
+    const ids = new Set(mine.map((p) => p.o.id));
+    const records = ground(
+      withGate,
+      placed.filter((p) => p.o.gate === undefined || p.o.gate === gate),
+    ).filter((r) => ids.has(r.id));
+    const diff = blank(clean.width, clean.height);
+    const a = plate.data,
+      b = withGate.data,
+      o = diff.data;
+    for (let i = 0; i < a.length; i += 4) {
+      if (a[i] === b[i] && a[i + 1] === b[i + 1] && a[i + 2] === b[i + 2]) continue;
+      o[i] = b[i] ?? 0;
+      o[i + 1] = b[i + 1] ?? 0;
+      o[i + 2] = b[i + 2] ?? 0;
+      o[i + 3] = 255;
+    }
+    const t = trim(diff);
+    const { uprights } = standingUprights(mine, new Map(), plate, origin);
+    return {
+      gate,
+      image: t.image,
+      x: origin.x + t.x,
+      y: origin.y + t.y,
+      placed: mine,
+      shadows: records,
+      uprights,
+    };
+  });
 }
 
 /** The terrace's cut face as one strip, 42 px from its lit lip to its foot (`q_terrace32`, as the quarry's and Ba Dan's). */
@@ -666,7 +724,12 @@ function pavedCells(cfg: Rg02BoardConfig, baked: Baked): { x: number; y: number 
   return out;
 }
 
-function scene(cfg: Rg02BoardConfig, baked: Baked, uprights: readonly UprightData[]): MapScene {
+function scene(
+  cfg: Rg02BoardConfig,
+  baked: Baked,
+  uprights: readonly UprightData[],
+  overlays: readonly OverlayData[],
+): MapScene {
   const url = `art/topdown/${cfg.folder}`;
   const byId = new Map(uprights.map((u) => [u.id, u]));
   const scenery: SceneScenery[] = cfg.layout.objects.flatMap((o) => {
@@ -688,6 +751,7 @@ function scene(cfg: Rg02BoardConfig, baked: Baked, uprights: readonly UprightDat
         ...(o.revealOccluded && { revealOccluded: true }),
         contactShadow: false,
         castShadow: false,
+        ...(o.gate !== undefined && { gate: o.gate }),
       },
     ];
   });
@@ -705,6 +769,16 @@ function scene(cfg: Rg02BoardConfig, baked: Baked, uprights: readonly UprightDat
         width: tr.plateW,
         height: tr.plateH,
       },
+      // each gate's ground over the plate (ADR 0123)
+      ...overlays.map((o) => ({
+        url: `${url}/overlays.webp`,
+        sourceRect: o.sourceRect,
+        x: o.x,
+        y: o.y,
+        width: o.width,
+        height: o.height,
+        gate: o.gate,
+      })),
     ],
     scenery,
   };
@@ -716,6 +790,6 @@ export function rg02Board(cfg: Rg02BoardConfig): TopDownBoard {
     out: `public/art/topdown/${cfg.folder}`,
     url: `art/topdown/${cfg.folder}`,
     bake: () => bake(cfg),
-    scene: (baked, uprights) => scene(cfg, baked, uprights),
+    scene: (baked, uprights, overlays) => scene(cfg, baked, uprights, overlays),
   };
 }
