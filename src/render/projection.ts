@@ -31,19 +31,15 @@ export function drawsScene(projection: Projection): boolean {
   return projection === 'topdown';
 }
 
-/** The fewest tiles across a top-down view opens on: a phone held upright steps down a zoom for it. */
-export const TOPDOWN_MIN_TILES_ACROSS = 4.5;
-
 /**
- * Exploration's preferred CSS px a tile: the top-down board opens at N = 3 on a 1x screen (120 px,
- * ADR 0104), or N = 2 (80 px) where N = 3 would show under `TOPDOWN_MIN_TILES_ACROSS` tiles across
- * (an upright phone: 390 CSS px is 3¼ tiles at 120), and the orthographic one at 48. `viewportWidth`
- * is in CSS px.
+ * Exploration's preferred CSS px a tile: the top-down board opens at N = 2 (80 px a tile on a 1x screen, 4 device px
+ * per world px on a 2x iPad), and the orthographic one at 48. It opened at N = 3 (120 px) until the owner pulled the
+ * explore camera back one step (2026-11-21, ADR 0104 amendment): at N = 3 an iPad in landscape showed about 12 by 6
+ * cells and a level's next goal was usually off screen; at N = 2 it shows about 15 by 7, the art stays on whole device
+ * pixels and a tile (80 CSS px) is still well over the tap target. An upright phone already opened at N = 2 and stays
+ * there: N = 1 would put a tile under the tap target. In CSS px.
  */
-export function exploreTilePx(projection: Projection, viewportWidth = Infinity): number {
-  if (projection === 'topdown')
-    return viewportWidth < TOPDOWN_MIN_TILES_ACROSS * 3 * TOPDOWN_TILE
-      ? 2 * TOPDOWN_TILE
-      : 3 * TOPDOWN_TILE;
+export function exploreTilePx(projection: Projection): number {
+  if (projection === 'topdown') return 2 * TOPDOWN_TILE;
   return 48;
 }
