@@ -1031,6 +1031,7 @@ const DRAWN_RECIPES: Readonly<Record<string, FxRecipeInput>> = {
     impact: [fireBurst(10), fireLicks(3)],
     area: [fireBurst(5), fireLicks(2), embers(3)],
     shake: 0.04,
+    hitStop: 50,
   },
   'fx.fire.dragon': {
     cast: [fireLicks(4, 460), embers(10)],
@@ -1211,6 +1212,7 @@ const DRAWN_RECIPES: Readonly<Record<string, FxRecipeInput>> = {
     impact: [airArc(0.9, 4)],
     area: [airArc(0.6, 2), spirals(5, 0.4), dust(3, [0.1, 0.16])],
     shake: 0.03,
+    hitStop: 30,
   },
   'fx.air.cyclone': {
     cast: [spirals(8, 0.4)],
@@ -1311,6 +1313,7 @@ const DRAWN_RECIPES: Readonly<Record<string, FxRecipeInput>> = {
     palette: 'enemy',
     travel: { emitters: [stone(), dust(3, [0.06, 0.1])], speed: 22, arc: 0.5 },
     impact: [sparks(5, 'light'), dust(5)],
+    shake: 0.02,
     hitStop: 40,
   },
   'fx.enemy.crossbow': {
@@ -1323,6 +1326,7 @@ const DRAWN_RECIPES: Readonly<Record<string, FxRecipeInput>> = {
       speed: 34,
     },
     impact: [sparks(6, 'light'), dust(3, [0.08, 0.14])],
+    shake: 0.02,
     hitStop: 40,
   },
   'fx.enemy.oil': {

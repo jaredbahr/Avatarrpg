@@ -16,7 +16,7 @@ import { TILE } from '../camera';
 import { StrokeRasterer } from './pixelStrokes';
 import { celFrameIndex } from '../../content/fxCels';
 import { inkedPalette, roleColor } from './colors';
-import { PARTICLE_STRIDE, sampleParticles, sampleStrokes } from './simulate';
+import { PARTICLE_STRIDE, clearFigure, sampleParticles, sampleStrokes } from './simulate';
 import type { EmitterInstance } from '../view';
 
 /** Particles drawn per frame, across every emitter. */
@@ -73,6 +73,7 @@ export class CanvasFxLayer {
               0,
               instance.arc,
             );
+        if (!sampled && instance.clear) clearFigure(data, n, instance.clear, instance.elapsed);
         const cel = def.cel && celReady(def.cel) ? def.cel : null;
         const celFrame = cel ? celFrameIndex(cel, instance.elapsed, def.duration) : 0;
         const cell = cel ? null : this.cell(def.cell, roleColor(def.color, instance.palette));

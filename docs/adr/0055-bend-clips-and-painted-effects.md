@@ -4,7 +4,8 @@
 packed data), again 2026-09-28 (manifest plumbing, lazy bend loading and the
 socket convention), again 2026-09-28 (the painted effects), and again
 2026-09-28 (drawing them: trajectories, sprites and the flash; playback
-follows), and again 2026-09-29 (the combat handoff, step 7). The page's
+follows), again 2026-09-29 (the combat handoff, step 7), and again 2026-11-21
+(the struck figure clears, below). The page's
 pixels are redrawn at the world's grain by ADR 0086 (2026-10-27): same
 frames, pivots, data, timing and sockets; `bend-effects.ts` still writes the
 data, `scripts/art/fx-g1.ts` the shipped page and its cel pins.
@@ -787,3 +788,22 @@ at the ground's mark, in party order.
   bend stays unavailable for the rest of the session. The price of the lazy
   load is that a bend asked for mid-scene without a preload arrives a few
   frames late, so step 7 preloads at combat's start.
+
+## Amendment, 2026-11-21: the struck figure clears
+
+The owner's rule for effects is "punchy but readable ... never covering who got hit or the damage number". The
+juice review (`npm run review:juice`) showed fire_blast's 1.8-tile burst cel hiding its target for about three frames
+after impact, and flame_arc's for about two.
+
+- **Field.** An impact emitter that lands on a figure carries the struck unit's tile centre as `clear`, on its track
+  and its `EmitterInstance`. That is both halves of the target's impact, and the area burst on any tile someone
+  stands on.
+- **Fade.** `clearFigure` (`src/render/fx/simulate.ts`) runs on the sampled particles. Before `CLEAR_AFTER_MS` (50)
+  the impact draws whole. Over the next 50 ms, a particle centred over the figure's body fades to a quarter of its
+  alpha, with a soft edge. The body is an ellipse from the feet, 0.3 below the tile centre, to the head, about 0.9
+  above it.
+- **What it touches.** The burst's rim and everything beside the figure stay at full strength. Strokes (licks,
+  arcs, bolts) are thin and open, so they are left as they are.
+- **Both backends** call it on the same samples, so they still draw the same picture.
+- **The hit flash** stays the white silhouette it was (`timing.flash` plus the hit-stop, fading). The damage number
+  is drawn after both effect layers, so no effect covers it.
