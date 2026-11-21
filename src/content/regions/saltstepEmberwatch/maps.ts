@@ -189,7 +189,8 @@ export const SALTSTEP_MARKET: MapDef = {
       sprite: 'world.parcel_cart_tidy',
       when: { kind: 'all', of: [{ kind: 'not', of: ARRIVED }, SQ01_RESOLVED] },
       once: true,
-      area: [1, 2, 3, 4, 5, 6, 7, 8, 9].map((y) => ({ x: 3, y })),
+      // The same column as the plain arrival: rows 8-9 at x 3 are the harbour in the blockout's rows.
+      area: [1, 2, 3, 4, 5, 6, 7].map((y) => ({ x: 3, y })),
     },
   ],
   npcs: [

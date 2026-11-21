@@ -222,6 +222,8 @@ Played on v2 after bringing it up to date with main, in Chromium at the iPad vie
   leads to Ba Dan.
 - **Fixed:** SF-2.2's apprentices, added on main after the blockout was drawn, stood at (18, 9), which the v2 rows
   make open water in the basin. They now stand at (24, 11), on the east platform at the ferry jetty's foot.
+- **Fixed:** the tidy-cart arrival (SQ-01's, also added on main after the blockout) reached down column 3 to rows 8
+  and 9, open water in the v2 rows; it now covers rows 1-7, the same column as the plain arrival.
 - **For the owner:** on the south walk the view holds only planks and water: neither platform's people nor the ferry
   jetty is in sight. Set pieces will give it its own idea; a camera one step back would also show both ends.
 
