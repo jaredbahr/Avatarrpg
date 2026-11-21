@@ -184,6 +184,12 @@ export interface Rg02BoardConfig {
    * each south edge that drops to ordinary deck, half height on a ramp cell. SF-2.2's north step on the platform.
    */
   readonly raised?: readonly (readonly [number, number, boolean])[];
+  /**
+   * The terrain's raised masses are built plinths, not natural rock (the Saltstep market's grey stand-ins for its
+   * buildings, stall and posts until its set pieces): their cut faces are made edges (core G8), which the straight-edge
+   * check leaves out as it does a canal's kerb.
+   */
+  readonly plinths?: boolean;
 }
 
 export function bake(cfg: Rg02BoardConfig): Baked {
@@ -433,6 +439,7 @@ export function bake(cfg: Rg02BoardConfig): Baked {
     bare,
     classes,
     edges,
+    ...(cfg.plinths && faces ? { made: faces } : {}),
     cover,
     shadows,
     bridgeShadows: [],
