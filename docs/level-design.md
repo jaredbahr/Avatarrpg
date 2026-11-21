@@ -51,23 +51,27 @@ answer for later states on a baked board.
 | Cell                         | 40 world px                                                                        |
 | Character                    | 48 px canvas, 8 directions                                                         |
 | Terrain                      | 32 px Wang tiles, per-pixel edges                                                  |
-| Explore zoom                 | 120 CSS px a cell (80 on a viewport under 540 px wide), snapped to integer zoom    |
-| **One explore view (iPad)**  | about 10 cells wide by 5 high once the header, objective box and dock are counted  |
+| Explore zoom                 | 80 CSS px a cell on every screen, snapped to integer zoom (owner, 2026-11-21)      |
+| **One explore view (iPad)**  | about 15 cells wide by 7 high once the header, objective box and dock are counted  |
 | Combat zoom                  | 80 CSS px a cell: about 13 to 17 by 10 to 13 cells, so a 20x12 board scrolls a bit |
 | Map size allowed             | 4 to 64 cells a side                                                               |
 | Today's maps                 | explore 24x16 (the riverside 36x24); combat 20x12 or 19x12                         |
 | Light                        | upper left; shadow `#322125`; cast to the lower right, 12 to 24 px                 |
 | Per-region limits (ADR 0111) | boards 1.5 MiB, JS chunk 40 KB gz; size budgets may be raised with an ADR note     |
 
-**Use 10 by 5 cells as "one view"** for every rule in the core that says "per view". A 24x16 map is therefore
-about seven to eight views, and a 32x18 map about eleven; each needs its own idea and landmark.
+**Use 15 by 7 cells as "one view"** for every rule in the core that says "per view". A 24x16 map is therefore
+about four views, and a 32x18 map about five or six; each needs its own idea and landmark.
 
-Measured on the Saltstep blockout (2026-11-17) at an iPad landscape viewport of 1180 by 820: the map shows about
-10 by 4.7 cells. The HUD takes about a third of the screen height, so vertical composition is tight: lay out
-routes mostly east-west, or revisit the explore zoom (an owner question). No test holds this number yet.
+Measured on the Saltstep blockout at an iPad landscape viewport of 1180 by 820: at the old 120 px a cell the map
+showed about 10 by 4.7 cells (2026-11-17), and the next goal was usually off screen. The owner pulled the explore
+camera back one integer-zoom step on 2026-11-21 (ADR 0104 amendment): the same screen now shows about 14.8 by 7.0
+cells at 4 device px per world px, a 1368 by 912 PC window about 17 by 8, and a 1920 by 1080 one about 24 by 10.
+A cell is still 80 CSS px, well over the tap target. The HUD still takes about a third of the screen height, so
+lay out routes mostly east-west. Place briefs written before 2026-11-21 plan their views at the old size; their
+layouts still hold, and each view simply shows more of its neighbours. Combat is unchanged.
 
 **Going bigger.** The owner is fine with bigger places. Do it by adding views that each have an idea (core L16,
-L17), not by stretching a plan. A town of ten to sixteen views (about 30x18 to 40x20) is a reasonable step. Past
+L17), not by stretching a plan. A town of five to eight views (about 30x18 to 40x20) is a reasonable step. Past
 that, split into districts joined by a pinch point (a gate, a bridge, a stair) or into two maps. Before growing a
 board: run the perf bench (`scripts/perf/core-bench.test.ts`, pinned to the largest board), check the region's
 board budget, and remember the local map (`LocalMapDialog`) is opened by a button, so orientation must come from
