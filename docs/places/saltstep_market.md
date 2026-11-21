@@ -210,6 +210,37 @@ Pieces marked _have_ are in the art merged with #844; the rest are for the kit l
 Blockout v2 thins the quay to two rows, roots the pole walk at row 7, moves everything below up one row, and adds
 an arrival shot that frames the first view lower. The board stays 32 by 18; the two bottom rows are open water.
 
+## Blockout v2 playtest (2026-11-21)
+
+Played on v2 after bringing it up to date with main, in Chromium at the iPad view (1180 by 820) and at PC windows
+(1368 by 912, 1920 by 1080).
+
+- **The loop walks clean.** All 240 walkable cells are reachable from the coast road and there are no dead ends but
+  one, the one-cell nook at (14, 1) between the town backs and the freight office. The loop (quay, pole walk, west
+  platform, south walk, east platform, ferry jetty, shore) is 70 steps, about 44 seconds at the explore pace.
+- **Everyone answers.** The arrival plays on the first walk in, all six NPCs open their scenes, and the west exit
+  leads to Ba Dan.
+- **Fixed:** SF-2.2's apprentices, added on main after the blockout was drawn, stood at (18, 9), which the v2 rows
+  make open water in the basin. They now stand at (24, 11), on the east platform at the ferry jetty's foot.
+- **For the owner:** on the south walk the view holds only planks and water: neither platform's people nor the ferry
+  jetty is in sight. Set pieces will give it its own idea; a camera one step back would also show both ends.
+
+**The camera, measured** (the map area between the objective box and the dock, at the explore zoom now and one
+whole zoom step back; the art stays sharp at both):
+
+| Screen            | Now: cells, device px per art px | One step back                       |
+| ----------------- | -------------------------------- | ----------------------------------- |
+| iPad, 1180 by 820 | 11.8 by 5.6 cells, 5             | 14.8 by 7.0 cells, 4 (80 px cells)  |
+| PC, 1368 by 912   | 11.4 by 5.5 cells, 3             | 17.1 by 8.2 cells, 2 (80 px cells)  |
+| PC, 1920 by 1080  | 16.0 by 6.9 cells, 3             | 24.0 by 10.3 cells, 2 (80 px cells) |
+
+A cell one step back is still 80 CSS px, well over the 3rem tap target.
+
+**For the dressing stage:** every piece with height gets a contact line and a short hard cast, water pieces
+included (the owner, 2026-11-21: "almost everything gets a shadow"; `docs/art-lessons.md`). The market's old boats,
+rocks and gulls were grounded on main (#933) before this blockout's layout came back; when the pieces return as set
+pieces, each one is grounded the same way.
+
 ## What the blockout review should ask
 
 Walk it grey, at the explore zoom, and answer one at a time:
