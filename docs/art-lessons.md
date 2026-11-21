@@ -32,6 +32,13 @@ animation or presentation work. Add to it when something fails.
 ### Grounding, angles and the scene
 
 - **Houses on pasted grass islands**, props without shadows, and cobble as big rectangles: "floating", "stickers".
+- **Almost everything gets a shadow** (owner, 2026-11-21, on the river road's camp: "Almost everything gets a
+  shadow otherwise it doesn't look correct").
+  - The river road's bedrolls, fire ring, stepping stones, log and rowboat were laid as `flat` with no contact and
+    no cast, and read as floating pads.
+  - Any piece with height gets a contact line and a short hard cast from its own base. A low one that figures walk
+    over stays `flat` and is marked `grounded: true`, which grounds it into the plate under them.
+  - Only truly flat marks go without: ash, a stain, a mat, wear paths.
 - **The agent's own shadow projection** (long silhouettes): dark smudges, invisible on cobble. The owner's
   Imagination `hardShadowMask` fixed it.
 - **An agent reporting fixes that weren't visible** (v8: "grounding applied", nothing showed).

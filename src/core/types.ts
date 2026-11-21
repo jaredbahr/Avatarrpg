@@ -928,6 +928,12 @@ export interface MapDef {
    */
   readonly projection?: 'topdown';
   readonly scene?: MapScene;
+  /**
+   * The story's say over the scene's set dressing (ADR 0123): each named gate is a condition, and a
+   * scene piece carrying that `gate` draws only while it holds. Presentation only: the rows stay the
+   * authority for blocking, so a gated piece is never solid.
+   */
+  readonly sceneGates?: Readonly<Record<string, Condition>>;
   readonly id: string;
   readonly name: string;
   readonly kind: 'combat' | 'explore';
@@ -1053,6 +1059,11 @@ export interface SceneImage {
    * crosses it, upright scenery leans. Presentation; the rules never read it.
    */
   readonly wind?: boolean;
+  /**
+   * Draws only while the map's `sceneGates[gate]` holds (ADR 0123). The app filters the scene before
+   * the renderer sees it, so the renderer never reads the story.
+   */
+  readonly gate?: string;
 }
 
 /** Small birds that lift out of the wind-moved scenery when a fight opens. */

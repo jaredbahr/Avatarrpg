@@ -150,9 +150,13 @@ end hidden until you reach it, so the three valleys are a reveal (the one thing 
   two guards hold the bridge, a crossbow stands back in the camp behind its crates, and the corporal waits by the cold
   fire. The camp's lamp oil (`oil_flask`) stands beside the fire: fire lights the spill. Nothing relights the cold fire
   itself yet (it would need a fire-pit prop and its art).
-- **Later states, not built:** the road's plate cannot swap a piece on a flag, so the pole raised after a win
-  (`toll_bar_up`) and the one sack left after Carry on (`cabbage_sack`) wait for a runtime way to show scenery by
-  `Condition`.
+- **Later states (ADR 0123):** the river road's set dressing follows SF-2.3 through `RIVER_ROAD.sceneGates`. Before
+  the fight, the lowered pole (`toll_bar_diag`) and the camp (the cold fire, the bedrolls, the rubbish, the pot and the
+  toll sign). After a win (`sf23_pole_up`), the pole raised (`toll_bar_up`) and the camp gone. After Carry on
+  (`sf23_one_sack`), the pole raised, the camp still there, and one sack of cabbages (`cabbage_sack`) by the cold fire.
+  The camp's crates (`F`) stay in every state: the rows block their cells for good. Whether the camp stays after
+  Carry on is the designer's reading of "they take one sack of cabbages and wave the cart through"; the owner may
+  overrule it. The fight's own board shows the toll as it stands.
 
 ## Set pieces
 
@@ -260,7 +264,7 @@ folder. **Spent: 140 credits over 27 jobs** (the ledger's `rg02_obj_rr_*`), agai
 | Hitching post (5)           | `hitching_post`                                    | seed 3      | 15 x 35   |            5 |
 | Plank bridge (6)            | `plank_bridge`, over water on the plate            | seed 3      | 80 x 65   |            6 |
 | Toll pole, lowered (7)      | `toll_bar_diag` (placed); `toll_bar_down` (unused) | seed 3      | 44 x 47   | 15 (3 takes) |
-| Toll pole, raised (8)       | `toll_bar_up` (not placed: SF-2.3)                 | seed 3      | 22 x 74   |            5 |
+| Toll pole, raised (8)       | `toll_bar_up` (after SF-2.3, ADR 0123)             | seed 3      | 22 x 74   |            5 |
 | Cold fire (9)               | `cold_fire`                                        | seed 3      | 42 x 30   |            5 |
 | Crate stack (10)            | `crate_stack` (rg02)                               | existing    |           |            0 |
 | Bedroll (11)                | `bedroll`, one flipped                             | seed 11     | 43 x 21   | 10 (2 takes) |
@@ -279,7 +283,7 @@ folder. **Spent: 140 credits over 27 jobs** (the ledger's `rg02_obj_rr_*`), agai
 | Flat rock (24)              | `flat_rock`                                        | seed 3      | 48 x 22   |            5 |
 | Milestone (25)              | `milestone`                                        | seed 3      | 19 x 28   |            5 |
 | Bent tree (26)              | `bent_tree`                                        | seed 11     | 39 x 95   | 10 (2 takes) |
-| Cabbage sack (later state)  | `cabbage_sack` (not placed: SF-2.3)                | seed 3      | 37 x 44   |            5 |
+| Cabbage sack (later state)  | `cabbage_sack` (after Carry on, ADR 0123)          | seed 3      | 37 x 44   |            5 |
 
 - **The lowered pole:** the first take (`toll_bar_down`) drew the arm running sideways, along the road, and a code cut
   turned it to stand in until the owner asked for a clearer barrier (2026-11-20). `toll_bar_diag` draws the arm on a

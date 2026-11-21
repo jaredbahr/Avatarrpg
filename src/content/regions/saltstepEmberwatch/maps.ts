@@ -511,6 +511,26 @@ export const SALTSTEP_PLATFORM: MapDef = {
 export const RIVER_ROAD: MapDef = {
   id: 'river_road',
   projection: 'topdown',
+  // SF-2.3's later states (ADR 0123): the camp stands until the toll is won, the pole is down until the cart goes
+  // through either way, and Carry on leaves one sack of cabbages by the cold fire.
+  sceneGates: {
+    camp: { kind: 'not', of: { kind: 'visited', nodeId: 'sf23_pole_up' } },
+    pole_down: {
+      kind: 'all',
+      of: [
+        { kind: 'not', of: { kind: 'visited', nodeId: 'sf23_pole_up' } },
+        { kind: 'not', of: { kind: 'visited', nodeId: 'sf23_one_sack' } },
+      ],
+    },
+    pole_up: {
+      kind: 'any',
+      of: [
+        { kind: 'visited', nodeId: 'sf23_pole_up' },
+        { kind: 'visited', nodeId: 'sf23_one_sack' },
+      ],
+    },
+    sack: { kind: 'visited', nodeId: 'sf23_one_sack' },
+  },
   name: 'The River Road',
   kind: 'explore',
   width: 40,

@@ -9,8 +9,8 @@
  * the writing pass. It pays a token `SF23_XP_PER_HEAD` on a win (the encounter's `xpPerHead`) and on "Carry on"
  * (`grantXp`) alike, as SF-2.2 does.
  *
- * Not built yet: the river road's later states (the pole raised after a win, one sack by the cold fire after Carry
- * on). The kit has both pieces (`toll_bar_up`, `cabbage_sack`), but a top-down plate cannot swap a piece on a flag.
+ * The river road's later states follow `sf23_pole_up` and `sf23_one_sack` (`RIVER_ROAD.sceneGates`, ADR 0123): the
+ * pole raised and the camp gone after a win, the pole raised and one sack by the cold fire after Carry on.
  */
 import type { Condition, StoryNode } from '../../../core/types';
 import { staged } from './stage';

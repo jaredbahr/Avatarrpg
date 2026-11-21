@@ -211,6 +211,16 @@ export const LATE_SCENES: Readonly<Record<string, OldSavesAnswer>> = {
     answer: 'open',
     why: 'Read only by the corporal’s own once-only gate on the river road. A side fight no release had, so no older save has had it, and it waits at the guards’ camp.',
   },
+  sf23_pole_up: {
+    upTo: '2026-11-19-roads',
+    answer: 'open',
+    why: 'Read only by the river road’s set dressing (ADR 0123): the camp goes and the pole stands raised once the toll is won. A side fight no release had, so no older save has won it, and its saves see the camp and the lowered pole until they do.',
+  },
+  sf23_one_sack: {
+    upTo: '2026-11-19-roads',
+    answer: 'open',
+    why: 'Read only by the river road’s set dressing (ADR 0123): the pole raised and one sack by the cold fire after Carry on. A side fight no release had, so no older save has carried on from it, and its saves see the lowered pole until they do.',
+  },
   look_hesra_boot: {
     upTo: '2026-11-15-demo',
     answer: 'open',
