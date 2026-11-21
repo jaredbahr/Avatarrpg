@@ -371,6 +371,24 @@ export function xpRoster(
 }
 
 /**
+ * The XP a victory pays each party member.
+ *
+ * An encounter that names `xpPerHead` pays exactly that: an optional side fight is sized against
+ * the level curve of the act around it, not against what its enemies are worth in a main-line
+ * fight (a quarry worker pays 150, which would lift a table a level per side fight). Otherwise it
+ * is the base roster's XP (`xpRoster`) divided by the baseline party size, never by the table.
+ */
+export function xpPerHead(
+  encounter: EncounterDef,
+  flags: Readonly<Record<string, FlagValue>>,
+  xpOf: (enemyId: string) => number,
+): number {
+  if (encounter.xpPerHead !== undefined) return encounter.xpPerHead;
+  const total = xpRoster(encounter, flags).reduce((sum, p) => sum + xpOf(p.enemyId), 0);
+  return Math.max(1, Math.round(total / Math.max(1, encounter.baselinePartySize)));
+}
+
+/**
  * Draws one of an encounter's roster variants.
  *
  * Eligible variants are filtered by condition, then drawn by weight from the

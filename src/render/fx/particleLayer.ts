@@ -28,7 +28,7 @@ import {
 import { PIXEL_LADDER } from './pixelCells';
 import { type FxCel, celFrameIndex } from '../../content/fxCels';
 import { hexToNumber, inkedPalette, roleColor } from './colors';
-import { PARTICLE_STRIDE, sampleParticles, sampleStrokes } from './simulate';
+import { clearFigure, PARTICLE_STRIDE, sampleParticles, sampleStrokes } from './simulate';
 import { StrokeRasterer } from './pixelStrokes';
 import type { EmitterInstance } from '../view';
 
@@ -144,6 +144,7 @@ export class ParticleLayer {
           0,
           instance.arc,
         );
+        if (instance.clear) clearFigure(this.scratch, n, instance.clear, instance.elapsed);
         const cel = def.cel && celReady(def.cel) ? def.cel : undefined;
         const celFrame = cel ? celFrameIndex(cel, instance.elapsed, def.duration) : 0;
         const tint = hexToNumber(roleColor(def.color, instance.palette));

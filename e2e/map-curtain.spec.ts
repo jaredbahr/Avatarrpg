@@ -33,10 +33,10 @@ test('the walk from Ba Dan to the forest road is curtained', async ({ page }) =>
   await page.evaluate(() => {
     const app = window.fnt!.app;
     const state = app.state!;
-    app.adoptSave({ ...state, location: { ...state.location, pos: { x: 22, y: 7 } } }, undefined);
+    app.adoptSave({ ...state, location: { ...state.location, pos: { x: 30, y: 9 } } }, undefined);
   });
   await waitForIdle(page);
-  await page.evaluate(() => window.fnt!.app.dispatch({ type: 'walkTo', pos: { x: 23, y: 7 } }));
+  await page.evaluate(() => window.fnt!.app.dispatch({ type: 'walkTo', pos: { x: 31, y: 9 } }));
   await expect
     .poll(() => page.evaluate(() => window.fnt?.app.state?.location.mapId))
     .toBe('forest_road');

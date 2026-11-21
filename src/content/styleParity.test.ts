@@ -254,7 +254,7 @@ function runCampaign(
 
   issue({ type: 'enterNode', nodeId: STORY_ENTRY });
   story();
-  walk({ x: 11, y: 5 });
+  walk({ x: 12, y: 9 });
   story();
   travel('forest_road');
   walk({ x: 19, y: 4 });
@@ -297,55 +297,50 @@ const presentations = syntheticPresentations(CONTENT);
 const TOPDOWN = withTopDownMaps(CONTENT, presentations);
 
 describe('top-down style whole-run parity', () => {
-  it.each(SEEDS)(
-    'keeps the trade and escort campaigns identical for seed %s',
-    (seed) => {
-      const observedEncounters = new Set<string>();
-      const seedIndex = SEEDS.indexOf(seed);
-      for (const custody of ['trade', 'escort'] as const) {
-        const result = runCampaign(
-          TOPDOWN,
-          `${seed}:${custody}`,
-          custody,
-          seedIndex % 2 === 0 ? 'base' : 'swapped',
-        );
-        result.encounters.forEach((id) => observedEncounters.add(id));
-        expect(
-          result.crossings,
-          `${custody} must exercise battle return crossings`,
-        ).toBeGreaterThan(0);
-        expect(
-          result.events.length,
-          `${custody} campaign should produce a real event log`,
-        ).toBeGreaterThan(0);
-      }
-      expect(observedEncounters).toEqual(new Set(ENCOUNTERS));
-      expect([...CONTENT.maps]).toEqual(SOURCE_MAP_SNAPSHOT);
-      for (const [id, map] of SOURCE_MAP_ENTRIES) expect(CONTENT.maps.get(id)).toBe(map);
+  it.each(SEEDS)('keeps the trade and escort campaigns identical for seed %s', (seed) => {
+    const observedEncounters = new Set<string>();
+    const seedIndex = SEEDS.indexOf(seed);
+    for (const custody of ['trade', 'escort'] as const) {
+      const result = runCampaign(
+        TOPDOWN,
+        `${seed}:${custody}`,
+        custody,
+        seedIndex % 2 === 0 ? 'base' : 'swapped',
+      );
+      result.encounters.forEach((id) => observedEncounters.add(id));
+      expect(result.crossings, `${custody} must exercise battle return crossings`).toBeGreaterThan(
+        0,
+      );
+      expect(
+        result.events.length,
+        `${custody} campaign should produce a real event log`,
+      ).toBeGreaterThan(0);
+    }
+    expect(observedEncounters).toEqual(new Set(ENCOUNTERS));
+    expect([...CONTENT.maps]).toEqual(SOURCE_MAP_SNAPSHOT);
+    for (const [id, map] of SOURCE_MAP_ENTRIES) expect(CONTENT.maps.get(id)).toBe(map);
 
-      const party = partyOfSize(3);
-      for (const encounterId of ENCOUNTERS) {
-        const options = {
-          seed: `${seed}:headless:${encounterId}`,
-          encounterId,
-          party,
-          recordEvents: true,
-        } as const;
-        const baseResult = runCombat(CONTENT, options);
-        const swappedResult = runCombat(TOPDOWN, options);
-        expect(swappedResult, `${encounterId}: complete headless result/event parity`).toEqual(
-          baseResult,
-        );
-        expect(baseResult.anomalies, `${encounterId}: headless runner anomalies`).toEqual([]);
-      }
-    },
-    120_000,
-  );
+    const party = partyOfSize(3);
+    for (const encounterId of ENCOUNTERS) {
+      const options = {
+        seed: `${seed}:headless:${encounterId}`,
+        encounterId,
+        party,
+        recordEvents: true,
+      } as const;
+      const baseResult = runCombat(CONTENT, options);
+      const swappedResult = runCombat(TOPDOWN, options);
+      expect(swappedResult, `${encounterId}: complete headless result/event parity`).toEqual(
+        baseResult,
+      );
+      expect(baseResult.anomalies, `${encounterId}: headless runner anomalies`).toEqual([]);
+    }
+  });
 
   it('detects a broken empty-rubble presentation at a real campaign crossing', () => {
     const broken = withTopDownMaps(CONTENT, syntheticPresentations(CONTENT, true));
     expect(() => runCampaign(broken, 'style-parity-broken-rubble', 'trade', 'base')).toThrow(
       /return position|full GameState and RngState/,
     );
-  }, 120_000);
+  });
 });

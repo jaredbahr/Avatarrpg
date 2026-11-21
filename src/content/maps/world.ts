@@ -78,22 +78,22 @@ export function connectAct1(map: MapDef): MapDef {
         ],
         exits: [
           route(
-            { x: 23, y: 7 },
+            { x: 31, y: 9 },
             'forest_road',
             { x: 1, y: 4 },
             'East road → Forest Road',
             'east',
-            mouth(23, [7, 8]),
+            mouth(31, [9, 10]),
           ),
           route(
-            { x: 19, y: 15 },
+            { x: 18, y: 22 },
             'ba_dan_riverside',
             { x: 10, y: 19 },
             'River path → Riverside',
             'south',
-            // The path's mouth on the rim, between the canal's end and the
-            // small trees on both shoulders: the walkable border cells are the exit.
-            [18, 19, 20].map((x) => ({ x, y: 15 })),
+            // The path's mouth on the south rim, between the trees on both shoulders: the walkable
+            // border cells are the exit.
+            [18, 19].map((x) => ({ x, y: 22 })),
           ),
         ],
         /*
@@ -110,7 +110,8 @@ export function connectAct1(map: MapDef): MapDef {
           {
             id: 'coast_road_sign',
             name: 'Coast road',
-            pos: { x: 16, y: 15 },
+            // On the south rim at the foot of the coast path, between Amri's and Senn's houses in the back row.
+            pos: { x: 12, y: 21 },
             sprite: 'world.route_sign',
             interaction: 'route-sign',
             when: ACT1_OVER,
@@ -118,16 +119,8 @@ export function connectAct1(map: MapDef): MapDef {
             routes: [
               // Later trips replay only the road's last beat, Parcel at the trough, then the market.
               {
-                when: {
-                  kind: 'any',
-                  of: [visited('mq02_coast_road'), visited('mq02_coast_road_jinu')],
-                },
+                when: visited('mq02_coast_road'),
                 node: 'mq02_coast_parcel',
-              },
-              // Jinu's moment (Scene 2.1, loss branch): the same road, ending on her line.
-              {
-                when: { kind: 'all', of: [lost, { kind: 'partyHas', characterId: 'jinu' }] },
-                node: 'mq02_coast_road_jinu',
               },
             ],
           },
@@ -136,8 +129,8 @@ export function connectAct1(map: MapDef): MapDef {
         triggers: [
           crossing(
             map,
-            20,
-            7,
+            28,
+            9,
             'welcome_home_mira',
             'Ba Dan comes out to meet you',
             'npc.household',
@@ -169,7 +162,7 @@ export function connectAct1(map: MapDef): MapDef {
             { x: 10, y: 20 },
             'ba_dan_village',
             // One step inside the village's river-path mouth, never on it.
-            { x: 19, y: 14 },
+            { x: 18, y: 21 },
             'South path → Ba Dan Village',
             'south',
             // The south path from row 20 to the rim: it leaves with no tile to miss.
@@ -208,7 +201,7 @@ export function connectAct1(map: MapDef): MapDef {
           route(
             { x: 0, y: 4 },
             'ba_dan_village',
-            { x: 22, y: 7 },
+            { x: 30, y: 9 },
             'West → Ba Dan Village',
             'west',
             // Preserve the road's five-cell mouth; these walkable rim cells are
@@ -261,12 +254,22 @@ export function connectAct1(map: MapDef): MapDef {
           ...map.npcs,
           ...discoveryMarkers('forest_road'),
           {
+            // SF-1.1, optional (`story/sideFightsAct1.ts`): Bessa's crew loading the handcart at the
+            // bend, once Act I is over either way, until the conversation has started.
+            id: 'sf11_bessa',
+            name: 'Bessa',
+            pos: { x: 9, y: 3 },
+            sprite: 'unit.enemy.slinger',
+            node: 'sf11_the_bend',
+            when: { kind: 'all', of: [ACT1_OVER, unvisited('sf11_the_bend')] },
+          },
+          {
             // SQ-01: Bo-shan's tipped sled in the south ditch, for a party carrying Pella's list,
-            // until the workers are home. The cabbage cart stands in for a sled until art exists.
+            // until the workers are home (art batch #38, `tools/sq01gen.py`).
             id: 'sq01_sled',
             name: 'Overturned sled',
             pos: { x: 11, y: 10 },
-            sprite: 'prop.cart',
+            sprite: 'world.sq01_sled',
             node: 'sq01_sled',
             // Not after a Driller loss either: its outcomes count on Dorin's handcart.
             when: {
@@ -432,6 +435,16 @@ export function connectAct1(map: MapDef): MapDef {
         npcs: [
           ...map.npcs,
           ...discoveryMarkers('ambush_road'),
+          {
+            // SF-1.2, optional (`story/sideFightsAct1.ts`): Tolma's picket at the slab, once Act I
+            // is over either way, until the conversation has started.
+            id: 'sf12_tolma',
+            name: 'Tolma',
+            pos: { x: 14, y: 5 },
+            sprite: 'unit.enemy.quarrybender',
+            node: 'sf12_the_slab',
+            when: { kind: 'all', of: [ACT1_OVER, unvisited('sf12_the_slab')] },
+          },
           {
             // Ruon stands where the ambush broke while he speaks (#628), and
             // waits there until the party goes down to the quarry floor.

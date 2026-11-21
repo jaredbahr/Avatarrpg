@@ -73,10 +73,10 @@ const SCENES: Readonly<Record<string, Scene>> = {
     light: 'Hard afternoon light into the pit; the terraces cast no shadow onto the floor.',
   },
   ba_dan_village: {
-    place: 'Ba Dan, the small village the party sets out from: a clearing in the woods.',
+    place: 'Ba Dan, a quarry village built from the pale stone of its own hill.',
     scene:
-      'A village clearing ringed by trees, thickest in the corners. A road of flagstones crosses the whole picture left to right through the middle, two tiles deep, and runs out through the east gate at the right edge where the flagstones give way to bare earth. At the west edge the road enters through a shallow flooded ford and pond. Four timber houses, two above the road and two below, each an open cutaway rectangle of timber walls round a visible floor of planks with a doorway opening onto a paved path that leads to the road. Between the houses above the road a paved yard opens off the road. One shallow canal enters from the west edge along row 6: nine water cells, a dry stone footbridge, then three more water cells at its east end. There is no canal along the south edge; below the road the matching paved yard has small market and garden edges, and its south lawn continues into meadow. Grass everywhere else, worn to paths near the doors.',
-    light: 'Soft mid-morning light, no long shadows.',
+      'A village on a hillside under a quarry. Cliff and trees close the top edge, with a dry-stone terrace on the left reached by a short flight of steps, and trees close the left and bottom edges. A road of flagstones runs in from the east edge through a gap in a low stone wall, past a shop with a storeroom and a stone trough on the road, and opens into a square at the middle of the picture. A long patched awning over a table stands at the near side of the square, in front of the largest house. A lane leaves the square to the left past a yard of cut stone blocks and a small house, and a path runs behind the house backs along the top, through a side gate in a garden fence on the right. A canal crosses the lower third from the left edge to the right, with a two-tile-wide stone bridge a little left of centre and washing steps on its near bank, and runs out under the east wall. South of the canal a row of small houses with doorsteps faces a lane, and a path leaves the bottom edge at the middle. A flooded ford closes the left edge of the road.',
+    light: 'Soft midday light, pale dust on the square, no long shadows.',
   },
   /*
    * RG-02, the pipeline-trial slice. Written from the script's build list
@@ -95,6 +95,26 @@ const SCENES: Readonly<Record<string, Scene>> = {
     scene:
       'A broad deck of weathered planks on the water, ragged at its edges, with deep harbour water all round it. A cast-iron hand pump in its crate stands near the left end, in two places. A short two-plank-wide gangway, its brake lever at its far end, joins the deck to a smaller platform on the right, where a heavy timber winch with a crane arm stands; the platform runs on to the right edge as a gangway toward a barge beyond the picture.',
     light: 'Grey afternoon light off the water, the tide on the turn.',
+  },
+  saltstep_platform: {
+    place:
+      'A spare market platform at Saltstep, floating loose in the harbour, where the ferry apprentices spar.',
+    scene:
+      'A small square deck of market planking alone on the water, with deep harbour water all round it. Down its middle runs the short stub of an old stall counter, open at both ends. A low step of planks runs along the top edge, sloping down at each end. Two mooring bollards with looped rope stand at the top-left and bottom-right corners of the deck.',
+    light: 'Bright midday light, calm water.',
+  },
+  river_road: {
+    place: 'The river road, the cart road up the river from the coast to Causeway, a day long.',
+    scene:
+      'A packed-earth road runs left to right across the middle, a wide slow river along the whole bottom edge and a wooded hillside along the top. Halfway along, a side stream comes down from the hills to the river; a plank bridge carries the road over it, with stepping stones a little downstream. A big shade tree and a trough stand by the road on the left, a footpath leads down to a small jetty, and a camp with a cold fire sits past the bridge. At the right the road climbs past a rock face to a rise looking out over open country.',
+    light: 'Bright morning light, a little haze over the river.',
+  },
+  river_road_bridge: {
+    place:
+      'The plank bridge on the river road, where a quarry corporal and his guards have put a pole across it.',
+    scene:
+      'A packed-earth road crosses the middle left to right and runs over a plank bridge where a side stream comes down from wooded hills along the top. A striped pole lies across the bridge. Past it, above the road on the right, a small camp: a cold fire ringed with stones, bedrolls, a cook pot and stacked crates. Two rows below the bridge the stream runs shallow over stepping stones, a fallen log beside them. A wide slow river runs along the bottom edge, gravel bars at its edge, and a grey rock face rises at the top-right corner.',
+    light: 'Bright morning light, a little haze over the river.',
   },
   emberwatch_parade: {
     place: 'Emberwatch, an old military outpost across the bay, reopened for civilians.',

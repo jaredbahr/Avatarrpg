@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { expect, it, vi } from 'vitest';
+import { expect, it } from 'vitest';
 import { RIVERSIDE } from '../../src/content/maps/riverside';
 import { buildGrid, tileAt } from '../../src/core/rules/grid';
 import { pixelAt, readImage } from './lib/image';
@@ -23,10 +23,6 @@ import {
 } from './riverside-edge-props';
 import type { CutoutId, Cutouts } from './riverside-edge-props';
 
-// Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
-// 5 s default once. Headroom here, not a raised global timeout.
-vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
-
 const grid = buildGrid(RIVERSIDE);
 const walkable = (x: number, y: number) => tileAt(grid, { x, y })?.blocked === false;
 
@@ -38,7 +34,7 @@ it('ships a reproducible bake of the unmodified painting', async () => {
   });
   expect(RIVERSIDE.backdrop?.pixelsPerTile).toBe(RIVERSIDE_PX);
   expect(Buffer.from(bytes)).toEqual(readFileSync(RIVERSIDE_OUTPUT));
-}, 60_000);
+});
 
 it("cuts every prop from the painting's own pixels", () => {
   const source = readImage(RIVERSIDE_SOURCE);

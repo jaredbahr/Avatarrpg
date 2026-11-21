@@ -141,6 +141,11 @@ These add to core section 6.
 - **Soil for roots.** Trees and bushes stand in a soil bed (`BEDS`), never on paving, a kerb or a cliff edge. The
   validator holds part of this already.
 - **Do not notch the ground for an object.** Let it stand on a patch (`art-lessons.md`).
+- **Almost everything gets a shadow** (owner, 2026-11-21).
+  - Any piece with height gets a contact line and a short hard cast from its own base, scaled to its height.
+  - A low piece figures walk over (stepping stones, a pack, a fire ring) stays `flat` with `grounded: true`, so it is
+    baked into the plate under them with its own shadow. Do not make it an upright, which would draw over feet.
+  - Only truly flat marks (ash, a stain, a mat, wear) go without (`art-lessons.md`).
 
 ## 6. Dressing rules for this game
 

@@ -11,12 +11,6 @@
 
 import type { MapDef } from '../../core/types';
 import { LEGEND } from './legend';
-import {
-  BA_DAN_CANAL_BRIDGE,
-  BA_DAN_COURTYARD_FOOTPRINTS,
-  BA_DAN_COURT_TREES,
-  BA_DAN_DRESSING_FOOTPRINTS,
-} from './baDanLayout';
 import { RETURNEE_PRESENTATIONS } from '../residents/returnees';
 import { SQ01_RESOLVED } from '../story/sq01Cabbages';
 import { SQ02_RESOLVED } from '../story/sq02OfficialGate';
@@ -28,29 +22,28 @@ const LOST = { kind: 'flag', key: 'act1_lost', op: 'set' } as const;
 export const BA_DAN_VILLAGE: MapDef = {
   id: 'ba_dan_village',
   projection: 'topdown',
-  // The top-down plate runs three tiles past the grid into the rim; `paintExtent` keeps the view inside it.
   cameraCentreMargin: 1,
   name: 'Ba Dan Village',
   kind: 'explore',
-  width: 24,
-  height: 16,
+  width: 32,
+  height: 23,
   ambience: 'village',
   // The courtyard's open air, with a pond tone that swells near the canal's water.
   soundscape: 'courtyard',
-  // Bending practice (#284) on the south canal bank, east of the bridge's foot, inside the demo
-  // slice (x 0-13, y 0-9). The bends go north-west at a mark on the canal's near edge, so they burst
-  // over the open water. The bridge deck itself is within reach of Mira's table, a seat, where Wait
-  // keeps the slot; west of the bridge the house hides a follower.
+  // Bending practice (#284) from the wash steps on the canal's north bank: the party stands at (9,11)
+  // and every bend goes south at the mark on the bank's edge (9,12), out over the canal. It sits two
+  // steps west of the new-game spawn (11,10), so Practice is not offered before the party moves.
   practice: {
-    label: 'Canal bank',
-    anchor: { x: BA_DAN_CANAL_BRIDGE.x + 1, y: BA_DAN_CANAL_BRIDGE.y + 2 },
+    label: 'Wash steps',
+    anchor: { x: 9, y: 11 },
     reach: 1,
-    mark: { x: 6, y: 7 },
+    mark: { x: 9, y: 12 },
   },
   legend: {
     ...LEGEND,
+    // A low worked-stone block: solid, but you can see over it.
     l: { terrain: 'stone', blocked: true, blocksSight: false },
-    // The painted canal is a physical edge; only its authored paved crossings carry walkers.
+    // The canal is a physical edge; only the bridge at (13..14, 12..13) carries walkers.
     '~': {
       terrain: 'dirt',
       surface: 'water',
@@ -60,65 +53,54 @@ export const BA_DAN_VILLAGE: MapDef = {
     },
   },
   /*
-   * The house bodies are solid, and so is everything the painted plinth, steps and yard stand on:
-   * the house plinth runs the whole footprint, the yard fills its west tiles, and the east steps rise
-   * in its last column, so no footprint cell is open. Each door's steps come down on the open tile in
-   * front of them ((10,3), (16,3), (10,13), (17,13)); Gao's routine steps from his lane at (9,4)
-   * to (10,3) by (10,4). The west road ends at the ford, `W` at (0,7) and (0,8), flooded this
-   * season; a future west region opens there behind a `Condition`, not through the rim. The set
-   * dressing's footprints (`BA_DAN_DRESSING`) are `l` lawn like the courtyard props.
+   * GREY BLOCKOUT (stage 3 of `docs/level-design.md`; the brief is `docs/places/ba_dan_village.md`). The table
+   * stands at the crossing of the routes: the east road comes in through the gate gap in the east wall (x 29,
+   * rows 9-10) past Gao's shop (x 19-22, rows 4-6, storeroom 23-24) to the square, where Mira's table is the
+   * two `l` cells (13..14, 9), seated from the rest spot below it at (13,10). The canal runs along rows 12-13
+   * west of x 16 and rows 13-14 east of it, with the bridge at (13..14, 12..13), and leaves the board east under the wall. Past it lie the quarry houses,
+   * a back lane on row 18 with a back row of two houses on rows 19-20 facing it (owner, 2026-11-19), and the river
+   * path running down between them to its mouth at (18..19, 22). The terrace `^` under the north cliff is reached by the steps
+   * `S` at (9,4); the mason's yard (blocks at (5,6), (6,6), (5,8)) lies west of the square; the garden fence
+   * `F` has its side gate gap at (25,3). The west road ends at the ford, `W` at (0,9), flooded this season;
+   * a future west region opens there behind a `Condition`. Every blocked cell comes from the brief's plan.
    */
   rows: [
-    'TTTT,,,,,,,,,,,,,,TTTTTT',
-    'TT,,,,BBBB,,BBBB,,,,,,TT',
-    'T,,,,,BBBB,,BBBB,,,,,,,T',
-    'T,,,,,BBBB,,BBBB,,,,,,,T',
-    'T,,,,,,,,=,,=,,,,,,,,,,T',
-    'T,,,,,,,,=====,,,,,,,,,T',
-    '~~~~~~~~~=~~~=,,,,,,,,,T',
-    'W=====================..',
-    'W=====================..',
-    'T,,,,,,,,=====,,,,,,,,,T',
-    'T,,,,,BBBB,,,BBBBB,,,,,T',
-    'T,,,,,BBBB,,,BBBBB,,,,,T',
-    'T,,,,,BBBB,,,BBBB,,,,,,T',
-    'T,,,,,BBBB,,,BBBB,,,,,,T',
-    'TT,,,,,,,,,,,,,,,,,,,,TT',
-    'TTTT,,,,,,,,,,,,,,...TTT',
-  ].map((row, y) =>
-    [...row]
-      .map((tile, x) =>
-        BA_DAN_COURT_TREES.some((p) => p.x === x && p.y === y)
-          ? 'T'
-          : [...BA_DAN_COURTYARD_FOOTPRINTS, ...BA_DAN_DRESSING_FOOTPRINTS].some(
-                (p) => p.x === x && p.y === y,
-              )
-            ? 'l'
-            : tile,
-      )
-      .join(''),
-  ),
-  partySpawns: [{ x: 3, y: 7 }],
-  exit: { pos: { x: 23, y: 7 }, label: 'The east road, toward the quarry' },
-  /*
-   * The walkable north rim ends at a dry-stone tea terrace; the south lawn continues into the exterior
-   * meadow band without a second, unrelated canal. Every
-   * other rim cell is a tree, the ford, or an exit mouth: the east road's two
-   * cells, and the river path's three at (18..20,15), which run on south off
-   * the board as flagstone like the east road does.
-   */
-  edges: [
-    { side: 'north', span: [4, 17], treatment: 'band' },
-    { side: 'south', span: [4, 17], treatment: 'band' },
-    { side: 'west', span: [6, 6], treatment: 'band' },
+    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+    'XXXXXXX^^XXXXXXXTTTXXXTTTTTXXXXX',
+    'XXXTTT^^^^TTTTTT,,,TTT,,,F...XXX',
+    'TTT,,,^^^^...................#TT',
+    'TT,,,,,,,S,BBBBB,,,BBBBBBF...#TT',
+    'TTBBB,,,,,,BBBBB,,,BBBBBBFFFF#TT',
+    'T,BBBll..,,BBBBB,,,BBBB,,,,BB#TT',
+    'T,BBB....,........,,,l,,,l,BB#TT',
+    'T,,,,l...,........=====,,,,,,lTT',
+    'W............ll...==============',
+    'WW,,,,,,,,........,,,,,=========',
+    'T,,,,,,,,.........,,,,,,,,,,,#TT',
+    'T~~~~~~~~~~~~==~,,,,,,,,,,,,,#TT',
+    'T~~~~~~~~~~~~==~~~~~~~~~~~~~~~~~',
+    'T,..............~~~~~~~~~~~~~~~~',
+    'TT,,,,,,BBBB,................#TT',
+    'TT,BBB,,BBBB,,,BBB..BBBB,,BB,#TT',
+    'TT,BBB,,BBBB,,,BBB..BBBB,,BB,#TT',
+    'TT,,,,,,,,,,,,,,,,..,,,B,,,,T#TT',
+    'TT,,,,,,BBB,,BBB,,..,,,,,,,,T#TT',
+    'TT,,,,,,BBB,,BBB,,..,,,,,,,,T#TT',
+    'TTTT,,,,,,,,,,,,,,..,,,,,,,TTTTT',
+    'TTTTTTTTTTTTTTTTTT..TTTTTTTTTTTT',
   ],
+  partySpawns: [{ x: 11, y: 10 }],
+  exit: { pos: { x: 31, y: 9 }, label: 'The east road, toward the quarry' },
+  // The first view of a new game centres on row 9, so Mira's table (13,9) sits in the middle of the frame.
+  arrivalShot: { at: { x: 11, y: 10 }, unlessVisited: 'mira_intro', rows: 6, centreY: 9 },
   edgeContract: 'enforce',
-  restSpots: [{ pos: { x: 10, y: 5 }, label: "Mira's table" }],
+  restSpots: [{ pos: { x: 13, y: 10 }, label: "Mira's table" }],
   npcs: [
     {
       id: 'riverside_sign',
       name: 'Riverside path',
-      pos: { x: 18, y: 12 },
+      // Beside the river path one cell short of its mouth on the south rim.
+      pos: { x: 20, y: 21 },
       // A marker post, not Pella's figure: she is a resident placed elsewhere.
       sprite: 'world.route_sign',
       interaction: 'route-sign',
@@ -335,11 +317,49 @@ export const BA_DAN_VILLAGE: MapDef = {
       // in for Pella, who is in class. Placeholder art until A1.
       id: 'school_notice',
       name: 'School notice',
-      pos: { x: 12, y: 11 },
+      pos: { x: 16, y: 7 },
       sprite: 'world.school_notice',
       interaction: 'route-sign',
       when: { kind: 'phase', in: ['morning'] },
       node: 'school_notice',
+    },
+    // Later states (`docs/places/ba_dan_village.md`): small standing objects, native size, shown once their
+    // story condition holds. The bake never changes; each is a one-image `TOPDOWN_OBJECTS` marker that is tapped to look at.
+    {
+      // SQ-02: the side gate hung the right way round, a hen on its roof, standing over the baked open gate
+      // (set piece `side_gate`, drawn on the fence cell (25,2), which is blocked). The marker needs an open cell, so it
+      // stands in the gap just south, (25,3), and its art carries transparent rows below the gate (`tools/bd20set.py`)
+      // that put the gate's own base on the baked one; it casts no foot blob (`exploreMarkerScale.ts`).
+      id: 'side_gate_hung',
+      name: 'Side gate',
+      pos: { x: 25, y: 3 },
+      sprite: 'world.side_gate_hung',
+      interaction: 'route-sign',
+      when: SQ02_RESOLVED,
+      node: 'look_side_gate_hung',
+    },
+    {
+      // SQ-03: the jar "for whoever needs it", by the west end of Gao's counter (the shop-front cells (19,7) and (20,7)
+      // are Gao's own restocking steps).
+      id: 'gao_jar',
+      name: 'Counter jar',
+      pos: { x: 18, y: 7 },
+      sprite: 'world.gao_jar',
+      interaction: 'route-sign',
+      when: SQ03_RESOLVED,
+      node: 'look_gao_jar',
+    },
+    {
+      // After the welcome-home supper: Hesra's lost boot with a river shell, in the mason's yard by her step. The step
+      // (5,7) is her door anchor `home.hesra` and (6,7) her `recovery.hesra` tile, and no NPC may stand on an anchor
+      // (`residents/baDan.test.ts`), so the boot waits on the yard cell south-east of both.
+      id: 'hesra_boot',
+      name: 'Boot on the step',
+      pos: { x: 6, y: 8 },
+      sprite: 'world.hesra_boot',
+      interaction: 'route-sign',
+      when: { kind: 'visited', nodeId: 'welcome_home_supper' },
+      node: 'look_hesra_boot',
     },
     {
       id: 'bo_shan',

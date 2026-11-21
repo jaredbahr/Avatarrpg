@@ -9,6 +9,13 @@ import { buildGrid } from '../../core/rules/grid';
 import type { Grid, MapDef, SurfaceId, Tile } from '../../core/types';
 import { TOPDOWN_FIXTURE } from '../topdown.fixture';
 import { CAP, CS, FACE_PX } from './organic';
+import {
+  TIME_BUDGETS,
+  TIME_BUDGET_TAG,
+  elapsedMs,
+  expectTimeWithin,
+  expectWorkWithin,
+} from '../../../scripts/test-support/workBounds';
 import { flameCel, glowAlpha, MATERIALS, steamPuff, TopdownSurfaces } from './surfaces';
 
 const map = (rows: string[]): MapDef => ({
@@ -174,15 +181,14 @@ describe('top-down surfaces', () => {
   });
 
   /*
-   * The iPad budget. A full recompute of a 20x12 board under a typical heavy load (a pool, a mud
-   * patch, an oil slick, ice, a fire and steam: 30 cells, seven masks) measured 50-120 ms warm in
-   * Node on the dev container, the high end with the whole test suite running beside it. A recent
-   * iPad runs JS at about a desktop core's speed. A recompute happens only when a surface changes
-   * (an ability resolves, a round ticks), never per frame, and only over its dirty rectangle, so the
-   * threshold is 500 ms: a quarter of a two-second resolve, and four times the loaded measurement,
-   * which is the margin. The first run warms the JIT and is not measured.
+   * The iPad budget. A recompute happens only when a surface changes (an ability resolves, a round
+   * ticks), never per frame, and only over its dirty rectangle. What keeps it inside the budget is
+   * how many px it computes, so that is what the gate bounds (#796): `lastWorkPx`, the area every
+   * changed material's mask is computed over plus the area repainted. It is the same number on any
+   * machine. The load is a typical heavy one on a full 20x12 board (a pool, a mud patch, an oil
+   * slick, ice, a fire and steam: 30 cells, seven masks).
    */
-  it('recompute a full 20x12 board inside the iPad budget', () => {
+  const heavyBoard = (): Grid => {
     const big = buildGrid(map(Array.from({ length: 12 }, () => '.'.repeat(20))));
     const load: [number, number, SurfaceId][] = [];
     const patch = (x0: number, y0: number, w: number, h: number, id: SurfaceId) => {
@@ -194,15 +200,44 @@ describe('top-down surfaces', () => {
     patch(4, 8, 2, 2, 'ice');
     patch(15, 2, 2, 3, 'fire');
     patch(10, 9, 2, 1, 'steam');
-    const g = withSurfaces(big, load);
-    new TopdownSurfaces(g).update(g);
-    const t0 = performance.now();
+    return withSurfaces(big, load);
+  };
+
+  it('recompute a full 20x12 board within its work bound', () => {
+    const g = heavyBoard();
     const s = new TopdownSurfaces(g);
     s.update(g);
-    const ms = performance.now() - t0;
     expect(s.lastDirty).not.toBeNull();
-    expect(ms).toBeLessThan(500);
+    // Measured 514,612 px; the bound is 1.5 times that.
+    expect(s.lastWorkPx).toBeGreaterThan(0);
+    expectWorkWithin('px computed by a full 20x12 surface recompute', s.lastWorkPx, 772_000);
+
+    // One cell changing costs its own reach, not the board again. Measured 32,017 px.
+    const full = s.lastWorkPx;
+    s.update(withSurfaces(g, [[18, 10, 'water']]));
+    expect(s.lastWorkPx).toBeGreaterThan(0);
+    expectWorkWithin('px computed when one cell changes', s.lastWorkPx, 48_000);
+    expect(s.lastWorkPx * 4).toBeLessThan(full);
+
+    // Nothing changing costs nothing.
+    s.update(withSurfaces(g, [[18, 10, 'water']]));
+    expect(s.lastWorkPx).toBe(0);
   });
+
+  /*
+   * The time itself, for the nightly hosted run only. The same recompute measured 50-120 ms warm in
+   * Node on the dev container; a recent iPad runs JS at about a desktop core's speed. The threshold
+   * is 500 ms: a quarter of a two-second resolve. The first run warms the JIT and is not measured.
+   */
+  it.runIf(TIME_BUDGETS)(
+    `recompute a full 20x12 board inside the iPad budget ${TIME_BUDGET_TAG}`,
+    () => {
+      const g = heavyBoard();
+      new TopdownSurfaces(g).update(g);
+      const ms = elapsedMs(() => new TopdownSurfaces(g).update(g));
+      expectTimeWithin('a full 20x12 surface recompute', ms, 500);
+    },
+  );
 
   it('cover every material', () => {
     expect([...MATERIALS]).toEqual(['mud', 'water', 'oil', 'ice', 'fire']);

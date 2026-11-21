@@ -78,6 +78,7 @@ import { bendFxSource } from '../fx/bendFxDraw';
 import { syncBendFx } from '../fx/bendFxPixi';
 import {
   activeGroundCue,
+  actorBodyBounds,
   actorReticleX,
   actorSilhouetteGeometry,
   combatActorSilhouetteGeometry,
@@ -86,10 +87,11 @@ import {
   floaterOwner,
   floaterStartY,
   floaterVisibleY,
+  healthBarBelowFeet,
   healthBarCap,
   HealthBarStagger,
 } from '../geometry/actorSilhouette';
-import type { HealthBarPlacement } from '../geometry/actorSilhouette';
+import type { ActorBodyBounds, HealthBarPlacement } from '../geometry/actorSilhouette';
 import { DECOR_CHUNK, decorChunks } from '../geometry/board';
 import { contourLoops, isHole, traceRegions } from '../geometry/contour';
 import type { Curve } from '../geometry/curve';
@@ -120,13 +122,15 @@ import {
   npcClip,
   unitMarkerGroundPoint,
   type BendFxSprite,
+  type BoardLight,
   type MapView,
   type OverlayLayer,
   type RenderUnit,
 } from '../view';
+import { lampGlowArt, lampGlowBox } from '../dayLight';
 import type { BackendCapabilities, RenderBackend } from './backend';
 import { EDGE_SHADE_ALPHA, EDGE_SHADE_TILES, VIGNETTE_ALPHA, overlayColors } from './canvas2d';
-import { FILTER_VERTEX, GROUND_FRAGMENT } from './shaders';
+import { FILTER_VERTEX, GRADE_FRAGMENT, GROUND_FRAGMENT } from './shaders';
 import { scaleModeFor } from '../pixelSampling';
 import { trimPixiTextureCaches } from './pixiTextureCache';
 import { PixelMarkDrawableCache, pixelMarkCanvas } from '../pixelMarkDrawables';
@@ -533,6 +537,21 @@ export class PixiBackend implements RenderBackend {
     uLevelsB: { value: new Float32Array(4), type: 'vec4<f32>' },
   });
   private groundFilter: Filter | null = null;
+  /**
+   * The day's grade (ADR 0121), one filter over each layer of the world's art: the painting, the
+   * scene's ground and the depth-sorted uprights. Never over a mark, ring, bar or number.
+   */
+  private gradeUniforms = new UniformGroup({
+    uMultiply: { value: new Float32Array([1, 1, 1]), type: 'vec3<f32>' },
+    uLift: { value: new Float32Array([0, 0, 0]), type: 'vec3<f32>' },
+  });
+  private gradeFilter: Filter | null = null;
+  /** The lamps' pools, added onto the graded ground under every mark (ADR 0121). */
+  private lampPools = new Container();
+  private lampPoolSprites: Sprite[] = [];
+  private lampGlassSprites: Sprite[] = [];
+  /** The hidden party's silhouettes, over the uprights and outside their grade. */
+  private revealLayer = new Container();
 
   /** Applied once init finishes, since resize can land before the app exists. */
   private viewport: Viewport = { width: 1, height: 1, dpr: 1 };
@@ -648,6 +667,14 @@ export class PixiBackend implements RenderBackend {
       resources: { castUniforms: this.castUniforms },
       padding: 0,
     });
+    // At the device's resolution, so the graded layer is the same pixels and nothing resamples.
+    this.gradeFilter = new Filter({
+      glProgram: GlProgram.from({ vertex: FILTER_VERTEX, fragment: GRADE_FRAGMENT }),
+      resources: { gradeUniforms: this.gradeUniforms },
+      padding: 0,
+      antialias: 'off',
+      resolution: this.viewport.dpr,
+    });
     this.sceneGround.addChild(this.breeze);
     this.groundSprite.filters = [this.groundFilter];
 
@@ -656,7 +683,12 @@ export class PixiBackend implements RenderBackend {
     // The painting sits under it, placed from the same camera numbers.
     this.backdropSprite.visible = false;
     // The scene's ground sits under the ground quad, which lays the surfaces over it.
-    this.groundStack.addChild(this.backdropSprite, this.sceneGround, this.groundSprite);
+    this.groundStack.addChild(
+      this.backdropSprite,
+      this.sceneGround,
+      this.lampPools,
+      this.groundSprite,
+    );
     this.propShadowSprite.visible = false;
     this.washSprite.visible = false;
     this.surfaceSprite.visible = false;
@@ -708,6 +740,7 @@ export class PixiBackend implements RenderBackend {
       this.pixelRingLayer,
       this.bendUnder,
       this.unitLayer,
+      this.revealLayer,
       this.topdownSteam,
       this.flockLayer,
       this.bendOver,
@@ -778,6 +811,13 @@ export class PixiBackend implements RenderBackend {
     this.shadowComposite.filters = null;
     this.shadowOutsideRoot.destroy({ children: true });
     this.shadowFilter?.destroy();
+    this.backdropSprite.filters = null;
+    this.sceneGround.filters = null;
+    this.unitLayer.filters = null;
+    this.gradeFilter?.destroy();
+    this.gradeFilter = null;
+    this.lampPoolSprites = [];
+    this.lampGlassSprites = [];
     this.dropCastShadows();
     this.clearPixelSprites();
     this.app?.stage.destroy({ children: true });
@@ -844,6 +884,7 @@ export class PixiBackend implements RenderBackend {
     this.fxUnder.container.scale.set(fxScale);
     for (const layer of [
       this.sceneGround,
+      this.lampPools,
       this.shadowMaskSources,
       this.climbCues,
       this.upright,
@@ -877,6 +918,7 @@ export class PixiBackend implements RenderBackend {
     this.drawDecor(view, camera);
     this.drawClimbMarkers(view, camera);
     this.drawUnits(view, camera);
+    this.syncLight(view, camera);
     try {
       this.syncCastShadows(view, camera);
     } catch {
@@ -926,6 +968,74 @@ export class PixiBackend implements RenderBackend {
       this.pixelMarkSources.delete(key);
     }
     this.trimTextures();
+  }
+
+  /**
+   * The day's light (ADR 0121): the grade as a filter over the painting, the scene's ground and the
+   * uprights, and each lit lamp's pool on the ground and glass in its lamp's depth. The filter is
+   * off by day, so a day frame costs nothing.
+   */
+  private syncLight(view: MapView, camera: Camera): void {
+    const light: BoardLight | null = view.light ?? null;
+    const grade = light?.grade ?? null;
+    const filter = this.gradeFilter;
+    const filters = grade && filter ? [filter] : null;
+    if (grade && filter) {
+      const u = this.gradeUniforms.uniforms as { uMultiply: Float32Array; uLift: Float32Array };
+      u.uMultiply.set(grade.multiply);
+      u.uLift.set(grade.lift);
+      // A plain object: nothing marks it dirty but this.
+      this.gradeUniforms.update();
+      if (filter.resolution !== this.viewport.dpr) filter.resolution = this.viewport.dpr;
+    }
+    for (const layer of [this.backdropSprite, this.sceneGround, this.unitLayer]) {
+      if ((layer.filters?.length ?? 0) !== (filters?.length ?? 0)) layer.filters = filters;
+    }
+    const lamps = light && camera.projection === 'topdown' ? light.lamps : [];
+    const place = (
+      pool: Sprite[],
+      parent: Container,
+      count: number,
+      art: HTMLCanvasElement | null,
+    ): Sprite[] => {
+      while (pool.length < count) {
+        const sprite = new Sprite();
+        sprite.blendMode = 'add';
+        parent.addChild(sprite);
+        pool.push(sprite);
+      }
+      pool.forEach((sprite, index) => {
+        sprite.visible = index < count && art !== null;
+        if (sprite.visible && art) sprite.texture = this.texture(art);
+      });
+      return pool;
+    };
+    const poolArt = light && lamps.length ? lampGlowArt(light.pool) : null;
+    const glassArt = light && lamps.length ? lampGlowArt(light.glass) : null;
+    const pools = place(this.lampPoolSprites, this.lampPools, lamps.length, poolArt);
+    const glasses = place(this.lampGlassSprites, this.unitLayer, lamps.length, glassArt);
+    if (!light) return;
+    lamps.forEach((lamp, index) => {
+      const pool = pools[index];
+      if (pool?.visible) {
+        const box = lampGlowBox(lamp.ground, light.pool, camera.tile);
+        pool.position.set(box.x, box.y);
+        pool.width = box.w;
+        pool.height = box.h;
+        this.sampleArt(pool, camera.scale);
+      }
+      const glass = glasses[index];
+      if (glass?.visible) {
+        const box = lampGlowBox(lamp.glass, light.glass, camera.tile);
+        glass.position.set(box.x, box.y);
+        glass.width = box.w;
+        glass.height = box.h;
+        // Just over its own lamp (scenery's tie bias), still under a figure level with it.
+        glass.zIndex =
+          sceneryZ(boardDepth(camera.groundPoint(lamp.depth), camera.projection)) + 0.0005;
+        this.sampleArt(glass, camera.scale);
+      }
+    });
   }
 
   /* ---------------------------------------------------------------- */
@@ -2268,6 +2378,8 @@ export class PixiBackend implements RenderBackend {
       readonly unit: RenderUnit;
       readonly actorX: number;
     })[] = [];
+    // Every standing figure's body, which no other unit's bar may lie on (`HealthBarStagger.place`).
+    const bodies = new Map<string, ActorBodyBounds>();
 
     for (const npc of view.npcs) {
       // Keyed by who, not where: a walking resident keeps one sprite (ADR 0047 §7).
@@ -2329,7 +2441,7 @@ export class PixiBackend implements RenderBackend {
         { x: footX, y: ground + FOOT_LINE * this.tile },
         scale,
         1,
-        alpha,
+        npc.footShadow === false ? 0 : alpha,
         at,
         frame
           ? {
@@ -2622,8 +2734,16 @@ export class PixiBackend implements RenderBackend {
         continue;
       }
 
+      const figure = { x, y, size: this.tile, width };
+      bodies.set(unit.id, actorBodyBounds(figure, heightTiles, frame?.headroom ?? null, scale));
       if (unit.showHealth !== false)
-        pendingHealthBars.push({ id: unit.id, unit, bar: silhouette.bar, actorX: x });
+        pendingHealthBars.push({
+          id: unit.id,
+          unit,
+          bar: silhouette.bar,
+          below: healthBarBelowFeet(silhouette.bar, figure, heightTiles),
+          actorX: x,
+        });
       badgeIndex = this.drawStatusBadges(g, unit, x, width, badgeIndex, silhouette.badgeY);
     }
 
@@ -2634,11 +2754,16 @@ export class PixiBackend implements RenderBackend {
       const text = this.badgeText[i];
       if (text) text.visible = false;
     }
-    const placements = this.healthBarStagger.place(pendingHealthBars);
+    const placements = this.healthBarStagger.place(pendingHealthBars, {
+      bodies,
+      // The visible bottom edge in world px: the board is drawn at (world * scale - offset).
+      bottom: (camera.viewport.height + camera.offsetY) / camera.scale,
+    });
     for (const candidate of pendingHealthBars) {
       const bar = placements.get(candidate.id);
       if (!bar) continue;
-      this.barTops.set(candidate.id, bar.y);
+      // A number still rises from over the head when its bar has moved under the feet.
+      this.barTops.set(candidate.id, Math.min(bar.y, candidate.bar.y));
       this.drawHealthBar(
         g,
         candidate.unit,
@@ -2757,8 +2882,7 @@ export class PixiBackend implements RenderBackend {
     if (!this.reveal && !scenery.some((piece) => piece.revealOccluded)) return;
     if (!this.reveal) {
       const sprite = new Sprite();
-      sprite.zIndex = Number.MAX_SAFE_INTEGER;
-      this.unitLayer.addChild(sprite);
+      this.revealLayer.addChild(sprite);
       this.reveal = { layer: new RevealLayer(), sprite, texture: null };
     }
     const reveal = this.reveal;

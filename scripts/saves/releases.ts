@@ -15,14 +15,38 @@
  * writes a new folder from today's content (the golden route's eighteen saves,
  * stamped with today's history revision) and appends it to the index. It
  * refuses an id that exists. Importing this file writes nothing.
+ *
+ * A release is frozen for every deploy (owner, 2026-11-19). The deploy runs
+ *
+ *   npm run saves:release -- --due
+ *
+ * at the commit it ships, which prints whether that story differs from the
+ * newest release, and when it does, opens an issue to freeze that commit:
+ *
+ *   npm run saves:release -- <id> ["<note>"] --at <sha>
+ *
+ * A release is fully determined by its commit, so `--at` freezes it later,
+ * with that commit's own code, in a temporary worktree.
  */
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { format, resolveConfig } from 'prettier';
 import { FLAG_BACKFILLS, HISTORY_REV } from '../../src/content/story/flagBackfills';
+import { SNAPSHOT_FORMAT } from '../../src/content/story/saveHistory';
 import type { HistorySnapshot } from '../../src/content/story/saveHistory';
 import { HISTORY_NOW } from '../../src/content/story/saveHistoryNow';
 import { generateGoldenSaves, GOLDEN_CHECKPOINTS } from './make-golden';
@@ -137,6 +161,7 @@ export function snapshotNow(
   note: string,
 ): HistorySnapshot {
   return {
+    format: SNAPSHOT_FORMAT,
     release,
     frozen,
     commit,
@@ -144,8 +169,91 @@ export function snapshotNow(
     historyRev: HISTORY_REV,
     rules: FLAG_BACKFILLS,
     regions: HISTORY_NOW.regions,
-    writes: HISTORY_NOW.writes,
+    // Options are named by where they lead; the positional copy only serves older releases.
+    writes: HISTORY_NOW.writes.map(({ positional: _positional, ...site }) => site),
+    edges: HISTORY_NOW.edges ?? {},
   };
+}
+
+/** The parts of a snapshot that are the story, without the release's own name, date and note. */
+function storyOf(snapshot: HistorySnapshot): unknown {
+  return {
+    format: snapshot.format ?? 1,
+    historyRev: snapshot.historyRev,
+    rules: snapshot.rules,
+    regions: snapshot.regions,
+    writes: snapshot.writes,
+    edges: snapshot.edges ?? null,
+  };
+}
+
+/**
+ * Whether today's story differs from the newest release's: then the saves a build of it writes
+ * are not exactly covered, and a deploy of it should freeze a release (owner, 2026-11-19).
+ */
+export function releaseDue(root: string = RELEASES_ROOT): { due: boolean; newest: string | null } {
+  const index = readIndex(root);
+  const newest = index.at(-1);
+  if (!newest) return { due: true, newest: null };
+  const shipped = JSON.parse(
+    readFileSync(join(root, newest.id, 'history.json'), 'utf8'),
+  ) as HistorySnapshot;
+  const now = snapshotNow(newest.id, '', '', '');
+  return {
+    due: JSON.stringify(storyOf(shipped)) !== JSON.stringify(storyOf(now)),
+    newest: newest.id,
+  };
+}
+
+/**
+ * Freezes a release from an earlier commit with that commit's own code: a temporary worktree at
+ * `sha` freezes it into its own fixtures, and the new folder and index entry are copied here.
+ * The commit must come after the newest release's, so the index stays oldest first.
+ */
+export async function freezeAt(
+  id: string,
+  note: string,
+  sha: string,
+  root: string = RELEASES_ROOT,
+): Promise<void> {
+  const git = (...args: string[]): string => execFileSync('git', args, { encoding: 'utf8' }).trim();
+  const full = git('rev-parse', '--verify', `${sha}^{commit}`);
+  const index = readIndex(root);
+  if (index.some((entry) => entry.id === id) || existsSync(join(root, id)))
+    throw new Error(`Release ${id} is already frozen. A release is never regenerated.`);
+  const newest = index.at(-1);
+  if (newest) {
+    const after = (
+      JSON.parse(readFileSync(join(root, newest.id, 'history.json'), 'utf8')) as HistorySnapshot
+    ).commit;
+    try {
+      execFileSync('git', ['merge-base', '--is-ancestor', after, full]);
+    } catch {
+      throw new Error(
+        `${sha} does not come after ${after}, the newest release's commit (${newest.id}): releases stay oldest first.`,
+      );
+    }
+  }
+  const work = mkdtempSync(join(tmpdir(), 'release-at-'));
+  const tree = join(work, 'tree');
+  git('worktree', 'add', '--detach', tree, full);
+  try {
+    symlinkSync(resolve('node_modules'), join(tree, 'node_modules'));
+    execFileSync(
+      'node',
+      ['--import', 'tsx', 'scripts/saves/releases.ts', id, ...(note ? [note] : [])],
+      { cwd: tree, stdio: 'inherit' },
+    );
+    const theirs = join(tree, 'src/core/save/fixtures/releases');
+    const entry = readIndex(theirs).at(-1);
+    if (entry?.id !== id) throw new Error(`The freeze at ${sha} did not write ${id}.`);
+    cpSync(join(theirs, id), join(root, id), { recursive: true, errorOnExist: true, force: false });
+    const indexPath = join(root, 'index.json');
+    writeFileSync(indexPath, await pretty([...index, entry], indexPath));
+  } finally {
+    git('worktree', 'remove', '--force', tree);
+    rmSync(work, { recursive: true, force: true });
+  }
 }
 
 async function pretty(value: unknown, filepath: string): Promise<string> {
@@ -192,12 +300,25 @@ export async function freezeRelease(
   return entry;
 }
 
-async function main(args: readonly string[]): Promise<void> {
+async function main(argv: readonly string[]): Promise<void> {
+  if (argv.length === 1 && argv[0] === '--due') {
+    process.stdout.write(`${JSON.stringify(releaseDue())}\n`);
+    return;
+  }
+  const at = argv.indexOf('--at');
+  const sha = at >= 0 ? argv[at + 1] : undefined;
+  const args = at >= 0 ? [...argv.slice(0, at), ...argv.slice(at + 2)] : argv;
   const [id, note] = args;
-  if (!id || args.length > 2)
+  if (!id || args.length > 2 || (at >= 0 && !sha))
     throw new Error(
-      'Usage: npm run saves:release -- <id> ["<note>"]   (an id such as 2027-01-family-1)',
+      'Usage: npm run saves:release -- <id> ["<note>"] [--at <sha>]   (an id such as 2027-01-family-1)\n' +
+        '       npm run saves:release -- --due',
     );
+  if (sha) {
+    await freezeAt(id, note ?? '', sha);
+    process.stdout.write(`${JSON.stringify({ release: id, at: sha })}\n`);
+    return;
+  }
   const commit = execFileSync('git', ['rev-parse', '--short', 'HEAD'], { encoding: 'utf8' }).trim();
   const entry = await freezeRelease(id, {
     note: note ?? '',

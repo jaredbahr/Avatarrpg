@@ -22,40 +22,40 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 flowchart TD
   n32["dema_lost<br/>Lanfen: So that’s where it comes in. You climbed out of my stre…"]:::entry
   n52["gao_lost<br/>Gao the Shopkeeper: Soup’s on the back of the stove. Bring your…"]:::entry
-  n72["lost_departure<br/>Ba Dan: In the morning, Gao has Bo-shan’s cart up on blocks out…"]
-  n73["lost_departure_hanru<br/>Hanru: I have the gate. Go."]
-  n74["lost_departure_pella<br/>Pella: His deliveries are still waiting. Take the cart for him."]
-  n75["lost_departure_permit<br/>Gate Guard Dorin: “The bearer, Gate Guard Dorin, may leave his …"]
-  n76["lost_departure_road<br/>Ba Dan: Dorin climbs up and takes the reins. The ostrich horse …"]
-  n78["lost_home_answer<br/>Elder Mira: No. Not tonight."]
-  n79["lost_home_bowl<br/>Mira’s Table: Pella nods once. She sits down at the end of the …"]
-  n80["lost_home_note<br/>Gate Guard Dorin: It isn’t signed. It says: “Bo-shan, the four …"]
-  n81["lost_home_pella<br/>Pella: Does he come home now?"]
-  n82["lost_home_table<br/>Ba Dan: Ba Dan has not gone to bed. Lamps are lit all along the…"]:::entry
-  n83["lost_morning<br/>Set flags"]
-  n87["mira_lost<br/>Elder Mira: Sit, if you can find a stool. Half of mine are at o…"]:::entry
-  n250["pella_lost<br/>Pella: Mira tells everybody “soon.” She told me “not tonight.”"]:::entry
-  n319["sen_lost<br/>Kuan: You came back the hard way, I hear. Sit. The water’s hot."]:::entry
+  n75["lost_departure<br/>Ba Dan: In the morning, Gao has Bo-shan’s cart up on blocks out…"]
+  n76["lost_departure_hanru<br/>Hanru: I have the gate. Go."]
+  n77["lost_departure_pella<br/>Pella: His deliveries are still waiting. Take the cart for him."]
+  n78["lost_departure_permit<br/>Gate Guard Dorin: “The bearer, Gate Guard Dorin, may leave his …"]
+  n79["lost_departure_road<br/>Ba Dan: Dorin climbs up and takes the reins. The ostrich horse …"]
+  n81["lost_home_answer<br/>Elder Mira: No. Not tonight."]
+  n82["lost_home_bowl<br/>Mira’s Table: Pella nods once. She sits down at the end of the …"]
+  n83["lost_home_note<br/>Gate Guard Dorin: It isn’t signed. It says: “Bo-shan, the four …"]
+  n84["lost_home_pella<br/>Pella: Does he come home now?"]
+  n85["lost_home_table<br/>Ba Dan: Ba Dan has not gone to bed. Lamps are lit all along the…"]:::entry
+  n86["lost_morning<br/>Set flags"]
+  n90["mira_lost<br/>Elder Mira: Sit, if you can find a stool. Half of mine are at o…"]:::entry
+  n258["pella_lost<br/>Pella: Mira tells everybody “soon.” She told me “not tonight.”"]:::entry
+  n330["sen_lost<br/>Kuan: You came back the hard way, I hear. Sit. The water’s hot."]:::entry
   n1["act1_epilogue_lost — exit to act1 / part 1"]:::external
   n14["cutting_after_explore — exit to world / part 1"]:::external
   n44["forest_explore — exit to world / part 1"]:::external
-  n369["village_explore — exit to act1 / part 1"]:::external
+  n429["village_explore — exit to act1 / part 1"]:::external
   n32 -->|"Next"| n44
-  n52 -->|"Next"| n369
-  n72 -->|"Next"| n74
-  n73 -->|"Next"| n76
-  n74 -->|"Next"| n75
-  n75 -->|"Next"| n73
-  n76 -->|"Next"| n83
-  n78 -->|"Next"| n79
-  n79 -->|"Next"| n72
-  n80 -->|"Next"| n81
-  n81 -->|"Next"| n78
-  n82 -->|"Next"| n80
-  n83 -->|"set: (none); phase: morning"| n1
-  n87 -->|"Next"| n369
-  n250 -->|"Next"| n369
-  n319 -->|"Next"| n14
+  n52 -->|"Next"| n429
+  n75 -->|"Next"| n77
+  n76 -->|"Next"| n79
+  n77 -->|"Next"| n78
+  n78 -->|"Next"| n76
+  n79 -->|"Next"| n86
+  n81 -->|"Next"| n82
+  n82 -->|"Next"| n75
+  n83 -->|"Next"| n84
+  n84 -->|"Next"| n81
+  n85 -->|"Next"| n83
+  n86 -->|"set: (none); phase: morning"| n1
+  n90 -->|"Next"| n429
+  n258 -->|"Next"| n429
+  n330 -->|"Next"| n14
   classDef entry fill:#dcfce7,stroke:#15803d,color:#14532d
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#581c87
   classDef continuation fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-dasharray:5 5

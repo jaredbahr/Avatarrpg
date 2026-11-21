@@ -50,6 +50,7 @@ const CULVERT: readonly Vec2[] = [
   { x: 10, y: 6 },
 ];
 
+// Side stories declare their own map with `inWorld` (`storyGroup.ts`), so they need no row here.
 const NPC_PRESENTATIONS: readonly (readonly [string, string, WorldStage?])[] = [
   // Ba Dan Village.
   ['riverside_invitation', 'ba_dan_village'],
@@ -97,39 +98,10 @@ const NPC_PRESENTATIONS: readonly (readonly [string, string, WorldStage?])[] = [
   ['handover_float', 'ba_dan_village'],
   ['hanru_watch', 'ba_dan_village'],
   ['school_notice', 'ba_dan_village'],
-  // SQ-01 (sq01Cabbages.ts): Pella's packing list, and her corrected list after the rescue.
-  ['sq01_packing_list', 'ba_dan_village'],
-  ['sq01_pella_list', 'ba_dan_village'],
-  // SQ-02 (sq02OfficialGate.ts): every conversation node, so the scene keeps its map.
-  ['sq02_hook', 'ba_dan_village'],
-  ['sq02_ask', 'ba_dan_village'],
-  ['sq02_register', 'ba_dan_village'],
-  ['sq02_hen', 'ba_dan_village'],
-  ['sq02_choice', 'ba_dan_village'],
-  ['sq02_quiet', 'ba_dan_village'],
-  ['sq02_public', 'ba_dan_village'],
-  ['sq02_public_after', 'ba_dan_village'],
-  ['sq02_mocked', 'ba_dan_village'],
-  ['sq02_mocked_after', 'ba_dan_village'],
-  ['sq02_shortcut', 'ba_dan_village'],
-  ['sq02_after', 'ba_dan_village'],
-  ['sq02_return', 'ba_dan_village'],
-  ['sq02_return_gate', 'ba_dan_village'],
-  // SQ-03 (sq03GaosLedger.ts): every conversation node, so the scene keeps its map.
-  ['sq03_hook', 'ba_dan_village'],
-  ['sq03_ask', 'ba_dan_village'],
-  ['sq03_deliver', 'ba_dan_village'],
-  ['sq03_counter', 'ba_dan_village'],
-  ['sq03_truth', 'ba_dan_village'],
-  ['sq03_choice', 'ba_dan_village'],
-  ['sq03_extension', 'ba_dan_village'],
-  ['sq03_extension_after', 'ba_dan_village'],
-  ['sq03_fund', 'ba_dan_village'],
-  ['sq03_fund_after', 'ba_dan_village'],
-  ['sq03_praised', 'ba_dan_village'],
-  ['sq03_praised_after', 'ba_dan_village'],
-  ['sq03_jar', 'ba_dan_village'],
-  ['sq03_jar_label', 'ba_dan_village'],
+  // The later-state props' look-ats (baDanDay.ts).
+  ['look_side_gate_hung', 'ba_dan_village'],
+  ['look_gao_jar', 'ba_dan_village'],
+  ['look_hesra_boot', 'ba_dan_village'],
 
   // Riverside.
   ['riverside_mira', 'ba_dan_riverside'],
@@ -145,14 +117,6 @@ const NPC_PRESENTATIONS: readonly (readonly [string, string, WorldStage?])[] = [
   ['dema_home', 'forest_road'],
   ['dema_lost', 'forest_road'],
   ['forest_return_arrival', 'forest_road'],
-  // SQ-01: Bo-shan's tipped sled, east of the roadblock.
-  ['sq01_sled', 'forest_road'],
-  ['sq01_note', 'forest_road'],
-  ['sq01_choice', 'forest_road'],
-  ['sq01_families', 'forest_road'],
-  ['sq01_crew', 'forest_road'],
-  ['sq01_leverage', 'forest_road'],
-  ['sq01_sled_again', 'forest_road'],
 
   // The watch speaks at the gate before the party chooses its approach, and
   // the camera rises to the curtain wall the workers watch from (#628).

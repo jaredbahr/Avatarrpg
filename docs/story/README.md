@@ -4,24 +4,28 @@
 
 Generated from the effective runtime story nodes, including party voice dialogue variants. Regenerate with `npm run docs:story`; verify committed output with `npm run docs:story -- --check`.
 
-376 nodes; 6 fights; 15 branches; 12 choices
+436 nodes; 10 fights; 28 branches; 12 choices
 
 Each runtime story node is owned by exactly one diagram. Entry points are highlighted; cross-file exits and cross-part continuations link to the diagram owning their target. Files over 80 nodes split from entry points into parts of at most 80 owned nodes. Boundary placeholders are excluded from counts.
 
 Edges show every authored story transition, choice condition and flag mutation. Branches use runtime truthiness (false and 0 take the falsy route). Map NPCs and triggers mark possible entry points without inventing transitions or bypassing their conditions. Connected map exits clear the story cursor rather than following explore.next; those authored links are labeled legacy/audit exits. Physical map travel is outside this graph. Dialogue variants are presentation alternatives, not transitions.
 
-| Story file                                            | Nodes | Fights | Branches | Choices | Parts |
-| ----------------------------------------------------- | ----: | -----: | -------: | ------: | ----: |
-| [Act 1](./act1.md)                                    |    67 |      4 |        0 |       3 |     1 |
-| [Ba Dan day](./ba-dan-day.md)                         |    19 |      0 |        6 |       2 |     1 |
-| [Discoveries](./discoveries.md)                       |    12 |      0 |        3 |       0 |     1 |
-| [Emberwatch (Scene 3.1 and SF-2.1)](./emberwatch.md)  |    18 |      1 |        0 |       0 |     1 |
-| [Occupied Ba Dan](./lost.md)                          |    16 |      0 |        0 |       0 |     1 |
-| [MQ-02 Paper and Stone](./mq02-paper-and-stone.md)    |   133 |      1 |        5 |       2 |    15 |
-| [Reasons](./reasons.md)                               |    19 |      0 |        0 |       0 |     1 |
-| [Return](./return.md)                                 |    33 |      0 |        0 |       0 |     1 |
-| [Riverside](./riverside.md)                           |     7 |      0 |        0 |       0 |     1 |
-| [SQ-01 Too Many Cabbages](./sq01-cabbages.md)         |    10 |      0 |        1 |       1 |     1 |
-| [SQ-02 A Very Official Gate](./sq02-official-gate.md) |    14 |      0 |        0 |       2 |     1 |
-| [SQ-03 Gao’s Other Ledger](./sq03-gaos-ledger.md)     |    14 |      0 |        0 |       2 |     1 |
-| [World](./world.md)                                   |    14 |      0 |        0 |       0 |     1 |
+| Story file                                                | Nodes | Fights | Branches | Choices | Parts |
+| --------------------------------------------------------- | ----: | -----: | -------: | ------: | ----: |
+| [Act 1](./act1.md)                                        |    68 |      4 |        0 |       2 |     1 |
+| [Ba Dan day](./ba-dan-day.md)                             |    22 |      0 |        6 |       2 |     1 |
+| [Discoveries](./discoveries.md)                           |    12 |      0 |        3 |       0 |     1 |
+| [Emberwatch (Scene 3.1 and SF-2.1)](./emberwatch.md)      |    18 |      1 |        0 |       0 |     1 |
+| [Occupied Ba Dan](./lost.md)                              |    16 |      0 |        0 |       0 |     1 |
+| [MQ-02 Paper and Stone](./mq02-paper-and-stone.md)        |   138 |      1 |       11 |       2 |    13 |
+| [Reasons](./reasons.md)                                   |    19 |      0 |        0 |       0 |     1 |
+| [Return](./return.md)                                     |    33 |      0 |        0 |       0 |     1 |
+| [The river road (blockout)](./river-road.md)              |     2 |      0 |        0 |       0 |     1 |
+| [Riverside](./riverside.md)                               |     7 |      0 |        0 |       0 |     1 |
+| [SF-2.2 The tipping platform](./sf22-tipping-platform.md) |     6 |      1 |        0 |       0 |     1 |
+| [SF-2.3 The bridge toll](./sf23-bridge-toll.md)           |     9 |      1 |        0 |       1 |     1 |
+| [Act I side fights](./side-fights-act1.md)                |    34 |      2 |        7 |       0 |     1 |
+| [SQ-01 Too Many Cabbages](./sq01-cabbages.md)             |    10 |      0 |        1 |       1 |     1 |
+| [SQ-02 A Very Official Gate](./sq02-official-gate.md)     |    14 |      0 |        0 |       2 |     1 |
+| [SQ-03 Gao’s Other Ledger](./sq03-gaos-ledger.md)         |    14 |      0 |        0 |       2 |     1 |
+| [World](./world.md)                                       |    14 |      0 |        0 |       0 |     1 |

@@ -27,6 +27,7 @@
     "verify": "npm run typecheck && npm run lint && npm run format:check && npm run test",
     "ci:local": "node scripts/ci-local.mjs",
     "gallery": "npm run gallery:capture && node scripts/gallery-index.mjs",
+    "review:juice": "playwright test -c playwright.juice.config.ts",
     "gallery:capture": "playwright test -c playwright.gallery.config.ts",
     "art:normalise": "node --import tsx scripts/art/normalise.ts",
     "art:pack": "node --import tsx scripts/art/pack.ts",
@@ -47,6 +48,7 @@
     "new:region": "node --import tsx scripts/content/new-region.ts",
     "soak": "node --import tsx scripts/soak.ts",
     "replay": "node --import tsx scripts/replay.ts",
+    "checkpoints": "node --import tsx scripts/e2e/checkpoint-pins.ts",
     "bench:core": "node --import tsx scripts/perf/core-bench.ts",
     "lighthouse": "node scripts/lighthouse.mjs"
   },

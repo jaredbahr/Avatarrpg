@@ -37,6 +37,7 @@ import {
   posKey,
   samePos,
   tileAt,
+  unitAt,
 } from './grid';
 import { SQUARE_FOOTPRINTS } from './footprint';
 import { expectedDamage, healAmount, hitBreakdown, rollDamage } from './damage';
@@ -56,6 +57,21 @@ import { canUseAbilities, effectiveStats, isAlive } from './stats';
 /* Targeting geometry                                                  */
 /* ------------------------------------------------------------------ */
 
+function canTargetFrom(
+  content: ContentIndex,
+  grid: Grid,
+  origin: Vec2,
+  ability: Ability,
+  target: Vec2,
+  targetElevation: number,
+  needsSight: boolean,
+): boolean {
+  const elevation = tileAt(grid, origin)?.elevation ?? 0;
+  const heightReach = heightReachBonus(content, ability, elevation, targetElevation);
+  if (distance(origin, target) > ability.range + heightReach) return false;
+  return !needsSight || hasLineOfSight(grid, origin, target);
+}
+
 /**
  * The first occupied caster cell that can legally reach and see `target`.
  *
@@ -63,7 +79,7 @@ import { canUseAbilities, effectiveStats, isAlive } from './stats';
  * with ties broken by `occupiedCells` order (the anchor first). For a size-1
  * caster there is only one cell, so this is the old behaviour exactly; for a
  * 2x2 it picks the gun that is actually pointing at the target rather than
- * whichever corner happens to come first. The reordering is switch-gated: the
+ * whichever corner happens to come first. The reordering is switch-gated:
  * an explicitly injected legacy 2x1 keeps strict anchor-first order. No RNG, so preview and
  * resolution still agree.
  */
@@ -77,18 +93,20 @@ export function validatingOrigin(
   squareFootprints: boolean = SQUARE_FOOTPRINTS,
 ): Vec2 | null {
   const targetElevation = tileAt(grid, target)?.elevation ?? 0;
+  const needsSight = checkLineOfSight && ability.requiresLineOfSight;
+  if (caster.size === 1) {
+    const origin = caster.pos;
+    return canTargetFrom(content, grid, origin, ability, target, targetElevation, needsSight)
+      ? { x: origin.x, y: origin.y }
+      : null;
+  }
+
   const cells = occupiedCells(caster, squareFootprints);
-  const ordered = squareFootprints
-    ? [...cells].sort((a, b) => distance(a, target) - distance(b, target))
-    : cells;
-  for (const cell of ordered) {
-    const casterElevation = tileAt(grid, cell)?.elevation ?? 0;
-    const heightReach = heightReachBonus(content, ability, casterElevation, targetElevation);
-    if (distance(cell, target) > ability.range + heightReach) continue;
-    if (checkLineOfSight && ability.requiresLineOfSight && !hasLineOfSight(grid, cell, target)) {
-      continue;
+  if (squareFootprints) cells.sort((a, b) => distance(a, target) - distance(b, target));
+  for (const cell of cells) {
+    if (canTargetFrom(content, grid, cell, ability, target, targetElevation, needsSight)) {
+      return cell;
     }
-    return cell;
   }
   return null;
 }
@@ -119,8 +137,9 @@ export function heightReachBonus(
   fromElevation: number,
   toElevation: number,
 ): number {
-  if (!canReachFromHeight(ability)) return 0;
-  return fromElevation > toElevation ? content.tuning.heightReachBonus : 0;
+  return fromElevation > toElevation && canReachFromHeight(ability)
+    ? content.tuning.heightReachBonus
+    : 0;
 }
 
 /** Every tile an ability touches when aimed at `target`. */
@@ -194,9 +213,17 @@ export function unitsOnTiles(
   tiles: readonly Vec2[],
   squareFootprints: boolean = SQUARE_FOOTPRINTS,
 ): Unit[] {
-  const keys = new Set(tiles.map(posKey));
+  if (tiles.length === 0) return [];
+  const onlyKey = tiles.length === 1 ? posKey(tiles[0]!) : undefined;
+  const keys = onlyKey === undefined ? new Set(tiles.map(posKey)) : undefined;
+  const contains = (cell: Vec2) => {
+    const key = posKey(cell);
+    return key === onlyKey || keys?.has(key) === true;
+  };
   return units.filter(
-    (u) => isAlive(u) && occupiedCells(u, squareFootprints).some((c) => keys.has(posKey(c))),
+    (u) =>
+      isAlive(u) &&
+      (u.size === 1 ? contains(u.pos) : occupiedCells(u, squareFootprints).some(contains)),
   );
 }
 
@@ -224,7 +251,7 @@ export function resolveAim(
   squareFootprints: boolean = SQUARE_FOOTPRINTS,
 ): Vec2 {
   if (ability.targeting.shape !== 'unit') return tapped;
-  const occupant = unitsOnTiles(battle.units, [tapped], squareFootprints)[0];
+  const occupant = unitAt(battle.units, tapped, squareFootprints);
   if (!occupant) return tapped;
   for (const cell of occupiedCells(occupant, squareFootprints)) {
     if (aimCellTargetable(content, battle.grid, caster, ability, cell, squareFootprints)) {
@@ -299,6 +326,10 @@ function downedTargetCheck(
       occupiedCells(u, squareFootprints).some((c) => samePos(c, target)),
   );
   if (!fallen) return { ok: false, reason: 'Nobody is down there.' };
+  // A sparring bout helps nobody up (ADR 0122 §2).
+  if (battle.boutOut?.includes(fallen.id)) {
+    return { ok: false, reason: `${fallen.name} is out of the bout.` };
+  }
   if (unitsOnTiles(battle.units, [target], squareFootprints).length > 0) {
     return { ok: false, reason: 'Somebody is standing there.' };
   }
@@ -322,7 +353,10 @@ function checkAimReach(
 ): UseCheck {
   if (!inBounds(battle.grid, target)) return { ok: false, reason: 'Off the map.' };
 
-  const range = distanceToUnit(target, caster, squareFootprints);
+  const range =
+    caster.size === 1
+      ? distance(target, caster.pos)
+      : distanceToUnit(target, caster, squareFootprints);
   const inRangeOrigin = validatingOrigin(
     content,
     battle.grid,
@@ -334,7 +368,14 @@ function checkAimReach(
   );
   if (!inRangeOrigin) return { ok: false, reason: 'Out of range.' };
   if (range < ability.minRange) return { ok: false, reason: 'Too close.' };
-  if (!validatingOrigin(content, battle.grid, caster, ability, target, true, squareFootprints)) {
+  // This origin is already in range. A large caster may have a second firing
+  // cell when this one cannot see the target.
+  if (
+    ability.requiresLineOfSight &&
+    !hasLineOfSight(battle.grid, inRangeOrigin, target) &&
+    (caster.size === 1 ||
+      !validatingOrigin(content, battle.grid, caster, ability, target, true, squareFootprints))
+  ) {
     return { ok: false, reason: 'No line of sight.' };
   }
   return OK;
@@ -358,7 +399,7 @@ export function isValidTarget(
   }
 
   if (ability.targeting.shape === 'unit') {
-    const occupant = unitsOnTiles(battle.units, [target], squareFootprints)[0];
+    const occupant = unitAt(battle.units, target, squareFootprints);
     if (!occupant) {
       /*
        * A prop is a legal target for anything that would take an enemy or

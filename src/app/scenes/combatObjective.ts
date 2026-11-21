@@ -4,8 +4,9 @@
  * DOM; the board cells are drawn from the same encounter by the scene.
  */
 
+import { forecastTip } from '../../core/rules/bout';
 import { roundsLeft } from '../../core/rules/objectives';
-import type { EncounterDef } from '../../core/types';
+import type { BattleState, ContentIndex, EncounterDef } from '../../core/types';
 import type { OverlayLayer } from '../../render/renderer';
 
 export interface ObjectiveLine {
@@ -58,5 +59,25 @@ export function objectiveOverlay(
     layer = { kind: 'objective', tiles: objective.cells };
     layers.set(objective, layer);
   }
+  return layer;
+}
+
+const tips = new WeakMap<BattleState, OverlayLayer | null>();
+
+/**
+ * The board layer for where a tipping platform will slide its fighters when this round ends (ADR
+ * 0122 §3), or null. Read from `forecastTip`, the round end's own rule on a copy, and cached by the
+ * battle state, which every action replaces, so it is recomputed after each action and not each
+ * frame.
+ */
+export function tipOverlay(content: ContentIndex, battle: BattleState): OverlayLayer | null {
+  if (!content.encounters.get(battle.encounterId)?.bout?.tipping) return null;
+  const cached = tips.get(battle);
+  if (cached !== undefined) return cached;
+  const slides = forecastTip(content, battle);
+  const layer = slides.length
+    ? { kind: 'tip' as const, tiles: slides.map((slide) => slide.to) }
+    : null;
+  tips.set(battle, layer);
   return layer;
 }

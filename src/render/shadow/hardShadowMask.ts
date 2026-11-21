@@ -1,9 +1,13 @@
 /**
  * The owner's hard grounding shadow, ported as pure functions.
  *
- * This is a verbatim port of `prototypes/topdown/src/v13/shadow.js`, which is
- * itself the owner's own Imagination grounding code (`hardShadowMask`,
- * `closeHoles`, `crownShadowMask`, `feetBlob`, `groundKit`). The maths, the
+ * This is a verbatim port of `prototypes/topdown/src/v14/shadow.js` (v13 with
+ * `hardShadowMask` brought up to date), which is itself the owner's own
+ * Imagination grounding code (`hardShadowMask`, `closeHoles`,
+ * `crownShadowMask`, `feetBlob`, `groundKit`). It matches Imagination's
+ * `src/game/grounding.js` as of commit ecfcea1 (#892, issue #881: a swept
+ * shadow casts each pixel from the bottom of its own opaque run, and is kept
+ * as one 8-connected piece); that file has had no change since. The maths, the
  * constants and the iteration order are the original's; do not "improve" them,
  * the art is tuned to this exact output (ADR 0104, section 2).
  *
@@ -289,11 +293,34 @@ export function hardShadowMask(
       if (at(colBase, x) < 0) continue;
       const lb = grounded[x] ? at(colBase, x) : base,
         snap = grounded[x] && lb >= base - 8 && lb < base;
+      // bottom row of the contiguous opaque run each pixel of this column belongs to; a transparent
+      // gap of up to 2 px inside the column (a ragged crown, split roots) does not end the run
+      const runBot = new Int32Array(height).fill(-1);
+      for (let y = height - 1; y >= 0; y--)
+        if (alpha[y * width + x]) {
+          let n = -1;
+          for (let k = 1; k <= 3 && y + k < height; k++)
+            if (alpha[(y + k) * width + x]) {
+              n = y + k;
+              break;
+            }
+          runBot[y] = n >= 0 ? at(runBot, n) : y;
+        }
       for (let y = 0; y < lb; y++) {
         if (!alpha[y * width + x]) continue;
         const f = snap ? lb + (base - lb) * Math.min(1, (lb - y) / footReach) : lb,
           H = (f - y) * hScale;
-        for (let t = sweep > 0 ? -H * sweep : -0.5; t <= 0.5; t += 0.25 + (sweep > 0 ? 0.25 : 0)) {
+        // `sweep` (0..1): each pixel also shades the floor between its own cast point and the cast
+        // point of the BOTTOM of its contiguous opaque run in this column: trunk and root pixels
+        // (a run that reaches the foot) are solid down to the floor, so their shade starts at the
+        // foot and a tree's pool joins the trunk; a crown pixel is solid only down to the crown's
+        // underside, so the pool keeps the crown's own outline (Imagination ecfcea1, issue #881)
+        const hb = at(runBot, y) >= lb - 1 ? 0 : Math.max(0, (f - at(runBot, y)) * hScale);
+        for (
+          let t = sweep > 0 ? -(H - hb) * sweep : -0.5;
+          t <= 0.5;
+          t += 0.25 + (sweep > 0 ? 0.25 : 0)
+        ) {
           const Ht = Math.max(0, H + t);
           for (let xo = 0; xo <= 0.5; xo += 0.5)
             gput(out, pad + x + xo + dir.x * Ht, f + 1 + dir.y * Ht, 125);
@@ -387,6 +414,37 @@ export function hardShadowMask(
         }
       if (n < 2) keep[y * W2 + x] = 0;
     }
+  // A swept (tree) shadow is one piece: keep only the pixels 8-connected to the seam under the
+  // feet, so no ragged crown edge leaves a dark island floating in the grass (deterministic flood
+  // fill from the seam rows; Imagination ecfcea1, issue #881)
+  if (dir && sweep > 0) {
+    const seen = new Uint8Array(keep.length),
+      st: number[] = [],
+      seed = (xx: number, yy: number): void => {
+        if (xx < 0 || yy < 0 || xx >= W2 || yy >= H2) return;
+        const i = yy * W2 + xx;
+        if (at(keep, i) && !seen[i]) {
+          seen[i] = 1;
+          st.push(i);
+        }
+      };
+    for (let x = 0; x < W2; x++) {
+      seed(x, base + 1);
+      seed(x, base + 2);
+    }
+    for (let x = 0; x < width; x++)
+      if (grounded[x]) {
+        seed(pad + x, at(colBase, x) + 1);
+        seed(pad + x, at(colBase, x) + 2);
+      }
+    while (st.length) {
+      const i = st.pop() as number,
+        x = i % W2,
+        y = (i - x) / W2;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) seed(x + dx, y + dy);
+    }
+    for (let i = 0; i < keep.length; i++) if (!seen[i]) keep[i] = 0;
+  }
   out.alpha = keep;
   return out;
 }

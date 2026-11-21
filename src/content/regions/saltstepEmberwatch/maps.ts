@@ -13,6 +13,8 @@
  * - `emberwatch_parade` (explore, 24 x 16): the old outpost's parade ground, where the ferry lands.
  * - `emberwatch_power_yard` (combat, 19 x 12): the power yard, SF-2.1's board and an explore map,
  *   with the live line along its north side and the overflowing cistern.
+ * - `saltstep_platform` (combat, 15 x 11): SF-2.2's sparring bout, a spare market platform floating
+ *   loose in the harbour (`docs/places/saltstep_platform.md`). A grey blockout (stage 3): no scene yet.
  */
 import type { MapDef, Vec2 } from '../../../core/types';
 import { LEGEND } from '../../maps/legend';
@@ -46,6 +48,13 @@ const COMBAT_PARTY_SPAWNS: readonly Vec2[] = [
   { x: 3, y: 8 },
 ];
 
+/** The platform's raised north rim (`h`) and the ramps at its ends (`H`): one tier of plank. */
+const PLATFORM_LEGEND: typeof LEGEND = {
+  ...RG02_LEGEND,
+  h: { terrain: 'wood', elevation: 1 },
+  H: { terrain: 'wood', elevation: 1, ramp: true },
+};
+
 /**
  * The region's sprites (`docs/pipeline-trial-log.md`, "Art production"): its own people and pieces since the art
  * batches.
@@ -61,17 +70,19 @@ const SPRITE = {
   luli: 'npc.luli',
   // Sabi leads the riggers and wears their sheet (the art list: she shares it).
   sabi: 'unit.enemy.rigger',
+  // SF-2.2: the ferry apprentices borrow the riggers' sheet until their own art is approved.
+  apprentices: 'unit.enemy.rigger',
+  // SF-2.3: the corporal wears the sergeant's sheet, as he does in the fight (`toll_corporal`).
+  corporal: 'unit.enemy.sergeant',
 } as const;
 
 const ARRIVED = { kind: 'visited', nodeId: 'mq02_saltstep_arrival' } as const;
-// Either way in to Scene 2.2: the bowl-seller's own chain, or the one that ends on Tenzo's exchange.
-const BOWL_CARRIED = {
-  kind: 'any',
-  of: [
-    { kind: 'visited', nodeId: 'mq02_bowl_seller' },
-    { kind: 'visited', nodeId: 'mq02_bowl_seller_tenzo' },
-  ],
-} as const;
+// SQ-01's persistent change (the story bible): after Too Many Cabbages, Bo-shan's cart arrives stacked low and even, with
+// one enormous cabbage on top. The flag's key is spelled here rather than imported, so this region's chunk does not pull
+// in Ba Dan's side story.
+const SQ01_RESOLVED = { kind: 'flag', key: 'sq01.cabbages', op: 'set' } as const;
+// The party has heard Scene 2.2 at the bowl stall.
+const BOWL_CARRIED = { kind: 'visited', nodeId: 'mq02_bowl_seller' } as const;
 const VOTED = {
   kind: 'any',
   of: [
@@ -144,8 +155,8 @@ export const SALTSTEP_MARKET: MapDef = {
     {
       pos: { x: 0, y: 5 },
       toMapId: 'ba_dan_village',
-      // Beside the coast-road sign on Ba Dan's south lawn.
-      toPos: { x: 16, y: 14 },
+      // Beside the coast-road sign on Ba Dan's south lawn, the cell north of it.
+      toPos: { x: 12, y: 20 },
       label: 'Coast road → Ba Dan Village',
       direction: 'west',
       area: mouth(0, [5, 6]),
@@ -159,10 +170,26 @@ export const SALTSTEP_MARKET: MapDef = {
       node: 'mq02_saltstep_arrival',
       label: 'Saltstep',
       sprite: 'world.parcel_cart',
-      when: { kind: 'not', of: ARRIVED },
+      when: {
+        kind: 'all',
+        of: [
+          { kind: 'not', of: ARRIVED },
+          { kind: 'not', of: SQ01_RESOLVED },
+        ],
+      },
       once: true,
       // The whole walkable column, so no route east from the coast road slips past it.
       area: [1, 2, 3, 4, 5, 6, 7].map((y) => ({ x: 3, y })),
+    },
+    {
+      // The same first sight, for a table that sorted Bo-shan's load (SQ-01): only the cart's picture differs.
+      id: 'mq02_saltstep_arrival_tidy',
+      node: 'mq02_saltstep_arrival',
+      label: 'Saltstep',
+      sprite: 'world.parcel_cart_tidy',
+      when: { kind: 'all', of: [{ kind: 'not', of: ARRIVED }, SQ01_RESOLVED] },
+      once: true,
+      area: [1, 2, 3, 4, 5, 6, 7, 8, 9].map((y) => ({ x: 3, y })),
     },
   ],
   npcs: [
@@ -173,10 +200,6 @@ export const SALTSTEP_MARKET: MapDef = {
       pos: { x: 6, y: 6 },
       sprite: SPRITE.bowlSeller,
       node: 'mq02_bowl_seller',
-      // Tenzo's moment (Scene 2.2): the same conversation, ending on his exchange with her.
-      routes: [
-        { when: { kind: 'partyHas', characterId: 'tenzo' }, node: 'mq02_bowl_seller_tenzo' },
-      ],
     },
     {
       id: 'mq02_tavi',
@@ -206,7 +229,6 @@ export const SALTSTEP_MARKET: MapDef = {
       sprite: SPRITE.crates,
       node: 'mq02_miri_crates',
       // Kaya's opening (the slice's first exchange only): the crates are her sister's shop's.
-      routes: [{ when: { kind: 'partyHas', characterId: 'kaya' }, node: 'mq02_miri_crates_kaya' }],
     },
     {
       // Scene 2.3 opens at the customs stall, once the party is carrying the second bowl (2.4
@@ -220,6 +242,15 @@ export const SALTSTEP_MARKET: MapDef = {
         kind: 'all',
         of: [BOWL_CARRIED, { kind: 'not', of: { kind: 'visited', nodeId: 'mq02_stall_drifts' } }],
       },
+    },
+    {
+      // SF-2.2, optional: Tavi's apprentices by the ferry landing, until the bout has started.
+      id: 'sf22_apprentices',
+      name: 'Ferry apprentices',
+      pos: { x: 18, y: 9 },
+      sprite: SPRITE.apprentices,
+      node: 'sf22_challenge',
+      when: { kind: 'not', of: { kind: 'visited', nodeId: 'sf22_rules' } },
     },
   ],
 };
@@ -343,6 +374,16 @@ export const EMBERWATCH_PARADE: MapDef = {
       sprite: SPRITE.tavi,
       node: 'mq03_tavi',
     },
+    {
+      // The way onto the river road (`docs/places/river_road.md`): shown once Scene 3.9's invitation sets
+      // `mq03.invited`. Scene 3.9 is not built, so nothing shows it yet; the blockout is walked by warp.
+      id: 'river_road_sign',
+      name: 'River road',
+      pos: { x: 22, y: 9 },
+      sprite: 'world.route_sign',
+      node: 'river_road_sign',
+      when: { kind: 'flag', key: 'mq03.invited', op: 'set' },
+    },
   ],
 };
 
@@ -417,9 +458,198 @@ export const EMBERWATCH_POWER_YARD: MapDef = {
   props: [],
 };
 
+/**
+ * SF-2.2's board (`docs/places/saltstep_platform.md`, plan 2, owner 2026-11-19): a 9 x 6 deck in
+ * the harbour. The old stall counter's stub (`F`, blocked cover) stands on the seam, column 7, the
+ * platform's pivot (`enc_sf22_platform`'s `tipping`), with gaps north and south of it, so there are
+ * two ways across. Two mooring bollards (`F`) at the north-west and south-east corners. The north
+ * rim is a step one tier up (`h`), with a ramp at each end (`H`) and the water behind it. Water
+ * (`W`) everywhere else: a shove into it is out of the bout (ADR 0122).
+ */
+export const SALTSTEP_PLATFORM: MapDef = {
+  id: 'saltstep_platform',
+  projection: 'topdown',
+  // The writing pass's name for it (#914).
+  name: 'The Loose Platform',
+  kind: 'combat',
+  width: 15,
+  height: 11,
+  ambience: 'village',
+  legend: PLATFORM_LEGEND,
+  rows: [
+    'WWWWWWWWWWWWWWW',
+    'WWWWWWWWWWWWWWW',
+    'WWWHhhhhhhhHWWW',
+    'WWWFwwwwwwwwWWW',
+    'WWWwwwwFwwwwWWW',
+    'WWWwwwwFwwwwWWW',
+    'WWWwwwwFwwwwWWW',
+    'WWWwwwwwwwwFWWW',
+    'WWWWWWWWWWWWWWW',
+    'WWWWWWWWWWWWWWW',
+    'WWWWWWWWWWWWWWW',
+  ],
+  // The west half, two cells from the seam first, so contact comes in the first round and nobody
+  // starts on the edge (core F8).
+  partySpawns: [
+    { x: 5, y: 5 },
+    { x: 5, y: 4 },
+    { x: 5, y: 6 },
+    { x: 4, y: 5 },
+    { x: 4, y: 3 },
+    { x: 4, y: 7 },
+  ],
+  npcs: [],
+  props: [],
+};
+
+/**
+ * The river road (`docs/places/river_road.md`, plan 1; owner, 2026-11-20): the cart's day up the river from the coast to
+ * Causeway, five views in a row. GREY BLOCKOUT (stage 3): the rows are the plan; nothing is dressed.
+ *
+ * - West: the road leaves the bay (the west mouth walks back to Emberwatch's parade ground).
+ * - The shade stop: the big tree (`T`), the trough (`F`) and a pull-off loop; a footpath down to the river landing.
+ * - The bridge: the plank bridge (`w`) carries the road over the side stream; the ford (`~`, shallow) a little
+ *   downstream is the way round it (SF-2.3's board is a crop of this view). The guards' camp is north of the road,
+ *   east of the bridge: its cold fire and its crates (`F`, cover).
+ * - The bend: the road climbs north-east past a cliff (`X`) that hides the far end.
+ * - The lookout: a rise (`^`, a ramp `S` up from the road) at the east end, where Scene 5.6's meal looks out over the
+ *   three valleys. The road runs on east into Causeway, which is not built yet, so its east end is a closed edge.
+ * - The river fills the south edge, wide and empty: the quiet space.
+ */
+export const RIVER_ROAD: MapDef = {
+  id: 'river_road',
+  projection: 'topdown',
+  // SF-2.3's later states (ADR 0123): the camp stands until the toll is won, the pole is down until the cart goes
+  // through either way, and Carry on leaves one sack of cabbages by the cold fire.
+  sceneGates: {
+    camp: { kind: 'not', of: { kind: 'visited', nodeId: 'sf23_pole_up' } },
+    pole_down: {
+      kind: 'all',
+      of: [
+        { kind: 'not', of: { kind: 'visited', nodeId: 'sf23_pole_up' } },
+        { kind: 'not', of: { kind: 'visited', nodeId: 'sf23_one_sack' } },
+      ],
+    },
+    pole_up: {
+      kind: 'any',
+      of: [
+        { kind: 'visited', nodeId: 'sf23_pole_up' },
+        { kind: 'visited', nodeId: 'sf23_one_sack' },
+      ],
+    },
+    sack: { kind: 'visited', nodeId: 'sf23_one_sack' },
+  },
+  name: 'The River Road',
+  kind: 'explore',
+  width: 40,
+  height: 14,
+  ambience: 'village',
+  legend: RG02_LEGEND,
+  rows: [
+    'TTTTTTTTTTTTTTTTTWWWTTTTTTTTTXXXXX,,,,,,',
+    'TTT,TTTT,,,,TTTT,,WW,,,,TTTTTXXXXX,^^^^^',
+    'TT,,,TT,,,,,,,T,,,WW,,...F.T,,XXX,,S^^^^',
+    ',,,,,,,,,,T,F,,,,,,WW,.F...,,,,,========',
+    ',,,,,,,,,.....,,,,,WW,.....,,,==========',
+    '===================ww===========,,,,,,,,',
+    '===================ww=========,,,,,,,,,,',
+    ',,,,,,,.,,,,,,,,,,,WW,,,,,U,,,,,,,,,,,,,',
+    ',,,,,,,.,,,,,,,,,,,,~~,U,,,,,,,,,,,,,,,,',
+    ',W,,::::::,,,,,,,,,,WW::::::,,,,,WWWWWWW',
+    'WWWWWWwwwWWWWWWW,,,,WW::::::WWWWWWWWWWWW',
+    'WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW',
+    'WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW',
+    'WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW',
+  ],
+  partySpawns: [
+    { x: 1, y: 5 },
+    { x: 1, y: 6 },
+    { x: 2, y: 5 },
+    { x: 2, y: 6 },
+    { x: 3, y: 5 },
+    { x: 3, y: 6 },
+  ],
+  exits: [
+    {
+      pos: { x: 0, y: 5 },
+      toMapId: 'emberwatch_parade',
+      // The parade ground's open grass south of its east road, clear of the power yard's gap.
+      toPos: { x: 21, y: 11 },
+      label: 'West → Emberwatch',
+      direction: 'west',
+      area: mouth(0, [5, 6]),
+    },
+  ],
+  edges: [
+    { side: 'west', span: [3, 4], treatment: 'band' },
+    { side: 'west', span: [7, 9], treatment: 'band' },
+    { side: 'north', span: [34, 39], treatment: 'band' },
+    // Causeway (RG-03) is not built: the road's east end is closed until it is.
+    { side: 'east', span: [0, 2], treatment: 'band' },
+    { side: 'east', span: [3, 4], treatment: 'barrier' },
+    { side: 'east', span: [5, 8], treatment: 'band' },
+  ],
+  edgeContract: 'enforce',
+  npcs: [
+    {
+      // SF-2.3, optional: the corporal at the guards' camp, past the bridge, until the toll is fought.
+      id: 'sf23_corporal',
+      name: 'Corporal',
+      pos: { x: 24, y: 2 },
+      sprite: SPRITE.corporal,
+      node: 'sf23_toll',
+      when: { kind: 'not', of: { kind: 'visited', nodeId: 'sf23_battle' } },
+    },
+  ],
+  props: [],
+};
+
+/** Where SF-2.3's board sits in the river road's rows: its top-left cell, and its size. */
+export const RIVER_ROAD_BRIDGE_CROP = { x: 12, y: 0, width: 19, height: 12 } as const;
+
+/**
+ * SF-2.3's board (`docs/places/river_road.md`, "Fight needs (SF-2.3)"; owner decision 3, 2026-11-20: "a 19 by 12 crop
+ * board of the bridge section"): the river road's own rows, cropped round view 3. The trough at the shade stop's east
+ * edge (west), the side stream with the plank bridge (`w`) carrying the road across it, the ford's shallows (`~`) two
+ * rows downstream, the guards' camp east of the bridge with its crates (`F`, cover), the far bank's boulders (`U`), and
+ * the bend's cliff (`X`) at the north-east corner. The river closes the south. The guards hold the bridge (a choke)
+ * and the camp; the party comes from the west bank and can flank by the ford.
+ */
+export const RIVER_ROAD_BRIDGE: MapDef = {
+  id: 'river_road_bridge',
+  projection: 'topdown',
+  name: 'The Plank Bridge',
+  kind: 'combat',
+  width: RIVER_ROAD_BRIDGE_CROP.width,
+  height: RIVER_ROAD_BRIDGE_CROP.height,
+  ambience: 'village',
+  legend: RG02_LEGEND,
+  rows: RIVER_ROAD.rows
+    .slice(RIVER_ROAD_BRIDGE_CROP.y, RIVER_ROAD_BRIDGE_CROP.y + RIVER_ROAD_BRIDGE_CROP.height)
+    .map((row) =>
+      row.slice(RIVER_ROAD_BRIDGE_CROP.x, RIVER_ROAD_BRIDGE_CROP.x + RIVER_ROAD_BRIDGE_CROP.width),
+    ),
+  // The west bank: on the road and the pull-off beside it, three or four cells from the bridge.
+  partySpawns: [
+    { x: 3, y: 5 },
+    { x: 3, y: 6 },
+    { x: 2, y: 5 },
+    { x: 2, y: 6 },
+    { x: 2, y: 4 },
+    { x: 2, y: 7 },
+  ],
+  npcs: [],
+  // The camp's lamp oil, by the cold fire: fire lights the spill (the brief: "fire relights it").
+  props: [{ propId: 'oil_flask', pos: { x: 13, y: 4 } }],
+};
+
 export const SALTSTEP_EMBERWATCH_MAPS: readonly MapDef[] = [
   SALTSTEP_MARKET,
   SALTSTEP_PONTOON,
   EMBERWATCH_PARADE,
   EMBERWATCH_POWER_YARD,
+  SALTSTEP_PLATFORM,
+  RIVER_ROAD,
+  RIVER_ROAD_BRIDGE,
 ];

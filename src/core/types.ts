@@ -123,7 +123,9 @@ export type StatusId =
   | 'rooted'
   | 'chiBlocked'
   | 'guarded'
-  | 'inspired';
+  | 'inspired'
+  /** On a bout's edge after a shove toward the water: the next one puts them in (ADR 0122 §2a). */
+  | 'teetering';
 
 export interface StatusInstance {
   readonly id: StatusId;
@@ -529,9 +531,33 @@ export type EncounterObjective = {
   readonly kind: 'holdAtRoundEnd';
   /** The cells to hold. Walkable, and never a party spawn or a prop. */
   readonly cells: readonly Vec2[];
+  /**
+   * How many distinct `cells` must be held at once when a round ends (SF-3.3: two of three flags;
+   * ADR 0122 §5). Absent means 1.
+   */
+  readonly minHeld?: number;
   /** The top-bar line ("Stop the winch"). Written by the writing pass. */
   readonly label: string;
 };
+
+/**
+ * A platform that tips (ADR 0122 §3): the line between its two halves. On `axis` 'x' the halves are
+ * the columns either side of column `pivot`; on 'y' the rows either side of row `pivot`. A fighter
+ * on the pivot line counts for neither half.
+ */
+export interface BoutTipping {
+  readonly axis: 'x' | 'y';
+  readonly pivot: number;
+}
+
+/**
+ * A friendly sparring bout (ADR 0122): nobody is helped up, and a forced move onto an `outOn`
+ * terrain puts a fighter out at once, whatever their HP.
+ */
+export interface EncounterBout {
+  readonly outOn: readonly TerrainId[];
+  readonly tipping?: BoutTipping;
+}
 
 export interface EncounterDef {
   readonly id: string;
@@ -552,6 +578,8 @@ export interface EncounterDef {
   readonly loseIfGuestFalls?: boolean;
   /** A goal that wins the fight without defeating every enemy. Defeating them all still wins. */
   readonly objective?: EncounterObjective;
+  /** A sparring bout rather than a fight (ADR 0122). */
+  readonly bout?: EncounterBout;
   /**
    * The fight is lost if it is not won by the end of this round (Scene 2.5: the crate
    * reaches the barge after six). Absent: only the engine's `MAX_BATTLE_ROUNDS` ceiling.
@@ -586,6 +614,11 @@ export interface EncounterDef {
    */
   readonly guidance?: 'firstFight';
   readonly expectedLevel: number;
+  /**
+   * XP a victory pays each party member, in place of the roster's XP over the baseline. For an
+   * optional side fight, sized against the act's level curve (`xpPerHead` in `createGame.ts`).
+   */
+  readonly xpPerHead?: number;
   readonly intro: string;
   /** Shown under the objective banner — a hint aimed at an 8-year-old. */
   readonly tip: string;
@@ -895,6 +928,12 @@ export interface MapDef {
    */
   readonly projection?: 'topdown';
   readonly scene?: MapScene;
+  /**
+   * The story's say over the scene's set dressing (ADR 0123): each named gate is a condition, and a
+   * scene piece carrying that `gate` draws only while it holds. Presentation only: the rows stay the
+   * authority for blocking, so a gated piece is never solid.
+   */
+  readonly sceneGates?: Readonly<Record<string, Condition>>;
   readonly id: string;
   readonly name: string;
   readonly kind: 'combat' | 'explore';
@@ -1020,6 +1059,11 @@ export interface SceneImage {
    * crosses it, upright scenery leans. Presentation; the rules never read it.
    */
   readonly wind?: boolean;
+  /**
+   * Draws only while the map's `sceneGates[gate]` holds (ADR 0123). The app filters the scene before
+   * the renderer sees it, so the renderer never reads the story.
+   */
+  readonly gate?: string;
 }
 
 /** Small birds that lift out of the wind-moved scenery when a fight opens. */
@@ -1443,6 +1487,11 @@ export interface BattleState {
    * carry no key at all.
    */
   readonly helpedUp?: readonly string[];
+  /**
+   * Fighters out of a sparring bout (ADR 0122 §2), in the order they went out. Absent outside a
+   * bout and until somebody is out.
+   */
+  readonly boutOut?: readonly string[];
 }
 
 /**
@@ -1650,7 +1699,16 @@ export type GameEvent =
       readonly comboId?: string;
     }
   | { readonly type: 'unitPushed'; readonly unitId: string; readonly to: Vec2 }
-  | { readonly type: 'unitDied'; readonly unitId: string }
+  | {
+      readonly type: 'unitDied';
+      readonly unitId: string;
+      /**
+       * Set only in a sparring bout (ADR 0122 §2): `down` when the fighter was knocked to 0 HP,
+       * `water` when a forced move carried them in. Presentation shows it as out of the bout, not
+       * as a knockout.
+       */
+      readonly out?: 'down' | 'water';
+    }
   /** A downed unit stood back up with `hp` health, helped by `helperId` (ADR 0118). */
   | {
       readonly type: 'unitRevived';

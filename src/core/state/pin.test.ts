@@ -40,7 +40,7 @@ function reload(content: ContentIndex, state: GameState): GameState {
   return reconcileWorld(content, reconcileDisciplines(content, stateFromBlob(result.blob)));
 }
 
-/** Explore, one tile west of Elder Mira (11,5) on the village map. */
+/** Explore, at the spawn, beside Elder Mira (12,9) on the village map. */
 function besideMira(): GameState {
   const base = createGame(CONTENT, {
     seed: 'pin',
@@ -50,14 +50,14 @@ function besideMira(): GameState {
   return {
     ...base,
     screen: 'explore',
-    location: { mapId: 'ba_dan_village', pos: { x: 10, y: 5 } },
+    location: { mapId: 'ba_dan_village', pos: { x: 11, y: 10 } },
     story: { ...base.story, nodeId: 'village_explore' },
   };
 }
 
 suite('the conversation pin', () => {
   it('is set, with the anchor id, when a resident-bound NpcDef opens a conversation', () => {
-    const result = apply(BOUND, besideMira(), { type: 'walkTo', pos: { x: 11, y: 5 } });
+    const result = apply(BOUND, besideMira(), { type: 'walkTo', pos: { x: 12, y: 9 } });
     expect(result.state.screen).toBe('dialogue');
     expect(result.state.world.talk).toEqual(PIN);
   });
@@ -72,7 +72,7 @@ suite('the conversation pin', () => {
         'scene.bd03_handover': 'completed',
       },
       screen: 'explore',
-      location: { mapId: 'ba_dan_village', pos: { x: 22, y: 7 } },
+      location: { mapId: 'ba_dan_village', pos: { x: 30, y: 9 } },
       story: {
         ...base.story,
         nodeId: 'village_return_explore',
@@ -100,15 +100,15 @@ suite('the conversation pin', () => {
   it('pins nobody when an unbound NpcDef opens a conversation', () => {
     // The riverside path sign is a plain NpcDef: its tap opens a dialogue,
     // but there is no resident to hold in place.
-    const state = { ...besideMira(), location: { mapId: 'ba_dan_village', pos: { x: 17, y: 12 } } };
-    const result = apply(CONTENT, state, { type: 'walkTo', pos: { x: 18, y: 12 } });
+    const state = { ...besideMira(), location: { mapId: 'ba_dan_village', pos: { x: 19, y: 21 } } };
+    const result = apply(CONTENT, state, { type: 'walkTo', pos: { x: 20, y: 21 } });
     expect(result.state.screen).toBe('dialogue');
     expect(result.state.story.nodeId).toBe('riverside_invitation');
     expect(result.state.world.talk).toBeNull();
   });
 
   it('is cleared by the command that leaves the conversation', () => {
-    const opened = apply(BOUND, besideMira(), { type: 'walkTo', pos: { x: 11, y: 5 } }).state;
+    const opened = apply(BOUND, besideMira(), { type: 'walkTo', pos: { x: 12, y: 9 } }).state;
     expect(opened.world.talk).not.toBeNull();
 
     // `mira_intro`'s `next` is `village_explore`, so playing it to the end
@@ -124,7 +124,7 @@ suite('the conversation pin', () => {
   it('holds the speaker on the pinned tile, at rank 0, at every line of the conversation', () => {
     const village = BOUND.maps.get('ba_dan_village');
     if (!village) throw new Error('Missing village map');
-    let state = apply(BOUND, besideMira(), { type: 'walkTo', pos: { x: 11, y: 5 } }).state;
+    let state = apply(BOUND, besideMira(), { type: 'walkTo', pos: { x: 12, y: 9 } }).state;
     let lines = 0;
     for (; lines < 50 && state.screen === 'dialogue'; lines++) {
       const placement = resolveResidents(BOUND, state).placements.find(
@@ -133,7 +133,7 @@ suite('the conversation pin', () => {
       expect(placement?.rank).toBe(RANK_CONVERSATION);
       expect(placement?.anchor).toBe(TEST_ANCHOR);
       const speaker = visibleNpcs(BOUND, village, state).find((npc) => npc.id === 'elder_mira');
-      expect(speaker?.pos).toEqual({ x: 11, y: 5 });
+      expect(speaker?.pos).toEqual({ x: 12, y: 9 });
       state = apply(BOUND, state, { type: 'advanceDialogue' }).state;
     }
     expect(lines).toBeGreaterThan(1);
@@ -152,7 +152,7 @@ suite('the conversation pin', () => {
     // of the end, then round-trip through the full load path (serialize ->
     // deserialize -> reconcileDisciplines -> reconcileWorld, matching
     // App.ts) before checking the pin is still there.
-    const opened = apply(BOUND, besideMira(), { type: 'walkTo', pos: { x: 11, y: 5 } }).state;
+    const opened = apply(BOUND, besideMira(), { type: 'walkTo', pos: { x: 12, y: 9 } }).state;
     expect(opened.screen).toBe('dialogue');
     const advanced = apply(BOUND, opened, { type: 'advanceDialogue' }).state;
     expect(advanced.screen).toBe('dialogue');

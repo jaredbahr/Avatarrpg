@@ -35,7 +35,7 @@ test.describe('the village', () => {
 
       const errors: string[] = [];
       page.on('console', (message) => {
-        if (message.type() === 'error') errors.push(message.text());
+        if (message.type() === 'error') errors.push(`${message.text()} ${message.location().url}`);
       });
       page.on('pageerror', (error) => errors.push(error.message));
 
@@ -61,8 +61,9 @@ test.describe('the village', () => {
       expect(new Set((start.drawn ?? []).map((p) => `${p.x},${p.y}`)).size).toBe(PARTY.length);
       if (!start.pos) return;
 
-      // Four tiles east along the road, tapped where the tile is painted.
-      const to = { x: start.pos.x + 4, y: start.pos.y };
+      // Four tiles east along the square's lower lawn (a row below Pella's bench), tapped where the tile
+      // is painted.
+      const to = { x: start.pos.x + 4, y: start.pos.y + 1 };
       const point = await tileCentre(page, to);
       expect(point, 'no camera to map the tile through').not.toBeNull();
       if (!point) return;
@@ -89,25 +90,30 @@ test.describe('the village', () => {
     await enterNode(page, 'village_explore');
     await page.locator('.explore-scene .map-canvas').waitFor();
 
-    // Nobody is within reach of the spawn, and the button says so.
+    // The new game opens beside Mira's table; out on the west lawn nobody is within reach, and the
+    // button says so.
+    await standAt(page, { x: 4, y: 10 });
     const talk = page.getByRole('button', { name: /^Talk/ });
     await expect(talk).toBeDisabled();
 
-    // On the road two tiles below the elder, and further from everyone else,
-    // Talk lights up with her name; tapping it walks the party to her side
-    // (on dry ground: the canal lies between) and starts her node.
-    await standAt(page, { x: 11, y: 7 });
+    // On the lawn three tiles west of the elder, and further from everyone else, Talk lights up with
+    // her name; tapping it walks the party to her side and starts her node.
+    await standAt(page, { x: 9, y: 10 });
     await expect(talk).toBeEnabled();
     await expect(talk).toContainText('Elder Mira');
     await talk.click();
     await expect
       .poll(async () => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
       .toBe('mira_intro');
-    // A crossing reaches the dry paving beside her table: the west side, since
-    // Pella sits on Mira's east side for this first talk (DLG-01).
+    // The crossing ends on open paving beside her table, never on her tile or Pella's (DLG-01).
     await expect
-      .poll(async () => page.evaluate(() => window.fnt?.app.state?.location.pos))
-      .toEqual({ x: 10, y: 5 });
+      .poll(async () =>
+        page.evaluate(() => {
+          const pos = window.fnt?.app.state?.location.pos;
+          return pos ? Math.max(Math.abs(pos.x - 12), Math.abs(pos.y - 9)) : null;
+        }),
+      )
+      .toBe(1);
   });
 
   test('the gate names the road and leads to it', async ({ page }) => {
@@ -120,12 +126,12 @@ test.describe('the village', () => {
     await expect(objective).toContainText('Talk to Elder Mira');
 
     // The dock retains the objective and adds the nearby gate's destination.
-    await standAt(page, { x: 22, y: 7 });
+    await standAt(page, { x: 30, y: 9 });
     await expect(objective).toContainText('Talk to Elder Mira');
     await expect(page.locator('.explore-objective')).toContainText('East road → Forest Road');
 
     await page.evaluate(() => {
-      window.fnt?.app.dispatch({ type: 'walkTo', pos: { x: 23, y: 7 } });
+      window.fnt?.app.dispatch({ type: 'walkTo', pos: { x: 31, y: 9 } });
     });
     await expect
       .poll(async () => page.evaluate(() => window.fnt?.app.state?.location.mapId))

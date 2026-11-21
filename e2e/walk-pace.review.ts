@@ -25,7 +25,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       const errors: string[] = [];
       page.on('pageerror', (error) => errors.push(error.message));
       page.on('console', (message) => {
-        if (message.type() === 'error') errors.push(message.text());
+        if (message.type() === 'error') errors.push(`${message.text()} ${message.location().url}`);
       });
       await resetStorage(page, `?renderer=${renderer}`);
       await startGame(page, ['One', 'Two', 'Three'], ['kaya', 'sura', 'bo'], 'walk-pace-383', {

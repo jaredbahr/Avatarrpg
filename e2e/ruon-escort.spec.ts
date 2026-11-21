@@ -238,6 +238,10 @@ test('Jin takes Ruon on the trade route, and he does not follow', async ({ page 
   // He is still there while Jin says "Captain. Hands where I can see them."
   await expect.poll(() => followers(page)).toEqual(['follower.ruon']);
   await finishDialogue(page, 'trade_chosen');
+  // He answers the trade before she takes him.
+  expect(await nodeId(page)).toBe('ruon_traded');
+  await expect.poll(() => followers(page)).toEqual(['follower.ruon']);
+  await finishDialogue(page, 'ruon_traded');
   expect(await nodeId(page)).toBe('gate_trade_explore');
   await waitForIdle(page);
   expect(await followers(page)).toEqual([]);
@@ -252,7 +256,7 @@ test('Ruon walks home with the party and joins the welcome home', async ({ page 
     pos: { x: 3, y: 4 },
     flags: { act1_complete: true, ruon_spared: true },
     profiles: 'returning',
-    villageReturn: { x: 22, y: 7 },
+    villageReturn: { x: 30, y: 9 },
     visited: ['road_depart', 'after_forest', 'gate_parley', 'ruon_choice', 'act1_victory'],
   });
   expect(await followers(page)).toEqual(['follower.ruon']);
@@ -267,12 +271,12 @@ test('Ruon walks home with the party and joins the welcome home', async ({ page 
   // Waiting for the party to come up the street, he steps aside from no one.
   const { ruon, party } = await line(page);
   expect(party.some((seat) => seat.x === ruon!.x && seat.y === ruon!.y)).toBe(false);
-  await walkTo(page, 20, 7);
+  await walkTo(page, 24, 9);
   expect(await nodeId(page)).toBe('welcome_home_mira');
   // The welcome plays over the village as the party walked in, Ruon among the crowd:
-  // he waits with Bo-shan at the east-road mouth.
+  // he waits with the welcomers inside the east gate.
   expect(await page.evaluate(() => window.fnt!.app.followerPositions())).toEqual([
-    { id: 'follower.ruon', pos: { x: 22, y: 6 }, clip: expect.stringMatching(/^idle/) },
+    { id: 'follower.ruon', pos: { x: 23, y: 11 }, clip: expect.stringMatching(/^idle/) },
   ]);
 });
 

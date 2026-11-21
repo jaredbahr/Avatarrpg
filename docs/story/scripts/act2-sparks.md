@@ -27,8 +27,9 @@ the bible gives exact dialogue (DLG-04), it is used word for word and marked.
 - **What is already in the game.** Scenes 2.1 to 2.9, the arrival half of 3.1 (the cook, Tavi, Luli and her
   offer) and SF-2.1 are built word for word from this script (`src/content/regions/saltstepEmberwatch/`). The
   2026-11-17 edit pass left those lines alone; what it would change there is listed as proposals in the
-  pass's report. Not yet wired, and so edited here: Sura's and Wen's lines in 2.4, Riko's in 2.6, Veyra's
-  fight barks.
+  pass's report. Sura's and Wen's lines in 2.4 and Riko's in 2.6 are wired too (#900, 2026-11-19), each behind
+  a `branchWhen` gate on the hero being in the party; Sura's culvert ending is a variant for a table that saw
+  the culvert. Not yet wired, and so still edited here: Veyra's fight barks.
 
 ## What Act II may reveal
 
@@ -969,6 +970,18 @@ paper. Bring a lot.
 
 **Shown:** played. **Where:** the jetty, morning.
 
+> Added 2026-11-20 (suggestions pass).
+>
+> **If `emberwatch_route_loader`, and not `lost_emberwatch` —** _(found, passing the bean rack on the way down
+> to the jetty; it comes before the clerk and his card)_
+>
+> **Narrator:** You put Kesi's key back by the bean rack, where she said she would drop it. A minute later she
+> walks past it. Then she walks past it again, slower.
+>
+> **Kesi:** Oh. Look. My key. On the ground. Where I must have dropped it.
+>
+> **Retired cook:** It was in my red ones. I nearly put it in the pot.
+
 **Narrator:** A clerk in a clean Commonworks coat is waiting by the cart with a card. He has been waiting a
 while; Parcel has eaten the corner of his notebook.
 
@@ -1284,6 +1297,21 @@ task-givers each have one new line, below)._
 - **Girl at the lift:** I'd have got him out with the lift. If he'd been turnips.
 - **Dema:** She went in after him herself. I'll give her that. I'll give her that, and I'll still want the
   late shelf paid.
+
+> Added 2026-11-20 (suggestions pass).
+>
+> _A fourth person to find in the same free roam, for any party. He stands alone: nobody has to have done a
+> festival task._
+>
+> **Narrator:** Tolo is sitting on the bathhouse steps in three towels. Only his cap and his ears show.
+>
+> **Tolo:** You're the ones who got the chain off me. Thank you. I've been practising saying it. It came out
+> shorter than I practised.
+>
+> **Tolo:** My mum's on her way down. If she asks, it was one egg. She counts them.
+>
+> _(After `lost_canal_rescue`, his first line is instead: "You're the ones who went in after me. I saw you go
+> past. You were going quite fast. Thank you." The egg line is the same.)_
 
 ### Scene 4.6 — VOTE: the commission
 
@@ -1601,10 +1629,11 @@ itself at Saltstep).
 - **Edda** (non-benders; if not already offered at Emberwatch): **Edda:** The stop button's still out of reach.
   It's been waiting for you.
 
-### Scene 5.6 — The meal, and a letter
+### Scene 5.6 — The meal, and VOTE: which road first
 
-**Shown:** played. **Where:** the cart, drawn up by the river road outside Causeway. This is the act's quiet
-close: a meal and a view.
+**Shown:** played. **Where:** the cart, drawn up by the river road outside Causeway. This and Scene 5.7 are one
+evening and the act's quiet close: a meal and a view, the road chosen while the food is hot, and then a letter
+(owner, 2026-11-19: the vote comes before the courier, and the act ends on the letter).
 
 **Narrator:** Evening. The cart is pulled off the river road where you can see all three valleys at once:
 rust-red hills to the left, a silver flatness of marsh to the right, and straight ahead, the heights, with
@@ -1618,6 +1647,34 @@ has his own heap and is guarding it from nobody.
 > first sauce.
 >
 > **Tenzo:** Try both. Tell me which. Don't be kind.
+
+**Narrator:** Three pins from the dispatch office are lying on the tailgate, between the rice and the river
+cakes.
+
+**Driver (Bo-shan):** Three stops left in the book. I'll take them in any order. You're the ones who've been
+right about things. Mostly. Pick.
+
+> **Loss branch.** **Driver (Dorin):** Three places. My permit says "the coast road and wherever it leads". I
+> wrote it loosely on purpose. Choose.
+
+**VOTE — Where does the cart go first?**
+
+- **West, to Copper Orchard and Pear Halt** (MQ-06).
+- **East, to Reedglass and the Slow Channel** (MQ-07).
+- **North, to Bellweather and the weather bell** (MQ-08).
+
+_Sets `first_spoke` (`orchard`, `marsh` or `heights`). All three are played in the end; this is only the order.
+Nothing in Scene 5.7 reads it. Act III's first camp (C.1) does._
+
+**Narrator:** You push a pin into the tailgate. Parcel lifts his head from his heap and looks down the road you
+chose for some time before he agrees to it.
+
+> **If the first spoke is Copper Orchard —** _Narrator:_ He agrees to this one very quickly. He seems to know
+> where it goes.
+
+### Scene 5.7 — A letter
+
+**Shown:** played. **Where:** the same meal, a little later. Ends the act.
 
 **Narrator:** A courier comes up the road at a trot, with a long bundle on one shoulder and a letter held out
 in front like something hot.
@@ -1711,32 +1768,6 @@ is not rated for standing. G.
 > **Gao's note (with the canopy):** This was my awning. I want it back, with the cart, and the boy, and you. In
 > that order if you have to choose. Don't let Dorin fit it alone. He'll measure it till dark.
 
-### Scene 5.7 — VOTE: which road first
-
-**Shown:** played. Ends the act.
-
-**Narrator:** Three pins from the dispatch office are lying on the tailgate.
-
-**Driver (Bo-shan):** Three stops left in the book. I'll take them in any order. You're the ones who've been
-right about things. Mostly. Pick.
-
-> **Loss branch.** **Driver (Dorin):** Three places. My permit says "the coast road and wherever it leads". I
-> wrote it loosely on purpose. Choose.
-
-**VOTE — Where does the cart go first?**
-
-- **West, to Copper Orchard and Pear Halt** (MQ-06).
-- **East, to Reedglass and the Slow Channel** (MQ-07).
-- **North, to Bellweather and the weather bell** (MQ-08).
-
-_Sets `first_spoke`. All three are played in the end; this is only the order._
-
-**Narrator:** You push a pin into the tailgate. In the morning, Parcel looks at the road you chose for some
-time before he agrees to it.
-
-> **If the first spoke is Copper Orchard —** _Narrator:_ He agrees to this one very quickly. He seems to know
-> where it goes.
-
 _End of Act II._
 
 ---
@@ -1783,11 +1814,30 @@ them the scrap. They only had to ask in daylight.
 loose, at the midday lull. **Why:** nobody is angry. Losers wash the bowl-seller's bowls. The platform tips
 toward whichever side has more people on it, and going in the water counts as out.
 
+**Ferry apprentice:** You're the ones off the cabbage cart. We settle the midday on the loose platform, us and the
+channel hands. Today we thought we'd be on the same side for once, and you'd be the other one.
+
+**Ferry apprentice:** Losers wash the bowl-seller's bowls. There are sixty. Are you in?
+
 **Tavi:** No bending the platform. Bend whatever else you like. If you fall in, swim to the left. The right's
 where the fish-seller empties her bucket.
 
 **Win:** **Channel hand:** Fair. We wash. You can dry, since you're so quick. **Carry on:** **Bowl-seller:**
 Sixty bowls. Sand's in the tub. Don't stack them wet.
+
+**Bout intro:** The midday lull. The spare platform rides loose on its moorings, and it leans toward whoever stands on
+it. Half the market has found a reason to be near the rail.
+
+**Tip:** A shove toward the water leaves a fighter teetering on the edge. Shove them again after their turn and they
+are in, and out of the bout. If you are the one teetering, step back from the edge. Blue squares show where the deck
+will tip when the round ends.
+
+**Ferry apprentice** (enemy card): Poles a ferry all day and has the shoulders for it. Quick on a wet deck. Laughs when
+it goes in. **Channel hand** (enemy card): Hauls barges through the channel for a living. Slow to move and very hard
+to shift.
+
+**The board:** The Loose Platform. The stall that stood there was a net-mender's, who moved ashore when the platform's
+moorings went slack; nobody has claimed it since, which is why it is spare. Nobody says this in the bout.
 
 ### SF-2.3 — The bridge toll (the river road to Causeway)
 
@@ -1836,7 +1886,7 @@ culvert in the Cutting only if the party saw it (`cutting_culvert`); otherwise i
 
 ## Pella's letter for this act
 
-Scene 5.6, with a loss-branch version addressed to Dorin.
+Scene 5.7, with a loss-branch version addressed to Dorin.
 
 ## Hero moments in this act
 
@@ -1845,11 +1895,11 @@ Scene 5.6, with a loss-branch version addressed to Dorin.
 | Kaya    | 2.2 Miri's crates (PQ-01 planted; opens at Saltstep after MQ-03); 4.3 the chain |
 | Tenzo   | 2.2 the bowl-seller; 4.1 Dema (PQ-02 opens); 5.6 the second sauce               |
 | Nilak   | 3.1 the supply room; 5.5 Aru's table (PQ-03 opens, with the bible's line)       |
-| Sura    | 2.4, 3.3, 5.6: she is the one counting the echoes                               |
+| Sura    | 2.4, 3.3, 5.7: she is the one counting the echoes                               |
 | Bo      | 4.3 moving the crowd                                                            |
 | Lin Mei | 3.5 the careful order; 5.3 her own phrase on the back of the map                |
 | Nima    | 4.1 the towel basket; 4.1 Oru's offer                                           |
-| Jinu    | 2.1 the courier-office copy (loss branch); 5.6 she carries Pella's letter       |
+| Jinu    | 2.1 the courier-office copy (loss branch); 5.7 she carries Pella's letter       |
 | Riko    | 2.6 the packet and the stamp; 3.5 "suspended"; 4.5 "Who gets the key?" (DLG-04) |
 | Wen     | 2.4 the pump; 3.1 her regulator (PQ-10 opens); 4.2 "napkins"                    |
 
@@ -1976,6 +2026,24 @@ record of what was accepted ("Recommend" lines are now decisions). Later correct
 17. **Veyra keeps Rusk; she still sees the wage packet in MQ-02; MQ-03 has three approaches; Jin has both Act
     II beats; DLG-04's choice and the commission vote both stand; Pella's extra sealed letters are kept.**
 
+## Decided (owner, 2026-11-19)
+
+1. **The act ends on the letter home.** The road vote is taken during the meal (Scene 5.6), before the
+   courier arrives, and the act's last scene is Pella's letter, the river's "...come home." and the canopy
+   going up (Scene 5.7). The events and the lines are the ones the owner approved on 2026-11-15, in a new
+   order. What moved with them:
+   - `first_spoke` is now set before the letter is read. Nothing in 5.7 reads it; its three values are named
+     (`orchard`, `marsh`, `heights`) because Act III's first camp reads them.
+   - One line was reworded. Parcel used to consider the chosen road "in the morning", which would now jump
+     past the letter; he looks down it from his heap that evening instead. Scene 6.1 already plays the
+     morning for the Orchard, and the other two spokes open on the road.
+   - The pins lie "between the rice and the river cakes", so the vote is at the meal.
+   - Scene numbers: Tenzo's second sauce stays in 5.6; Sura's echo count, Jinu's delivery and Pella's letter
+     are 5.7 (the tables below, and PQ-04's note in `personal-quests-1.md`).
+   - Nothing else reads the old order: Bo-shan's "three more stops in the book" answers the letter either
+     way, Pella's second letter quotes it, and Act III opens on whichever road was pinned. No cutscene is
+     touched (CS-2A and CS-2B are in MQ-02 and MQ-04). MQ-05 is not built, so the build changes nothing.
+
 ## Open, for the owner
 
 1. **The stencil.** The shipped game says the crates carry "a stencil none of the workers know". I drew it as
@@ -2005,3 +2073,35 @@ and the proposals not applied are in the pass's report.
 3. **Lines:** Kaya at the chain (4.3); Tavi's and Dorin's long turns split.
 4. **Hero moments added:** Nilak in the supply room (3.1), Nima and the towel basket (4.1).
 5. **Cutscenes:** pointers to [cutscenes.md](cutscenes.md) at 2.9 and 4.5.
+
+## Suggestions added 2026-11-20 (the writing pass)
+
+The owner asked for small improvements to be written in and listed (2026-11-20: "Just write them and tell
+me"). Six additions across Acts II to IV. Each is additive: no existing line was changed, no scene's events
+or choice outcomes change, and no flag is set. Each sits under a note line, `> Added 2026-11-20 (suggestions
+pass).`, and is one quoted block. Nothing was added to the scenes already built (2.1 to 2.9, the arrival half
+of 3.1, SF-2.1), so the game and the script still agree there.
+
+| #   | File               | Scene                               | What it is for                                                                                                                                                                                 | To undo                                        |
+| --- | ------------------ | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| 1   | `act2-sparks.md`   | 3.9, before the clerk's card        | Kesi's key is never mentioned again after 3.2. She "finds" it by the bean rack, acting badly. Only on `emberwatch_route_loader`, and not after `lost_emberwatch`. Funny.                       | Cut by deleting the marked lines               |
+| 2   | `act2-sparks.md`   | 4.5, the free roam after DLG-04     | Nobody thanks the party for going into the canal. Tolo does, in three towels, and asks them to say it was one egg. A variant for `lost_canal_rescue`. Funny.                                   | Cut by deleting the marked lines               |
+| 3   | `act3-currents.md` | 6.1, after Yenna's line             | Pella's "let it fall off, then tell me" gets a beat between her letter and 11.2's "You did. By post." Victory branch only, and only once C.1 has played. Funny.                                | Cut by deleting the marked lines               |
+| 4   | `act3-currents.md` | C.1, The ramp                       | Latch on the tailgate tells Parcel the rule about the rope. It does not work. Only when C.1 follows MQ-07. Bo-shan answers after a win, Dorin (eleven watch-book entries) after a loss. Funny. | Cut by deleting the marked lines               |
+| 5   | `act4-weight.md`   | 11.2, the east gate (both versions) | The turtle ducks, absent since Act I, and Dorin's watch book. After a win the duck is asleep on today's page; after a loss it has Dorin's stool and Hanru let it. Two blocks, one addition.    | Cut by deleting the marked lines (both blocks) |
+| 6   | `act4-weight.md`   | 12.1, around the shed               | The shed is all adults. The girl from the goods lift (4.1) brings forty blankets up by herself. Warm, not a joke.                                                                              | Cut by deleting the marked lines               |
+
+**Small facts invented** (none names a person or a place):
+
+- Tolo's mother counts her eggs, and Tolo is given three towels.
+- The retired cook found Kesi's key among the red beans.
+- Bo-shan's load in Act III includes a tall basket of cabbages on a small crate.
+- Parcel chews the ramp's rope handle. (Grumbler's note already warns against it.) Dorin has logged telling
+  him off eleven times.
+- A turtle duck sleeps at Dorin's gate in Act IV: on the watch book after a win, on his stool since the day
+  he left after a loss. It is called Deputy only for a table that saw SQ-31.
+- The goods lift carries blankets up to the tram shed the night before the tide, and the girl works it.
+
+**Checked against:** Hanru is they/them and speaks in clipped facts; the driver is Bo-shan after a win and
+Dorin after a loss, and the watch book is back under the cart seat by 10.8; Latch stays on the tailgate, so
+its line holds for a party that refused it in SQ-10; no hero is voiced, so no addition depends on the party.

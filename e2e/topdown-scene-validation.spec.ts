@@ -9,7 +9,9 @@ import { paintedTileCentre } from './projection';
 test.use({ serviceWorkers: 'block' });
 
 type SceneApp = { scene: { firstFrameReady(): Promise<unknown> } };
-const url = 'art/topdown/ba-dan/scene.json';
+// Ba Dan has no scene while it is a grey blockout (`docs/places/ba_dan_village.md`), so the loader's validation is
+// held to the Forest Road's, the demo route's first board with a baked scene.
+const url = 'art/topdown/forest-road/scene.json';
 const shipped = JSON.parse(readFileSync(`public/${url}`, 'utf8')) as MapScene;
 const mutations = [
   {
@@ -25,7 +27,7 @@ const mutations = [
     path: 'scenery.0.url',
     change: (scene: MapScene) => {
       if (!scene.scenery[0]) throw new Error('Missing shipped scenery');
-      Object.assign(scene.scenery[0], { url: 'art/topdown/ba-dan/not-the-atlas.webp' });
+      Object.assign(scene.scenery[0], { url: 'art/topdown/forest-road/not-the-atlas.webp' });
     },
   },
   {
@@ -38,10 +40,10 @@ const mutations = [
   },
 ] as const;
 
-async function village(page: Page, renderer: string) {
+async function forestRoad(page: Page, renderer: string) {
   await resetStorage(page, `?renderer=${renderer}`);
   await startGame(page, ['Jared'], ['kaya'], 'scene-validation-471');
-  await enterNode(page, 'village_explore');
+  await enterNode(page, 'forest_explore');
   await expect(page.locator('.explore-scene .map-canvas')).toBeVisible();
   await page.evaluate(async () => {
     const app = window.fnt?.app;
@@ -52,7 +54,7 @@ async function village(page: Page, renderer: string) {
   await settleLayout(page);
   return page.evaluate(() => {
     const app = window.fnt?.app;
-    const map = app?.content.maps.get('ba_dan_village');
+    const map = app?.content.maps.get('forest_road');
     return {
       backend: app?.rendererBackend(),
       camera: app?.rendererCamera(),
@@ -65,7 +67,7 @@ async function village(page: Page, renderer: string) {
 }
 
 async function walk(page: Page) {
-  const target = { x: 5, y: 7 };
+  const target = { x: 2, y: 5 };
   const point = await paintedTileCentre(page, target);
   expect(point).not.toBeNull();
   if (!point) throw new Error('No rendered walking target');
@@ -78,10 +80,10 @@ for (const renderer of ['canvas', 'webgl'] as const) {
   test(`${renderer}: shipped scenes boot top-down and remain playable`, async ({ page }) => {
     const errors: string[] = [];
     page.on('console', (message) => {
-      if (message.type() === 'error') errors.push(message.text());
+      if (message.type() === 'error') errors.push(`${message.text()} ${message.location().url}`);
     });
     page.on('pageerror', (error) => errors.push(error.message));
-    const loaded = await village(page, renderer);
+    const loaded = await forestRoad(page, renderer);
     await test.info().attach('loaded-presentation', {
       body: JSON.stringify(loaded, null, 2),
       contentType: 'application/json',
@@ -89,8 +91,8 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     expect(loaded.backend).toBe(renderer);
     expect(loaded.projection).toBe('topdown');
     expect(loaded.camera?.projection).toBe('topdown');
-    expect(loaded.scenery).toBe(75);
-    expect(loaded.ground).toEqual(['art/topdown/ba-dan/ground.webp']);
+    expect(loaded.scenery).toBe(shipped.scenery.length);
+    expect(loaded.ground).toEqual(['art/topdown/forest-road/ground.webp']);
     await walk(page);
     expect(errors.filter((error) => !/favicon/i.test(error))).toEqual([]);
   });
@@ -103,7 +105,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       const pageErrors: string[] = [];
       let responses = 0;
       page.on('console', (message) => {
-        if (message.type() === 'error') errors.push(message.text());
+        if (message.type() === 'error') errors.push(`${message.text()} ${message.location().url}`);
       });
       page.on('pageerror', (error) => pageErrors.push(error.message));
       const malformed = structuredClone(shipped);
@@ -112,7 +114,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         responses += 1;
         await route.fulfill({ json: malformed });
       });
-      const loaded = await village(page, renderer);
+      const loaded = await forestRoad(page, renderer);
       await test.info().attach('fallback-presentation-and-errors', {
         body: JSON.stringify({ loaded, responses, errors, pageErrors }, null, 2),
         contentType: 'application/json',
@@ -125,8 +127,9 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       expect(loaded.backend).toBe(renderer);
       expect(loaded.projection).toBe('topdown');
       expect(loaded.camera?.projection).toBe('topdown');
-      expect(loaded.scenery).toBeUndefined();
-      expect(loaded.ground).toBeUndefined();
+      // The Forest Road keeps its rules-side scene (painted rubble); only the baked plates and uprights are gone.
+      expect(loaded.scenery ?? 0).toBe(0);
+      expect(loaded.ground ?? []).toEqual([]);
       const reported = errors.filter((error) =>
         error.startsWith('The top-down scenes did not load; drawing the bare boards.'),
       );

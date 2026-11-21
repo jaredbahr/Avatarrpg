@@ -459,5 +459,5 @@ describe('player-facing event log', () => {
     } finally {
       observer.mockRestore();
     }
-  }, 20_000);
+  });
 });

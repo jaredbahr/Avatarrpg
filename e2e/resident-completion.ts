@@ -7,6 +7,8 @@ import type { Vec2 } from '../src/core/types';
 export const RESIDENT_COMPLETION_STEP_MS = 60;
 export const RESIDENT_COMPLETION_MAX_BUDGET_MS = 180_000;
 const RESIDENT_CLOCK_CLAMP_MS = 100;
+/** Dorin's gate post, `bd03.post` in `residents/baDan.ts` (the unit test holds the two together). */
+export const DORIN_POST: Vec2 = { x: 27, y: 8 };
 const FINAL_RENDER_WINDOW_MS = RESIDENT_COMPLETION_STEP_MS * 4;
 
 type PlannedWalk = {
@@ -108,10 +110,10 @@ export function residentPhaseChangeSettled(frame: ResidentCompletionFrame): bool
   const dorin = frame.markers.find((marker) => marker.id === 'lw.npc.dorin');
   return Boolean(
     dorin &&
-    dorin.pos.x === 17 &&
-    dorin.pos.y === 6 &&
-    dorin.at.x === 17 &&
-    dorin.at.y === 6 &&
+    dorin.pos.x === DORIN_POST.x &&
+    dorin.pos.y === DORIN_POST.y &&
+    dorin.at.x === DORIN_POST.x &&
+    dorin.at.y === DORIN_POST.y &&
     dorin.alpha === 1,
   );
 }

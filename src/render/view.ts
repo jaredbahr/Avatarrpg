@@ -87,9 +87,11 @@ export function unitMarkerGroundPoint(base: Vec2, tileSize: number, contactOffse
 /**
  * `objective`: the encounter's objective cells (ADR 0116's 2026-11-15 amendment), shown all fight
  * long under every other overlay. A rule the board must show, so both backends draw it.
+ * `tip`: where the fighters on a sparring platform's heavier half will slide when the round ends
+ * (ADR 0122 §3), recomputed after every action. Also a rule, so both backends draw it.
  */
 export type OverlayKind =
-  'move' | 'reach' | 'target' | 'area' | 'rangeBonus' | 'hover' | 'objective';
+  'move' | 'reach' | 'target' | 'area' | 'rangeBonus' | 'hover' | 'objective' | 'tip';
 
 export interface OverlayLayer {
   readonly kind: OverlayKind;
@@ -190,6 +192,11 @@ export interface EmitterInstance {
   /** Lob height in tiles for a projectile flight. */
   readonly arc: number;
   readonly attachments?: EmitterAttachments;
+  /**
+   * The struck figure's tile centre, on an impact that lands on someone: past the first impact frame the
+   * particles over that figure fade (`clearFigure`), so a burst never hides who was hit.
+   */
+  readonly clear?: Vec2;
   /** Frozen at `elapsed` (a still wisp): every frame samples the same, so a backend may keep it. */
   readonly still?: boolean;
 }
@@ -329,6 +336,8 @@ export interface NpcMarker {
   readonly lean?: number;
   /** No talk pip: a background role, or someone walking off the map. */
   readonly quiet?: boolean;
+  /** False draws no foot blob: art that stands on the plate's own baked shadow (the hung side gate). */
+  readonly footShadow?: false;
 }
 
 /** The sheet clip a marker draws: its heading clip, else the plain walk or idle. */
@@ -369,6 +378,56 @@ export interface AimArc {
   readonly to: Vec2;
   readonly arc: number;
   readonly color: string;
+}
+
+/**
+ * The day's light on the board (ADR 0121), resolved in `src/app` from the clock and the scene.
+ * A grade is `colour * multiply + lift * alpha` per channel, every value 0..1; it touches the
+ * world's art only (plates, painting, scenery, figures, props), never an overlay, ring, bar,
+ * number or the HUD, which are drawn after it.
+ */
+export interface LightGrade {
+  readonly multiply: readonly [number, number, number];
+  readonly lift: readonly [number, number, number];
+}
+
+/** Stepped rings of one warm colour, added onto what lies under them; sizes in world px. */
+export interface LampGlowStyle {
+  readonly radiusX: number;
+  readonly radiusY: number;
+  /** Outermost first; each adds `alpha` of `color`. */
+  readonly rings: readonly { readonly scale: number; readonly alpha: number }[];
+  /** 0..255 a channel. */
+  readonly color: readonly [number, number, number];
+}
+
+/** One lit lamp, in fractional ground tiles. */
+export interface LampLight {
+  /** The centre of its glass. */
+  readonly glass: Vec2;
+  /** The ground under the glass, at the foot of the post: the pool's centre. */
+  readonly ground: Vec2;
+  /** The lamp piece's sort point, so its glass glow draws with it and not over what stands in front. */
+  readonly depth: Vec2;
+}
+
+export interface BoardLight {
+  /** Null leaves the art as painted. */
+  readonly grade: LightGrade | null;
+  readonly lamps: readonly LampLight[];
+  readonly pool: LampGlowStyle;
+  readonly glass: LampGlowStyle;
+}
+
+/** A colour (0..255 a channel) as the grade leaves it, for light added inside graded art. */
+export function gradedRgb(
+  grade: LightGrade | null,
+  rgb: readonly [number, number, number],
+): [number, number, number] {
+  if (!grade) return [rgb[0], rgb[1], rgb[2]];
+  return [0, 1, 2].map((c) =>
+    Math.round(Math.min(255, (rgb[c] ?? 0) * (grade.multiply[c] ?? 1))),
+  ) as [number, number, number];
 }
 
 export interface MapView {
@@ -432,4 +491,6 @@ export interface MapView {
   readonly reducedMotion?: boolean;
   /** On `time`'s clock, when the scene's flock burst out of the trees; null keeps it hidden. */
   readonly flushedAt?: number | null;
+  /** The day's light (ADR 0121); absent or null draws the board as painted. */
+  readonly light?: BoardLight | null;
 }

@@ -8,7 +8,8 @@ when improving a line.
 
 Story, dialogue and scene planning have one owner, the writing pass (owner, 2026-11-14; `AGENTS.md`,
 `docs/story-bible.md`). A session that is not the writing pass does not draft story text: it leaves a marked
-placeholder and says so in its PR.
+placeholder and says so in its PR. `docs/story-requests.md` says when to file a story issue or message the
+writing pass.
 
 For camera, interface, environment and character presentation work, also read
 `docs/player-view-target.md`: it records Jared's approved long-term player views,
@@ -38,6 +39,9 @@ the owner and Claude have a workflow good enough to build the whole game, region
 - **Players and devices:** the owner's family on **one shared tablet** (hot-seat; iPad landscape first), so whose turn
   it is and the hand-offs must always be clear. For friends far away the owner plans to run it on his **PC and share it
   through Steam Remote Play**, so a PC window with mouse and keyboard must work too.
+- **Quality before speed** (owner, 2026-11-20): "I would rather take time to do it correctly and well than rush
+  something easy and poor looking." When a choice is left to you, take the plan that will look and play well, even
+  when it costs more stages.
 - **Polish is family-level only:** keep what helps the kids play (clear turns, big text, tap targets, forgiving
   difficulty). Stranger onboarding, public-release polish and a public link are not goals.
 - **What "finished" means for the demo:** **combat juice** (an action clip per heading and ability, impact effects,
@@ -123,6 +127,8 @@ F]` (`--help` for the rest), briefed like an issue: the files, the rules, what d
   player-facing words, feel or design, or judgment calls, and never send it secrets. In cloud sessions the proxy adds
   the key; elsewhere set `DEEPSEEK_API_KEY`. Prefer it over a Sonnet or Haiku subagent for anything it can do from
   the files you send it.
+- **DeepSeek is Claude's tool, not Codex's** (Jared, 2026-11-15). Only Claude calls DeepSeek. Codex has no DeepSeek
+  access: it works its own Codex issues by itself, so never write a Codex issue that assumes DeepSeek.
 
 Rule of thumb: needs taste, the story or deep reasoning, Claude. Fully specified and needs a real PR, a Codex issue.
 Fits in a paragraph and can be checked by running something, DeepSeek.
@@ -281,6 +287,16 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   curtain reveals _after_ the swap and never takes a tap. The backdrop's tint
   is `app.setMood()`; a scene that knows better than the map (a speaker's
   element, the path being picked) calls it from its `render()`.
+- **A unit test bounds work, never the wall clock** (#796). `expect(elapsed).toBeLessThan(…)` and a per-test
+  timeout fail on a busy machine while every rule passes. Count what the code does instead (calls to a spied
+  function, cells or px computed, commands applied, battles run) and assert it with `expectWorkWithin` from
+  `scripts/test-support/workBounds.ts`, at about 1.5 times the measured count. Prove termination with a step or
+  round cap inside the test. The gate has one timeout, `HANG_GUARD_MS` in `vitest.config.ts`, and it is a hang
+  guard: no test, hook, file or `vi.setConfig` sets its own, and a child process in a test uses
+  `CHILD_HANG_GUARD_MS`. Where time itself is the requirement (the core bench, a frame budget), keep the work
+  bound always on and put the time in a separate `it.runIf(TIME_BUDGETS)` test; only the nightly hosted run sets
+  `FNT_TIME_BUDGETS=1`. ESLint rejects the old patterns in `*.test.ts`. To check a test under load:
+  `node scripts/test-support/with-cpu-load.mjs --repeat 5 -- npx vitest run <file>`.
 - Commit messages: imperative mood, one concern per commit.
 - **Work auto-merges once it is ready.** Nothing waits on a human clicking the
   button: open the PR, then turn on auto-merge so it lands the moment CI is
@@ -367,6 +383,14 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   hold is in `src/content/ids.ledger.json` for good. Run `npm run ids:ledger` after adding content; to rename or
   remove an id, leave the ledger alone and add a row to `src/content/idAliases.ts`, which `applyIdAliases` applies
   first on load. `savedIds.test.ts` fails on a shipped id that vanished without one.
+- **The quarry checkpoints are pinned by facts, never by a digest** (#795).
+  `scripts/e2e/quarry-checkpoints.facts.json` holds what an AI retune must not move: the story path, the party, the
+  flags, the world, the save's shape and the first fight's opening. A failing test lists the moved facts by path.
+  Re-pin with `npm run checkpoints -- --write` and paste its summary into the pull request; on a merge conflict in
+  that file, take either side and run the same command. How the fights play (transcript, RNG cursor, log) is not
+  pinned, only bounded: to see whether a change moved it, run `npm run checkpoints -- --dump before.json` on `main`
+  and `npm run checkpoints -- --diff before.json` on the branch. Never add a hash of a save or a transcript to a
+  test: nobody can review one, and every AI or content pull request then conflicts with every other.
 - **A save remembers only what the story recorded when it was written** (ADR 0112). A flag that something reads
   and that gains a write in a region a release already shipped must say how that release's saves answer, in its
   registry entry (`oldSaves`: a backfill rule in `src/content/story/flagBackfills.ts`, `open` or `unset`); a new scene

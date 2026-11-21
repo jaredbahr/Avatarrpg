@@ -1,7 +1,11 @@
-import { expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { enemyScale, partyScale } from '../anim/actorScale';
-import { npcPresentationScale, triggerPresentationScale } from './exploreMarkerScale';
+import {
+  npcCastsFootShadow,
+  npcPresentationScale,
+  triggerPresentationScale,
+} from './exploreMarkerScale';
 
 it('sizes only the small animal discovery below adult NPCs', () => {
   expect(npcPresentationScale('world.turtle_ducks')).toBe(0.6);
@@ -45,4 +49,12 @@ it('uses the existing forest attacker at both crossings without changing their a
 
 it('keeps the Driller crossing marker compact', () => {
   expect(triggerPresentationScale('unit.enemy.driller')).toBe(1);
+});
+
+describe('npcCastsFootShadow', () => {
+  it('spares only the hung side gate, whose shadow is baked into the plate', () => {
+    expect(npcCastsFootShadow('world.side_gate_hung')).toBe(false);
+    expect(npcCastsFootShadow('world.gao_jar')).toBe(true);
+    expect(npcCastsFootShadow('world.school_notice')).toBe(true);
+  });
 });

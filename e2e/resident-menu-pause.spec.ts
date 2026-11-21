@@ -14,13 +14,13 @@ const fixtures = [
     name: 'Gao morning errand',
     id: 'lw.npc.gao',
     phase: 'morning',
-    party: { x: 13, y: 7 },
+    party: { x: 16, y: 9 },
   },
   {
     name: 'Mira midday-to-afternoon placement walk',
     id: 'lw.npc.mira',
     phase: 'midday',
-    party: { x: 10, y: 5 },
+    party: { x: 13, y: 10 },
   },
 ] as const;
 

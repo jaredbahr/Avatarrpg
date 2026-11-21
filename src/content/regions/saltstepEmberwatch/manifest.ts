@@ -15,12 +15,21 @@ import type { RegionManifest } from '../../regions/types';
 export const SALTSTEP_EMBERWATCH: RegionManifest = {
   id: 'saltstep_emberwatch',
   name: 'Saltstep and Emberwatch',
-  mapIds: ['saltstep_market', 'saltstep_pontoon', 'emberwatch_parade', 'emberwatch_power_yard'],
+  mapIds: [
+    'saltstep_market',
+    'saltstep_pontoon',
+    'emberwatch_parade',
+    'emberwatch_power_yard',
+    'saltstep_platform',
+    'river_road',
+    'river_road_bridge',
+  ],
   // Ba Dan's coast road is this region's way in, and the market's west road its way home.
   neighbours: ['ba_dan_valley'],
-  // PLACEHOLDER until the owner answers #784: every Act I route ends on level 4, and SF-2.1 can
-  // lift a party to 5 before MQ-03.
-  levelBand: { minLevel: 4, maxLevel: 5, placeholder: true },
+  // Approved by the owner on #784 (2026-11-18): Saltstep (MQ-02) 3-4 and Emberwatch (MQ-03) 4-5.
+  // This one region holds both, so its band is their union. Every Act I route ends on level 4, and
+  // SF-2.1 can lift a party to 5 before MQ-03.
+  levelBand: { minLevel: 3, maxLevel: 5, placeholder: false },
   // Waiting for the region's own area track (ADR 0108; the owner listens first). With no row a map
   // keeps whatever is playing, so the coast road carries Ba Dan's theme down to the water. A track
   // may belong to one region only (ADR 0111 §4), so Act I's cannot be borrowed.
@@ -31,9 +40,15 @@ export const SALTSTEP_EMBERWATCH: RegionManifest = {
     // The Saltstep market has no scene while it is a grey blockout (`docs/places/saltstep_market.md`): it draws its
     // bare board from the legend until its ground and dressing stages.
     saltstep_pontoon: { url: 'art/topdown/saltstep-pontoon/scene.json', cameraCentreMargin: 1 },
+    saltstep_platform: { url: 'art/topdown/saltstep-platform/scene.json', cameraCentreMargin: 1 },
     emberwatch_parade: { url: 'art/topdown/emberwatch-parade/scene.json', cameraCentreMargin: 1 },
     emberwatch_power_yard: {
       url: 'art/topdown/emberwatch-power-yard/scene.json',
+      cameraCentreMargin: 1,
+    },
+    river_road: { url: 'art/topdown/river-road/scene.json', cameraCentreMargin: 1 },
+    river_road_bridge: {
+      url: 'art/topdown/river-road-bridge/scene.json',
       cameraCentreMargin: 1,
     },
   },

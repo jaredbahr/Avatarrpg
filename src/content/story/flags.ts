@@ -77,11 +77,18 @@ export interface OldSavesAnswer {
   /** The newest release (`src/core/save/fixtures/releases/index.json`) this was decided for. */
   readonly upTo: string;
   /**
-   * The write sites this answers for (`story:<node>`, `app:<module>`). A flag's answer covers
-   * only the sites it names, so a write added later is asked about afresh. Not used by a scene.
+   * What this answers for. A flag's: the write sites (`story:<node>`, `app:<module>`). A road's
+   * (`LATE_EDGES`): the roads (`next=gate_talked_through`). It covers only those it names, so
+   * one added later is asked about afresh. Not used by a scene.
    */
   readonly sites?: readonly string[];
   readonly answer: 'backfill' | 'open' | 'unset';
+  /**
+   * With `unset`: the readers it was decided for (`story:<node>`, `map:<id>`, ...). "Never
+   * happened" is the right answer only for readers that have a line for it, so a reader added
+   * later is asked about afresh (#813). Required for `unset` wherever the check asks.
+   */
+  readonly readers?: readonly string[];
   readonly why: string;
 }
 
@@ -115,10 +122,14 @@ export interface FlagDef {
 const GOLDEN_V5 = '2026-11-08-golden-v5';
 
 /* How saves from before each of these answer (ADR 0112). */
-const GUIDED_FIGHT_IS_FOR_NEW_GAMES = (...sites: string[]): OldSavesAnswer => ({
+const GUIDED_FIGHT_IS_FOR_NEW_GAMES = (
+  sites: readonly string[],
+  readers: readonly string[],
+): OldSavesAnswer => ({
   upTo: GOLDEN_V5,
   sites,
   answer: 'unset',
+  readers,
   why: 'Only a new game is offered the guided first fight; an older save plays the Forest Road unguided, as it always did.',
 });
 const REASON_STAYS_ON_THE_FLOOR = (...sites: string[]): OldSavesAnswer => ({
@@ -127,10 +138,14 @@ const REASON_STAYS_ON_THE_FLOOR = (...sites: string[]): OldSavesAnswer => ({
   answer: 'open',
   why: 'The find waits on its map after the rescue until its hero takes it, and the road back to the quarry stays open.',
 });
-const SIDE_STORY_WINDOW = (...sites: string[]): OldSavesAnswer => ({
+const SIDE_STORY_WINDOW = (
+  sites: readonly string[],
+  readers: readonly string[],
+): OldSavesAnswer => ({
   upTo: GOLDEN_V5,
   sites,
   answer: 'unset',
+  readers,
   why: 'The side story is offered before the rescue. A save already past it answers as a player who walked by, and every reader has a line for that.',
 });
 
@@ -166,10 +181,66 @@ export const LATE_SCENES: Readonly<Record<string, OldSavesAnswer>> = {
     answer: 'open',
     why: 'The welcome home waits at the village gate for any save that has walked home and not yet seen it.',
   },
+  welcome_home_supper: {
+    upTo: GOLDEN_V5,
+    answer: 'open',
+    why: 'Read only to show Hesra’s boot on the mason’s yard step afterwards, a keepsake and not a gate. A save that has not had the supper still plays it on the walk home and sees the boot after.',
+  },
   gao_lost: {
     upTo: '2026-11-15-demo',
     answer: 'open',
     why: 'Read only by its own once-only gate on Gao after a Driller loss. A release save that lost sat on the terminal card, so it has not heard it and hears it first when it carries on.',
+  },
+  sf11_the_bend: {
+    upTo: '2026-11-19-roads',
+    answer: 'open',
+    why: 'Read only by Bessa’s own once-only gate on the Forest Road. A side fight no release had, so no older save has had it, and it waits on the road for any save past Act I.',
+  },
+  sf12_the_slab: {
+    upTo: '2026-11-19-roads',
+    answer: 'open',
+    why: 'Read only by Tolma’s own once-only gate in the Cutting. A side fight no release had, so no older save has had it, and it waits on the road for any save past Act I.',
+  },
+  sf22_rules: {
+    upTo: '2026-11-19-roads',
+    answer: 'open',
+    why: 'Read only by the ferry apprentices’ own once-only gate in the market. A side fight no release had, so no older save has had it, and it waits by the ferry landing.',
+  },
+  sf23_battle: {
+    upTo: '2026-11-19-roads',
+    answer: 'open',
+    why: 'Read only by the corporal’s own once-only gate on the river road. A side fight no release had, so no older save has had it, and it waits at the guards’ camp.',
+  },
+  sf23_pole_up: {
+    upTo: '2026-11-19-roads',
+    answer: 'open',
+    why: 'Read only by the river road’s set dressing (ADR 0123): the camp goes and the pole stands raised once the toll is won. A side fight no release had, so no older save has won it, and its saves see the camp and the lowered pole until they do.',
+  },
+  sf23_one_sack: {
+    upTo: '2026-11-19-roads',
+    answer: 'open',
+    why: 'Read only by the river road’s set dressing (ADR 0123): the pole raised and one sack by the cold fire after Carry on. A side fight no release had, so no older save has carried on from it, and its saves see the lowered pole until they do.',
+  },
+  look_hesra_boot: {
+    upTo: '2026-11-15-demo',
+    answer: 'open',
+    why: 'Read only by the journal note for the boot by the mason’s yard door. The boot stays there after the supper, so an older save looks at it and gets the note then.',
+  },
+};
+
+/**
+ * Roads opened, in a region a release had already shipped, into a scene that release already
+ * had (ADR 0112, #813): `lateEdges` in `saveHistory.ts`. A save of that release went the old
+ * way, so whatever the scene (or a scene after it) records, the save lacks. Area to its answer;
+ * `sites` names the roads answered (`next=gate_talked_through`). `saveHistory.test.ts` asks for
+ * an entry.
+ */
+export const LATE_EDGES: Readonly<Record<string, OldSavesAnswer>> = {
+  'map:saltstep_market': {
+    upTo: '2026-11-19-roads',
+    sites: ['triggers[#mq02_saltstep_arrival_tidy].node=mq02_saltstep_arrival'],
+    answer: 'open',
+    why: 'The tidy-cart trigger plays the same arrival scene as the one it splits from; only the cart’s picture differs, so a save that came the old way recorded everything this road would.',
   },
 };
 
@@ -267,7 +338,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     arc: 'Demo · Forest Road',
     status: 'live',
     setBy: ['story:lost_forest_road'],
-    readBy: ['story:after_forest'],
+    readBy: ['story:after_forest', 'story:sf11_recognised'],
   },
   {
     key: 'world.ducks_seen',
@@ -399,6 +470,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'story:plant_chair_decline_road',
       'story:sq03_hook',
       'story:sq03_jar',
+      'story:sf12_ruon',
       'story:mq02_freight_clerk',
       'journal:gate_wages',
     ],
@@ -503,6 +575,13 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'story:cutting_after_explore',
       'story:plant_chair_decline_lost',
       'story:hanru_watch',
+      'story:sf11_driver',
+      'story:sf11_wheels',
+      'story:sf11_wheels_won',
+      'story:sf11_back',
+      'story:sf12_driver',
+      'story:sf12_won',
+      'story:sf12_back',
       'story:mq02_coast_driver',
       'story:mq02_parcel',
       'story:mq02_stall_reads',
@@ -510,6 +589,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'story:mq02_galleries',
       'story:mq02_ferry_driver',
       'story:sf21_driver',
+      'story:sf23_driver',
       'resident:lw.npc.mira',
       'resident:lw.npc.gao',
       'resident:lw.npc.dorin',
@@ -710,7 +790,20 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'Where the party sent Bo-shan’s tipped load: home to Ba Dan, partly to the trapped crews, or hidden to bargain with.',
     arc: 'Side story · SQ-01 Too Many Cabbages',
     status: 'live',
-    oldSaves: SIDE_STORY_WINDOW('story:sq01_choice'),
+    oldSaves: SIDE_STORY_WINDOW(
+      ['story:sq01_choice'],
+      [
+        'map:ba_dan_village',
+        'map:forest_road',
+        'story:cart_departure',
+        'story:demo_complete',
+        'story:pella_home',
+        'story:sq01_pella_list',
+        'story:sq01_sled_again',
+        // An old save past the side story shows Bo-shan's cart as it always was: the untidy one.
+        'map:saltstep_market',
+      ],
+    ),
     setBy: ['story:sq01_choice'],
     readBy: [
       'map:ba_dan_village',
@@ -720,6 +813,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'story:pella_home',
       'story:sq01_sled_again',
       'story:sq01_pella_list',
+      'map:saltstep_market',
     ],
   },
 
@@ -732,7 +826,16 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'How the backwards side gate was put right: quietly with Dorin, by helping him explain it publicly, or by laughing it open.',
     arc: 'Side story · SQ-02 A Very Official Gate',
     status: 'live',
-    oldSaves: SIDE_STORY_WINDOW('story:sq02_choice'),
+    oldSaves: SIDE_STORY_WINDOW(
+      ['story:sq02_choice'],
+      [
+        'map:ba_dan_village',
+        'story:demo_complete',
+        'story:sq02_after',
+        'story:sq02_return',
+        'story:sq02_return_gate',
+      ],
+    ),
     setBy: ['story:sq02_choice'],
     readBy: [
       'map:ba_dan_village',
@@ -752,7 +855,10 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'How the party helped Gao carry his neighbours’ debts: a quiet letter for more time, a shared food jar, or praise in the square he asked them not to give.',
     arc: 'Side story · SQ-03 Gao’s Other Ledger',
     status: 'live',
-    oldSaves: SIDE_STORY_WINDOW('story:sq03_choice'),
+    oldSaves: SIDE_STORY_WINDOW(
+      ['story:sq03_choice'],
+      ['map:ba_dan_village', 'story:demo_complete', 'story:sq03_jar', 'story:sq03_jar_label'],
+    ),
     setBy: ['story:sq03_choice'],
     readBy: ['map:ba_dan_village', 'story:demo_complete', 'story:sq03_jar', 'story:sq03_jar_label'],
   },
@@ -791,6 +897,18 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     status: 'live',
     setBy: ['story:mq02_vote'],
     readBy: ['map:saltstep_market', 'story:mq02_market_explore'],
+  },
+  {
+    key: 'mq03.invited',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'V. Sen’s card has invited the party to Causeway: the cart takes the river road (Scene 3.9).',
+    arc: 'Act II · Saltstep',
+    status: 'pending',
+    note: 'Set by Scene 3.9, An invitation, which is not built yet; it shows the river road sign at Emberwatch.',
+    setBy: [],
+    readBy: ['map:emberwatch_parade'],
   },
   {
     key: 'standing.earth',
@@ -908,7 +1026,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     meaning: 'This is a genuinely new game, so the Forest Road may run the guided first fight.',
     arc: 'App · Guidance',
     status: 'live',
-    oldSaves: GUIDED_FIGHT_IS_FOR_NEW_GAMES('app:app/App'),
+    oldSaves: GUIDED_FIGHT_IS_FOR_NEW_GAMES(['app:app/App'], ['app:app/scenes/combatGuidance']),
     setBy: ['app:app/App'],
     readBy: ['app:app/scenes/combatGuidance'],
   },
@@ -920,8 +1038,8 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     arc: 'App · Guidance',
     status: 'live',
     oldSaves: GUIDED_FIGHT_IS_FOR_NEW_GAMES(
-      'app:app/scenes/combatGuidance',
-      'app:app/scenes/CombatScene',
+      ['app:app/scenes/combatGuidance', 'app:app/scenes/CombatScene'],
+      ['app:app/scenes/combatGuidance'],
     ),
     note: 'Written by CombatScene through FIRST_FIGHT_GUIDANCE.stage; the literal lives in combatGuidance.',
     setBy: ['app:app/scenes/combatGuidance', 'app:app/scenes/CombatScene'],
@@ -939,6 +1057,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       upTo: GOLDEN_V5,
       sites: ['app:app/scenes/CombatScene'],
       answer: 'unset',
+      readers: ['app:app/scenes/CombatScene', 'app:app/scenes/combatGuidance'],
       why: 'Each tip shows once per save. An older save has seen none, so it is shown each tip the first time it applies.',
     },
     setBy: ['app:app/scenes/CombatScene'],

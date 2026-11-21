@@ -13,13 +13,13 @@ Sources: the bible's Part 05 (PQ-06 to PQ-10) and DLG-06, each quoted line used 
 hero entries CH-06 to CH-10; the saga outline's "Why each hero keeps going"; the shipped Act I finds in
 `src/content/story/reasons.ts`; and the act scripts that open and pay off each quest.
 
-| Quest | Hero    | Opens                                       | Where it plays                         | Fight                      |
-| ----- | ------- | ------------------------------------------- | -------------------------------------- | -------------------------- |
-| PQ-06 | Lin Mei | Reedglass, MQ-07 (opened in Scene 7.2)      | The school path, Fenn's raft           | No                         |
-| PQ-07 | Nima    | Bellweather, MQ-08 (opened in Scene 8.2)    | The listening terrace, the night watch | No (a night watch, played) |
-| PQ-08 | Jinu    | Bellweather, MQ-08 (opened in Scene 8.2)    | The mail shelter, the lower camps      | No                         |
-| PQ-09 | Riko    | Copper Orchard, MQ-06 (opened in Scene 6.4) | The old passenger platform             | Yes: the sign-up table     |
-| PQ-10 | Wen     | Emberwatch, MQ-03 (opened in Scene 3.1)     | Edda's bench, wherever Edda is         | No (a repair, played)      |
+| Quest | Hero    | Opens                                       | Where it plays                            | Fight                      |
+| ----- | ------- | ------------------------------------------- | ----------------------------------------- | -------------------------- |
+| PQ-06 | Lin Mei | Reedglass, MQ-07 (opened in Scene 7.2)      | The school path, Fenn's raft              | No                         |
+| PQ-07 | Nima    | Bellweather, MQ-08 (opened in Scene 8.2)    | The listening terrace, the night watch    | No (a night watch, played) |
+| PQ-08 | Jinu    | Bellweather, MQ-08 (opened in Scene 8.2)    | The mail shelter, the lower camps         | No                         |
+| PQ-09 | Riko    | Copper Orchard, MQ-06 (opened in Scene 6.4) | The old passenger platform                | Yes: the sign-up table     |
+| PQ-10 | Wen     | Emberwatch, MQ-03 (opened in Scene 3.1)     | Edda's bench; in Causeway, Tanner's Stair | No (a repair, played)      |
 
 ---
 
@@ -42,7 +42,7 @@ start, and then there's the work.
 - [x] Absent heroes are never voiced
 
 **Opens:** at Reedglass, in Scene 7.2 of MQ-07, with Lin Mei in the party. Best played before MQ-09; still
-open afterwards. **Other people:** Fenn, she/her, 32, the marsh schoolteacher; Dabi, she/her, 8, one of her
+open afterwards. **Other people:** Fenn, she/her, 32, the marsh schoolteacher; Twig, she/her, 8, one of her
 pupils; a corridor clerk from the pump station. **What the party may know:** that the vanes went in and the
 water changed (7.1, 7.2). Nothing about why.
 
@@ -74,7 +74,7 @@ nine children and a coil of rope.
 
 **Lin Mei:** It contains the original survey.
 
-**Fenn:** Then it's coming. Dabi, you carry the lady's case. Don't open it. Don't swing it.
+**Fenn:** Then it's coming. Twig, you carry the lady's case. Don't open it. Don't swing it.
 
 **Narrator:** A girl of about eight takes the case in both arms, with great seriousness.
 
@@ -88,14 +88,14 @@ ones.
 
 **Lin Mei:** Then it is not the same path.
 
-**Dabi:** It's the same path. It goes from our house to school.
+**Twig:** It's the same path. It goes from our house to school.
 
 **Narrator:** Lin Mei does not have an answer to that. She steps onto the first stump.
 
 **Narrator:** The children do not walk the stumps. They hop them, one foot only, and whoever touches water
 goes back to the start. They have been doing it since they could stand.
 
-**Dabi:** You have to hop. Walking's cheating.
+**Twig:** You have to hop. Walking's cheating.
 
 **Lin Mei:** I am not playing. I am measuring.
 
@@ -104,7 +104,7 @@ measures the second gap. She stands looking at the third.
 
 **Lin Mei:** These are not even. The third gap is a hand longer. That is not a fair course.
 
-**Dabi:** It's the same for everybody.
+**Twig:** It's the same for everybody.
 
 **Lin Mei:** ...That is true.
 
@@ -113,7 +113,7 @@ measures the second gap. She stands looking at the third.
 **Narrator:** She makes the first gap, and the second. On the third she lands with her arms going round like
 a windmill, and puts a foot down in the water to the ankle.
 
-**Dabi:** Back to the start.
+**Twig:** Back to the start.
 
 **Lin Mei:** I had my weight wrong. I see what I did. Again.
 
@@ -127,7 +127,7 @@ obviously more important than school.
 **Narrator:** She clears all seven stumps on the second try and arrives at the rope slightly out of breath.
 She does not look at anybody. She looks extremely pleased.
 
-**Dabi:** I do it backwards.
+**Twig:** I do it backwards.
 
 **Narrator:** Lin Mei looks at the stumps, and then at Fenn's face, and decides against it.
 
@@ -145,21 +145,23 @@ She does not look at anybody. She looks extremely pleased.
 **Narrator:** Past the log, the path runs along the back of a row of reed houses. Each one stands on a frame
 of poles with a pair of long wooden runners under it, like a sledge.
 
-**Narrator:** Dabi stops at the third house and sets the case down on its step.
+_Cutscene candidate (suggested, not yet seen by the owner), from here to "So do we.": [cutscenes.md](cutscenes.md), CS-PQ06 (a proposal, pending the trial). The scene works played exactly as written._
 
-**Dabi:** That's ours. Can I see the map now? Fenn said it's in there.
+**Narrator:** Twig stops at the third house and sets the case down on its step.
+
+**Twig:** That's ours. Can I see the map now? Fenn said it's in there.
 
 **Narrator:** Lin Mei opens the case. The survey sheet is on top: fine black lines, soundings, a neat scale.
-She holds it so that Dabi can see.
+She holds it so that Twig can see.
 
-**Narrator:** Dabi looks for a long time. She finds the row of houses. She finds the third one. Beside each
+**Narrator:** Twig looks for a long time. She finds the row of houses. She finds the third one. Beside each
 is a small letter T.
 
-**Dabi:** You drew our house.
+**Twig:** You drew our house.
 
 **Lin Mei:** Yes.
 
-**Dabi:** You didn't draw a way to get home.
+**Twig:** You didn't draw a way to get home.
 
 _(The three lines above are the bible's, word for word.)_
 
@@ -169,7 +171,7 @@ is clean white paper, and a depth.
 **Lin Mei:** A route has to be in the same place for two seasons before it is entered. That is the standard.
 Yours moves.
 
-**Dabi:** So do we.
+**Twig:** So do we.
 
 **Narrator:** She picks up the case again, because nobody has told her to stop carrying it, and goes on along
 the path toward the school.
@@ -184,7 +186,7 @@ colours.
 
 **Fenn:** High water. Every year, the day it tops out, whoever's nearest cuts it and says what year it was.
 
-**Narrator:** Lin Mei reads up the post. "Dabi born." "The two floods." "Year the eels were late." "Grandfather
+**Narrator:** Lin Mei reads up the post. "Twig born." "The two floods." "Year the eels were late." "Grandfather
 Osk's last." "Roof came off the school; nobody hurt." It goes back further than the paint lasts.
 
 **Narrator:** She takes out her own level book and holds it against the post. She reads from one to the
@@ -231,10 +233,10 @@ bank. Then we drag it back down in autumn. That's what the runners are for.
 
 ### Scene L.3 — A survey correction (DLG-06)
 
-**Shown:** played. **Where:** the step of Dabi's house, with the notice. This is the bible's DLG-06, word for
+**Shown:** played. **Where:** the step of Twig's house, with the notice. This is the bible's DLG-06, word for
 word; only the choice at the end is set out as a vote.
 
-**Narrator:** Lessons are over. Dabi hands the survey case back with both arms, and Lin Mei is still holding
+**Narrator:** Lessons are over. Twig hands the survey case back with both arms, and Lin Mei is still holding
 it when Fenn takes the notice out of her apron pocket and unfolds it on the step. Fenn puts one finger on the
 small survey mark in the corner.
 
@@ -305,7 +307,7 @@ pushes the pencil across the table.
 **Lin Mei:** The path. Where it is today, and where it goes at high water. I have walked it once. You have
 walked it every day.
 
-**Narrator:** Fenn draws the path. Her line wobbles. Dabi adds the seven stumps, as seven circles, with the
+**Narrator:** Fenn draws the path. Her line wobbles. Twig adds the seven stumps, as seven circles, with the
 third gap drawn longer. The old netmaker comes in from the rail and puts a cross where the log is rotten.
 
 **Narrator:** Lin Mei's hand moves toward the wobbling line, to true it. She puts the hand in her lap.
@@ -318,7 +320,7 @@ Corrected by:" and leaves the rest of the line empty.
 
 **Lin Mei:** I want it to show who knew.
 
-**Narrator:** They sign it: Fenn in chalky pencil, the netmaker with a net-knot for his mark, Dabi in capitals
+**Narrator:** They sign it: Fenn in chalky pencil, the netmaker with a net-knot for his mark, Twig in capitals
 that take up most of the margin.
 
 **Narrator:** The clerk has been standing in the doorway of the raft with his own copy rolled under his arm.
@@ -335,7 +337,7 @@ to. It'd make my nine days easier. I can't.
 
 **Corridor clerk:** Somebody will have to tell me how my boat gets through.
 
-**Dabi:** You lift the rope. We lift it for the eel man. You only have to shout.
+**Twig:** You lift the rope. We lift it for the eel man. You only have to shout.
 
 **If `pq06_negotiated`:**
 
@@ -380,18 +382,18 @@ either.
 
 ### Scene L.5 — A map of a place too small to need one
 
-**Shown:** found (Dabi, on the plank, as the party leaves). Plays after `pq06_published` or
+**Shown:** found (Twig, on the plank, as the party leaves). Plays after `pq06_published` or
 `pq06_negotiated`.
 
-**Narrator:** Dabi is waiting at the first plank with a square of paper no bigger than her hand.
+**Narrator:** Twig is waiting at the first plank with a square of paper no bigger than her hand.
 
-**Dabi:** I made you one. It's from our step to the first stump. That's all it is.
+**Twig:** I made you one. It's from our step to the first stump. That's all it is.
 
 **Narrator:** It is a map of four paces. It has a scale. The scale is a drawing of a foot.
 
 **Lin Mei:** This is to scale.
 
-**Dabi:** It's my foot.
+**Twig:** It's my foot.
 
 **Narrator:** Lin Mei holds it very carefully by the edges. For a moment her face does several things at
 once.
@@ -401,11 +403,11 @@ one by the person who lives on it.
 
 **Lin Mei:** I would like to play you at the stumps again. Next time. Backwards. I will have practised.
 
-**Dabi:** You'll still lose.
+**Twig:** You'll still lose.
 
 **Lin Mei:** Very probably. I would still like to.
 
-_Keepsake: **Dabi's map of four paces**, pinned inside the lid of Lin Mei's survey case, which rides on the
+_Keepsake: **Twig's map of four paces**, pinned inside the lid of Lin Mei's survey case, which rides on the
 cart (not after `pq06_technical`). Sets `pq06_done`._
 
 ### PQ-06: what it sets and where it pays off
@@ -645,13 +647,13 @@ cushion and the string.
 forgotten to light.
 
 **Student:** There's a sky bison on the landing meadow! A wild one! It came down out of the cloud and it's
-just lying there! Everybody who isn't on the wall is going down. Sena says we can, if we're quiet. It'll be
-gone by morning. They never stay.
+just lying there! Everybody who isn't on the wall is going down. Sena says we can, if we're quiet. It'll go
+at first light, off the high side. They never stay.
 
 **Narrator:** She is gone again before she has finished.
 
 **Narrator:** Nima has stood up. From the hut door he can see the path to the meadow, and lanterns going down
-it in a line.
+it in a line. He cannot see the meadow. The ridge is in the way.
 
 **Nima:** I haven't been close to one since I was nine.
 
@@ -659,8 +661,8 @@ it in a line.
 lower camps, about fifteen, with a carrying frame.
 
 **Kip:** Is this the watch? I'm to say the oil carrier's late. She set off up the switchbacks at four and
-she's not at the hoist. It's getting gusty. Somebody ought to walk down and meet her. I would, but I've done
-the climb twice today.
+she's not at the hoist. It's getting gusty. Somebody ought to walk down the east face and meet her. I would,
+but I've done the climb twice today.
 
 **Narrator:** Kip looks round the hut while they get their breath. They look at the card by the door, the
 side with the pictures.
@@ -678,11 +680,12 @@ side with the pictures.
 
 **VOTE — What does Nima do with the watch?**
 
-- **Keep it himself.** He stays in the hut all night. Kip rests by the stove and goes down to meet the
-  carrier at first light if she has not come. _Sets `pq07_kept`._
+- **Keep it himself.** He stays in the hut all night and does every part of it. Kip is thanked and sent to
+  rest by the stove, and nobody goes down to meet the carrier. From the hut he may see the bison go at first
+  light, a long way off. The watch stays a job for the seven. _Sets `pq07_kept`._
 - **Hand it over properly, and go down the switchbacks.** He teaches Kip the card and watches them do each
-  thing once. He writes the handover in the book. Then he goes down the trail to meet the carrier. _Sets
-  `pq07_handed_over`._
+  thing once. He writes the handover in the book. Then he goes down the east face to meet the carrier. The
+  meadow is on the other side of the ridge: he will not see the bison at all. _Sets `pq07_handed_over`._
 - **Slip down to the meadow.** Ten minutes. Nothing ever happens. _Sets `pq07_slipped`._
 
 Footer: "Nobody is hurt on any of these. On one of them, a delivery is missed."
@@ -692,6 +695,14 @@ Footer: "Nobody is hurt on any of these. On one of them, a delivery is missed."
 **Shown:** played. **Where:** the watch hut and the cliff path.
 
 **If `pq07_kept`:**
+
+**Kip:** I could do the flag. It's only a picture of a flag.
+
+**Nima:** You could. I said I'd do it, though. Tonight it has to be me.
+
+**Kip:** So you do have to be one of you.
+
+**Narrator:** Kip sits down by the stove, with their back to the card.
 
 **Narrator:** Nima trims the lamp and hauls it up. He coils the hoist rope the way it will run. He opens the
 book and writes the date. Then there is nothing to do.
@@ -708,19 +719,31 @@ below, on the path, a small light stops moving and gets low.
 down. The rope runs clean, because he coiled it at dusk. It comes up heavy: two cans of lamp oil, and a note
 tied to the handle.
 
-**The note:** "Late. Sorry. Sat out the gusts under the overhang. Saw your flag. C."
+**The note:** "Late. Sorry. Sat out the gusts under the overhang, by myself. Saw your flag. C."
 
 **Narrator:** He writes it in the book. "Flat ribbon, flag up, one gust. Basket: two cans oil, from C. All
 well." It is four lines. It is the whole night.
 
-**Narrator:** At dawn the lanterns come back up from the meadow. People are talking in low, happy voices
-about how big it was.
+**Narrator:** At first light Kip shoulders the carrying frame and goes down to the camps. They do not look at
+the card on the way out.
 
-**Nima:** Was it very big?
+**Narrator:** The sky is going grey. Something pale comes up over the ridge from the meadow side, a long way
+off, and turns north. Nima holds his thumb up at arm's length. It is no bigger than the nail. Then it is in
+the cloud.
 
-**Student:** You could have put the kitchen inside it. It snored. Hobb slept through the entire thing.
+**Narrator:** He picks up the pencil and adds a fifth line: "First light: one sky bison, going north."
 
-**Nima:** Good.
+**Narrator:** Hobb comes up the shelter stairs in three stages, with nine hours' sleep in his face.
+
+**Hobb:** Was it big?
+
+**Nima:** From here? About so.
+
+**Narrator:** He shows him the thumbnail.
+
+**Hobb:** Hm. They tell me you could have put the kitchen in it.
+
+**Nima:** I expect you could. I had the far end of it.
 
 **If `pq07_handed_over`:**
 
@@ -733,9 +756,8 @@ Bell, basket: Kip sends the basket down empty and brings it back. Lamp, book.
 camps, at dusk. Shown the card. Did each thing, and the flag twice. Nima gone down the switchbacks to meet the
 oil carrier. Back by first light." He reads it over. He adds his name.
 
-**Narrator:** He goes down the cliff path with a lantern. From the third turn he can see the meadow, a long
-way off: a ring of small lights, and something pale and enormous in the middle of them. He stops walking for
-the space of one breath, and then goes on.
+**Narrator:** He goes down the east face with a lantern. At the first turn he looks back. The lanterns on the
+meadow path have gone behind the ridge, one after another. After that there is only rock, and the next turn.
 
 **Narrator:** He finds the carrier at the seventh turn, sitting on her cans with her back to the rock.
 
@@ -755,8 +777,23 @@ carrier laughs with relief.
 
 **Nima:** They learned it tonight. From a drawing.
 
-**Narrator:** At dawn Kip is asleep on the two stools, with the string to the kettle round one finger. The
+**Narrator:** They come up the last turn at first light, a can each. The meadow path is full of people
+walking home, talking in low, happy voices. The meadow is empty.
+
+**Narrator:** In the hut, Kip is asleep on the two stools, with the string to the kettle round one finger. The
 book has a new entry, in a round, careful hand: "Ribbon flat. Flag up. They got low. I saw them get low."
+
+**Narrator:** Hobb comes up the shelter stairs in three stages, with nine hours' sleep in his face.
+
+**Hobb:** Was it big?
+
+**Nima:** I don't know. I was round the other side of the cliff.
+
+**Hobb:** Hm. I was asleep.
+
+**Narrator:** They both look at Kip.
+
+**Hobb:** And that one was watching a ribbon. Well. Somebody will have seen it.
 
 **If `pq07_slipped`:**
 
@@ -809,12 +846,22 @@ west shelter is repaired a day late._
 
 **After `pq07_kept`:**
 
-**Sena:** Four lines.
+**Sena:** Five lines.
 
-**Nima:** Nothing happened. One gust and two cans.
+**Nima:** Nothing happened. One gust and two cans. The fifth one's not really the watch.
 
 **Sena:** That's what a good night is. I've a shelf of these books, every one since the rebuilding. The good
-ones are all four lines.
+ones are all four lines. You can keep the fifth.
+
+**Narrator:** She turns back a page, and forward again.
+
+**Sena:** The runner from the camps stopped me on the stairs. They asked why the card has pictures on it, if
+it's only ever for us.
+
+**Nima:** What did you say?
+
+**Sena:** I hadn't an answer. You had one last night, and you sat on it till morning. I asked you to. I'm not
+complaining. Hobb's back on tonight, that's all.
 
 **After `pq07_handed_over`:**
 
@@ -829,6 +876,10 @@ I had. It's in the book.
 
 **Sena:** Kip can have the fourth night, if Kip wants it. Seven of us isn't enough. I've known that for a
 year.
+
+**Sena:** They tell me it was the size of the kitchen.
+
+**Nima:** So I hear.
 
 **Both:**
 
@@ -888,7 +939,7 @@ Sets `pq07_done`._
 | Sets                  | Meaning                                                 |
 | --------------------- | ------------------------------------------------------- |
 | `pq07_open`           | Nima took the broom                                     |
-| `pq07_kept`           | He kept the night watch himself                         |
+| `pq07_kept`           | He kept the night watch himself; Kip was sent to rest   |
 | `pq07_handed_over`    | He trained Kip, wrote the handover, and met the carrier |
 | `pq07_slipped`        | He went to the meadow without a handover                |
 | `lost_watch_delivery` | The oil was missed (with `pq07_slipped`)                |
@@ -896,6 +947,11 @@ Sets `pq07_done`._
 
 - **Trust:** Act III's table reads "PQ-07 kept" for the Bellweather sanctuary: that is `pq07_kept` or
   `pq07_handed_over`. The lower camps rise a little with `pq07_handed_over` (Kip has the fourth night).
+- **What each route costs.** After `pq07_kept` Nima sees the bison go, thumbnail-sized, from the hut; Kip
+  goes home believing the watch is for the seven, and Hobb is back on the next night. After
+  `pq07_handed_over` the sanctuary has an eighth watcher and the carrier was met; Nima did not see the bison
+  at all. After `pq07_slipped` he saw it close, and a delivery was missed. Hobb asks "Was it big?" on all
+  three, and gets a different answer each time; a table hears only one.
 - **The watch hut** keeps Nima's pulley, cleat and picture card on every route. They do not depend on the
   vote.
 - **MQ-12, Scene 12.2:** Sena gives Nima "the dullest one I've got". It plays for every Nima; after
@@ -1897,7 +1953,8 @@ stranger can follow, and then stand with her hands in her pockets while the stra
 owner's list, this quest carries: good people can cause harm.
 
 - [x] No nation, element or culture stereotype
-- [x] Every valid party, non-benders included, has a real route through
+- [x] Every valid party, non-benders included, has a real route through (a bucket line, a shout and a pump
+      handle; nothing here is bent)
 - [x] No instant forgiveness or absolution (Ruda does not thank her; she corrects the card)
 - [x] The other side's reasons are shown (the keyhole was fitted after a man was scalded by a lever pulled
       without warning)
@@ -1905,8 +1962,9 @@ owner's list, this quest carries: good people can cause harm.
 - [x] Absent heroes are never voiced
 
 **Opens:** at Emberwatch, in Scene 3.1 of MQ-03, with Wen in the party. Scene W.1 plays there. Scenes W.2 to
-W.5 play at Edda's bench wherever Edda is: Emberwatch through Act II, then the Copper Orchard scrap workshop
-or Causeway's public workshop (the bible: "concludes in Copper Orchard or Causeway"). **Other people:** Edda
+W.5 play wherever Edda is: Emberwatch through Act II, then the Copper Orchard scrap workshop or Causeway's
+public workshop (the bible: "concludes in Copper Orchard or Causeway"). At Emberwatch and the Orchard they
+play at her bench. In Causeway, W.2 and W.4 play on Tanner's Stair, at Ruda's own pump (owner, 2026-11-17). **Other people:** Edda
 Coil, she/her, 47, the public-workshop trainer; Ruda, she/her, fifties, a district pump mechanic; a company
 fitter. **What the party may know:** at W.1, only MQ-02. The later scenes have a line or two written twice,
 for before and after MQ-04. Nothing here says the network is unsafe; this quest is about one regulator and
@@ -2026,7 +2084,8 @@ beautiful. Edda pulls it with two fingers.
 
 ### Scene W.2 — Ruda's pump
 
-**Shown:** played. **Where:** Edda's bench (Emberwatch, the Orchard scrap workshop, or Causeway).
+**Shown:** played. **Where:** Edda's bench, at Emberwatch or the Orchard scrap workshop. **In Causeway** this
+scene is not played at the bench: play "Scene W.2, in Causeway" below instead. The two never both play.
 
 **Narrator:** A woman of fifty or so has come in with a canvas roll of tools under her arm. The roll has
 been patched with three different cloths. She puts it on the bench and it lands with a weight that says
@@ -2091,10 +2150,118 @@ slightly.
 >
 > **Ruda:** It's one office. I pump water under both ends of it.
 
+### Scene W.2, in Causeway — The bucket line
+
+**Shown:** played, with a job for the table's hands (the bucket line). **Where:** Tanner's Stair, on the low
+landing: forty houses on one steep stair, with the district pump house half-way up. It replaces the bench
+version of W.2 whenever the quest is picked up in Causeway.
+
+**The bucket line (a build suggestion).** Each hero in the party takes a place on the stair. Full buckets come
+up from the canal steps on the wall side and empties go down on the rail side, one tap to take and one to
+pass. The lines below are said between buckets. Nothing can be failed: a dropped bucket is a wet step and
+somebody laughing. The job ends when the cistern at the top door is full.
+
+**Edda:** Ruda won't come to a bench today. Her pump's stuck. She's on Tanner's Stair with a bucket, and so
+is everyone she knows. Take your lever. Take the napkin too.
+
+**Narrator:** Tanner's Stair is forty houses on one steep stair. Half-way up is a pump house the size of a
+cupboard, with its door open. The pump inside is not running. It is making a noise like a kettle that cannot
+boil.
+
+**Narrator:** A line of people runs from the canal steps to the top door, passing buckets hand to hand. There
+is a gap in the line beside the pump house. A woman of fifty or so is standing next to the gap with her arms
+folded. At her feet is a canvas roll of tools, patched with three different cloths.
+
+**Ruda:** If you've come to look, look from in the line. Full ones up the wall side. Empties down the rail.
+Mind the fourth step.
+
+**Narrator:** A full bucket arrives in Wen's hands. She passes it up. Another one arrives.
+
+**Wen:** That's one of mine. In there. The regulator.
+
+**Ruda:** Is it.
+
+**Narrator:** She looks at Wen for the length of two buckets.
+
+**Ruda:** It sticks. Every cold morning since they fitted it. I can hear what's wrong from the top of the
+stair. It's the spring seat. It wants a quarter turn and a drop of oil.
+
+**Wen:** That's all it would want. That's exactly what it would want.
+
+**Ruda:** I know. And I've a spanner in that roll older than the company that fitted it. But there's a plate
+on it that says "Authorised service only", so I stand here. The fitter with the key comes on a nine-day
+round. He was here eight days ago. It stuck the morning after.
+
+**Ruda:** I mended that pump for nineteen years. Now I report it.
+
+**Narrator:** Wen hands her bucket up the stair. She unbuckles the cuff of her gauntlet, takes out the
+napkin, and holds it flat against the pump-house door with her thumb. It is just under the brass plate.
+
+**Narrator:** Ruda puts one finger on the napkin, on the word with three underlines.
+
+**Ruda:** You sold them a regulator.
+
+**Wen:** I did.
+
+**Ruda:** Now give us the part where we get to say no.
+
+_(The three lines above are the bible's, word for word.)_
+
+**Resident (from two steps down):** Bucket!
+
+**Narrator:** Wen takes the bucket. She passes it up. The napkin stays on the door, held by Ruda's finger.
+
+**Wen:** I licensed it to a city workshop. They sold it on. I didn't put the plate there.
+
+**Ruda:** I didn't say you put the plate there. I said give us the part.
+
+**Narrator:** Wen takes the red lever out of her satchel and holds it out. Ruda does not take it. She takes
+the next bucket instead.
+
+**Ruda:** That's a lever. I can make a lever. What I haven't got is leave to fit it, or anybody's word for
+what happens when I pull it. Have you written that down anywhere? What to do, in what order?
+
+**Wen:** I've started a manual.
+
+**Narrator:** She has. It is in the satchel under the lever. It is thirty-eight pages long, in a hand that
+gets smaller as it gets more excited, and it begins with the history of the pressure valve.
+
+**Ruda:** I've got forty houses on a stair and a pump that's screaming. Which page do I want?
+
+**Narrator:** Wen turns the pages with one hand. A bucket arrives in the other. She turns quite a lot of
+pages.
+
+**Wen:** ...Thirty-three. And a bit of nineteen. And you'd need the diagram on six.
+
+**Ruda:** Then it's not a manual. It's a book about you.
+
+**Narrator:** Somebody lower down the stair laughs. The laugh comes up the line with the next bucket.
+
+> **After MQ-04 —**
+> **Wen:** There's a lift wheel on the low landing that a child of eight can turn. The Director built that.
+> And the same office signed off on a keyhole.
+>
+> **Ruda:** It's one office. I pump water under both ends of it.
+
+> **If Bo is in the party —**
+> **Narrator:** Bo has taken the place below the loose step, so that every full bucket goes over it in his
+> hands and not in anybody else's.
+
+> **If Sura is in the party —**
+> **Sura:** I could have that cistern full in one go.
+>
+> **Ruda:** You could. And tomorrow, when you've gone? Take the bucket.
+
+**Narrator:** The last bucket goes in at the top door as the lamps come on. Ruda picks up her tool roll. She
+has not unrolled it all day.
+
+**Ruda:** Edda's bench. After supper. Bring the book about you. I want the back of it.
+
 ### Scene W.3 — The key had a reason
 
-**Shown:** played. **Where:** the same bench. A man in a company fitter's coat has come in with a tool bag
-and a ring of keys on a chain.
+**Shown:** played. **Where:** Edda's bench, in every place (in Causeway, the public workshop, that evening,
+with Ruda come up from the stair). A man in a company fitter's coat has come in with a tool bag and a ring of
+keys on a chain.
 
 **Narrator:** He sees the red lever, bolted over the brass plate, and stops with his bag half off his
 shoulder.
@@ -2148,8 +2315,9 @@ you go and look.
 ### Scene W.4 — Hands in pockets
 
 **Shown:** played (a repair in four steps, with one prompt; not a fight). **Where:** the bench, with a
-regulator under pressure. Edda, Ruda and the fitter are watching. This is the bible's "demonstrate a safe
-repair under observation".
+regulator under pressure, at Emberwatch or the Orchard. Edda, Ruda and the fitter are watching. This is the
+bible's "demonstrate a safe repair under observation". **In Causeway** play "Scene W.4, in Causeway" below
+instead.
 
 **Narrator:** There is a card on the bench now, the size of a hand. It has four lines on it in Wen's
 largest printing.
@@ -2215,6 +2383,8 @@ on one side. The regulator ticks over as quietly as a clock.
 
 **Ruda:** There. That's Tanner's Stair, that sound. I've not heard it since they fitted the plate.
 
+_Cutscene candidate (suggested, not yet seen by the owner), from here to the fitter taking the pencil: [cutscenes.md](cutscenes.md), CS-PQ10 (a proposal, pending the trial). The scene works played exactly as written._
+
 **Narrator:** She picks up Wen's card and a stub of pencil. Between step two and step three she writes, in
 square capitals: "SET YOUR SPANNER NOW." She hands it back.
 
@@ -2229,9 +2399,171 @@ done.
 
 **Narrator:** Wen holds out the pencil to him.
 
+### Scene W.4, in Causeway — Forty houses watching
+
+**Shown:** played (a repair on the real pump, in steps the table carries out, with one prompt; not a fight).
+**Where:** the pump house on Tanner's Stair, the next morning. It replaces the bench version of W.4. This is
+the bible's "demonstrate a safe repair under observation", and the observers are the stair.
+
+**What the table does (a build suggestion).** Three things, with their hands: send the shout down the stair
+and listen for the answer; walk down and look when no answer comes; and work the pump handle at the end. The
+steps cannot be done out of order, and nothing can be failed.
+
+**Narrator:** It is a cold morning, and the pump is stuck again. People have come out onto their steps with
+empty buckets. Nobody has started a line yet. They are waiting to see.
+
+**Narrator:** Wen's red lever is bolted over the brass plate. The fitter is standing beside it with his keys
+on their chain and his arms folded.
+
+**Company fitter:** It's my day for this stair anyway. I'd have had it going by noon.
+
+**Ruda:** After eight days of buckets.
+
+**Company fitter:** ...Once. With me stood here. And it comes off again after, till somebody above me says
+different. I'm writing down that I said so.
+
+**Edda:** Write it large, Pol.
+
+**Narrator:** Wen holds up a card the size of a hand. It has four lines on it in her largest printing. She
+reads it out to the stair.
+
+**The card:**
+
+> TO STOP IT
+>
+> 1. Shout "PRESSURE!" Wait for "CLEAR!" No answer? Go and look.
+> 2. Pull the red lever down.
+> 3. Wait for the hiss to finish.
+> 4. That's all. Now it's safe to open.
+
+**Wen:** I'll do it once, slowly, and say each one. I'm only stopping it. I'm not opening it. It isn't my
+pump.
+
+**Wen:** The outfall's at the canal steps, thirty paces down. So the shout has to get there.
+
+**Party:** PRESSURE!
+
+**Narrator:** The shout goes down the stair, door to door. "Pressure!" "Pressure!" A very small child on the
+ninth step shouts it twice.
+
+**Narrator:** From the upper steps: "Clear!" From the middle: "Clear!" From the canal steps, nothing.
+
+**Wen:** No answer.
+
+**Narrator:** She looks at the lever. She looks at the card in her own hand.
+
+**Wen:** "Go and look." I wrote that. Come on.
+
+_(The party walks down the stair to the outfall.)_
+
+**Narrator:** At the bottom, a boy of about ten is sitting on the outfall pipe with his feet in the canal,
+scrubbing a bucket. The water is loud down here. He has not heard a thing.
+
+**Party:** We're about to let the pump go. Where you're sitting.
+
+**Boy:** This pipe? It never does anything.
+
+**Narrator:** He gets off it all the same, and takes the bucket with him. Then he puts his hands round his
+mouth.
+
+**Boy:** CLEAR!
+
+**Narrator:** It is the loudest one of the morning. It goes all the way back up.
+
+> **If Nilak is in the party —**
+> **Narrator:** Nilak has looked at the boy's arms and his feet, from habit. There is nothing wrong with any
+> of them. He nods to himself and follows the others back up the stair.
+
+**Narrator:** Wen pulls the red lever down. The pump sighs. Down at the canal steps, a fat jet of steam and
+hot water comes out of the pipe where the boy was sitting, and stops.
+
+**Narrator:** Nobody on the stair says anything for a moment. Then the hiss finishes.
+
+**Wen:** That's all. Now it's safe to open. Ruda. I'm putting my hands in my pockets.
+
+**Narrator:** She puts her hands in her pockets. The gauntlet does not fit in a pocket. She holds it behind
+her back instead.
+
+**Narrator:** Wen lets the pressure back up, so that Ruda starts where she did. Ruda reads the card through
+once, without hurrying.
+
+**Ruda:** Pressure!
+
+**Narrator:** This time it comes back from every step, top to bottom, and last of all from the canal:
+"CLEAR!" The fitter has shouted it too, before he could stop himself.
+
+**Narrator:** Ruda pulls the lever. Then, while it is still hissing, she takes a spanner from the patched
+roll and sets it on the housing nut, ready.
+
+**Narrator:** That is not the order on the card. Wen's elbows move.
+
+**PROMPT (the decider; two choices):**
+
+- **"That's step four. You're on three."**
+- **Say nothing. Watch what she does.**
+
+**If "That's step four. You're on three.":**
+
+**Wen:** Wait. That's four. You're still on three. It hasn't finished...
+
+**Ruda:** I've not turned it. I've set it. So that when the hiss stops, I'm not hunting in a roll for a
+spanner with a housing full of nothing but spring. Do you want it done your way, or the way it's done on
+this stair in the dark?
+
+**Narrator:** Wen shuts her mouth. It takes both hands, behind her back.
+
+**Wen:** The stair. Sorry. Go on.
+
+**If "Say nothing. Watch what she does.":**
+
+**Narrator:** Wen bites the inside of her cheek. The hiss finishes. The spanner is already on the nut. Ruda
+has the housing open before Wen has finished breathing in.
+
+**Wen:** You set the spanner during the hiss.
+
+**Ruda:** You've time. It's only standing there otherwise. And then you're not fishing about with it open.
+
+**Both:**
+
+**Narrator:** Quarter turn. A drop of oil. Closed. Ruda lets the pressure back up and listens with her head
+on one side. The pump ticks over as quietly as a clock.
+
+**Ruda:** There. That's Tanner's Stair, that sound. I've not heard it since they fitted the plate.
+
+**Narrator:** She nods at the pump handle, and at the party.
+
+**Ruda:** Go on. Somebody's got to find out if it's wet.
+
+_(The party works the handle. Water comes at the spout on the third stroke.)_
+
+**Narrator:** Water comes at the spout. The first bucket under it is the boy's. After that there is a queue,
+and it moves.
+
+_Cutscene candidate (suggested, not yet seen by the owner), from here to the fitter taking the pencil: [cutscenes.md](cutscenes.md), CS-PQ10 (a proposal, pending the trial). The scene works played exactly as written._
+
+**Narrator:** Ruda picks up Wen's card and a stub of pencil. Between step two and step three she writes, in
+square capitals: "SET YOUR SPANNER NOW." She hands it back.
+
+**Narrator:** Wen reads it. Her own printing, and then somebody else's in the middle of it. It is better.
+
+**Wen:** That's five steps.
+
+**Ruda:** It was always five. You'd missed one.
+
+**Company fitter:** I'd add a sixth. "Chalk the date on the housing." So the next hand knows it's been
+done.
+
+**Narrator:** Wen holds out the pencil to him. He writes it. Then he chalks the date on the housing himself,
+and unbolts the red lever, and gives it to Ruda and not to Wen.
+
+**Company fitter:** Till somebody says different.
+
+**Ruda:** Somebody's about to.
+
 ### Scene W.5 — VOTE: who gets the card
 
-**Shown:** played. **Where:** the bench.
+**Shown:** played. **Where:** the bench (in Causeway, the pump-house step, with the stair still filling
+buckets).
 
 **Edda:** So there's a lever anybody can fit and a card anybody can read. I asked you something a while
 back.
@@ -2263,7 +2595,8 @@ properly, on terms.
   every service is chalked on the housing and entered on a public sheet. Fastest, and widest. It rests on
   the company keeping its word, with the terms where everyone can read them. _Sets `pq10_licensed`._
 
-Footer: "Tanner's Stair gets its quarter turn on all three."
+Footer: "Tanner's Stair gets its quarter turn on all three." _(After W.4 in Causeway, where it has had the
+quarter turn already: "Tanner's Stair gets its lever back on all three.")_
 
 **If `pq10_open_manual`:**
 
@@ -2398,27 +2731,68 @@ Read by lines, never a lock (see Act II).
 
 ## How each scene is shown
 
-At most one cutscene candidate per quest, and none is relied on: every one also works played.
+At most one cutscene candidate per quest, and none is relied on: every one also works played. None of these
+five is approved. Two have suggested shot lists in [cutscenes.md](cutscenes.md) (CS-PQ06, CS-PQ10), pending
+the trial in issue #810; why the others are left as played is at the end of that file.
 
-| Quest | Found    | Played             | Cutscene candidate                                          |
-| ----- | -------- | ------------------ | ----------------------------------------------------------- |
-| PQ-06 | L.5      | L.1 to L.4         | L.4 (`pq06_published`): the pencil pushed across the table  |
-| PQ-07 | none     | M.1 to M.5         | M.4: the red flag going up, seen from the cliff path        |
-| PQ-08 | J.3, J.5 | J.1, J.2, J.4      | J.4: the letter, the half-door, and Jinu's hands gone still |
-| PQ-09 | R.3, R.6 | R.1, R.2, R.4, R.5 | R.1: the hold, done by two people who have done it before   |
-| PQ-10 | W.6      | W.1 to W.5         | W.4: Ruda's capitals going into the middle of Wen's card    |
+| Quest | Found    | Played             | Cutscene candidate                                                                                          |
+| ----- | -------- | ------------------ | ----------------------------------------------------------------------------------------------------------- |
+| PQ-06 | L.5      | L.1 to L.4         | L.1: the map with no way home on it (CS-PQ06, suggested). It plays in every game; L.4's pencil on one route |
+| PQ-07 | none     | M.1 to M.5         | None now. The flag and the bison are each seen on one route in three                                        |
+| PQ-08 | J.3, J.5 | J.1, J.2, J.4      | None now. J.4's letter is close to Kaya's, which is the better one                                          |
+| PQ-09 | R.3, R.6 | R.1, R.2, R.4, R.5 | None now. R.1's hold is two bodies, which the board can show                                                |
+| PQ-10 | W.6      | W.1 to W.5         | W.4: Ruda's capitals going into the middle of Wen's card (CS-PQ10, suggested)                               |
+
+## Decided (owner, 2026-11-17)
+
+The owner read the edit pass's proposals on 2026-11-17. What he decided for this file, and where it is written:
+
+1. **Which takeaway Wen's card names.** "Good people can cause harm" (her lever scalded a man, and the keyhole
+   had a reason), in place of a second "saying sorry isn't the end of it". Approved as exchanged. Cards only.
+
+2. **PQ-07's vote is a real choice.** Nima no longer glimpses the sky bison from the switchbacks. The two
+   responsible routes now cost different things. Keeping the watch himself: he sees the bison leave at first
+   light, the size of his thumbnail, but he has told Kip no, the carrier sat out the gusts by herself, and
+   Hobb is back on the next night. Handing over: Kip has the fourth night and the carrier is walked up, but
+   the east face is the wrong side of the ridge and he sees nothing. The vote text says both costs. Sena
+   sets out the board game on both. Hobb's "Was it big?" is asked on all three routes, with three answers
+   ("About so", a thumbnail; "I don't know. I was round the other side of the cliff"; and the old one).
+
+3. **PQ-10's middle is off the bench in Causeway.** There, W.2 is played in a bucket line on Tanner's Stair,
+   with the pump stuck and Ruda standing at it, and W.4 is played on the real regulator with forty houses
+   watching. The table sends the shout down the stair, walks down to the outfall when no answer comes (a boy
+   is sitting on the pipe), and works the pump handle at the end. Wen only stops the pump; Ruda opens it.
+   The fitter allows the lever once and takes it off again, so the vote in W.5 still decides how it comes
+   back. The bench versions stay for Emberwatch and the Orchard. W.3 and W.5 are unchanged but for where
+   they stand. This closes open item 12.
+
+4. **Dabi is now Twig.** Fenn's pupil in PQ-06 sat too close to Sabi, the rigger of SF-2.1. She is Twig in
+   every line, on the flood post ("Twig born."), on the petition (in capitals) and on the keepsake (Twig's
+   map of four paces). It is what the marsh calls her, like Wick and Latch, and no other name in the scripts
+   sounds like it. Nothing else about her changed.
+5. **Cutscene candidates.** None of this file's five is approved. Two are suggested, with shot lists in
+   [cutscenes.md](cutscenes.md): the map with no way home on it (L.1, CS-PQ06) and Ruda's capitals in Wen's
+   card (W.4, CS-PQ10). Both wait on the trial in issue #810.
+
+## Decided (owner, 2026-11-19)
+
+1. **PQ-07 stays as written.** The vote in Scene M.3 and its two responsible routes are final. If Nima hands
+   the watch over, he sees nothing: the east face is the wrong side of the ridge. If he keeps it, he sees the
+   sky bison go at first light, the size of his thumbnail, and it costs something: Kip is turned away
+   believing the watch is for the seven, and Hobb is back on nights. The wild sky bison stays (open item 4
+   below is closed with it).
 
 ## Open, for the owner
 
 Everything below is written into the scripts as recommended, per the standing instruction.
 
-1. **Names I invented.** Dabi (Fenn's pupil); Hobb (the caretaker with bad knees) and Kip (the lower-camp
+1. **Names I invented.** Twig (Fenn's pupil; Dabi in the first draft); Hobb (the caretaker with bad knees) and Kip (the lower-camp
    runner); Ilo (the "young courier" of Scene 8.2), Marda and her daughter Chun; Zan and Tamsa (Seli's former
    trainees), and "the Tin Cut" for the quarry where they served; Ruda (the pump mechanic) and Pol (the
    company fitter); the play's title, "The Lamp at Midnight". All were checked against the cast lists and the
    identity locks. Recommend: approve.
 2. **The child's line in PQ-06.** The bible gives "You drew our house." / "Yes." / "You didn't draw a way to
-   get home." without a speaker for the first and third. I gave them to a child, Dabi, and put DLG-06 with
+   get home." without a speaker for the first and third. I gave them to a child, Twig, and put DLG-06 with
    Fenn after it, since DLG-06 is set "after walking the omitted path". Recommend: approve.
 3. **A corridor clerk in DLG-06.** DLG-06 has only Lin Mei, Fenn and Bo. I bring a clerk onto the plank after
    its last line so that the three choices have somebody to be made to, and so that the other side (a
@@ -2428,7 +2802,8 @@ Everything below is written into the scripts as recommended, per the standing in
    landing meadow, since the bible lists visiting sky bison at Bellweather and the companion has one
    (Brindle) in a side story. Mine is unnamed and wild, so it does not use up Brindle's scene. Recommend:
    approve; if you would rather keep bison for that side story alone, the rumour can be a lantern-kite
-   launch from the ridge with one line changed.
+   launch from the ridge with one line changed. _Decided (owner, 2026-11-19):_ the bison stays; PQ-07 is final as
+   written.
 5. **Nima's Act I crate was the east shelter's roofing felt.** The outline says the ribbon pays off at
    Bellweather but not how. I made the diverted crate the felt for the roof he walked off, so what he brings
    back is news about the very thing he left. Recommend: approve.
@@ -2464,7 +2839,8 @@ Everything below is written into the scripts as recommended, per the standing in
 12. **Where PQ-10 plays.** The bible says it "concludes in Copper Orchard or Causeway". I tied scenes W.2 to
     W.6 to Edda's bench rather than to a place, since the act scripts have Edda at Emberwatch in MQ-03, in
     Causeway in MQ-05 and MQ-09, and the bible has her at the Orchard annex. A table can finish the quest
-    wherever it next finds her. Recommend: approve.
+    wherever it next finds her. Recommend: approve. _Decided (owner, 2026-11-17):_ approved, and in
+    Causeway W.2 and W.4 move to Tanner's Stair.
 13. **One line owed elsewhere.** After `pq06_negotiated`, Lin Mei's dated promise falls due at the assembly
     (MQ-10). Act IV has no line for it. Recommend adding to Scene 10.4, when it is built: **Lin Mei:** "Before
     the corridor's business is heard: sheet fourteen was mine. I marked nine homes temporary and left a path
@@ -2494,10 +2870,8 @@ Everything below is written into the scripts as recommended, per the standing in
       regulators until after MQ-04.
 15. **Edit pass (2026-11-17): three names changed.** Bodi is now Zan (Bo and Bo-shan already need a naming
     lock), Ruvi is Tamsa (she alternated with Riko, line by line) and Hana is Chun (beside Hanru, Haro and
-    Hua). Still close to an existing name, and left for you: Dabi beside Sabi (the rigger of SF-2.1), and
-    Marda beside Mira, Miri and Meren.
-16. **Edit pass: Wen's card** now names "good people can cause harm" (her lever scalded a man, and the keyhole
-    had a reason) in place of a second "saying sorry isn't the end of it".
-17. **Edit pass: the tram bulletin.** The station clerk stamped it nine days ago and sent it up the line in
+    Hua). Still close to an existing name, and left for you: Marda beside Mira, Miri and Meren. (Dabi, who
+    sat beside Sabi, the rigger of SF-2.1, is now Twig: see "Decided".)
+16. **Edit pass: the tram bulletin.** The station clerk stamped it nine days ago and sent it up the line in
     the up-bag, which is how a bulletin he had handled could sit unread; and the fourth of the test dates is
     the day the car hung (Scene 8.1).

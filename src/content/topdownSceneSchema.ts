@@ -59,9 +59,14 @@ export function topDownSceneSchema(sceneUrl: string): Schema<MapScene> {
     ground: s
       .array(
         s.object({
-          url: s.literal(`${directory}ground.webp`),
+          // the plate, or a gated piece's ground (its flat art and its baked shadow) in the overlay atlas (ADR 0123)
+          url: s.union([
+            s.literal(`${directory}ground.webp`),
+            s.literal(`${directory}overlays.webp`),
+          ]),
           sourceRect: crop.optional(),
           ...imageFields,
+          gate: s.string().min(1).optional(),
         }),
       )
       .min(1),
@@ -82,6 +87,7 @@ export function topDownSceneSchema(sceneUrl: string): Schema<MapScene> {
         contactShadow: s.literal(false).optional(),
         castShadow: s.union([s.literal(false), s.literal('reduced')]).optional(),
         castFrom: s.literal('base').optional(),
+        gate: s.string().min(1).optional(),
       }),
     ),
     flock: s

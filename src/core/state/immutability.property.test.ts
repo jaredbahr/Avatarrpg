@@ -482,7 +482,7 @@ function runSequence(tableSize: (typeof TABLE_SIZES)[number], trial: number): Ph
 
   const leaveVillage = applyAndCount(
     state,
-    { type: 'walkTo', pos: { x: 23, y: 7 } },
+    { type: 'walkTo', pos: { x: 31, y: 9 } },
     context,
     counts,
   );
@@ -589,7 +589,7 @@ describe('reducer input immutability', () => {
       continuedExploreCount,
       'corpus includes post-resolution exploration walks',
     ).toBeGreaterThan(0);
-  }, 20_000);
+  });
 
   it('guards nested objects, arrays, Maps, Sets, and their contents', () => {
     const key = { id: 'nested-key' };

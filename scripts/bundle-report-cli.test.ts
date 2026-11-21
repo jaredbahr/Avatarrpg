@@ -14,6 +14,7 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
+import { CHILD_HANG_GUARD_MS } from './test-support/workBounds';
 
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const fixtures: string[] = [];
@@ -217,7 +218,7 @@ function invoke(folder: string, args: string[], extraEnv: NodeJS.ProcessEnv = {}
   return spawnSync(process.execPath, [join(folder, 'scripts', 'bundle-report.mjs'), ...args], {
     cwd: folder,
     encoding: 'utf8',
-    timeout: 120_000,
+    timeout: CHILD_HANG_GUARD_MS,
     env: { ...process.env, ...extraEnv },
   });
 }
@@ -323,5 +324,5 @@ setInterval(() => {}, 1000);`;
     expect(result.stderr).toContain('exceeded the 10000 ms limit');
     expect(() => process.kill(sleeperPid, 0)).toThrow();
     expect(git(folder, ['worktree', 'list', '--porcelain']).split('worktree ')).toHaveLength(2);
-  }, 35_000);
+  });
 });

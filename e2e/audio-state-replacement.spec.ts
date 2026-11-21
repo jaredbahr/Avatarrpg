@@ -126,8 +126,8 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     });
     await settleLayout(page);
     for (const pos of [
-      { x: 9, y: 7 },
-      { x: 3, y: 7 },
+      { x: 9, y: 10 },
+      { x: 5, y: 10 },
     ]) {
       await walk(page, pos);
       await waitForIdle(page);
@@ -207,7 +207,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         click(slot, 'Load');
       };
     });
-    await clickWalk(page, { x: 9, y: 7 });
+    await clickWalk(page, { x: 9, y: 10 });
     await expect
       .poll(() => page.evaluate(() => window.audioReplacementProbe?.triggered))
       .toBe(true);
@@ -259,7 +259,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     expect(loaded.busy).toBe(false);
     expect(loaded.backend).toBe(renderer);
     const first = await page.evaluate(() => window.audioReplacementProbe?.sources.length ?? 0);
-    await walk(page, { x: 4, y: 7 });
+    await walk(page, { x: 6, y: 10 });
     await waitForIdle(page);
     await expect
       .poll(() =>

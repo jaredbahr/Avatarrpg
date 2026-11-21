@@ -15,7 +15,8 @@ on the order, and each is marked where it happens:
 - **The echo.** Before MQ-07 nobody can explain it. After MQ-07 the party knows what is listening. Each of
   MQ-06 and MQ-08 gives its echo line twice.
 - **The first camp.** After whichever spoke is finished first, the camp scene **C.1** plays: Pella's second
-  letter, Grumbler's ramp, and DLG-02.
+  letter, Grumbler's ramp, and DLG-02. With the Director's mandate there is also a letter from her, which
+  names the place the party went to first (`first_spoke`).
 - **Latch.** After MQ-07, Latch rides the tailgate. MQ-06 and MQ-08 each have one small Latch line for that
   case.
 - **Yenna.** Once the ramp is fitted (any spoke after the first), Yenna can ride the cart to Pear Halt.
@@ -76,6 +77,25 @@ him. Third stop of the day, this is. He always had his nosebag here.
 
 > **If Yenna is riding (the ramp is fitted) —** **Yenna:** He's gone the long way round. It's the pretty way.
 > I'm not complaining. Wake him up when you've all finished admiring him. My mother eats at five.
+
+> Added 2026-11-20 (suggestions pass).
+>
+> **If C.1 has played (MQ-06 is not the first spoke) —** _Victory branch only. Pella's second letter asked the
+> ones in the back for exactly this. Her loss-branch letter does not, and Dorin stacks by the book, so the
+> loss branch has no version._
+>
+> **Narrator:** The gap in the hedge was narrow. Now that the cart has stopped, the tall basket on top of the
+> small crate finishes leaning.
+>
+> **Driver (Bo-shan):** Leave it. Nobody fix it. She said let it fall off.
+>
+> **Narrator:** It falls off. Six cabbages roll down the lane in a line. The last one stops beside Parcel's
+> feed basket. Parcel opens one eye.
+>
+> **Driver (Bo-shan):** And now I have to tell her. "One basket. Tall. On a small crate." She is going to
+> enjoy that so much.
+>
+> **Narrator:** He picks up five cabbages. When he loads the cart again, the small crate goes on top.
 
 ### Scene 6.2 — An unscheduled stop
 
@@ -1100,6 +1120,25 @@ is three. P."
 > **Gao's note:** Ramp. Hanru cut the boards and I found the hinge. It was on my shop door. I now have a shop
 > door that leans. Tell the lady it's wide because Hanru measures by eye and Hanru's eye is generous.
 
+> Added 2026-11-20 (suggestions pass).
+>
+> **If Latch is on the tailgate (C.1 follows MQ-07) —** _It plays at the tailgate, so it holds for a party
+> that refused Latch in SQ-10 too._
+>
+> **Narrator:** Parcel has found the ramp's rope handle. He is chewing it slowly, looking at nothing.
+>
+> **Latch:** Animal. That was put there on purpose. I know this one. It is not lost. It is not yours.
+>
+> **Narrator:** Parcel goes on chewing. Latch looks at him, and then at the driver.
+>
+> **Latch:** I said it correctly. It did not work.
+>
+> **Driver (Bo-shan):** It never works. He's heard it from me every day since the village bought him. You
+> take the rope out, and you say it again tomorrow.
+>
+> **Loss branch.** Replace Bo-shan's line: **Driver (Dorin):** It does not work when I say it either. I have
+> said it eleven times. It is in the watch book eleven times.
+
 ### Pella's second letter
 
 **Driver (Bo-shan):** Here we go. She's pressed harder this time. It's nearly through the paper.
@@ -1160,6 +1199,75 @@ Grumbler's sums.
 > **Narrator:** He folds it into the watch book, at today's page.
 >
 > **Driver (Dorin):** Number four is also fair. I am going to answer four before I answer seven.
+
+### A grey envelope
+
+**Shown:** found (it is under the crate's cord; a table that does not pick it up never reads it). Only with
+`mandate_official` or `mandate_independent`. Decided by the owner on 2026-11-19: Veyra is otherwise absent
+from Scene 4.6 to the assembly in 10.4.
+
+_How it comes to be there: with either mandate the party is her commission, and the commission's page on its
+first place went down to the Director's office by the public post when that spoke closed. It is not a choice
+and it has no scene. With `mandate_residents` the party is nobody's commission and sent her nothing: there is
+no envelope, no line about one, and C.1 plays as it did._
+
+**Narrator:** Under the crate's cord there is a third thing: a thin grey envelope with the Commonworks
+dispatch stamp. It is addressed to "The Ba Dan commission, on the road."
+
+**Narrator:** Your page on the first of the three places went down to Causeway by the post. This has come
+back up the same road.
+
+**Narrator:** Inside is one sheet of office paper, folded in three, with the date written out in full at the
+top. You know the hand. It wrote the card on the Emberwatch jetty. Neat, and in a hurry.
+
+> **If the party read the order in the dispatch room (not `lost_emberwatch`) —** _Narrator:_ It is the hand
+> that corrected the supply order in ink, in two places.
+
+**Veyra's letter:**
+
+> To the Ba Dan commission.
+>
+> Your first page reached me. I read it standing up. Then I sat down and read it again.
+>
+> _(one of three, by `first_spoke`)_
+>
+> - _`orchard`:_ You write that Pear Halt has a platform, a lamp and ninety people, and that my map has none of
+>   them. I have asked my office why.
+> - _`marsh`:_ You write that my survey found no dwellings on the Slow Channel, and that you found a school. I
+>   have asked my office why.
+> - _`heights`:_ You write that my log says "calm" at bell three on days the carters were nearly blown off the
+>   road. I have asked my office why.
+>
+> I am told it is being looked into.
+>
+> I am writing that down, with today's date, so that you can hold me to it. Send the next page when you have
+> it.
+>
+> The pump at the low end of Saltstep is in. I went down and tried the handle myself. A girl was already
+> working it. She would not give me a turn.
+>
+> V. Sen.
+
+> **If `mandate_independent` —** add, after "Your first page reached me.": "Your terms did not oblige you to
+> send it to me. I noticed that you did."
+
+**Narrator:** After "looked into" there is one more word, crossed out with a single straight line. You can
+still read it. It says "soon".
+
+**Driver (Bo-shan):** "Hold me to it." All right. It goes in the book, under the stops. She can be a delivery.
+
+> **Loss branch.** **Driver (Dorin):** It has a date and a signature, and it says who is to be held to what.
+> That is a correct letter. I am going to keep it in the watch book.
+
+> **If Riko is in the party —**
+> **Riko:** "I am told." Who by? She's left the name off.
+
+> **If Wen is in the party —**
+> **Wen:** She wrote back herself. Not a clerk. And she went and tried the handle.
+
+_Reads `first_spoke`, `mandate_official`, `mandate_independent`, `lost_emberwatch`. Sets `veyra_letter_read`
+when the table opens it. The letter says nothing the party's own page did not: no vanes, no readings, no
+warning. Scene 9.3 has one line for a table that read it._
 
 ### DLG-02 — The cook and the first night
 
@@ -1304,6 +1412,24 @@ shelf. I can't walk in there. My pass stopped working on Monday.
 **Narrator:** The archive smells of oil and old paper. Ledgers go up three galleries into the dark. Somewhere
 above, a pen is scratching, quickly and evenly.
 
+> **If `pq03_labels_known` —** _(found on the first gallery, on the way up; sets `labels_ledger_read`)_
+>
+> **Narrator:** A stores receipt book lies open on a shelf end. The page is headed "Emberwatch stores.
+> Received uncounted, under healing-house label." Under the heading there is a column of ticks, tied in fives.
+>
+> **Party:** Count them.
+>
+> **Narrator:** Five. Ten. Fifteen. Twenty. Twenty-five. Thirty. And one over. Against every tick is the same
+> word, in the same level hand: "Security."
+
+> **If `pq03_labels_known` and Nilak is in the party —**
+> **Nilak:** Thirty-one. Aru chalked thirty-nine inside the lid. So it's eight. Eight still out.
+>
+> **Nilak:** And not one of these went near a clinic.
+
+> **If `pq03_labels_known` and Nilak is not in the party —** **Narrator:** Thirty-one. The number Aru chalked
+> inside the chest lid was thirty-nine. That leaves eight.
+
 **Narrator:** On the middle gallery, at a reading desk with a shaded lamp, Jin is copying a file. Two of her
 clerks are copying beside her. She turns a page before she speaks.
 
@@ -1351,6 +1477,9 @@ readings are steady. We will find out why they are steady after the spring tide,
 commission on the tide. V. Sen. Dated the ninth day of the first month."
 
 **Narrator:** Five days. She had it for five days, and then she wrote that.
+
+> **If `veyra_letter_read` —** _Narrator:_ You have read this hand before, at a crossroads, on grey office
+> paper. "I am writing that down so that you can hold me to it." She wrote this page first.
 
 **Narrator:** Behind it is a half-sheet in a small, level hand: "Collect all copies of safety memorandum 14.
 Staff holding copies are to be reassigned. O. Rusk."
@@ -1672,18 +1801,18 @@ C.1, after the first spoke, with a loss-branch version. It arrives with Grumbler
 
 ## Hero moments in this act
 
-| Hero    | Where                                                                                |
-| ------- | ------------------------------------------------------------------------------------ |
-| Kaya    | 6.3 on the wagon before the brake is found; her PQ-01 runs at Saltstep               |
-| Tenzo   | C.1, DLG-02 and his grandmother                                                      |
-| Nilak   | 7.2 the fever tally; 8.1 three dull questions                                        |
-| Sura    | 7.2 Vessa (PQ-04 opens); 7.5 at the pool's edge                                      |
-| Bo      | 6.3 the end that is left; 6.4 Renn (PQ-05 opens)                                     |
-| Lin Mei | 6.4 the chess table; 7.2 Fenn's notice (PQ-06 opens); 9.1 her survey under all three |
-| Nima    | 8.1 on the rope like everyone else; 8.2 Sena (PQ-07 opens, with the bible's line)    |
-| Jinu    | 8.1 the warden's slip; 8.2 the mail shelter (PQ-08 opens); 9.5 folding in three      |
-| Riko    | 6.3 the brake wheel; 6.4 Seli (PQ-09 opens); 9.3 "Both of those are her"             |
-| Wen     | 7.5 the gauge; 9.1 her regulator; 9.3 "you find out why first"; C.1 the stove        |
+| Hero    | Where                                                                                     |
+| ------- | ----------------------------------------------------------------------------------------- |
+| Kaya    | 6.3 on the wagon before the brake is found; her PQ-01 runs at Saltstep                    |
+| Tenzo   | C.1, DLG-02 and his grandmother                                                           |
+| Nilak   | 7.2 the fever tally; 8.1 three dull questions                                             |
+| Sura    | 7.2 Vessa (PQ-04 opens); 7.5 at the pool's edge                                           |
+| Bo      | 6.3 the end that is left; 6.4 Renn (PQ-05 opens)                                          |
+| Lin Mei | 6.4 the chess table; 7.2 Fenn's notice (PQ-06 opens); 9.1 her survey under all three      |
+| Nima    | 8.1 on the rope like everyone else; 8.2 Sena (PQ-07 opens, with the bible's line)         |
+| Jinu    | 8.1 the warden's slip; 8.2 the mail shelter (PQ-08 opens); 9.5 folding in three           |
+| Riko    | 6.3 the brake wheel; 6.4 Seli (PQ-09 opens); C.1 "Who by?"; 9.3 "Both of those are her"   |
+| Wen     | 7.5 the gauge; 9.1 her regulator; 9.3 "you find out why first"; C.1 the stove, the letter |
 
 ## Decided (owner, 2026-11-15)
 
@@ -1744,6 +1873,29 @@ record of what was accepted ("Recommend" lines are now decisions). Later correct
       lists "(Sura, Lin Mei, Nilak)". I gave Nilak a main-line moment at Reedglass (the fever tally) and left
       his quest at Aru's table.
 
+## Decided (owner, 2026-11-19)
+
+1. **A found letter from Veyra at the first camp** (C.1, "A grey envelope"). She was absent from Scene 4.6
+   until the assembly in 10.4. With `mandate_official` or `mandate_independent` her answer to the
+   commission's first page lies under the crate's cord. It names the place the party went to first, in one of
+   three sentences, and says of it: "I am told it is being looked into." With `mandate_residents` nothing
+   shows. It is found, so a table can miss it. It gives away nothing the reveal ladder holds back: each
+   sentence repeats what the party itself wrote. One narrator line in 9.3 answers it for a table that read it.
+
+   | Flag                                      | Where                                              | Use                                                                |
+   | ----------------------------------------- | -------------------------------------------------- | ------------------------------------------------------------------ |
+   | `first_spoke`                             | set in Act II, 5.6 (`orchard`, `marsh`, `heights`) | read: which place she names                                        |
+   | `mandate_official`, `mandate_independent` | set in Act II, 4.6                                 | read: whether there is a letter; one extra sentence for the second |
+   | `lost_emberwatch`                         | set in Act II, 3.4                                 | read: whether the hand is also known from the order                |
+   | `veyra_letter_read`                       | set in C.1 when the envelope is opened             | read in 9.3 (one narrator line)                                    |
+
+2. **Hesra lost both boots.** In the galleries, on both Act I branches. After a victory the right one is on
+   the mason's yard step the night of the homecoming, with a river shell in it, and Latch returns the left
+   one in MQ-07 (Scene 7.3). After a loss Latch leaves the left one in 7.3, Dorin keeps it under the seat,
+   and the right one is on her step the night the galleries open (Act IV, 11.3). Acts III and IV already say
+   this in every line that touches it; nothing here changed. The shipped supper line is being brought into
+   line on its own branch.
+
 ## Open, for the owner
 
 1. **The side fights** (SF-3.1 to SF-3.3) are mine: the Pear Halt porters, the eel traps and Sena's three
@@ -1760,7 +1912,7 @@ What changed in this file; the reasons and the proposals not applied are in the 
    Yenna's copy of memorandum fourteen has a source on both approaches (Neri gave her the shelf; it was her
    Tuesday). Fenn is seen to walk to the pool. The Keeper has kept the Halt's and the heights' echoes too,
    when those spokes came first. Hesra lost the pair of boots on both Act I branches (the loss branch had her
-   keep one), which the shipped welcome-home line does not yet say: see the report.
+   keep one). _Decided (owner, 2026-11-19): she lost both; see "Decided" above._
 2. **Lines:** Veyra's reply to memorandum fourteen now defers the question instead of dismissing it ("We
    will find out why they are steady after the spring tide"), and Wen answers that. Auntie Silt's frog.
    Nima's reason for taking the rope is a real limit. Bo at the handcart. Four long turns split.
@@ -1769,3 +1921,7 @@ What changed in this file; the reasons and the proposals not applied are in the 
    and 9.4 may play inside the archive fight's clock.
 5. **Votes:** `findings_guild` is read in 6.4 and `findings_engineers` in 8.2.
 6. **Cutscenes:** pointers to [cutscenes.md](cutscenes.md) at 7.5 and 9.8.
+7. **The forty labels (owner, 2026-11-17).** PQ-03 leaves "thirty-nine" chalked in Aru's chest lid. After
+   `pq03_labels_known`, 9.2 has a stores receipt book on the first gallery with thirty-one ticks, counted
+   aloud in fives, all received by Security: the number comes down to eight. It sets `labels_ledger_read`.
+   Scene 11.6 takes it down by one more.

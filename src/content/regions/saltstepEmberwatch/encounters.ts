@@ -12,6 +12,8 @@
  */
 import type { EncounterDef, EncounterPlacement } from '../../../core/types';
 import { WINCH_BRAKE_CELLS } from './maps';
+import { SF22_XP_PER_HEAD } from './sf22';
+import { SF23_XP_PER_HEAD } from './sf23';
 
 const at = (x: number, y: number, enemyId: string): EncounterPlacement => ({
   enemyId,
@@ -90,5 +92,72 @@ export const SALTSTEP_EMBERWATCH_ENCOUNTERS: readonly EncounterDef[] = [
       'The rain cistern has overflowed across the yard, and Luli’s live line runs along one side of it.',
     // The combo's first hint (the script: "something in this yard reacts to water"; #622).
     tip: 'Something in this yard reacts to water.',
+  },
+  {
+    /*
+     * SF-2.2, the tipping platform (optional; ADR 0122, `docs/places/saltstep_platform.md`): a
+     * friendly bout. 0 HP or a shove into the harbour is out, nobody is helped up, and the deck
+     * tips toward the heavier half at each round's end (the seam is column 7). A token 15 XP a head,
+     * won or carried on (owner, 2026-11-19): every other side fight played, a table ends the slice
+     * on 983 XP, and RG-02's band stops at level 5 (1,000).
+     */
+    id: 'enc_sf22_platform',
+    name: 'The tipping platform',
+    mapId: 'saltstep_platform',
+    expectedLevel: 4,
+    xpPerHead: SF22_XP_PER_HEAD,
+    enemies: [at(9, 4, 'ferry_apprentice'), at(9, 6, 'ferry_apprentice'), at(9, 5, 'channel_hand')],
+    allies: [],
+    conditionalEnemies: [],
+    baselinePartySize: 3,
+    // One more each side per extra hero, so the halves start even and nothing tips at once.
+    reinforcements: [
+      at(10, 5, 'channel_hand'),
+      at(10, 3, 'ferry_apprentice'),
+      at(10, 7, 'channel_hand'),
+    ],
+    variants: [],
+    bout: { outOn: ['water_deep'], tipping: { axis: 'x', pivot: 7 } },
+    // Hard keeps +3 power and no extra AP here, as at Edge-on: the shared profile's +2 AP is two more
+    // shoves a turn, which on a deck this size decides the bout in a round.
+    hard: { power: 3, ap: 0 },
+    intro:
+      'The midday lull. The spare platform rides loose on its moorings, and it leans toward whoever stands on it. Half the market has found a reason to be near the rail.',
+    tip: 'A shove toward the water leaves a fighter teetering on the edge. Shove them again after their turn and they are in, and out of the bout. If you are the one teetering, step back from the edge. Blue squares show where the deck will tip when the round ends.',
+  },
+  {
+    /*
+     * SF-2.3, the bridge toll (optional; `docs/places/river_road.md`, "Fight needs (SF-2.3)"), on a 19 by 12 crop of
+     * the river road round the bridge (`river_road_bridge`). The guards hold the bridge, a two-wide choke, with a
+     * crossbow back in the camp behind its crates; the corporal stands by the cook pot. The party comes from the west
+     * bank and can flank by the ford. A table of three meets the corporal and three guards; a table of six meets the
+     * script's corporal and six. A token 15 XP a head, won or carried on, as SF-2.2's.
+     */
+    id: 'enc_sf23_bridge_toll',
+    name: 'The bridge toll',
+    mapId: 'river_road_bridge',
+    expectedLevel: 4,
+    xpPerHead: SF23_XP_PER_HEAD,
+    enemies: [
+      at(8, 5, 'toll_guard'),
+      at(8, 6, 'toll_guard'),
+      // the camp's bare earth, clear of its bedrolls, rubbish heap, fire, pot and lamp oil. The crossbow stands level
+      // with the crate stack at (11, 3), on its west side: one row behind it, the stack hid its legs (owner,
+      // 2026-11-21). The second crossbow, at (12, 2), is clear of both stacks and the pot.
+      at(10, 3, 'toll_crossbow'),
+      at(14, 4, 'toll_corporal'),
+    ],
+    allies: [],
+    conditionalEnemies: [],
+    baselinePartySize: 3,
+    reinforcements: [at(9, 4, 'toll_guard'), at(12, 2, 'toll_crossbow'), at(11, 7, 'toll_guard')],
+    variants: [],
+    /*
+     * Hard keeps one of the shared profile's two extra AP and +3 of its power: with all of it a table of three won
+     * 63% here, and with none of it Hard was barely harder than Story (sim, 2026-11-20).
+     */
+    hard: { power: 3, ap: 1 },
+    intro: 'PLACEHOLDER (story): the pole across the bridge, the guards behind it.',
+    tip: 'The guards hold the bridge. The stream is shallow at the ford, downstream: cross there to come at them from the side. The corporal’s Rally makes a guard hit harder, so reach him early.',
   },
 ];

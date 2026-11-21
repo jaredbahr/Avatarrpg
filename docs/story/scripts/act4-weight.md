@@ -612,6 +612,24 @@ can't have one of them without the other one.
 
 _(SQ-01 resolved: **Pella:** "It's low. It's even. ...Who taught you this?" **Bo-shan:** "You did. By post.")_
 
+> Added 2026-11-20 (suggestions pass).
+>
+> **Found: the gate, once the road has cleared.** _Optional, and after the reunion, never during it._
+>
+> **Narrator:** Dorin has set his stool upright and opened the watch book to write the cart in. A turtle duck
+> is asleep on today's page.
+>
+> **Dorin:** I can't enter you yet. The duck has the page.
+>
+> **Party:** Could you move the duck?
+>
+> **Dorin:** It was here first. That is in the book as well. Underneath it.
+>
+> **Narrator:** He writes the cart in very small, along the margin, round one webbed foot.
+>
+> _(If the party saw the duck at Dorin's board in SQ-31, he says "Deputy has the page", and does not hear
+> himself say it.)_
+
 #### After an Act I loss (`act1_lost`)
 
 **Narrator:** Ba Dan from the bend in the road: cooking smoke, the canal, the gate. The tables under Mira's
@@ -639,6 +657,22 @@ not want to write that. I wanted to say it standing in front of you.
 
 **Narrator:** She does not say anything else. She walks beside the cart all the way up the east road as far
 as the last house, and stops there, because that is as far as she is allowed.
+
+> Added 2026-11-20 (suggestions pass).
+>
+> **Found: the gate, a little later.** _Optional. The loss-branch version of the duck at the gate; it is kept
+> quiet, because nobody in Ba Dan is laughing yet._
+>
+> **Narrator:** A turtle duck is asleep on Dorin's stool, with its head tucked in.
+>
+> **Hanru:** It took the stool the day you left. I let it. Somebody ought to sit there.
+>
+> **Driver (Dorin):** Is it in the book?
+>
+> **Hanru:** You took the book.
+>
+> **Narrator:** Dorin fetches the watch book from under the cart seat. He enters the duck, from the day he
+> left. He does not ask for the stool back.
 
 ### Scene 11.3 — The quarry road
 
@@ -967,6 +1001,29 @@ something to bargain with.
 > you again.
 
 _End of DLG-08._
+
+> **If `pq03_labels_known` —** _(after the choice; this is not part of DLG-08)_
+>
+> **Party:** A crate came up to the quarry marked "medical supplies". Was it the only one?
+>
+> **Ruon:** Two. I signed for both as bandage. I never lifted a lid. The second is in the powder store,
+> nailed shut.
+>
+> **Daiyu:** It was. We had it open the day we came up. Straps, the same as the first.
+>
+> **Narrator:** She puts a square of printed paper on the table: a healing-house emblem and a mark under it,
+> peeled off the crate whole.
+
+> **If `pq03_labels_known` and Nilak is in the party —**
+> **Nilak:** That's Aru's mark. I'll carry it back to the hand that signed it.
+>
+> **Nilak (after `labels_ledger_read`):** That was eight. Seven now.
+>
+> **Nilak (otherwise):** That was thirty-nine. Thirty-eight now.
+
+> **If `pq03_labels_known` and Nilak is not in the party —** **Narrator:** Mira puts the label in with the
+> papers going to Causeway, for the healer whose mark it is. That was eight still out, and now it is seven.
+> _(Without `labels_ledger_read`: "That was thirty-nine still out, and now it is thirty-eight.")_
 
 **Mira:** You'll work under Daiyu. You'll sleep in the guard hut. You'll have no rank here, and you'll get no
 thanks from me. If the work's good, the work's good.
@@ -1315,6 +1372,19 @@ Nel." And under that, in a third: "Not enough runners. Ask."
 - **Yenna**, at the slate, with a lamp in her lap: "I've got the signal lamp from the Halt. I'm the relay
   between the shed and the landing. Nobody asked if I could. They asked if I would."
 
+> Added 2026-11-20 (suggestions pass).
+>
+> _One more around the shed, for any party. She is the girl from the goods lift in Scene 4.1, but the line
+> stands alone for a table that never tried the lift._
+>
+> **Narrator:** A girl of about eight comes in backwards through the shed doors, pulling a handcart of
+> blankets. A supervisor walks behind her with her arms folded.
+>
+> **Girl:** Forty blankets. I brought them up on the goods lift. In one go. She wasn't allowed to help. I told
+> her.
+>
+> **Girl:** Tell them the lift's free all night. Anybody can work it. I can show them. It takes about one go.
+
 ### Scene 12.2 — One conversation each
 
 **Shown:** found. One per selected hero, with someone who is really in the shed. A solo hero gets theirs; an
@@ -1333,6 +1403,14 @@ written "Thursday" again.
 
 **Kaya:** You don't know me, so you'll do. When this is over I'm coming back here to take these down and pack
 them in straw. There. Somebody's heard it.
+
+> **After `pq01_whole_story` or `pq01_quiet_help` —** (in place of Kaya's two lines above)
+>
+> **Kaya:** Not now. It was. I was good up to where the fire went out. After that I used to go. There was
+> always a ferry.
+>
+> **Kaya:** You don't know me, so you'll do. When this is over I'm coming back here to take these down and
+> pack them in straw. There. That's two people I've said it to.
 
 **Hua:** I'll hold the ladder. I'm seventy-three. I shan't hold it well.
 
@@ -1806,6 +1884,14 @@ record of what was accepted ("Recommend" lines are now decisions). Later correct
     - Bible MQ-12 says "the first rain begins after the player commits"; the fall in MQ-09 already has rain in
       Causeway. I kept both: it rains at the fall, clears for MQ-11, and the tide's rain starts on the commit.
 
+## Decided (owner, 2026-11-19)
+
+1. **Hesra lost both boots** in the galleries, on both Act I branches. This act already says so and nothing
+   here changed: after a victory she is "in two boots" at the east gate (11.2), one come home by itself and
+   one returned by Latch in MQ-07; after a loss she walks out with both feet in sacking, Dorin hands her the
+   left one from under the seat with the shell in it, and the right one is on her step that night (11.3). The
+   shell she gives Latch in 11.9 came out of a boot on both.
+
 ## Open, for the owner
 
 1. **The side fights** (SF-4.1 to SF-4.3) are mine: the poster patrol, Jin's two unpaid men at Kuan's bench
@@ -1840,3 +1926,11 @@ What changed in this file; the reasons and the proposals not applied are in the 
 8. **Hero moments added** in 10.1 and 10.5 (Tenzo, Lin Mei, Sura, Nima, Jinu).
 9. **Pace:** free roam opens between the hearing and Mira's list.
 10. **Cutscenes:** pointers to [cutscenes.md](cutscenes.md) at 10.6 and 11.10.
+11. **The forty labels (owner, 2026-11-17).** After `pq03_labels_known`, 11.6 has a guarded exchange after
+    DLG-08 ends: Ruon signed for two crates under the healing-house label and never lifted a lid, and Daiyu
+    puts the second label on the table. The count from PQ-03 comes down by one (to seven after 9.2's ledger,
+    `labels_ledger_read`; to thirty-eight without it). No line of DLG-08 is changed.
+12. **Kaya in 12.2 (owner, 2026-11-17).** After `pq01_whole_story` or `pq01_quiet_help` her leaving is in the
+    past tense ("After that I used to go. There was always a ferry."). Her commitment about the lanterns is
+    word for word the same, and ends "That's two people I've said it to." After `pq01_left`, or with the
+    quest unopened, the scene plays as it did.

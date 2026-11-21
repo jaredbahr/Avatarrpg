@@ -38,11 +38,14 @@ describe('walking the village', () => {
     const gao =
       map && visibleNpcs(CONTENT, map, inVillage()).find((n) => n.id === 'shopkeeper_gao');
     if (!map || !gao) throw new Error('Missing village merchant');
-    expect(gao.pos).toEqual({ x: 9, y: 4 });
+    const shopfront = CONTENT.anchors.get('bd02.shopfront')?.site;
+    if (shopfront?.kind !== 'map') throw new Error('Missing the shopfront anchor');
+    expect(gao.pos).toEqual(shopfront.pos);
+    // Cells an older save can hold that are blocked now: a house body, the table, the trough.
     for (const pos of [
-      { x: 7, y: 3 },
-      { x: 7, y: 4 },
-      { x: 10, y: 7 },
+      { x: 12, y: 5 },
+      { x: 13, y: 9 },
+      { x: 21, y: 7 },
     ]) {
       const before = { ...inVillage(), location: { mapId: map.id, pos } };
       const loaded = deserialize(
@@ -54,8 +57,9 @@ describe('walking the village', () => {
         }),
       );
       if (!loaded.ok) throw new Error('Could not reload village save');
-      // A load reconciles as `App.adoptSave` does: (7,3) was Gao's plank
-      // floor until the house bodies closed, and the M9 snap moves it out.
+      // A load reconciles as `App.adoptSave` does: the M9 snap moves a party that a
+      // layout change left on a blocked cell out onto open ground.
+      expect(tileAt(buildGrid(map), pos)?.blocked).toBe(true);
       const restored = reconcileWorld(CONTENT, stateFromBlob(loaded.blob));
       expect(tileAt(buildGrid(map), restored.location.pos)?.blocked).toBe(false);
       const result = apply(CONTENT, restored, { type: 'walkTo', pos: gao.pos });
@@ -69,7 +73,7 @@ describe('walking the village', () => {
   it('reports the route from where the party stood to where it ends', () => {
     const state = inVillage();
     const start = state.location.pos;
-    const goal: Vec2 = { x: start.x + 3, y: start.y };
+    const goal: Vec2 = { x: start.x - 3, y: start.y };
     const { state: after, events } = apply(CONTENT, state, { type: 'walkTo', pos: goal });
 
     expect(after.location).toEqual({ mapId: 'ba_dan_village', pos: goal });
@@ -101,7 +105,9 @@ describe('walking the village', () => {
   });
 
   it('walks up to an NPC before the conversation opens', () => {
-    const state = inVillage();
+    // The spawn already stands beside Mira's table: start a few tiles off.
+    const spawned = inVillage();
+    const state = { ...spawned, location: { ...spawned.location, pos: { x: 8, y: 10 } } };
     const village = CONTENT.maps.get('ba_dan_village');
     // Resident-bound (ADR 0047): Mira is held at `bd01.table` until `mira_intro`.
     const elder =
@@ -128,18 +134,28 @@ describe('walking the village', () => {
   it('stops beside an NPC on dry ground rather than in the canal', () => {
     const village = CONTENT.maps.get('ba_dan_village');
     if (!village) throw new Error('Missing village');
+    // Nobody in the village stands on the canal's bank, so put a walker there: one tile north of the water.
+    const walker = {
+      id: 'bank_walker',
+      name: 'Walker',
+      pos: { x: 5, y: 11 },
+      sprite: 'npc.kid',
+      node: 'pella_tips',
+    };
+    const content = {
+      ...CONTENT,
+      maps: new Map(CONTENT.maps).set(village.id, { ...village, npcs: [...village.npcs, walker] }),
+    };
     const grid = buildGrid(village);
     const base = inVillage();
-    const elder = visibleNpcs(CONTENT, village, base).find((n) => n.id === 'elder_mira');
-    if (!elder) throw new Error('Missing Mira');
-    // From the road south of the canal, the nearest neighbour of hers is canal water.
-    const from = { x: elder.pos.x, y: elder.pos.y + 2 };
+    // From the bank south of the canal, the nearest neighbour of his is canal water.
+    const from = { x: walker.pos.x, y: walker.pos.y + 3 };
     const state = { ...base, location: { ...base.location, pos: from } };
     const wetNeighbour = [-1, 0, 1].some(
-      (dx) => tileAt(grid, { x: elder.pos.x + dx, y: elder.pos.y + 1 })?.surface,
+      (dx) => tileAt(grid, { x: walker.pos.x + dx, y: walker.pos.y + 1 })?.surface,
     );
     expect(wetNeighbour).toBe(true);
-    const { state: after } = apply(CONTENT, state, { type: 'walkTo', pos: elder.pos });
+    const { state: after } = apply(content, state, { type: 'walkTo', pos: walker.pos });
     expect(after.screen).toBe('dialogue');
     expect(tileAt(grid, after.location.pos)?.surface ?? null).toBeNull();
   });

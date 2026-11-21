@@ -24,14 +24,14 @@ describe('nearby exploration guidance', () => {
     const map = CONTENT.maps.get('ba_dan_village');
     if (!map) throw new Error('Missing Ba Dan village');
 
-    const atPortal = nearbyExploreTarget(CONTENT, map, villageAt({ x: 19, y: 15 }));
+    const atPortal = nearbyExploreTarget(CONTENT, map, villageAt({ x: 18, y: 22 }));
     expect(atPortal).toMatchObject({
       kind: 'exit',
       destination: 'Riverside',
       exit: { toMapId: 'ba_dan_riverside' },
     });
 
-    const bySign = nearbyExploreTarget(CONTENT, map, villageAt({ x: 18, y: 12 }));
+    const bySign = nearbyExploreTarget(CONTENT, map, villageAt({ x: 21, y: 21 }));
     expect(bySign).toMatchObject({ kind: 'npc', npc: { id: 'riverside_sign' } });
   });
 
@@ -50,7 +50,7 @@ describe('nearby exploration guidance', () => {
     // is at his drill and the unnamed relief watch, no NpcDef, holds it. The
     // post is where the east road leaves the square (W8), so it is met on the
     // road there rather than at the exit tile.
-    const atGate = villageAt({ x: 19, y: 7 });
+    const atGate = villageAt({ x: 26, y: 9 });
     const morning = {
       ...atGate,
       world: { ...atGate.world, clock: { day: 1, phase: 'morning' as const } },
@@ -79,10 +79,10 @@ describe('nearby exploration guidance', () => {
     if (!village || !forest) throw new Error('Missing connected maps');
 
     // The east gate's mouth is the two cells of the road at the border, so a
-    // leader one tile south of `pos` still gets the route.
-    const east = nearbyExits(village, { x: 22, y: 9 });
+    // leader one tile inside, south of `pos`, still gets the route.
+    const east = nearbyExits(village, { x: 30, y: 10 });
     expect(east.map((exit) => exit.toMapId)).toEqual(['forest_road']);
-    expect(nearbyExploreTarget(CONTENT, village, villageAt({ x: 22, y: 9 }))).toMatchObject({
+    expect(nearbyExploreTarget(CONTENT, village, villageAt({ x: 30, y: 10 }))).toMatchObject({
       kind: 'exit',
       destination: 'Forest Road',
     });

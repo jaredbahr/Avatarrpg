@@ -85,11 +85,10 @@ async function talk(page: Page, person: (typeof PEOPLE)[number]) {
     { timeout: 10_000 },
   );
   await settleLayout(page);
-  await page.getByRole('button', { name: 'Look around', exact: true }).tap();
-  await page
-    .getByRole('dialog', { name: 'Look around', exact: true })
-    .getByRole('button', { name: `Visit ${person.name}`, exact: true })
-    .tap();
+  // Standing beside them, the dock's own Talk opens the conversation. (Look around is not always
+  // offered: on the rebuilt Ba Dan, #875, Pella stands by Mira's table and the dock offers Wait.)
+  const first = person.name.split(' ')[0] ?? person.name;
+  await page.getByRole('button', { name: new RegExp(`^Talk ${first}\\b`) }).tap();
   const panel = page.locator('.explore-conversation .dialogue-panel:not(.choice-panel)');
   await expect(panel).toBeVisible();
   expect(await page.evaluate(() => window.fnt!.app.state!.world.talk?.npcId)).toBe(person.id);

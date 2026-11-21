@@ -11,16 +11,14 @@
  * Where the script replaces a whole block, a `branch` on `act1_lost` runs one of two sequences
  * that rejoin; where it replaces one line, the node carries a variant.
  *
- * Hero variants. A hero's lines are extra nodes, and only an NPC route can choose a chain by who is
- * in the party, so a variant is wired where its scene starts at an NPC: Kaya's crates, Tenzo at the
- * bowl stall (`bowlStall`) and Jinu on the coast road after a loss (`lossRoad`, entered from the
- * coast-road sign's route in `maps/world.ts`). Each is the same chain again under its own ids,
- * ending on the hero's lines. Sura and Wen (2.4) and Riko (2.6) sit in the middle of the long
- * chain that runs from the customs stall through the fight, and wait for a `branch` that takes a
- * `Condition` (trial log, friction 3).
+ * Hero variants. A hero's lines are extra nodes behind a `branchWhen` on `partyHas` (ADR 0118):
+ * Jinu after Dorin's receipt on the loss road (2.1), Tenzo after the bowl-seller (2.2), Kaya after
+ * the crates, Sura and Wen at the pontoon (2.4) and Riko as Veyra leaves (2.6). Each rejoins the
+ * one chain; the copied chains Kaya, Tenzo and Jinu once ran on are aliased onto it
+ * (`idAliases.ts`).
  *
- * Not wired yet (listed in the trial log): those three, Veyra's fight barks (no bark hook), and
- * the customs stall's drifting (the stall is an NPC on the quay).
+ * Not wired yet (listed in the trial log): Veyra's fight barks (no bark hook), and the customs
+ * stall's drifting (the stall is an NPC on the quay).
  */
 import type { Condition, DialogueVariant, StoryNode } from '../../../core/types';
 import { PLACEHOLDER_PORTRAIT } from './placeholders';
@@ -48,15 +46,17 @@ const TENZO = 'Tenzo';
 const TENZO_PORTRAIT = 'portrait.tenzo';
 const JINU = 'Jinu';
 const JINU_PORTRAIT = 'portrait.jinu';
+const SURA = 'Sura';
+const SURA_PORTRAIT = 'portrait.sura';
+const WEN = 'Wen';
+const WEN_PORTRAIT = 'portrait.wen';
+const RIKO = 'Riko';
+const RIKO_PORTRAIT = 'portrait.riko';
+/** The party saw the culvert in the Cutting (optional in Act I). */
+const SAW_CULVERT: Condition = { kind: 'visited', nodeId: 'cutting_culvert' };
 
-/** The second bowl is being carried: either way through Scene 2.2 (see `bowlStall`). */
-const BOWL_CARRIED: Condition = {
-  kind: 'any',
-  of: [
-    { kind: 'visited', nodeId: 'mq02_bowl_seller' },
-    { kind: 'visited', nodeId: 'mq02_bowl_seller_tenzo' },
-  ],
-};
+/** The second bowl is being carried: the party has heard Scene 2.2 (see `bowlStall`). */
+const BOWL_CARRIED: Condition = { kind: 'visited', nodeId: 'mq02_bowl_seller' };
 
 /** XP the winch fight pays a head (5 freight handlers at 120 over a baseline of 4 with Veyra). */
 export const WINCH_XP_PER_HEAD = 150;
@@ -93,31 +93,31 @@ const COAST_ROAD_OPENING =
   'The coast road drops out of the pines. Below it the bay is flat and grey. Far across the water, a row of lamps is burning in broad daylight.';
 
 /**
- * Scene 2.1's loss branch, Dorin and Gao's receipt. In the data twice: the plain chain, and the
- * one a party with Jinu hears, which ends on her line about the courier office.
+ * Scene 2.1's loss branch, Dorin and Gao's receipt. A party with Jinu then hears her line about the
+ * courier office (`mq02_jinu_road`).
  */
-const lossRoad = (suffix: '' | '_jinu', next: string): readonly StoryNode[] => [
+const lossRoad = (next: string): readonly StoryNode[] => [
   say(
-    `mq02_coast_dorin${suffix}`,
+    'mq02_coast_dorin',
     DORIN,
     DORIN_PORTRAIT,
     [
       'Those lamps were not lit last month. I have that in the watch book. I did not know what to write next to it, so I wrote “lamps”.',
       'Gao gave me this for you. And a second water skin. He counted them out loud.',
     ],
-    `mq02_coast_receipt${suffix}`,
+    'mq02_coast_receipt',
   ),
   say(
-    `mq02_coast_receipt${suffix}`,
+    'mq02_coast_receipt',
     'The Coast Road',
     NARRATOR,
     [
       'A delivery receipt, from the drawer where Gao keeps the debt slips. A stone carter left it on his counter. It is not for stone. “Received at Stoneback: six sealed crates. Sent on: stop fourteen, route nine, bell three.” It is stamped with a mark nobody in Ba Dan knows: a lamp over a wavy line.',
     ],
-    `mq02_coast_dorin_receipt${suffix}`,
+    'mq02_coast_dorin_receipt',
   ),
   say(
-    `mq02_coast_dorin_receipt${suffix}`,
+    'mq02_coast_dorin_receipt',
     DORIN,
     DORIN_PORTRAIT,
     [
@@ -133,39 +133,27 @@ const lossRoad = (suffix: '' | '_jinu', next: string): readonly StoryNode[] => [
  * Scene 2.2 at the bowl stall. In the data twice: the plain chain, and the one a party with Tenzo
  * hears, which ends on his exchange with the bowl-seller.
  */
-const bowlStall = (suffix: '' | '_tenzo', next: string): readonly StoryNode[] => [
+const bowlStall = (next: string): readonly StoryNode[] => [
+  say('mq02_bowl_seller', BOWL_SELLER, NARRATOR, ['New faces. Sit. Here.'], 'mq02_bowl_set_down'),
   say(
-    `mq02_bowl_seller${suffix}`,
-    BOWL_SELLER,
-    NARRATOR,
-    ['New faces. Sit. Here.'],
-    `mq02_bowl_set_down${suffix}`,
-  ),
-  say(
-    `mq02_bowl_set_down${suffix}`,
+    'mq02_bowl_set_down',
     'Saltstep',
     NARRATOR,
     ['She puts down two bowls of pepper broth. Then she taps the second one.'],
-    `mq02_bowl_custom${suffix}`,
+    'mq02_bowl_custom',
   ),
   say(
-    `mq02_bowl_custom${suffix}`,
+    'mq02_bowl_custom',
     BOWL_SELLER,
     NARRATOR,
     [
       'That one’s not yours. First bowl you eat. Second bowl you carry to somebody. That’s how it’s done here.',
     ],
-    `mq02_bowl_who${suffix}`,
+    'mq02_bowl_who',
   ),
+  say('mq02_bowl_who', PARTY, NARRATOR, ['Carry it to who?'], 'mq02_bowl_pump_woman'),
   say(
-    `mq02_bowl_who${suffix}`,
-    PARTY,
-    NARRATOR,
-    ['Carry it to who?'],
-    `mq02_bowl_pump_woman${suffix}`,
-  ),
-  say(
-    `mq02_bowl_pump_woman${suffix}`,
+    'mq02_bowl_pump_woman',
     BOWL_SELLER,
     NARRATOR,
     [
@@ -234,16 +222,15 @@ const NODES: readonly StoryNode[] = [
     ],
     'mq02_coast_parcel',
   ),
-  ...lossRoad('', 'mq02_coast_parcel'),
-  // Jinu's moment (loss branch): the coast-road sign routes here when she is in the party.
-  say(
-    'mq02_coast_road_jinu',
-    'The Coast Road',
-    NARRATOR,
-    [COAST_ROAD_OPENING],
-    'mq02_coast_dorin_jinu',
-  ),
-  ...lossRoad('_jinu', 'mq02_jinu_other_half'),
+  ...lossRoad('mq02_jinu_road'),
+  // Jinu's moment (loss branch): her line after Dorin's, when she is in the party.
+  {
+    id: 'mq02_jinu_road',
+    kind: 'branchWhen',
+    when: { kind: 'partyHas', characterId: 'jinu' },
+    ifTrue: 'mq02_jinu_other_half',
+    ifFalse: 'mq02_coast_parcel',
+  },
   say(
     'mq02_jinu_other_half',
     JINU,
@@ -307,9 +294,15 @@ const NODES: readonly StoryNode[] = [
     ],
     next: 'mq02_market_explore',
   },
-  ...bowlStall('', 'mq02_market_explore'),
-  // Tenzo's moment: the bowl-seller's NPC routes here when he is in the party.
-  ...bowlStall('_tenzo', 'mq02_tenzo_broth'),
+  ...bowlStall('mq02_bowl_tenzo'),
+  // Tenzo's moment: his exchange with the bowl-seller, when he is in the party.
+  {
+    id: 'mq02_bowl_tenzo',
+    kind: 'branchWhen',
+    when: { kind: 'partyHas', characterId: 'tenzo' },
+    ifTrue: 'mq02_tenzo_broth',
+    ifFalse: 'mq02_market_explore',
+  },
   say(
     'mq02_tenzo_broth',
     TENZO,
@@ -374,18 +367,16 @@ const NODES: readonly StoryNode[] = [
     [
       'Lantern crates, stacked by the ferry. Each one is stamped with a lantern with a crooked handle. A chalked note says: “Miri’s. Do not sit on these. This means you, Oko.”',
     ],
-    'mq02_market_explore',
+    'mq02_crates_kaya',
   ),
-  // Kaya's opening (first exchange only): the crates' NPC routes here when she is in the party.
-  say(
-    'mq02_miri_crates_kaya',
-    'Saltstep',
-    NARRATOR,
-    [
-      'Lantern crates, stacked by the ferry. Each one is stamped with a lantern with a crooked handle. A chalked note says: “Miri’s. Do not sit on these. This means you, Oko.”',
-    ],
-    'mq02_kaya_forty_steps',
-  ),
+  // Kaya's opening (first exchange only), when she is in the party.
+  {
+    id: 'mq02_crates_kaya',
+    kind: 'branchWhen',
+    when: { kind: 'partyHas', characterId: 'kaya' },
+    ifTrue: 'mq02_kaya_forty_steps',
+    ifFalse: 'mq02_market_explore',
+  },
   say(
     'mq02_kaya_forty_steps',
     'Kaya',
@@ -692,7 +683,7 @@ const NODES: readonly StoryNode[] = [
       'He laughs. It carries across the flat water of the harbour.',
       'A moment later, from under the pontoon, the water gives the same laugh back. Smaller. Just once.',
     ],
-    'mq02_veyra_odd',
+    'mq02_sura_heard',
   ),
   say(
     'mq02_dorin_good_morning',
@@ -723,13 +714,75 @@ const NODES: readonly StoryNode[] = [
     DORIN,
     DORIN_PORTRAIT,
     ['I heard that. I am not going to write it down.'],
-    'mq02_veyra_odd',
+    'mq02_sura_heard',
   ),
+  // Sura's lines come before Veyra's "Odd." after either driver's echo.
+  {
+    id: 'mq02_sura_heard',
+    kind: 'branchWhen',
+    when: { kind: 'partyHas', characterId: 'sura' },
+    ifTrue: 'mq02_sura_under_boards',
+    ifFalse: 'mq02_veyra_odd',
+  },
+  say(
+    'mq02_sura_under_boards',
+    SURA,
+    SURA_PORTRAIT,
+    ['There. Under the boards. Did nobody else hear that?'],
+    'mq02_veyra_hear_what',
+    [
+      {
+        when: SAW_CULVERT,
+        lines: [
+          'There. Under the boards. Did nobody else hear that? It did that in the Cutting. Under the road.',
+        ],
+      },
+    ],
+  ),
+  say('mq02_veyra_hear_what', VEYRA, VEYRA_PORTRAIT, ['Hear what?'], 'mq02_sura_twice'),
+  say('mq02_sura_twice', SURA, SURA_PORTRAIT, ['It said it twice.'], 'mq02_veyra_odd'),
   say(
     'mq02_veyra_odd',
     VEYRA,
     VEYRA_PORTRAIT,
     ['Odd. The piles do that some days. I keep meaning to look into it.'],
+    'mq02_wen_pump',
+  ),
+  {
+    id: 'mq02_wen_pump',
+    kind: 'branchWhen',
+    when: { kind: 'partyHas', characterId: 'wen' },
+    ifTrue: 'mq02_wen_long_throw',
+    ifFalse: 'mq02_veyra_tea',
+  },
+  say(
+    'mq02_wen_long_throw',
+    WEN,
+    WEN_PORTRAIT,
+    [
+      'That’s a lift-and-force pump with the handle on a long throw. And you’ve put the stop where a short person can reach it. Who thinks of that?',
+    ],
+    'mq02_veyra_short_person',
+  ),
+  say(
+    'mq02_veyra_short_person',
+    VEYRA,
+    VEYRA_PORTRAIT,
+    ['Somebody who watched a short person fail to reach it. You’ve built one?'],
+    'mq02_wen_napkins',
+  ),
+  say(
+    'mq02_wen_napkins',
+    WEN,
+    WEN_PORTRAIT,
+    ['Regulators. Smaller. Mostly on napkins.'],
+    'mq02_veyra_causeway',
+  ),
+  say(
+    'mq02_veyra_causeway',
+    VEYRA,
+    VEYRA_PORTRAIT,
+    ['Napkins are where it starts. Come and find me if you’re ever in Causeway. I mean that.'],
     'mq02_veyra_tea',
   ),
   say(
@@ -972,6 +1025,27 @@ const NODES: readonly StoryNode[] = [
     [
       'She wheels the handcart away along the pontoon. She has left the bowl on the bollard, rinsed.',
     ],
+    'mq02_riko_stamp',
+  ),
+  {
+    id: 'mq02_riko_stamp',
+    kind: 'branchWhen',
+    when: { kind: 'partyHas', characterId: 'riko' },
+    ifTrue: 'mq02_riko_packet',
+    ifFalse: 'mq02_two_ways',
+  },
+  say(
+    'mq02_riko_packet',
+    RIKO,
+    RIKO_PORTRAIT,
+    ['She gave the packet to the man with the stamp.'],
+    'mq02_riko_watches',
+  ),
+  say(
+    'mq02_riko_watches',
+    'The Freight Pontoon',
+    NARRATOR,
+    ['Riko watches the handcart all the way to the end of the pontoon.'],
     'mq02_two_ways',
   ),
 
@@ -1205,10 +1279,7 @@ const SCENE_2_1 = [
   'mq02_coast_dorin',
   'mq02_coast_receipt',
   'mq02_coast_dorin_receipt',
-  'mq02_coast_road_jinu',
-  'mq02_coast_dorin_jinu',
-  'mq02_coast_receipt_jinu',
-  'mq02_coast_dorin_receipt_jinu',
+  'mq02_jinu_road',
   'mq02_jinu_other_half',
   'mq02_coast_parcel',
   'mq02_parcel',
@@ -1227,14 +1298,12 @@ export const MQ02_STORY: readonly StoryNode[] = staged(
   'saltstep_market',
   {
     mq02_bowl_seller: 'mq02_bowl_seller',
-    mq02_bowl_seller_tenzo: 'mq02_bowl_seller',
     mq02_tavi: 'mq02_tavi',
     mq02_ferry: 'mq02_tavi',
     mq02_freight_office: 'mq02_freight_clerk',
     mq02_jin_hears_public: 'mq02_freight_clerk',
     mq02_jin_hears_quiet: 'mq02_freight_clerk',
     mq02_miri_crates: 'mq02_miri_crates',
-    mq02_miri_crates_kaya: 'mq02_miri_crates',
     mq02_stall_drifts: 'mq02_customs_clerk',
   },
 );

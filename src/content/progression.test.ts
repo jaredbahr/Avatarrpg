@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { CONTENT, CONTENT_BUNDLE, STORY_PROLOGUE } from './index';
 import { levelForXp, xpForLevel } from '../core/rules/leveling';
-import { xpRoster } from '../core/state/createGame';
+import { xpPerHead } from '../core/state/createGame';
+import { SIDE_FIGHT_XP } from './story/sideFightsAct1';
 import { evaluate } from '../core/story/conditions';
 import type { FlagValue, GameState, StoryNode } from '../core/types';
 import { REGIONS } from './regions';
@@ -198,12 +199,7 @@ function walkOnce(decisions: ReadonlyMap<string, number>, party: readonly string
           break;
         }
 
-        const roster = xpRoster(encounter, flags);
-        const total = roster.reduce(
-          (sum, placement) => sum + (CONTENT.enemies.get(placement.enemyId)?.xp ?? 0),
-          0,
-        );
-        xp += Math.max(1, Math.round(total / encounter.baselinePartySize));
+        xp += xpPerHead(encounter, flags, (id) => CONTENT.enemies.get(id)?.xp ?? 0);
         nodeId = node.next;
         break;
       }
@@ -468,6 +464,26 @@ describe('progression', () => {
         band.minLevel,
       );
       expect(level, `route [${label}] enters on level ${level}`).toBeLessThanOrEqual(band.maxLevel);
+    }
+  });
+
+  it('keeps a table that plays both Act I side fights inside the Act II band (#909)', () => {
+    /*
+     * SF-1.1 and SF-1.2 open once Act I is over and pay the same won or carried on, so every route
+     * that plays both enters Saltstep with the act's XP plus both purses. The script sizes them to
+     * lift a table to level 5 and its first path before Saltstep; never past RG-02's band.
+     */
+    const band = REGIONS.find((region) => region.id === 'saltstep_emberwatch')?.levelBand;
+    expect(band, 'the region Act I opens onto').toBeDefined();
+    const purse = ['enc_sf11_the_bend', 'enc_sf12_edge_on'].reduce((sum, id) => {
+      const encounter = CONTENT.encounters.get(id);
+      expect(encounter?.xpPerHead, `${id} pays a set XP a head`).toBe(SIDE_FIGHT_XP);
+      return sum + (encounter ? xpPerHead(encounter, {}, () => 0) : 0);
+    }, 0);
+    for (const walk of ALL) {
+      const level = levelForXp(walk.finalXp + purse);
+      expect(level, `${walk.finalXp} + ${purse} XP`).toBe(5);
+      expect(level).toBeLessThanOrEqual(band?.maxLevel ?? 0);
     }
   });
 
