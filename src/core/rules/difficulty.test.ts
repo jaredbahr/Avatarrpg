@@ -307,10 +307,9 @@ describe('difficulty scaling across authored content', () => {
       const flags = {};
       const expectedTotal = expectedAuthoredXp(encounter, flags);
       expect(xpTotal(xpRoster(encounter, flags))).toBe(expectedTotal);
-      const expectedPerMember = Math.max(
-        1,
-        Math.round(expectedTotal / encounter.baselinePartySize),
-      );
+      // A side fight names its pay a head outright; every other fight splits its roster's XP.
+      const expectedPerMember =
+        encounter.xpPerHead ?? Math.max(1, Math.round(expectedTotal / encounter.baselinePartySize));
       let smallTableEnemyIds: readonly (string | null)[] = [];
       let largeTableEnemyIds: readonly (string | null)[] = [];
       let smallTableXp = 0;

@@ -69,6 +69,13 @@ export function advanceToNextTurn(draft: BattleDraft): void {
 
     if (advance.roundAdvanced && settleRoundEnd(draft)) return;
 
+    // A bout's platform tips as the round ends (ADR 0122 §3), and may end the bout.
+    if (advance.roundAdvanced && draft.bout?.tipping) {
+      draft.tipPlatform();
+      settleOutcome(draft);
+      if (draft.phase !== 'active') return;
+    }
+
     if (advance.roundAdvanced) {
       draft.round = advance.round;
       draft.expireWalls();

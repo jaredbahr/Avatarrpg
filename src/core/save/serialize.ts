@@ -133,6 +133,8 @@ const battle = z.object({
   openingRng: z.number().nullable().default(null),
   // ADR 0118: who has been helped up this fight. Absent until somebody has.
   helpedUp: z.array(z.string()).optional(),
+  // ADR 0122: who is out of a sparring bout. Absent outside a bout and until somebody is.
+  boutOut: z.array(z.string()).optional(),
 });
 
 const flagValue = z.union([z.boolean(), z.number(), z.string()]);

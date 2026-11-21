@@ -191,6 +191,36 @@ export const LATE_SCENES: Readonly<Record<string, OldSavesAnswer>> = {
     answer: 'open',
     why: 'Read only by its own once-only gate on Gao after a Driller loss. A release save that lost sat on the terminal card, so it has not heard it and hears it first when it carries on.',
   },
+  sf11_the_bend: {
+    upTo: '2026-11-19-roads',
+    answer: 'open',
+    why: 'Read only by Bessa’s own once-only gate on the Forest Road. A side fight no release had, so no older save has had it, and it waits on the road for any save past Act I.',
+  },
+  sf12_the_slab: {
+    upTo: '2026-11-19-roads',
+    answer: 'open',
+    why: 'Read only by Tolma’s own once-only gate in the Cutting. A side fight no release had, so no older save has had it, and it waits on the road for any save past Act I.',
+  },
+  sf22_rules: {
+    upTo: '2026-11-19-roads',
+    answer: 'open',
+    why: 'Read only by the ferry apprentices’ own once-only gate in the market. A side fight no release had, so no older save has had it, and it waits by the ferry landing.',
+  },
+  sf23_battle: {
+    upTo: '2026-11-19-roads',
+    answer: 'open',
+    why: 'Read only by the corporal’s own once-only gate on the river road. A side fight no release had, so no older save has had it, and it waits at the guards’ camp.',
+  },
+  sf23_pole_up: {
+    upTo: '2026-11-19-roads',
+    answer: 'open',
+    why: 'Read only by the river road’s set dressing (ADR 0123): the camp goes and the pole stands raised once the toll is won. A side fight no release had, so no older save has won it, and its saves see the camp and the lowered pole until they do.',
+  },
+  sf23_one_sack: {
+    upTo: '2026-11-19-roads',
+    answer: 'open',
+    why: 'Read only by the river road’s set dressing (ADR 0123): the pole raised and one sack by the cold fire after Carry on. A side fight no release had, so no older save has carried on from it, and its saves see the lowered pole until they do.',
+  },
   look_hesra_boot: {
     upTo: '2026-11-15-demo',
     answer: 'open',
@@ -205,7 +235,14 @@ export const LATE_SCENES: Readonly<Record<string, OldSavesAnswer>> = {
  * `sites` names the roads answered (`next=gate_talked_through`). `saveHistory.test.ts` asks for
  * an entry.
  */
-export const LATE_EDGES: Readonly<Record<string, OldSavesAnswer>> = {};
+export const LATE_EDGES: Readonly<Record<string, OldSavesAnswer>> = {
+  'map:saltstep_market': {
+    upTo: '2026-11-19-roads',
+    sites: ['triggers[#mq02_saltstep_arrival_tidy].node=mq02_saltstep_arrival'],
+    answer: 'open',
+    why: 'The tidy-cart trigger plays the same arrival scene as the one it splits from; only the cart’s picture differs, so a save that came the old way recorded everything this road would.',
+  },
+};
 
 /* The hub flag: read nearly everywhere after the quarry. */
 const ACT1_COMPLETE_READERS = [
@@ -301,7 +338,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     arc: 'Demo · Forest Road',
     status: 'live',
     setBy: ['story:lost_forest_road'],
-    readBy: ['story:after_forest'],
+    readBy: ['story:after_forest', 'story:sf11_recognised'],
   },
   {
     key: 'world.ducks_seen',
@@ -433,6 +470,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'story:plant_chair_decline_road',
       'story:sq03_hook',
       'story:sq03_jar',
+      'story:sf12_ruon',
       'story:mq02_freight_clerk',
       'journal:gate_wages',
     ],
@@ -537,6 +575,13 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'story:cutting_after_explore',
       'story:plant_chair_decline_lost',
       'story:hanru_watch',
+      'story:sf11_driver',
+      'story:sf11_wheels',
+      'story:sf11_wheels_won',
+      'story:sf11_back',
+      'story:sf12_driver',
+      'story:sf12_won',
+      'story:sf12_back',
       'story:mq02_coast_driver',
       'story:mq02_parcel',
       'story:mq02_stall_reads',
@@ -544,6 +589,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'story:mq02_galleries',
       'story:mq02_ferry_driver',
       'story:sf21_driver',
+      'story:sf23_driver',
       'resident:lw.npc.mira',
       'resident:lw.npc.gao',
       'resident:lw.npc.dorin',
@@ -754,6 +800,8 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
         'story:pella_home',
         'story:sq01_pella_list',
         'story:sq01_sled_again',
+        // An old save past the side story shows Bo-shan's cart as it always was: the untidy one.
+        'map:saltstep_market',
       ],
     ),
     setBy: ['story:sq01_choice'],
@@ -765,6 +813,7 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
       'story:pella_home',
       'story:sq01_sled_again',
       'story:sq01_pella_list',
+      'map:saltstep_market',
     ],
   },
 
@@ -848,6 +897,18 @@ export const FLAG_REGISTRY: readonly FlagDef[] = [
     status: 'live',
     setBy: ['story:mq02_vote'],
     readBy: ['map:saltstep_market', 'story:mq02_market_explore'],
+  },
+  {
+    key: 'mq03.invited',
+    type: 'boolean',
+    values: [true],
+    meaning:
+      'V. Sen’s card has invited the party to Causeway: the cart takes the river road (Scene 3.9).',
+    arc: 'Act II · Saltstep',
+    status: 'pending',
+    note: 'Set by Scene 3.9, An invitation, which is not built yet; it shows the river road sign at Emberwatch.',
+    setBy: [],
+    readBy: ['map:emberwatch_parade'],
   },
   {
     key: 'standing.earth',

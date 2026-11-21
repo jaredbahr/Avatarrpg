@@ -39,6 +39,9 @@ the owner and Claude have a workflow good enough to build the whole game, region
 - **Players and devices:** the owner's family on **one shared tablet** (hot-seat; iPad landscape first), so whose turn
   it is and the hand-offs must always be clear. For friends far away the owner plans to run it on his **PC and share it
   through Steam Remote Play**, so a PC window with mouse and keyboard must work too.
+- **Quality before speed** (owner, 2026-11-20): "I would rather take time to do it correctly and well than rush
+  something easy and poor looking." When a choice is left to you, take the plan that will look and play well, even
+  when it costs more stages.
 - **Polish is family-level only:** keep what helps the kids play (clear turns, big text, tap targets, forgiving
   difficulty). Stranger onboarding, public-release polish and a public link are not goals.
 - **What "finished" means for the demo:** **combat juice** (an action clip per heading and ability, impact effects,
@@ -284,6 +287,16 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   curtain reveals _after_ the swap and never takes a tap. The backdrop's tint
   is `app.setMood()`; a scene that knows better than the map (a speaker's
   element, the path being picked) calls it from its `render()`.
+- **A unit test bounds work, never the wall clock** (#796). `expect(elapsed).toBeLessThan(…)` and a per-test
+  timeout fail on a busy machine while every rule passes. Count what the code does instead (calls to a spied
+  function, cells or px computed, commands applied, battles run) and assert it with `expectWorkWithin` from
+  `scripts/test-support/workBounds.ts`, at about 1.5 times the measured count. Prove termination with a step or
+  round cap inside the test. The gate has one timeout, `HANG_GUARD_MS` in `vitest.config.ts`, and it is a hang
+  guard: no test, hook, file or `vi.setConfig` sets its own, and a child process in a test uses
+  `CHILD_HANG_GUARD_MS`. Where time itself is the requirement (the core bench, a frame budget), keep the work
+  bound always on and put the time in a separate `it.runIf(TIME_BUDGETS)` test; only the nightly hosted run sets
+  `FNT_TIME_BUDGETS=1`. ESLint rejects the old patterns in `*.test.ts`. To check a test under load:
+  `node scripts/test-support/with-cpu-load.mjs --repeat 5 -- npx vitest run <file>`.
 - Commit messages: imperative mood, one concern per commit.
 - **Work auto-merges once it is ready.** Nothing waits on a human clicking the
   button: open the PR, then turn on auto-merge so it lands the moment CI is

@@ -15,7 +15,15 @@ import type { RegionManifest } from '../../regions/types';
 export const SALTSTEP_EMBERWATCH: RegionManifest = {
   id: 'saltstep_emberwatch',
   name: 'Saltstep and Emberwatch',
-  mapIds: ['saltstep_market', 'saltstep_pontoon', 'emberwatch_parade', 'emberwatch_power_yard'],
+  mapIds: [
+    'saltstep_market',
+    'saltstep_pontoon',
+    'emberwatch_parade',
+    'emberwatch_power_yard',
+    'saltstep_platform',
+    'river_road',
+    'river_road_bridge',
+  ],
   // Ba Dan's coast road is this region's way in, and the market's west road its way home.
   neighbours: ['ba_dan_valley'],
   // Approved by the owner on #784 (2026-11-18): Saltstep (MQ-02) 3-4 and Emberwatch (MQ-03) 4-5.
@@ -31,9 +39,15 @@ export const SALTSTEP_EMBERWATCH: RegionManifest = {
   scenes: {
     saltstep_market: { url: 'art/topdown/saltstep-market/scene.json', cameraCentreMargin: 1 },
     saltstep_pontoon: { url: 'art/topdown/saltstep-pontoon/scene.json', cameraCentreMargin: 1 },
+    saltstep_platform: { url: 'art/topdown/saltstep-platform/scene.json', cameraCentreMargin: 1 },
     emberwatch_parade: { url: 'art/topdown/emberwatch-parade/scene.json', cameraCentreMargin: 1 },
     emberwatch_power_yard: {
       url: 'art/topdown/emberwatch-power-yard/scene.json',
+      cameraCentreMargin: 1,
+    },
+    river_road: { url: 'art/topdown/river-road/scene.json', cameraCentreMargin: 1 },
+    river_road_bridge: {
+      url: 'art/topdown/river-road-bridge/scene.json',
       cameraCentreMargin: 1,
     },
   },

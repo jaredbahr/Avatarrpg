@@ -83,6 +83,7 @@ import { conversationPanel } from '../ui/ConversationPanel';
 import { sheets } from '../../render/sheets/store';
 import { backdrops } from '../../render/backdrops';
 import { sceneImages } from '../../render/scene';
+import { sceneForStory } from '../world/sceneGates';
 import {
   practiceAt,
   PRACTICE_GLIDE_MS,
@@ -1982,7 +1983,8 @@ export class ExploreScene implements Scene {
       crispOverlays: this.app.settings.highContrast,
       atmosphere: !this.life && !this.app.settings.highContrast,
       backdrop: this.app.backdropFor(map.id),
-      scene: map.scene,
+      // the camp at the bridge until the fight, and so on (ADR 0123)
+      scene: sceneForStory(map, state),
       time: now,
       reducedMotion: motionReduced(),
       // The day's grade and the lit lamps (ADR 0121): static, so reduce motion keeps them.

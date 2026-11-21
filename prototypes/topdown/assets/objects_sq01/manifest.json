@@ -1,0 +1,22 @@
+{
+ "sq01_sled": {
+  "w": 49,
+  "h": 36,
+  "seed": 11,
+  "ledger_job": "sq01_sled_11",
+  "job_id": "a5142da9-bfc0-41a5-8d9f-04fab7238d13",
+  "credits": 15.0,
+  "takes": 3,
+  "prompt": "a small wooden snow-style delivery sled tipped over on its side in a roadside di..."
+ },
+ "parcel_cart_tidy": {
+  "w": 58,
+  "h": 89,
+  "seed": 3,
+  "ledger_job": "sq01_cart_3",
+  "job_id": "d9b981b2-6c80-4750-87e6-03bded452d60",
+  "credits": 5.0,
+  "takes": 1,
+  "prompt": "Change ONLY the load on the cart behind the bird. Remove the big canvas-covered ..."
+ }
+}

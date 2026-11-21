@@ -256,7 +256,8 @@ These rank with the lists above.
   table when the five teachers are offered.
 - **Optional side fights in every region.** Optional, XP-paying fights (bandit camps, sparring, side-quest
   fights) so a table can level toward the discipline path it wants. Each has people with reasons, a win and a
-  carry-on that both pay XP, and no main clue. The scripts list a few per act (SF-2.1 onward). The first
+  carry-on that both pay XP, and no main clue. The scripts list a few per act (SF-1.1 onward; Act I's two
+  are in `docs/story/scripts/act1-side-fights.md`). The first
   region's is a cistern-water fight beside Luli's live line, which pays off Pella's shipped line about
   lightning crossing a puddle.
 - **`Party:` lines are tappable choice text with no speaker.** The bible's `Player` lines are shown as choices

@@ -27,7 +27,7 @@ describe('the G1 effects packer', () => {
 
   it('ships exactly what the sources make', () => {
     for (const [url, image] of build.sheets) expect(readPng(url).data).toEqual(image.data);
-  }, 60_000);
+  });
 
   it('gives every cel at most four tones and the ink, all on its ramp, with one opacity', () => {
     expect(build.report).toHaveLength(FX_CELS.length * CEL_FRAMES);

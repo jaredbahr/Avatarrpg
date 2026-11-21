@@ -3,6 +3,8 @@ import { CONTENT } from '../../index';
 import { createGame } from '../../../core/state/createGame';
 import { apply } from '../../../core/state/reducer';
 import { resolveDialogue } from '../../../core/story/storyEngine';
+import { applyIdAliases } from '../../../core/save/aliases';
+import { ID_ALIASES } from '../../idAliases';
 import type { GameState } from '../../../core/types';
 
 /**
@@ -83,5 +85,65 @@ describe('Saltstep hero lines', () => {
     expect(walk(game(['kaya']), 'mq02_veyra_leaves', 'mq02_two_ways')).toEqual([
       'mq02_veyra_leaves',
     ]);
+  });
+
+  it('Jinu speaks after Dorin’s receipt on the loss road', () => {
+    const lost = { act1_lost: true };
+    expect(walk(game(['jinu'], lost), 'mq02_coast_road', 'mq02_coast_parcel').slice(-2)).toEqual([
+      'mq02_coast_dorin_receipt',
+      'mq02_jinu_other_half',
+    ]);
+    expect(walk(game(['kaya'], lost), 'mq02_coast_road', 'mq02_coast_parcel')).not.toContain(
+      'mq02_jinu_other_half',
+    );
+  });
+
+  it('Tenzo tastes the broth after the bowl-seller', () => {
+    expect(walk(game(['tenzo']), 'mq02_bowl_seller', 'mq02_market_explore').slice(-4)).toEqual([
+      'mq02_bowl_pump_woman',
+      'mq02_tenzo_broth',
+      'mq02_bowl_plum_skin',
+      'mq02_tenzo_both_bowls',
+    ]);
+    expect(walk(game(['kaya']), 'mq02_bowl_seller', 'mq02_market_explore')).not.toContain(
+      'mq02_tenzo_broth',
+    );
+  });
+
+  it('Kaya reads the chalk on Miri’s crates', () => {
+    expect(walk(game(['kaya']), 'mq02_miri_crates', 'mq02_market_explore')).toEqual([
+      'mq02_miri_crates',
+      'mq02_kaya_forty_steps',
+      'mq02_kaya_reads_chalk',
+      'mq02_kaya_after_customs',
+    ]);
+    expect(walk(game(['bo']), 'mq02_miri_crates', 'mq02_market_explore')).toEqual([
+      'mq02_miri_crates',
+    ]);
+  });
+
+  it('a save made mid-copy resumes on the plain chain and still hears the hero', () => {
+    const entered = apply(CONTENT, game(['tenzo']), {
+      type: 'enterNode',
+      nodeId: 'mq02_bowl_who',
+    }).state;
+    const old: GameState = {
+      ...entered,
+      story: {
+        ...entered.story,
+        nodeId: 'mq02_bowl_who_tenzo',
+        visited: [...entered.story.visited, 'mq02_bowl_seller_tenzo'],
+      },
+    };
+    let loaded = applyIdAliases(old, ID_ALIASES);
+    expect(loaded.story.nodeId).toBe('mq02_bowl_who');
+    expect(loaded.story.visited).toContain('mq02_bowl_seller');
+    const seen: string[] = [];
+    for (let count = 0; count < 20 && loaded.screen === 'dialogue'; count++) {
+      const id = loaded.story.nodeId;
+      if (id && seen.at(-1) !== id) seen.push(id);
+      loaded = apply(CONTENT, loaded, { type: 'advanceDialogue' }).state;
+    }
+    expect(seen).toContain('mq02_tenzo_broth');
   });
 });

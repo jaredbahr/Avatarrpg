@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
 import { resetStorage, setLargeText, settleLayout } from './helpers';
+import { handoffCopy } from '../src/app/input/glyphs';
 
 const LONG_NAME = 'WWWWWWWWWWWW';
 const VIEWPORT = { width: 1180, height: 820 };
@@ -139,8 +140,14 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       expect(geometry.largeText).toBe('huge');
       expect(geometry.state).toEqual(before.state);
       expect(geometry.session).toEqual(before.session);
+      // The heading follows the device in use and whether the screen reports touch points: a real
+      // iPad reports five, Playwright's WebKit iPad none, so it reads "Next up" there.
+      const pass = await page.evaluate(() => ({
+        device: window.fnt!.app.input?.device ?? 'touch',
+        touchScreen: navigator.maxTouchPoints > 0,
+      }));
       expect(geometry.controls.map(({ text }) => text)).toEqual([
-        'Hand the tablet to',
+        handoffCopy(pass.device, pass.touchScreen),
         LONG_NAME,
         'Playing Riko',
         "I'm ready",

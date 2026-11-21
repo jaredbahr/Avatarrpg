@@ -78,6 +78,25 @@ him. Third stop of the day, this is. He always had his nosebag here.
 > **If Yenna is riding (the ramp is fitted) —** **Yenna:** He's gone the long way round. It's the pretty way.
 > I'm not complaining. Wake him up when you've all finished admiring him. My mother eats at five.
 
+> Added 2026-11-20 (suggestions pass).
+>
+> **If C.1 has played (MQ-06 is not the first spoke) —** _Victory branch only. Pella's second letter asked the
+> ones in the back for exactly this. Her loss-branch letter does not, and Dorin stacks by the book, so the
+> loss branch has no version._
+>
+> **Narrator:** The gap in the hedge was narrow. Now that the cart has stopped, the tall basket on top of the
+> small crate finishes leaning.
+>
+> **Driver (Bo-shan):** Leave it. Nobody fix it. She said let it fall off.
+>
+> **Narrator:** It falls off. Six cabbages roll down the lane in a line. The last one stops beside Parcel's
+> feed basket. Parcel opens one eye.
+>
+> **Driver (Bo-shan):** And now I have to tell her. "One basket. Tall. On a small crate." She is going to
+> enjoy that so much.
+>
+> **Narrator:** He picks up five cabbages. When he loads the cart again, the small crate goes on top.
+
 ### Scene 6.2 — An unscheduled stop
 
 **Shown:** played. **Where:** Pear Halt platform.
@@ -1100,6 +1119,25 @@ is three. P."
 > **Loss branch.** Grumbler has not surrendered; the ramp is Gao's and Hanru's.
 > **Gao's note:** Ramp. Hanru cut the boards and I found the hinge. It was on my shop door. I now have a shop
 > door that leans. Tell the lady it's wide because Hanru measures by eye and Hanru's eye is generous.
+
+> Added 2026-11-20 (suggestions pass).
+>
+> **If Latch is on the tailgate (C.1 follows MQ-07) —** _It plays at the tailgate, so it holds for a party
+> that refused Latch in SQ-10 too._
+>
+> **Narrator:** Parcel has found the ramp's rope handle. He is chewing it slowly, looking at nothing.
+>
+> **Latch:** Animal. That was put there on purpose. I know this one. It is not lost. It is not yours.
+>
+> **Narrator:** Parcel goes on chewing. Latch looks at him, and then at the driver.
+>
+> **Latch:** I said it correctly. It did not work.
+>
+> **Driver (Bo-shan):** It never works. He's heard it from me every day since the village bought him. You
+> take the rope out, and you say it again tomorrow.
+>
+> **Loss branch.** Replace Bo-shan's line: **Driver (Dorin):** It does not work when I say it either. I have
+> said it eleven times. It is in the watch book eleven times.
 
 ### Pella's second letter
 

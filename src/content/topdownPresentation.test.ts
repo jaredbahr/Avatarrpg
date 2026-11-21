@@ -50,8 +50,11 @@ describe('withTopDownMaps', () => {
       'quarry_floor',
       'saltstep_market',
       'saltstep_pontoon',
+      'saltstep_platform',
       'emberwatch_parade',
       'emberwatch_power_yard',
+      'river_road',
+      'river_road_bridge',
     ]);
     const presentations = await loadTopDownPresentations(fromDisk);
     const swapped = withTopDownMaps(CONTENT, presentations);
@@ -74,8 +77,11 @@ describe('withTopDownMaps', () => {
       ['quarry_floor', 'quarry-floor'],
       ['saltstep_market', 'saltstep-market'],
       ['saltstep_pontoon', 'saltstep-pontoon'],
+      ['saltstep_platform', 'saltstep-platform'],
       ['emberwatch_parade', 'emberwatch-parade'],
       ['emberwatch_power_yard', 'emberwatch-power-yard'],
+      ['river_road', 'river-road'],
+      ['river_road_bridge', 'river-road-bridge'],
     ] as const) {
       const quarry = map(id, swapped);
       expect(quarry.projection).toBe('topdown');

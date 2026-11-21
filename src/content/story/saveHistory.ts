@@ -424,17 +424,18 @@ export function lateEdges(input: HistoryInput): LateEdge[] {
   for (const release of input.releases) {
     if (!release.edges) continue; // frozen before edges were recorded
     const shipped = shippedAreas(release, input.aliases);
+    // Two retired areas can fold onto one live id (a copied chain aliased onto the plain one), so
+    // their roads are united rather than the later one replacing the earlier.
     const before = new Map<string, Set<string>>();
-    for (const [area, edges] of Object.entries(release.edges))
-      before.set(
-        currentArea(input.aliases, area),
-        new Set(
-          edges.map((edge) => {
-            const at = edge.lastIndexOf('=');
-            return `${edge.slice(0, at)}=${resolveAlias(input.aliases, 'story', edge.slice(at + 1))}`;
-          }),
-        ),
-      );
+    for (const [area, edges] of Object.entries(release.edges)) {
+      const key = currentArea(input.aliases, area);
+      const had = before.get(key) ?? new Set<string>();
+      for (const edge of edges) {
+        const at = edge.lastIndexOf('=');
+        had.add(`${edge.slice(0, at)}=${resolveAlias(input.aliases, 'story', edge.slice(at + 1))}`);
+      }
+      before.set(key, had);
+    }
     for (const [area, edges] of Object.entries(nowEdges)) {
       if (!shipped.has(area)) continue; // a new area: its roads into old scenes are new writes' business
       const had = before.get(area) ?? new Set<string>();

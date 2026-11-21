@@ -4,8 +4,17 @@ import {
   EMBERWATCH_PARADE_TOPDOWN_LAYOUT,
   EMBERWATCH_POWER_YARD_TERRAIN,
   EMBERWATCH_POWER_YARD_TOPDOWN_LAYOUT,
+  RIVER_ROAD_BRIDGE_TERRAIN,
+  RIVER_ROAD_BRIDGE_TOPDOWN_LAYOUT,
+  RIVER_ROAD_BRIDGE_WORN,
+  RIVER_ROAD_TERRAIN,
+  RIVER_ROAD_TOPDOWN_LAYOUT,
+  RIVER_ROAD_WORN,
   SALTSTEP_MARKET_TERRAIN,
   SALTSTEP_MARKET_TOPDOWN_LAYOUT,
+  SALTSTEP_PLATFORM_RAISED,
+  SALTSTEP_PLATFORM_TERRAIN,
+  SALTSTEP_PLATFORM_TOPDOWN_LAYOUT,
   SALTSTEP_PONTOON_TERRAIN,
   SALTSTEP_PONTOON_TOPDOWN_LAYOUT,
 } from '../../../../src/content/scenes/rg02.topdown';
@@ -51,6 +60,15 @@ export const RG02_BOARDS: readonly TopDownBoard[] = [
     wear: { paths: span(0, 10, 0, 0) },
   }),
   rg02Board({
+    id: 'saltstep_platform',
+    folder: 'saltstep-platform',
+    terrain: SALTSTEP_PLATFORM_TERRAIN,
+    layout: SALTSTEP_PLATFORM_TOPDOWN_LAYOUT,
+    // the stall's old footprint down the seam, where feet and crates wore the planks paler
+    wear: { paths: span(6, 8, 3, 7) },
+    raised: SALTSTEP_PLATFORM_RAISED,
+  }),
+  rg02Board({
     id: 'emberwatch_parade',
     folder: 'emberwatch-parade',
     terrain: EMBERWATCH_PARADE_TERRAIN,
@@ -74,5 +92,25 @@ export const RG02_BOARDS: readonly TopDownBoard[] = [
     earth: 'yard',
     // the gate to the shed, and the walk along the line
     wear: { paths: [...span(1, 4, 5, 6), ...span(1, 4, 3, 4), ...span(4, 16, 6, 6)], wet: 0.3 },
+  }),
+  rg02Board({
+    id: 'river_road',
+    folder: 'river-road',
+    terrain: RIVER_ROAD_TERRAIN,
+    layout: RIVER_ROAD_TOPDOWN_LAYOUT,
+    earth: 'road',
+    stone: 'rise',
+    // the road, its pull-offs, the landing's footpath and the lookout's track; a dry morning, so little lies wet
+    wear: { paths: RIVER_ROAD_WORN, wet: 0.08, soft: true },
+  }),
+  rg02Board({
+    id: 'river_road_bridge',
+    folder: 'river-road-bridge',
+    terrain: RIVER_ROAD_BRIDGE_TERRAIN,
+    layout: RIVER_ROAD_BRIDGE_TOPDOWN_LAYOUT,
+    earth: 'road',
+    stone: 'rise',
+    // SF-2.3's board is a crop of the river road's, so it wears as the road does
+    wear: { paths: RIVER_ROAD_BRIDGE_WORN, wet: 0.08, soft: true },
   }),
 ];

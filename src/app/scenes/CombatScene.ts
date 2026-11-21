@@ -93,7 +93,7 @@ import { assetCanvas } from '../ui/assetCanvas';
 import { portraitKeyFor } from '../ui/PartyRoster';
 import { victoryNote, victoryResults, type VictoryRow } from '../ui/victoryResults';
 import { UI_MARKS, markKindFor } from '../ui/marks';
-import { objectiveLine, objectiveOverlay } from './combatObjective';
+import { objectiveLine, objectiveOverlay, tipOverlay } from './combatObjective';
 import { iconMarkup } from '../ui/icons';
 import { paletteFor } from '../../render/palettes';
 import { paintElementGlyph } from '../../render/painters/glyphs';
@@ -151,6 +151,7 @@ import {
   type CombatTipFeature,
 } from './combatGuidance';
 import { defendHintFlag, defendHintFor, type DefendHint } from './defendHint';
+import { sceneForStory } from '../world/sceneGates';
 
 /** An ability that stands a downed friend up (ADR 0118): aimed at the fallen, not the living. */
 function isDownedAbility(ability: Ability): boolean {
@@ -3247,6 +3248,24 @@ export class CombatScene implements Scene {
           }),
         );
       }
+      // A bout's first shove toward the water leaves them on the edge (ADR 0122 §2a).
+      if (shove.teeters) {
+        chips.appendChild(
+          el('span', {
+            class: `chip shove-out-forecast ${shove.friendly ? 'chip-friendly' : 'chip-terrain'}`,
+            text: `${shove.name}: Teetering`,
+          }),
+        );
+      }
+      // A sparring bout's water (ADR 0122 §4): in the place a knockout would show.
+      if (shove.out) {
+        chips.appendChild(
+          el('span', {
+            class: `chip shove-out-forecast ${shove.friendly ? 'chip-friendly' : 'chip-terrain'}`,
+            text: `${shove.name}: Out of the bout`,
+          }),
+        );
+      }
     }
 
     for (const status of preview.statuses) {
@@ -3768,7 +3787,9 @@ export class CombatScene implements Scene {
       crispOverlays: this.app.settings.highContrast,
       atmosphere: !this.app.settings.highContrast,
       backdrop: this.app.backdropFor(battle.mapId),
-      scene: this.app.content.maps.get(battle.mapId)?.scene,
+      scene: ((m) => (m ? sceneForStory(m, this.app.state) : undefined))(
+        this.app.content.maps.get(battle.mapId),
+      ),
       time: now,
       reducedMotion: motionReduced(),
       flushedAt: this.flushedAt,
@@ -3817,7 +3838,9 @@ export class CombatScene implements Scene {
   ): readonly OverlayLayer[] {
     if (battle.phase !== 'active') return overlays;
     const layer = objectiveOverlay(this.app.content.encounters.get(battle.encounterId));
-    return layer ? [layer, ...overlays] : overlays;
+    // A tipping platform's slide shows all round, over the objective (ADR 0122 §3).
+    const tip = tipOverlay(this.app.content, battle);
+    return [...(layer ? [layer] : []), ...(tip ? [tip] : []), ...overlays];
   }
 
   /**

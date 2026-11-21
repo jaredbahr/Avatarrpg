@@ -1,0 +1,232 @@
+{
+ "bedroll": {
+  "w": 43,
+  "h": 21,
+  "seed": 11,
+  "ledger_job": "rg02_obj_rr_bedroll_11",
+  "job_id": "c51b0466-6623-408c-b299-9ca48f4c3980",
+  "credits": 10.0,
+  "takes": 2,
+  "prompt": "a rolled canvas bedroll tied with two leather straps, lying flat on the ground, ..."
+ },
+ "bent_tree": {
+  "w": 39,
+  "h": 95,
+  "seed": 11,
+  "ledger_job": "rg02_obj_rr_bent_tree_11",
+  "job_id": "4386e216-da9e-49a2-a8a0-0d7bd0487926",
+  "credits": 10.0,
+  "takes": 2,
+  "prompt": "a tall lone wind-bent hill tree, twice as tall as a person, reaching from the bo..."
+ },
+ "cabbage_sack": {
+  "w": 37,
+  "h": 44,
+  "seed": 3,
+  "ledger_job": "rg02_obj_rr_cabbage_sack_3",
+  "job_id": "7d8e8c2d-da9e-4bbb-99e2-5a05893ee834",
+  "credits": 5.0,
+  "takes": 1,
+  "prompt": "a burlap sack of cabbages sitting upright on the ground, slumped open at the top..."
+ },
+ "cold_fire": {
+  "w": 42,
+  "h": 30,
+  "seed": 3,
+  "ledger_job": "rg02_obj_rr_cold_fire_3",
+  "job_id": "814de5e2-194b-4768-a6ab-32bfbe6f4818",
+  "credits": 5.0,
+  "takes": 1,
+  "prompt": "a cold campfire: a ring of grey stones round grey ash and a few charred sticks, ..."
+ },
+ "cook_pot": {
+  "w": 26,
+  "h": 29,
+  "seed": 3,
+  "ledger_job": "rg02_obj_rr_cook_pot_3",
+  "job_id": "68ab2d61-2b23-4b33-8dea-1fa47d1448db",
+  "credits": 5.0,
+  "takes": 1,
+  "prompt": "a small dented iron cooking pot with a lid and a wire handle, a wooden spoon res..."
+ },
+ "country_jetty": {
+  "w": 115,
+  "h": 32,
+  "seed": 11,
+  "ledger_job": "rg02_obj_rr_country_jetty_11",
+  "job_id": "356b87d6-9be1-4402-9dd5-8299c652a9b0",
+  "credits": 12.0,
+  "takes": 2,
+  "prompt": "a long low country jetty three times as wide as it is deep, filling the canvas w..."
+ },
+ "driftwood": {
+  "w": 33,
+  "h": 17,
+  "seed": 3,
+  "ledger_job": "rg02_obj_rr_driftwood_3",
+  "job_id": "8f4c7dbf-11c8-4901-b948-67c2fa35a3dc",
+  "credits": 5.0,
+  "takes": 1,
+  "prompt": "a pale bleached piece of driftwood with a forked end lying on the ground, seen f..."
+ },
+ "fallen_log": {
+  "w": 79,
+  "h": 37,
+  "seed": 3,
+  "ledger_job": "rg02_obj_rr_fallen_log_3",
+  "job_id": "48b366bc-a878-44c7-b886-363d6c92c209",
+  "credits": 5.0,
+  "takes": 1,
+  "prompt": "a long fallen tree trunk lying left to right with broken branch stubs and a litt..."
+ },
+ "flat_rock": {
+  "w": 48,
+  "h": 22,
+  "seed": 3,
+  "ledger_job": "rg02_obj_rr_flat_rock_3",
+  "job_id": "c68ff7cf-0f4f-450f-b018-cd59e1c09b32",
+  "credits": 5.0,
+  "takes": 1,
+  "prompt": "a low flat-topped grey rock, smooth and worn where travellers sit, a little gras..."
+ },
+ "hitching_post": {
+  "w": 15,
+  "h": 35,
+  "seed": 3,
+  "ledger_job": "rg02_obj_rr_hitching_post_3",
+  "job_id": "e58960a6-f2af-4922-bd3b-88566793d247",
+  "credits": 5.0,
+  "takes": 1,
+  "prompt": "a single short wooden hitching post with an iron ring and a loop of rope tied to..."
+ },
+ "log_bench": {
+  "w": 60,
+  "h": 29,
+  "seed": 3,
+  "ledger_job": "rg02_obj_rr_log_bench_3",
+  "job_id": "4ed4070b-9885-43b2-b9d3-6fe1d7179b75",
+  "credits": 5.0,
+  "takes": 1,
+  "prompt": "a weathered fallen log lying on its side as a seat, bark worn smooth on top wher..."
+ },
+ "milestone": {
+  "w": 19,
+  "h": 28,
+  "seed": 3,
+  "ledger_job": "rg02_obj_rr_milestone_3",
+  "job_id": "a85ea604-4867-456b-a135-faa5c09e713f",
+  "credits": 5.0,
+  "takes": 1,
+  "prompt": "a small carved grey stone milestone, rounded on top, with a simple carved mark a..."
+ },
+ "net_rack": {
+  "w": 60,
+  "h": 42,
+  "seed": 3,
+  "ledger_job": "rg02_obj_rr_net_rack_3",
+  "job_id": "1ac7c886-26af-422c-b348-e5323aab3b7e",
+  "credits": 5.0,
+  "takes": 1,
+  "prompt": "a fishing net hung up to dry between two upright wooden poles, a brown net with ..."
+ },
+ "plank_bridge": {
+  "w": 80,
+  "h": 65,
+  "seed": 3,
+  "ledger_job": "rg02_obj_rr_plank_bridge_3",
+  "job_id": "5f2f9306-c37e-4034-893d-68a048ff91e6",
+  "credits": 6.0,
+  "takes": 1,
+  "prompt": "a short sturdy plank footbridge seen front-on from a low top-down camera: a deck..."
+ },
+ "rockfall": {
+  "w": 58,
+  "h": 34,
+  "seed": 3,
+  "ledger_job": "rg02_obj_rr_rockfall_3",
+  "job_id": "5187634c-567c-4c03-a08d-0d88e54c7e5a",
+  "credits": 6.0,
+  "takes": 1,
+  "prompt": "a heap of fallen grey rocks and broken stone of different sizes at the foot of a..."
+ },
+ "rubbish_heap": {
+  "w": 37,
+  "h": 30,
+  "seed": 3,
+  "ledger_job": "rg02_obj_rr_rubbish_heap_3",
+  "job_id": "c0f032fb-e338-439c-a1aa-c049924b7079",
+  "credits": 5.0,
+  "takes": 1,
+  "prompt": "a small untidy heap of camp rubbish on the ground: empty sacks, a broken crate s..."
+ },
+ "shade_tree": {
+  "w": 80,
+  "h": 106,
+  "seed": 3,
+  "ledger_job": "rg02_obj_rr_shade_tree_3",
+  "job_id": "fde42bdc-fd80-4486-a755-094b6307ea44",
+  "credits": 6.0,
+  "takes": 1,
+  "prompt": "a big old broad shade tree with a thick gnarled trunk and a wide round canopy of..."
+ },
+ "stepping_stones": {
+  "w": 82,
+  "h": 12,
+  "seed": 3,
+  "ledger_job": "rg02_obj_rr_stepping_stones_3",
+  "job_id": "cb80d587-0dde-4305-a1ba-2851d1f67961",
+  "credits": 5.0,
+  "takes": 1,
+  "prompt": "a line of five flat grey river stepping stones running left to right, wet on the..."
+ },
+ "toll_bar_down": {
+  "w": 71,
+  "h": 27,
+  "seed": 3,
+  "ledger_job": "rg02_obj_rr_toll_bar_down_3",
+  "job_id": "40d8e02f-296f-4199-bacb-b7f5540e89b0",
+  "credits": 5.0,
+  "takes": 1,
+  "prompt": "a borrowed official red-and-white striped road barrier arm lying level across, i..."
+ },
+ "toll_bar_up": {
+  "w": 22,
+  "h": 74,
+  "seed": 3,
+  "ledger_job": "rg02_obj_rr_toll_bar_up_3",
+  "job_id": "4928d9ea-5226-4e97-9ad4-2f7cf01e9235",
+  "credits": 5.0,
+  "takes": 1,
+  "prompt": "a borrowed official red-and-white striped road barrier arm raised upright, its f..."
+ },
+ "toll_sign": {
+  "w": 24,
+  "h": 41,
+  "seed": 3,
+  "ledger_job": "rg02_obj_rr_toll_sign_3",
+  "job_id": "f95a588a-746c-4d49-9314-f3549c4e8304",
+  "credits": 5.0,
+  "takes": 1,
+  "prompt": "a hand-lettered wooden sign on a stake, the board painted with the word TOLL and..."
+ },
+ "river_rowboat": {
+  "w": 72,
+  "h": 31,
+  "seed": 3,
+  "ledger_job": "rg02_obj_rr_rowboat_3",
+  "job_id": "d895c77f-17fb-428a-b676-9d1f06f6d042",
+  "credits": 5.0,
+  "takes": 1,
+  "prompt": "a small plain wooden river rowboat lying broadside, seen from the side: the hull..."
+ },
+ "toll_bar_diag": {
+  "w": 44,
+  "h": 47,
+  "seed": 3,
+  "ledger_job": "rg02_obj_rr_toll_bar_diag_3",
+  "job_id": "585a0355-9339-4b41-844e-7ab51095f382",
+  "credits": 10.0,
+  "takes": 2,
+  "prompt": "a borrowed official red-and-white striped road barrier lowered across a bridge, ..."
+ }
+}

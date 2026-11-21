@@ -17,6 +17,7 @@ import type {
   BattlePhase,
   BattleState,
   ContentIndex,
+  EncounterBout,
   DamageType,
   DousingType,
   GameEvent,
@@ -107,6 +108,8 @@ export class BattleDraft {
   nextUnitSerial: number;
   /** Units already helped up this fight (ADR 0118); each gets one stand-up. */
   helpedUp: string[];
+  /** Fighters out of a sparring bout (ADR 0122); nobody here is helped up. */
+  boutOut: string[];
   readonly encounterId: string;
   readonly variantId: string | null;
   readonly mapId: string;
@@ -151,6 +154,7 @@ export class BattleDraft {
     this.props = [...battle.props];
     this.nextUnitSerial = battle.nextUnitSerial;
     this.helpedUp = [...(battle.helpedUp ?? [])];
+    this.boutOut = [...(battle.boutOut ?? [])];
     this.encounterId = battle.encounterId;
     this.variantId = battle.variantId;
     this.mapId = battle.mapId;
@@ -177,7 +181,60 @@ export class BattleDraft {
       // Only once somebody has been helped, so a fight where no one fell, and an
       // older save, round-trip without a key they never had.
       ...(this.helpedUp.length > 0 ? { helpedUp: this.helpedUp } : {}),
+      // Likewise only once somebody is out of a bout (ADR 0122).
+      ...(this.boutOut.length > 0 ? { boutOut: this.boutOut } : {}),
     };
+  }
+
+  /** The encounter's sparring rules (ADR 0122), or undefined outside a bout. */
+  get bout(): EncounterBout | undefined {
+    return this.content.encounters.get(this.encounterId)?.bout;
+  }
+
+  /**
+   * Puts a fighter out of the bout (ADR 0122 §2): at 0 HP, recorded, and never helped up. A
+   * forced move onto an `outOn` terrain calls it whatever the fighter's HP; a fighter knocked to
+   * 0 HP in a bout is recorded the same way by `dealDamage`.
+   */
+  putOut(unitId: string): void {
+    const unit = this.unit(unitId);
+    if (!unit) return;
+    if (!this.boutOut.includes(unitId)) this.boutOut.push(unitId);
+    if (!isAlive(unit)) return;
+    this.replace({ ...unit, hp: 0 });
+    // Only a forced move reaches here with the fighter still up: 0 HP has already emitted its own.
+    this.emit({ type: 'unitDied', unitId, out: 'water' });
+  }
+
+  /**
+   * The tipping platform at a round's end (ADR 0122 §3): when one half holds more fighters, each
+   * fighter on it slides one cell away from the pivot, the one nearest the edge first so a line
+   * moves together. A slide onto an `outOn` cell puts the fighter out. No RNG; `forecastTip`
+   * runs this same method on a copy to show it before it happens.
+   */
+  tipPlatform(): void {
+    const tipping = this.bout?.tipping;
+    if (!tipping) return;
+    const coord = (unit: Unit): number => (tipping.axis === 'x' ? unit.pos.x : unit.pos.y);
+    const half = (unit: Unit): number => Math.sign(coord(unit) - tipping.pivot);
+    const fighters = this.units.filter(isAlive);
+    const low = fighters.filter((unit) => half(unit) < 0).length;
+    const high = fighters.filter((unit) => half(unit) > 0).length;
+    if (low === high) return;
+    const heavy = low > high ? -1 : 1;
+    const movers = fighters
+      .filter((unit) => half(unit) === heavy)
+      .sort((a, b) => heavy * (coord(b) - coord(a)));
+    this.message('The platform tips.');
+    for (const mover of movers) {
+      const unit = this.unit(mover.id);
+      if (!unit || !isAlive(unit)) continue;
+      const origin =
+        tipping.axis === 'x'
+          ? { x: tipping.pivot, y: unit.pos.y }
+          : { x: unit.pos.x, y: tipping.pivot };
+      this.shove(unit.id, origin, 1, 'push');
+    }
   }
 
   /* ---------------------------------------------------------------- */
@@ -230,6 +287,7 @@ export class BattleDraft {
       size: unit.size,
       squareFootprints: this.squareFootprints,
       climbCost: this.content.tuning.climbCost,
+      ...(this.bout ? { outOn: new Set(this.bout.outOn) } : {}),
     };
   }
 
@@ -279,7 +337,10 @@ export class BattleDraft {
       ...(options.cause ? { cause: options.cause } : {}),
     });
 
-    if (hp <= 0) this.emit({ type: 'unitDied', unitId });
+    if (hp <= 0)
+      this.emit({ type: 'unitDied', unitId, ...(this.bout ? { out: 'down' as const } : {}) });
+    // In a bout, 0 HP is out of the bout: recorded, and never helped up (ADR 0122 §2).
+    if (hp <= 0 && this.bout) this.putOut(unitId);
   }
 
   /**
@@ -450,7 +511,9 @@ export class BattleDraft {
   ): {
     readonly pos: Vec2;
     readonly ledgeDropTiers: number;
-    readonly stopReason: 'none' | 'centre' | 'origin' | 'obstacle';
+    readonly stopReason: 'none' | 'centre' | 'origin' | 'obstacle' | 'out';
+    /** With `'out'`: the last deck cell before the water, where a first shove leaves them. */
+    readonly brink?: Vec2;
   } {
     // Direction comes from `shoveStep`, shared with the confirm-step forecast.
     const square = ctx.squareFootprints ?? SQUARE_FOOTPRINTS;
@@ -489,6 +552,11 @@ export class BattleDraft {
       if (mode === 'pull' && pullCells.some((cell) => samePos(cell, origin))) {
         stopReason = 'origin';
         break;
+      }
+      // A bout's water (ADR 0122 §2): the slide goes in, and the fighter is out. A single-cell
+      // fighter only; no bout has a block.
+      if (ctx.outOn && ctx.size === 1 && this.isOutCell(ctx.outOn, next)) {
+        return { pos: next, ledgeDropTiers, stopReason: 'out', brink: current };
       }
       if (!this.canShoveStep(ctx, current, next)) {
         stopReason = 'obstacle';
@@ -536,6 +604,12 @@ export class BattleDraft {
     };
   }
 
+  /** A cell whose terrain puts a fighter out of the bout, if one is on the map at all. */
+  private isOutCell(outOn: ReadonlySet<string>, pos: Vec2): boolean {
+    const tile = tileAt(this.grid, pos);
+    return tile !== undefined && outOn.has(tile.terrain);
+  }
+
   /** Forced movement follows a one-tier ramp, but cannot push up a bare ledge. */
   private canShoveStep(ctx: MoveContext, from: Vec2, to: Vec2): boolean {
     const square = ctx.squareFootprints ?? SQUARE_FOOTPRINTS;
@@ -579,6 +653,26 @@ export class BattleDraft {
     const slide = this.slideFrom(this.moveContext(unit), unit.pos, origin, tiles, mode);
     const current = slide.pos;
     if (samePos(current, unit.pos)) return 0;
+    if (slide.stopReason === 'out') {
+      // A first shove toward the water leaves them teetering on the brink; a shove once they
+      // have had a turn to step back puts them in and out (ADR 0122 §2a). Teetering lasts 2 and
+      // ticks at its owner's turn start, so at 1 they have had that turn. No contact, no ledge
+      // damage.
+      const teeter = unit.statuses.find((s) => s.id === 'teetering');
+      if (!teeter || teeter.duration > 1) {
+        const brink = slide.brink ?? unit.pos;
+        if (!samePos(brink, unit.pos)) {
+          this.placeUnit(unitId, brink);
+          this.emit({ type: 'unitPushed', unitId, to: brink });
+        }
+        this.applyStatusTo(unitId, 'teetering');
+        return 0;
+      }
+      this.replace({ ...unit, pos: current });
+      this.emit({ type: 'unitPushed', unitId, to: current });
+      this.putOut(unitId);
+      return 0;
+    }
     this.placeUnit(unitId, current);
     if (slide.ledgeDropTiers > 0) {
       this.dealDamage(
@@ -836,7 +930,8 @@ export class BattleDraft {
     | {
         readonly pos: Vec2;
         readonly ledgeDropTiers: number;
-        readonly stopReason: 'none' | 'centre' | 'origin' | 'obstacle';
+        // A prop's context carries no `outOn`, so it never reports 'out'.
+        readonly stopReason: 'none' | 'centre' | 'origin' | 'obstacle' | 'out';
       }
     | undefined {
     const prop = this.props.find((p) => p.id === propId);

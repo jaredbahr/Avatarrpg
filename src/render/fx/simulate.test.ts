@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { ParticleEmitterDef, StrokeEmitterDef } from '../../content/fx';
-import { PARTICLE_STRIDE, headAt, particleSpan, sampleParticles, sampleStrokes } from './simulate';
+import {
+  CLEAR_AFTER_MS,
+  PARTICLE_STRIDE,
+  clearFigure,
+  headAt,
+  particleSpan,
+  sampleParticles,
+  sampleStrokes,
+} from './simulate';
 
 const burst: ParticleEmitterDef = {
   kind: 'particles',
@@ -210,5 +218,27 @@ describe('sampleStrokes', () => {
       expect(shape.closed).toBe(true);
       expect(shape.points).toHaveLength(8);
     }
+  });
+});
+
+describe('clearFigure', () => {
+  // Three particles at full alpha: one on the figure's chest, one at its edge, one a tile away.
+  const sample = (): Float32Array =>
+    Float32Array.from([5, 4.7, 0.5, 0, 1, 5.36, 4.7, 0.5, 0, 1, 6, 4.7, 0.5, 0, 1]);
+  const alpha = (out: Float32Array, i: number): number => out[i * PARTICLE_STRIDE + 4] ?? 0;
+
+  it('leaves the first impact frame whole', () => {
+    const out = sample();
+    clearFigure(out, 3, { x: 5, y: 5 }, CLEAR_AFTER_MS);
+    expect([alpha(out, 0), alpha(out, 1), alpha(out, 2)]).toEqual([1, 1, 1]);
+  });
+
+  it('fades what covers the figure, softly at its edge, and nothing beside it', () => {
+    const out = sample();
+    clearFigure(out, 3, { x: 5, y: 5 }, CLEAR_AFTER_MS + 500);
+    expect(alpha(out, 0)).toBeCloseTo(0.25);
+    expect(alpha(out, 1)).toBeGreaterThan(0.25);
+    expect(alpha(out, 1)).toBeLessThan(1);
+    expect(alpha(out, 2)).toBe(1);
   });
 });

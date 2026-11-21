@@ -970,6 +970,18 @@ paper. Bring a lot.
 
 **Shown:** played. **Where:** the jetty, morning.
 
+> Added 2026-11-20 (suggestions pass).
+>
+> **If `emberwatch_route_loader`, and not `lost_emberwatch` —** _(found, passing the bean rack on the way down
+> to the jetty; it comes before the clerk and his card)_
+>
+> **Narrator:** You put Kesi's key back by the bean rack, where she said she would drop it. A minute later she
+> walks past it. Then she walks past it again, slower.
+>
+> **Kesi:** Oh. Look. My key. On the ground. Where I must have dropped it.
+>
+> **Retired cook:** It was in my red ones. I nearly put it in the pot.
+
 **Narrator:** A clerk in a clean Commonworks coat is waiting by the cart with a card. He has been waiting a
 while; Parcel has eaten the corner of his notebook.
 
@@ -1285,6 +1297,21 @@ task-givers each have one new line, below)._
 - **Girl at the lift:** I'd have got him out with the lift. If he'd been turnips.
 - **Dema:** She went in after him herself. I'll give her that. I'll give her that, and I'll still want the
   late shelf paid.
+
+> Added 2026-11-20 (suggestions pass).
+>
+> _A fourth person to find in the same free roam, for any party. He stands alone: nobody has to have done a
+> festival task._
+>
+> **Narrator:** Tolo is sitting on the bathhouse steps in three towels. Only his cap and his ears show.
+>
+> **Tolo:** You're the ones who got the chain off me. Thank you. I've been practising saying it. It came out
+> shorter than I practised.
+>
+> **Tolo:** My mum's on her way down. If she asks, it was one egg. She counts them.
+>
+> _(After `lost_canal_rescue`, his first line is instead: "You're the ones who went in after me. I saw you go
+> past. You were going quite fast. Thank you." The egg line is the same.)_
 
 ### Scene 4.6 — VOTE: the commission
 
@@ -1787,11 +1814,30 @@ them the scrap. They only had to ask in daylight.
 loose, at the midday lull. **Why:** nobody is angry. Losers wash the bowl-seller's bowls. The platform tips
 toward whichever side has more people on it, and going in the water counts as out.
 
+**Ferry apprentice:** You're the ones off the cabbage cart. We settle the midday on the loose platform, us and the
+channel hands. Today we thought we'd be on the same side for once, and you'd be the other one.
+
+**Ferry apprentice:** Losers wash the bowl-seller's bowls. There are sixty. Are you in?
+
 **Tavi:** No bending the platform. Bend whatever else you like. If you fall in, swim to the left. The right's
 where the fish-seller empties her bucket.
 
 **Win:** **Channel hand:** Fair. We wash. You can dry, since you're so quick. **Carry on:** **Bowl-seller:**
 Sixty bowls. Sand's in the tub. Don't stack them wet.
+
+**Bout intro:** The midday lull. The spare platform rides loose on its moorings, and it leans toward whoever stands on
+it. Half the market has found a reason to be near the rail.
+
+**Tip:** A shove toward the water leaves a fighter teetering on the edge. Shove them again after their turn and they
+are in, and out of the bout. If you are the one teetering, step back from the edge. Blue squares show where the deck
+will tip when the round ends.
+
+**Ferry apprentice** (enemy card): Poles a ferry all day and has the shoulders for it. Quick on a wet deck. Laughs when
+it goes in. **Channel hand** (enemy card): Hauls barges through the channel for a living. Slow to move and very hard
+to shift.
+
+**The board:** The Loose Platform. The stall that stood there was a net-mender's, who moved ashore when the platform's
+moorings went slack; nobody has claimed it since, which is why it is spare. Nobody says this in the bout.
 
 ### SF-2.3 — The bridge toll (the river road to Causeway)
 
@@ -2027,3 +2073,35 @@ and the proposals not applied are in the pass's report.
 3. **Lines:** Kaya at the chain (4.3); Tavi's and Dorin's long turns split.
 4. **Hero moments added:** Nilak in the supply room (3.1), Nima and the towel basket (4.1).
 5. **Cutscenes:** pointers to [cutscenes.md](cutscenes.md) at 2.9 and 4.5.
+
+## Suggestions added 2026-11-20 (the writing pass)
+
+The owner asked for small improvements to be written in and listed (2026-11-20: "Just write them and tell
+me"). Six additions across Acts II to IV. Each is additive: no existing line was changed, no scene's events
+or choice outcomes change, and no flag is set. Each sits under a note line, `> Added 2026-11-20 (suggestions
+pass).`, and is one quoted block. Nothing was added to the scenes already built (2.1 to 2.9, the arrival half
+of 3.1, SF-2.1), so the game and the script still agree there.
+
+| #   | File               | Scene                               | What it is for                                                                                                                                                                                 | To undo                                        |
+| --- | ------------------ | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| 1   | `act2-sparks.md`   | 3.9, before the clerk's card        | Kesi's key is never mentioned again after 3.2. She "finds" it by the bean rack, acting badly. Only on `emberwatch_route_loader`, and not after `lost_emberwatch`. Funny.                       | Cut by deleting the marked lines               |
+| 2   | `act2-sparks.md`   | 4.5, the free roam after DLG-04     | Nobody thanks the party for going into the canal. Tolo does, in three towels, and asks them to say it was one egg. A variant for `lost_canal_rescue`. Funny.                                   | Cut by deleting the marked lines               |
+| 3   | `act3-currents.md` | 6.1, after Yenna's line             | Pella's "let it fall off, then tell me" gets a beat between her letter and 11.2's "You did. By post." Victory branch only, and only once C.1 has played. Funny.                                | Cut by deleting the marked lines               |
+| 4   | `act3-currents.md` | C.1, The ramp                       | Latch on the tailgate tells Parcel the rule about the rope. It does not work. Only when C.1 follows MQ-07. Bo-shan answers after a win, Dorin (eleven watch-book entries) after a loss. Funny. | Cut by deleting the marked lines               |
+| 5   | `act4-weight.md`   | 11.2, the east gate (both versions) | The turtle ducks, absent since Act I, and Dorin's watch book. After a win the duck is asleep on today's page; after a loss it has Dorin's stool and Hanru let it. Two blocks, one addition.    | Cut by deleting the marked lines (both blocks) |
+| 6   | `act4-weight.md`   | 12.1, around the shed               | The shed is all adults. The girl from the goods lift (4.1) brings forty blankets up by herself. Warm, not a joke.                                                                              | Cut by deleting the marked lines               |
+
+**Small facts invented** (none names a person or a place):
+
+- Tolo's mother counts her eggs, and Tolo is given three towels.
+- The retired cook found Kesi's key among the red beans.
+- Bo-shan's load in Act III includes a tall basket of cabbages on a small crate.
+- Parcel chews the ramp's rope handle. (Grumbler's note already warns against it.) Dorin has logged telling
+  him off eleven times.
+- A turtle duck sleeps at Dorin's gate in Act IV: on the watch book after a win, on his stool since the day
+  he left after a loss. It is called Deputy only for a table that saw SQ-31.
+- The goods lift carries blankets up to the tram shed the night before the tide, and the girl works it.
+
+**Checked against:** Hanru is they/them and speaks in clipped facts; the driver is Bo-shan after a win and
+Dorin after a loss, and the watch book is back under the cart seat by 10.8; Latch stays on the tailgate, so
+its line holds for a party that refused it in SQ-10; no hero is voiced, so no addition depends on the party.

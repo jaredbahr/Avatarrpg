@@ -119,16 +119,8 @@ export function connectAct1(map: MapDef): MapDef {
             routes: [
               // Later trips replay only the road's last beat, Parcel at the trough, then the market.
               {
-                when: {
-                  kind: 'any',
-                  of: [visited('mq02_coast_road'), visited('mq02_coast_road_jinu')],
-                },
+                when: visited('mq02_coast_road'),
                 node: 'mq02_coast_parcel',
-              },
-              // Jinu's moment (Scene 2.1, loss branch): the same road, ending on her line.
-              {
-                when: { kind: 'all', of: [lost, { kind: 'partyHas', characterId: 'jinu' }] },
-                node: 'mq02_coast_road_jinu',
               },
             ],
           },
@@ -262,12 +254,22 @@ export function connectAct1(map: MapDef): MapDef {
           ...map.npcs,
           ...discoveryMarkers('forest_road'),
           {
+            // SF-1.1, optional (`story/sideFightsAct1.ts`): Bessa's crew loading the handcart at the
+            // bend, once Act I is over either way, until the conversation has started.
+            id: 'sf11_bessa',
+            name: 'Bessa',
+            pos: { x: 9, y: 3 },
+            sprite: 'unit.enemy.slinger',
+            node: 'sf11_the_bend',
+            when: { kind: 'all', of: [ACT1_OVER, unvisited('sf11_the_bend')] },
+          },
+          {
             // SQ-01: Bo-shan's tipped sled in the south ditch, for a party carrying Pella's list,
-            // until the workers are home. The cabbage cart stands in for a sled until art exists.
+            // until the workers are home (art batch #38, `tools/sq01gen.py`).
             id: 'sq01_sled',
             name: 'Overturned sled',
             pos: { x: 11, y: 10 },
-            sprite: 'prop.cart',
+            sprite: 'world.sq01_sled',
             node: 'sq01_sled',
             // Not after a Driller loss either: its outcomes count on Dorin's handcart.
             when: {
@@ -433,6 +435,16 @@ export function connectAct1(map: MapDef): MapDef {
         npcs: [
           ...map.npcs,
           ...discoveryMarkers('ambush_road'),
+          {
+            // SF-1.2, optional (`story/sideFightsAct1.ts`): Tolma's picket at the slab, once Act I
+            // is over either way, until the conversation has started.
+            id: 'sf12_tolma',
+            name: 'Tolma',
+            pos: { x: 14, y: 5 },
+            sprite: 'unit.enemy.quarrybender',
+            node: 'sf12_the_slab',
+            when: { kind: 'all', of: [ACT1_OVER, unvisited('sf12_the_slab')] },
+          },
           {
             // Ruon stands where the ambush broke while he speaks (#628), and
             // waits there until the party goes down to the quarry floor.

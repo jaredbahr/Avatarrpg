@@ -96,6 +96,26 @@ const SCENES: Readonly<Record<string, Scene>> = {
       'A broad deck of weathered planks on the water, ragged at its edges, with deep harbour water all round it. A cast-iron hand pump in its crate stands near the left end, in two places. A short two-plank-wide gangway, its brake lever at its far end, joins the deck to a smaller platform on the right, where a heavy timber winch with a crane arm stands; the platform runs on to the right edge as a gangway toward a barge beyond the picture.',
     light: 'Grey afternoon light off the water, the tide on the turn.',
   },
+  saltstep_platform: {
+    place:
+      'A spare market platform at Saltstep, floating loose in the harbour, where the ferry apprentices spar.',
+    scene:
+      'A small square deck of market planking alone on the water, with deep harbour water all round it. Down its middle runs the short stub of an old stall counter, open at both ends. A low step of planks runs along the top edge, sloping down at each end. Two mooring bollards with looped rope stand at the top-left and bottom-right corners of the deck.',
+    light: 'Bright midday light, calm water.',
+  },
+  river_road: {
+    place: 'The river road, the cart road up the river from the coast to Causeway, a day long.',
+    scene:
+      'A packed-earth road runs left to right across the middle, a wide slow river along the whole bottom edge and a wooded hillside along the top. Halfway along, a side stream comes down from the hills to the river; a plank bridge carries the road over it, with stepping stones a little downstream. A big shade tree and a trough stand by the road on the left, a footpath leads down to a small jetty, and a camp with a cold fire sits past the bridge. At the right the road climbs past a rock face to a rise looking out over open country.',
+    light: 'Bright morning light, a little haze over the river.',
+  },
+  river_road_bridge: {
+    place:
+      'The plank bridge on the river road, where a quarry corporal and his guards have put a pole across it.',
+    scene:
+      'A packed-earth road crosses the middle left to right and runs over a plank bridge where a side stream comes down from wooded hills along the top. A striped pole lies across the bridge. Past it, above the road on the right, a small camp: a cold fire ringed with stones, bedrolls, a cook pot and stacked crates. Two rows below the bridge the stream runs shallow over stepping stones, a fallen log beside them. A wide slow river runs along the bottom edge, gravel bars at its edge, and a grey rock face rises at the top-right corner.',
+    light: 'Bright morning light, a little haze over the river.',
+  },
   emberwatch_parade: {
     place: 'Emberwatch, an old military outpost across the bay, reopened for civilians.',
     scene:

@@ -99,6 +99,7 @@ const statusId = z.enum([
   'chiBlocked',
   'guarded',
   'inspired',
+  'teetering',
 ]);
 const terrainId = z.enum([
   'grass',
@@ -499,6 +500,7 @@ const sceneImageBaseSchema = z.object({
   y: z.number(),
   width: z.number().positive(),
   height: z.number().positive(),
+  gate: id.optional(),
   feather: z
     .object({
       left: z.number().int().positive().optional(),
@@ -635,6 +637,8 @@ export const mapSchema = z
     // A painting under the grid (ADR 0009). Between 32 px a tile (the probe) and
     // 256, so a 24-wide map stays inside the 2048 px texture every iPad takes.
     projection: z.literal('topdown').optional(),
+    // The story's say over the scene's dressing (ADR 0123): a gate's name to the condition it draws under.
+    sceneGates: z.record(id, conditionSchema).optional(),
     scene: z
       .object({
         paintedWater: z.boolean().optional(),
@@ -868,6 +872,7 @@ const encounterObjective = z.discriminatedUnion('kind', [
     .object({
       kind: z.literal('holdAtRoundEnd'),
       cells: z.array(vec2).min(1),
+      minHeld: z.number().int().min(1).max(10).optional(),
       label: z.string().min(1),
     })
     .strict(),
@@ -882,6 +887,16 @@ export const encounterSchema = z.object({
   guests: z.array(guestAlly).optional(),
   loseIfGuestFalls: z.boolean().optional(),
   objective: encounterObjective.optional(),
+  bout: z
+    .object({
+      outOn: z.array(terrainId).min(1),
+      tipping: z
+        .object({ axis: z.enum(['x', 'y']), pivot: z.number().int().min(0) })
+        .strict()
+        .optional(),
+    })
+    .strict()
+    .optional(),
   /** Lost if not won by the end of this round. Below the engine's 50-round ceiling. */
   loseAfterRound: z.number().int().min(1).max(50).optional(),
   conditionalEnemies: z.array(
@@ -892,6 +907,7 @@ export const encounterSchema = z.object({
     }),
   ),
   baselinePartySize: z.number().int().min(1).max(6),
+  xpPerHead: z.number().int().min(1).max(1000).optional(),
   variants: z.array(
     z.object({
       id,
@@ -1768,8 +1784,14 @@ const topDownObjectSchema = z
     fadeWhenOccluding: z.boolean().optional(),
     revealOccluded: z.boolean().optional(),
     flip: z.boolean().optional(),
+    gate: z.string().min(1).optional(),
+    grounded: z.literal(true).optional(),
   })
-  .strict();
+  .strict()
+  .refine((o) => !o.grounded || o.kind === 'flat', {
+    path: ['grounded'],
+    message: 'only a flat piece is grounded into the plate; a standing piece is grounded already',
+  });
 
 /** The top-down cell, in world px. */
 const TOPDOWN_CELL = 40;
@@ -1835,6 +1857,18 @@ export function validateTopDownLayout(map: MapDef, layout: TopDownLayout): strin
     }
     if (ids.has(object.id)) problems.push(`${where} repeats object "${object.id}"`);
     ids.add(object.id);
+    // A gated piece comes and goes with the story (ADR 0123), and the rows are fixed: so it never blocks, and never
+    // carries a way over water that its absence would take away.
+    if (object.gate !== undefined) {
+      if (!map.sceneGates?.[object.gate])
+        problems.push(
+          `${where} object "${object.id}" names gate "${object.gate}", which the map's sceneGates do not define`,
+        );
+      if (object.solid)
+        problems.push(
+          `${where} gated object "${object.id}" is solid: the rows block a cell for good, so a piece that comes and goes cannot be what blocks it`,
+        );
+    }
     for (const cell of object.footprint) {
       if (!onMap(cell)) {
         if (!object.exterior)
@@ -1850,7 +1884,8 @@ export function validateTopDownLayout(map: MapDef, layout: TopDownLayout): strin
             `${where} solid object "${object.id}" stands on open cell (${cell.x},${cell.y})`,
           );
       }
-      if (object.deck) deckCells.add(key(cell.x, cell.y));
+      // only a piece that is always there carries the way
+      if (object.deck && object.gate === undefined) deckCells.add(key(cell.x, cell.y));
     }
   }
   // The foot: the object's base line (the row above `base`) across its footprint's columns, a few
@@ -2628,6 +2663,12 @@ export function validateContent(
         ) {
           problems.push(`encounter "${e.id}" objective cell (${key}) holds a prop`);
         }
+      }
+      // `minHeld` (ADR 0122 §5) can never ask for more cells than there are, or it is unwinnable.
+      if ((e.objective.minHeld ?? 1) > seen.size) {
+        problems.push(
+          `encounter "${e.id}" must hold ${e.objective.minHeld} objective cells but has ${seen.size}`,
+        );
       }
       for (const friend of [...e.allies, ...(e.guests ?? [])]) {
         if (seen.has(`${friend.pos.x},${friend.pos.y}`)) {

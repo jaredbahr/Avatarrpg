@@ -85,10 +85,23 @@ export class PadReader {
   private previous: PadSnapshot | null = null;
   private direction: Direction | null = null;
   private repeatAt = 0;
+  private heldSince = 0;
+  private seenAt = 0;
 
   /** The way the pad is held now, for a scene that walks while it is held. */
   get held(): Direction | null {
     return this.direction;
+  }
+
+  /**
+   * How long the direction has been held, as far as the reads have seen: from
+   * the first read that saw it to the last. A pad is only known when it is
+   * read, once a frame, so on a page that takes a few hundred ms over a frame a
+   * tap seen by one read has been held for 0 ms, not for however long the next
+   * frame takes to come round.
+   */
+  get heldFor(): number {
+    return this.direction ? this.seenAt - this.heldSince : 0;
   }
 
   /** The actions this frame's snapshot adds to the last one's. */
@@ -107,8 +120,10 @@ export class PadReader {
     }
 
     const direction = padDirection(pad, this.direction);
+    this.seenAt = now;
     if (direction !== this.direction) {
       this.direction = direction;
+      this.heldSince = now;
       this.repeatAt = now + PAD_REPEAT_DELAY_MS;
       if (direction && previous) actions.push({ action: direction, repeat: false });
     } else if (direction && now >= this.repeatAt) {
