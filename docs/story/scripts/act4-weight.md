@@ -612,6 +612,24 @@ can't have one of them without the other one.
 
 _(SQ-01 resolved: **Pella:** "It's low. It's even. ...Who taught you this?" **Bo-shan:** "You did. By post.")_
 
+> Added 2026-11-20 (suggestions pass).
+>
+> **Found: the gate, once the road has cleared.** _Optional, and after the reunion, never during it._
+>
+> **Narrator:** Dorin has set his stool upright and opened the watch book to write the cart in. A turtle duck
+> is asleep on today's page.
+>
+> **Dorin:** I can't enter you yet. The duck has the page.
+>
+> **Party:** Could you move the duck?
+>
+> **Dorin:** It was here first. That is in the book as well. Underneath it.
+>
+> **Narrator:** He writes the cart in very small, along the margin, round one webbed foot.
+>
+> _(If the party saw the duck at Dorin's board in SQ-31, he says "Deputy has the page", and does not hear
+> himself say it.)_
+
 #### After an Act I loss (`act1_lost`)
 
 **Narrator:** Ba Dan from the bend in the road: cooking smoke, the canal, the gate. The tables under Mira's
@@ -639,6 +657,22 @@ not want to write that. I wanted to say it standing in front of you.
 
 **Narrator:** She does not say anything else. She walks beside the cart all the way up the east road as far
 as the last house, and stops there, because that is as far as she is allowed.
+
+> Added 2026-11-20 (suggestions pass).
+>
+> **Found: the gate, a little later.** _Optional. The loss-branch version of the duck at the gate; it is kept
+> quiet, because nobody in Ba Dan is laughing yet._
+>
+> **Narrator:** A turtle duck is asleep on Dorin's stool, with its head tucked in.
+>
+> **Hanru:** It took the stool the day you left. I let it. Somebody ought to sit there.
+>
+> **Driver (Dorin):** Is it in the book?
+>
+> **Hanru:** You took the book.
+>
+> **Narrator:** Dorin fetches the watch book from under the cart seat. He enters the duck, from the day he
+> left. He does not ask for the stool back.
 
 ### Scene 11.3 — The quarry road
 
@@ -1337,6 +1371,19 @@ Nel." And under that, in a third: "Not enough runners. Ask."
   does not care whose uncle signed it."
 - **Yenna**, at the slate, with a lamp in her lap: "I've got the signal lamp from the Halt. I'm the relay
   between the shed and the landing. Nobody asked if I could. They asked if I would."
+
+> Added 2026-11-20 (suggestions pass).
+>
+> _One more around the shed, for any party. She is the girl from the goods lift in Scene 4.1, but the line
+> stands alone for a table that never tried the lift._
+>
+> **Narrator:** A girl of about eight comes in backwards through the shed doors, pulling a handcart of
+> blankets. A supervisor walks behind her with her arms folded.
+>
+> **Girl:** Forty blankets. I brought them up on the goods lift. In one go. She wasn't allowed to help. I told
+> her.
+>
+> **Girl:** Tell them the lift's free all night. Anybody can work it. I can show them. It takes about one go.
 
 ### Scene 12.2 — One conversation each
 
