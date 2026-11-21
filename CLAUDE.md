@@ -65,7 +65,8 @@ the owner and Claude have a workflow good enough to build the whole game, region
 - **The ending:** the walk home ends in a short welcome-home scene in Ba Dan that pays off the trip, then a
   "thanks for playing" card with a party summary and "play again with a different party".
 - **Audio:** area music (Ba Dan, the road, the quarry; tracks in `audio/source/music/`) plus solid hit, bending and
-  UI sounds.
+  UI sounds. Suno music prompts ask for no ambient sound (no wind, crowd chatter or background voices): Suno does it
+  badly and it complicates the track (owner, 2026-11-18; `audio/source/music/README.md`).
 - **Portraits:** the owner chose **style B, detailed pixel art at 160 px**, on 2026-11-11 (ADR 0107). New portraits are
   made with `prototypes/topdown/tools/portraits_b.py` (the old portrait at 160 px through PixelLab `edit-image-pro-flash`,
   the B description with the character's own features, seed 11); each is checked at 3x before it ships. A portrait
