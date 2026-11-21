@@ -9,14 +9,17 @@ import {
   actorSilhouetteGeometry,
   actorShadowDensity,
   activeGroundCue,
+  actorBodyBounds,
   combatActorSilhouetteGeometry,
   combatActorSilhouetteScreenGeometry,
   COMBAT_HEALTH_BAR_MIN_HEIGHT,
   COMBAT_HEALTH_BAR_MIN_WIDTH,
+  healthBarBelowFeet,
   healthBarCap,
   HealthBarStagger,
   staggerHealthBars,
 } from './actorSilhouette';
+import type { ActorBodyBounds, HealthBarPlacement } from './actorSilhouette';
 import { FOOT_LINE, headroomFromPixels } from '../sheets/bake';
 
 describe('upright actor headroom', () => {
@@ -485,5 +488,161 @@ describe('health bar cap', () => {
         expect(box.right - box.left).toBeGreaterThan(3);
       }
     }
+  });
+});
+
+describe('health bars clear of bunched neighbours', () => {
+  const TILE = 40;
+  // A top-down figure stands about 1.15 tiles tall: 0.3 tiles of measured headroom over the tile.
+  const HEADROOM = 0.3;
+  const figure = (col: number, row: number) => {
+    const box = { x: col * TILE, y: row * TILE, size: TILE };
+    const bar = combatActorSilhouetteGeometry(box, 1, HEADROOM, 1).bar;
+    return {
+      bar,
+      below: healthBarBelowFeet(bar, box, 1),
+      body: actorBodyBounds(box, 1, HEADROOM, 1),
+    };
+  };
+  type Placed = HealthBarPlacement['bar'];
+  const coversBody = (bar: Placed, body: ActorBodyBounds) =>
+    bar.x < body.right &&
+    bar.x + bar.width > body.left &&
+    bar.y < body.bottom &&
+    bar.y + bar.height > body.top;
+  /** How many bars lie on another figure's body: the count the rule holds at zero where a clear slot exists. */
+  const overlaps = (placed: Map<string, Placed>, bodies: Map<string, ActorBodyBounds>) =>
+    [...placed].filter(([id, bar]) =>
+      [...bodies].some(([other, body]) => other !== id && coversBody(bar, body)),
+    ).length;
+  const stage = (cells: Record<string, readonly [number, number]>) => {
+    const units = Object.entries(cells).map(([id, [col, row]]) => ({ id, ...figure(col, row) }));
+    // Depth order: back rows first, as both renderers draw.
+    units.sort((a, b) => a.body.bottom - b.body.bottom);
+    const bodies = new Map(units.map((unit) => [unit.id, unit.body]));
+    const bars = units.map(({ id, bar, below }) => ({ id, bar, below }));
+    return { units, bodies, bars };
+  };
+
+  it('puts the bar of a figure standing just in front of another under its own feet', () => {
+    // The Forest Road opening: a hauler one cell in front of Sura.
+    const { bodies, bars } = stage({ sura: [3, 2], hauler: [3, 3] });
+    expect(overlaps(staggerHealthBars(bars), bodies)).toBe(1);
+    const placed = new HealthBarStagger().place(bars, { bodies });
+    expect(overlaps(placed, bodies)).toBe(0);
+    const hauler = figure(3, 3);
+    expect(placed.get('hauler')?.y).toBe(hauler.below.y);
+    expect(placed.get('sura')).toEqual(figure(3, 2).bar);
+    // Centred on its own figure, below its feet and clear of its status badges.
+    expect(placed.get('hauler')?.x).toBe(hauler.bar.x);
+    expect(hauler.below.y).toBeGreaterThan(3 * TILE + TILE * 0.97 + 4);
+  });
+
+  it('leaves clear bars, and bars with no figures given, exactly where they were', () => {
+    const { bodies, bars } = stage({ a: [1, 1], b: [5, 1], c: [9, 4] });
+    const placed = new HealthBarStagger().place(bars, { bodies });
+    expect(placed).toEqual(staggerHealthBars(bars));
+    const bunched = stage({ sura: [3, 2], hauler: [3, 3] });
+    expect(new HealthBarStagger().place(bunched.bars)).toEqual(staggerHealthBars(bunched.bars));
+  });
+
+  it('keeps the bar over the head when the cell under the feet is taken too', () => {
+    // A column of three: the middle figure's feet slot lies on the front one's head, which is worse.
+    const { bodies, bars } = stage({ back: [3, 1], middle: [3, 2], front: [3, 3] });
+    const placed = new HealthBarStagger().place(bars, { bodies });
+    expect(placed.get('middle')?.y).toBe(figure(3, 2).bar.y);
+    expect(placed.get('front')?.y).toBe(figure(3, 3).below.y);
+  });
+
+  it('leaves a bar whose tip only touches a neighbour where the eye looks for it', () => {
+    // A neighbour half a cell over, behind: the front unit's bar overlaps the edge of its body by 12 px.
+    const front = figure(3, 3);
+    const edge = figure(4, 2).body;
+    const coreLeft = front.bar.x + front.bar.width - 12;
+    const shift = edge.left + (edge.right - edge.left) * 0.2 - coreLeft;
+    const back = { ...edge, left: edge.left - shift, right: edge.right - shift };
+    const bodies = new Map([
+      ['back', back],
+      ['front', front.body],
+    ]);
+    const placed = new HealthBarStagger().place(
+      [{ id: 'front', bar: front.bar, below: front.below }],
+      { bodies },
+    );
+    expect(placed.get('front')?.y).toBe(front.bar.y);
+    // The same bar fully across the neighbour's body still moves.
+    const across = new Map([
+      ['back', { ...back, left: front.bar.x, right: front.bar.x + front.bar.width }],
+      ['front', front.body],
+    ]);
+    const moved = new HealthBarStagger().place(
+      [{ id: 'front', bar: front.bar, below: front.below }],
+      { bodies: across },
+    );
+    expect(moved.get('front')?.y).toBe(front.below.y);
+  });
+
+  it("does not flip with its own figure's idle pose", () => {
+    // The Driller's idle pose moves its bar 17 px; in the low pose the bar lies on the neighbour, in the high pose clear.
+    const hauler = figure(3, 3);
+    // A neighbour whose head starts just above the low pose's bar: the high pose clears it.
+    const bodies = new Map([
+      [
+        'bo',
+        {
+          left: hauler.bar.x,
+          right: hauler.bar.x + hauler.bar.width,
+          top: hauler.bar.y - 2,
+          bottom: hauler.bar.y + 40,
+        },
+      ],
+      ['hauler', hauler.body],
+    ]);
+    const stagger = new HealthBarStagger();
+    const slots = new Set<number>();
+    for (let frame = 0; frame < 40; frame++) {
+      const lift = frame % 2 === 0 ? 0 : 17;
+      const bar = { ...hauler.bar, y: hauler.bar.y - lift };
+      const placed = stagger.place([{ id: 'hauler', bar, below: hauler.below }], { bodies });
+      slots.add(placed.get('hauler')?.y ?? 0);
+    }
+    expect([...slots]).toEqual([hauler.below.y]);
+  });
+
+  it('never moves a bar past the visible bottom edge', () => {
+    const { bodies, bars } = stage({ sura: [3, 2], hauler: [3, 3] });
+    const bottom = figure(3, 3).below.y + 2;
+    const placed = new HealthBarStagger().place(bars, { bodies, bottom });
+    expect(placed.get('hauler')?.y).toBe(figure(3, 3).bar.y);
+  });
+
+  it("holds its slot through a neighbour's idle wobble and goes back once the neighbour leaves", () => {
+    const stagger = new HealthBarStagger();
+    const { bars } = stage({ sura: [3, 2], hauler: [3, 3] });
+    const sura = figure(3, 2).body;
+    const slots = new Set<number>();
+    for (let frame = 0; frame < 40; frame++) {
+      // The neighbour's measured top moves a pixel or two with its pose.
+      const wobble = frame % 2 === 0 ? 2 : -2;
+      const bodies = new Map([
+        ['sura', { ...sura, top: sura.top + wobble }],
+        ['hauler', figure(3, 3).body],
+      ]);
+      slots.add(stagger.place(bars, { bodies }).get('hauler')?.y ?? 0);
+    }
+    expect([...slots]).toEqual([figure(3, 3).below.y]);
+    // Sura walks two cells away: the bar goes back over the hauler's head.
+    const gone = new Map([
+      ['sura', figure(6, 2).body],
+      ['hauler', figure(3, 3).body],
+    ]);
+    const back = stagger.place(
+      [
+        { id: 'sura', bar: figure(6, 2).bar, below: figure(6, 2).below },
+        { id: 'hauler', bar: figure(3, 3).bar, below: figure(3, 3).below },
+      ],
+      { bodies: gone },
+    );
+    expect(back.get('hauler')?.y).toBe(figure(3, 3).bar.y);
   });
 });
