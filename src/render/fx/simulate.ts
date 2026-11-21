@@ -214,6 +214,36 @@ export interface Stroke {
   readonly fill: boolean;
 }
 
+/**
+ * The owner's rule for effects: "punchy but readable ... never covering who got hit". An impact's first frame lands
+ * whole; from `CLEAR_AFTER_MS` the particles centred over the struck figure fade, over `CLEAR_RAMP_MS`, to
+ * `CLEAR_FLOOR` of their alpha, so the figure reads through the burst's core while its rim stays bold.
+ */
+export const CLEAR_AFTER_MS = 50;
+const CLEAR_RAMP_MS = 50;
+const CLEAR_FLOOR = 0.25;
+/** The figure's body about its tile centre, in tiles: feet 0.3 below the centre, the head about 0.9 above. */
+const BODY = { dy: -0.3, rx: 0.4, ry: 0.72 } as const;
+
+/**
+ * Fades, in place, the `n` sampled particles in `out` that sit over the figure standing on tile centre `clear`,
+ * `elapsed` ms into the impact. Both backends call it on the same samples, so they draw the same picture.
+ */
+export function clearFigure(out: Float32Array, n: number, clear: Vec2, elapsed: number): void {
+  const ramp = Math.min(1, Math.max(0, (elapsed - CLEAR_AFTER_MS) / CLEAR_RAMP_MS));
+  if (ramp <= 0) return;
+  const cx = clear.x;
+  const cy = clear.y + BODY.dy;
+  for (let i = 0; i < n; i++) {
+    const at = i * PARTICLE_STRIDE;
+    const d = Math.hypot(((out[at] ?? 0) - cx) / BODY.rx, ((out[at + 1] ?? 0) - cy) / BODY.ry);
+    // Whole inside 0.8 of the body, nothing past 1.2: a soft edge, never a hard hole.
+    const over = d <= 0.8 ? 1 : d >= 1.2 ? 0 : (1.2 - d) / 0.4;
+    if (over <= 0) continue;
+    out[at + 4] = (out[at + 4] ?? 0) * (1 - over * ramp * (1 - CLEAR_FLOOR));
+  }
+}
+
 export interface GlintExtent {
   readonly left: number;
   readonly right: number;

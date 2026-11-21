@@ -73,6 +73,8 @@ export interface EmitterTrack extends Track {
   /** Lob height in tiles for a projectile flight. */
   readonly arc: number;
   readonly attachments?: EmitterAttachments;
+  /** The struck figure's tile centre the burst clears past its first impact frame (`EmitterInstance.clear`). */
+  readonly clear?: Vec2;
   /**
    * Dust settling after the moment it belongs to: drawn to the end, but it
    * never holds playback, so a footstep's puff does not keep the board

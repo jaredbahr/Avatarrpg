@@ -192,6 +192,11 @@ export interface EmitterInstance {
   /** Lob height in tiles for a projectile flight. */
   readonly arc: number;
   readonly attachments?: EmitterAttachments;
+  /**
+   * The struck figure's tile centre, on an impact that lands on someone: past the first impact frame the
+   * particles over that figure fade (`clearFigure`), so a burst never hides who was hit.
+   */
+  readonly clear?: Vec2;
   /** Frozen at `elapsed` (a still wisp): every frame samples the same, so a backend may keep it. */
   readonly still?: boolean;
 }
