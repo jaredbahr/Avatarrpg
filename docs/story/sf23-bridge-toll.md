@@ -21,10 +21,10 @@ Edges preserve authored story-node transitions, including legacy/audit explore.n
 ```mermaid
 flowchart TD
   n380{{"sf23_battle<br/>Fight: enc_sf23_bridge_toll (expected level 4)"}}
-  n381["sf23_choice<br/>Corporal: PLACEHOLDER (story): the party decides whether to fig…"]
+  n381["sf23_choice<br/>Corporal: That’s the toll. A sack by the fire and the pole goes…"]
   n382["sf23_driver<br/>Bo-shan: That was the good sack."]
   n383["sf23_lost<br/>Set flags"]
-  n384["sf23_not_now<br/>Corporal: PLACEHOLDER (story): the corporal’s answer when the p…"]
+  n384["sf23_not_now<br/>Corporal: Then we’ll be here. That’s not a threat. I just can’t…"]
   n385["sf23_one_sack<br/>The River Road: They take one sack of cabbages and wave the car…"]
   n386["sf23_pole_up<br/>The River Road: The pole comes up."]
   n387["sf23_toll<br/>Corporal: One sack off every cart. I’m not proud of it. I’ve go…"]:::entry
@@ -32,8 +32,8 @@ flowchart TD
   n313["river_road_explore — exit to river-road / part 1"]:::external
   n380 -->|"Victory"| n386
   n380 -->|"Defeat"| n383
-  n381 -->|"PLACEHOLDER (story): take the bridge."| n380
-  n381 -->|"PLACEHOLDER (story): not now."| n384
+  n381 -->|"These sacks are spoken for. Lift the pole."| n380
+  n381 -->|"Not yet."| n384
   n382 -->|"Next"| n313
   n383 -->|"set: (none); grant XP: 15"| n385
   n384 -->|"Next"| n313
