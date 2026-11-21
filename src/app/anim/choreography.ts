@@ -353,6 +353,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
     arc = 0,
     attachments?: EmitterAttachments,
     trailing = false,
+    clear?: Vec2,
   ): void => {
     // Reduce motion collapses playback to a frame; particles would be a smear.
     if (rate < 1) return;
@@ -368,6 +369,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
         arc,
         ...(attachments ? { attachments } : {}),
         ...(trailing ? { trailing } : {}),
+        ...(clear ? { clear } : {}),
         start: at,
         duration,
       });
@@ -918,12 +920,16 @@ export function choreograph(input: ChoreographyInput): Choreography {
             contact ? 3 : 13,
             0,
             contact && torso ? { from: torso, translateTogether: true } : undefined,
+            false,
+            target,
           );
         }
         if (recipe.area.length > 0) {
           event.tiles.slice(0, 24).forEach((tile, i) => {
             const at =
               impactAt + hitStop * 0.5 + chebyshev(tile, event.target) * timing.areaStagger * rate;
+            // A burst on a tile someone stands on clears over them too (`clearFigure`).
+            const struck = [...positions.values()].some((p) => p.x === tile.x && p.y === tile.y);
             emit(
               recipe.area,
               at,
@@ -932,6 +938,10 @@ export function choreograph(input: ChoreographyInput): Choreography {
               palette,
               eventIndex,
               100 + i,
+              0,
+              undefined,
+              false,
+              struck ? centre(tile) : undefined,
             );
           });
         }
