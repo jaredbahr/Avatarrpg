@@ -59,6 +59,12 @@ const ext = (
   nudge: { readonly x?: number; readonly base?: number } = {},
 ): TopDownObject => ({ ...piece(id, sprite, kind, cells, false, nudge), exterior: true });
 const flip = (o: TopDownObject): TopDownObject => ({ ...o, flip: true });
+/**
+ * A flat piece with height (a boat, a rock, a piling, a buoy) laid in the plate with its own contact line and short
+ * cast, as a prop is: "almost everything gets a shadow" (owner, 2026-11-21; #931). Gulls sitting on the water too
+ * (owner on #933: "give the gulls one").
+ */
+const grounded = (o: TopDownObject): TopDownObject => ({ ...o, grounded: true });
 
 /* ------------------------------------------------------------------ */
 /* Saltstep market                                                     */
@@ -209,24 +215,24 @@ export const SALTSTEP_MARKET_OBJECTS: readonly TopDownObject[] = [
   piece('bollard_east', 'bollard', 'prop', [[18, 10]], true, { base: -14 }),
   piece('tide_pole', 'level_pole', 'prop', [[12, 13]], true, { x: -4, base: -14 }),
   // The bay: boats moored along the jetties and out on the water, rocks along the shore, gulls.
-  piece('ferry', 'ferry', 'flat', [[20, 11]], false, { base: 10 }),
-  piece('sailboat_west', 'sailboat', 'flat', [[8, 10]], false),
-  flip(piece('sailboat_east', 'sailboat', 'flat', [[22, 10]], false)),
-  piece('rowboat_crook', 'rowboat', 'flat', [[17, 11]], false),
-  flip(piece('rowboat_pier', 'rowboat', 'flat', [[13, 11]], false)),
-  piece('rowboat_west', 'rowboat', 'flat', [[2, 9]], false),
-  piece('rowboat_out', 'rowboat', 'flat', [[6, 13]], false),
-  piece('gulls_a', 'gulls', 'flat', [[9, 12]], false),
-  piece('gulls_b', 'gulls', 'flat', [[15, 14]], false),
-  flip(piece('gulls_c', 'gulls', 'flat', [[21, 13]], false)),
-  piece('rocks_w', 'shore_rocks', 'flat', [[0, 8]], false),
-  flip(piece('rocks_w2', 'shore_rocks', 'flat', [[1, 11]], false)),
-  piece('rocks_e', 'shore_rocks', 'flat', [[23, 9]], false),
-  flip(piece('rocks_e2', 'shore_rocks', 'flat', [[22, 13]], false)),
-  piece('rocks_inlet', 'shore_rocks', 'flat', [[7, 8]], false, { base: -12 }),
-  ext('boat_far_a', 'sailboat', 'flat', [[4, 16]]),
-  ext('boat_far_b', 'rowboat', 'flat', [[13, 16]], { base: 8 }),
-  ext('rocks_far', 'shore_rocks', 'flat', [[19, 16]]),
+  grounded(piece('ferry', 'ferry', 'flat', [[20, 11]], false, { base: 10 })),
+  grounded(piece('sailboat_west', 'sailboat', 'flat', [[8, 10]], false)),
+  grounded(flip(piece('sailboat_east', 'sailboat', 'flat', [[22, 10]], false))),
+  grounded(piece('rowboat_crook', 'rowboat', 'flat', [[17, 11]], false)),
+  grounded(flip(piece('rowboat_pier', 'rowboat', 'flat', [[13, 11]], false))),
+  grounded(piece('rowboat_west', 'rowboat', 'flat', [[2, 9]], false)),
+  grounded(piece('rowboat_out', 'rowboat', 'flat', [[6, 13]], false)),
+  grounded(piece('gulls_a', 'gulls', 'flat', [[9, 12]], false)),
+  grounded(piece('gulls_b', 'gulls', 'flat', [[15, 14]], false)),
+  grounded(flip(piece('gulls_c', 'gulls', 'flat', [[21, 13]], false))),
+  grounded(piece('rocks_w', 'shore_rocks', 'flat', [[0, 8]], false)),
+  grounded(flip(piece('rocks_w2', 'shore_rocks', 'flat', [[1, 11]], false))),
+  grounded(piece('rocks_e', 'shore_rocks', 'flat', [[23, 9]], false)),
+  grounded(flip(piece('rocks_e2', 'shore_rocks', 'flat', [[22, 13]], false))),
+  grounded(piece('rocks_inlet', 'shore_rocks', 'flat', [[7, 8]], false, { base: -12 })),
+  grounded(ext('boat_far_a', 'sailboat', 'flat', [[4, 16]])),
+  grounded(ext('boat_far_b', 'rowboat', 'flat', [[13, 16]], { base: 8 })),
+  grounded(ext('rocks_far', 'shore_rocks', 'flat', [[19, 16]])),
 ];
 
 /* ------------------------------------------------------------------ */
@@ -269,7 +275,7 @@ export const SALTSTEP_PONTOON_OBJECTS: readonly TopDownObject[] = [
   piece('cover_b', 'tool_crates', 'prop', [[5, 7]], false),
   piece('cover_c', 'tool_crates', 'prop', [[5, 8]], false),
   // The landmark: the big cargo barge moored alongside the platform, where the sling is heading.
-  piece('big_barge', 'big_barge', 'flat', block(13, 16, 9, 9), false, { base: 22 }),
+  grounded(piece('big_barge', 'big_barge', 'flat', block(13, 16, 9, 9), false, { base: 22 })),
   // The freight quay behind the deck (`k`, row 0): the dock crane, the gantry, cargo under tarps, drums and crates,
   // and the yard running on past the edge.
   piece('quay_crane', 'dock_crane', 'prop', [[1, 0]], true, { base: -14 }),
@@ -300,9 +306,9 @@ export const SALTSTEP_PONTOON_OBJECTS: readonly TopDownObject[] = [
   ext('east_cargo', 'cargo_stack', 'prop', [[19, 3]], { x: 8, base: -4 }),
   ext('east_drums', 'oil_drums', 'prop', [[20, 3]], { x: 4, base: 6 }),
   // Chains lying on the deck where the handlers work (flat, under the fight).
-  piece('chain_a', 'chain_pile', 'flat', [[3, 9]], false),
-  piece('chain_b', 'chain_pile', 'flat', [[9, 2]], false),
-  flip(piece('chain_c', 'chain_pile', 'flat', [[17, 6]], false)),
+  grounded(piece('chain_a', 'chain_pile', 'flat', [[3, 9]], false)),
+  grounded(piece('chain_b', 'chain_pile', 'flat', [[9, 2]], false)),
+  grounded(flip(piece('chain_c', 'chain_pile', 'flat', [[17, 6]], false))),
   // The pontoon stands on piles: posts in the water round its edge, rope lines across the gaps, buoys and boats.
   ...(
     [
@@ -323,19 +329,19 @@ export const SALTSTEP_PONTOON_OBJECTS: readonly TopDownObject[] = [
       [12, 1],
     ] as const
   ).map(([x, y], i) => {
-    const pile = piece(`pile_${x}_${y}`, 'pilings', 'flat', [[x, y]], false);
+    const pile = grounded(piece(`pile_${x}_${y}`, 'pilings', 'flat', [[x, y]], false));
     return i % 2 ? flip(pile) : pile;
   }),
   piece('rope_gap', 'rope_line', 'flat', [[11, 6]], false, { x: 20 }),
   piece('rope_south', 'rope_line', 'flat', [[12, 9]], false, { x: 20 }),
-  piece('buoy_a', 'buoy', 'flat', [[15, 1]], false),
-  piece('buoy_b', 'buoy', 'flat', [[2, 11]], false),
-  piece('buoy_c', 'buoy', 'flat', [[13, 10]], false),
-  piece('rowboat', 'rowboat', 'flat', [[16, 1]], false),
-  piece('gulls', 'gulls', 'flat', [[8, 11]], false),
-  ext('far_sailboat', 'sailboat', 'flat', [[3, 13]]),
-  ext('far_rowboat', 'rowboat', 'flat', [[14, 13]]),
-  ext('far_gulls', 'gulls', 'flat', [[20, 10]]),
+  grounded(piece('buoy_a', 'buoy', 'flat', [[15, 1]], false)),
+  grounded(piece('buoy_b', 'buoy', 'flat', [[2, 11]], false)),
+  grounded(piece('buoy_c', 'buoy', 'flat', [[13, 10]], false)),
+  grounded(piece('rowboat', 'rowboat', 'flat', [[16, 1]], false)),
+  grounded(piece('gulls', 'gulls', 'flat', [[8, 11]], false)),
+  grounded(ext('far_sailboat', 'sailboat', 'flat', [[3, 13]])),
+  grounded(ext('far_rowboat', 'rowboat', 'flat', [[14, 13]])),
+  grounded(ext('far_gulls', 'gulls', 'flat', [[20, 10]])),
 ];
 
 /* ------------------------------------------------------------------ */
@@ -374,7 +380,7 @@ export const SALTSTEP_PLATFORM_OBJECTS: readonly TopDownObject[] = [
   flip(piece('bollard_se', 'bollard', 'prop', [[11, 7]], true, { x: -10, base: -16 })),
   // The market's signature, seen from here: a painted tide pole in the water off the north-east corner, flat like the
   // piles, since it stands in open water where nobody walks.
-  piece('tide_pole', 'level_pole', 'flat', [[12, 1]], false),
+  grounded(piece('tide_pole', 'level_pole', 'flat', [[12, 1]], false)),
   // Moored loose: piles in the water round it, a buoy or two, gulls, and Tavi's boat off the south side.
   ...(
     [
@@ -386,15 +392,15 @@ export const SALTSTEP_PLATFORM_OBJECTS: readonly TopDownObject[] = [
       [10, 8],
     ] as const
   ).map(([x, y], i) => {
-    const pile = piece(`pile_${x}_${y}`, 'pilings', 'flat', [[x, y]], false);
+    const pile = grounded(piece(`pile_${x}_${y}`, 'pilings', 'flat', [[x, y]], false));
     return i % 2 ? flip(pile) : pile;
   }),
-  piece('rowboat', 'rowboat', 'flat', [[7, 9]], false),
-  piece('buoy_a', 'buoy', 'flat', [[1, 1]], false),
-  piece('buoy_b', 'buoy', 'flat', [[13, 9]], false),
-  piece('gulls', 'gulls', 'flat', [[2, 9]], false),
-  ext('far_sailboat', 'sailboat', 'flat', [[11, 12]]),
-  ext('far_rowboat', 'rowboat', 'flat', [[1, 12]]),
+  grounded(piece('rowboat', 'rowboat', 'flat', [[7, 9]], false)),
+  grounded(piece('buoy_a', 'buoy', 'flat', [[1, 1]], false)),
+  grounded(piece('buoy_b', 'buoy', 'flat', [[13, 9]], false)),
+  grounded(piece('gulls', 'gulls', 'flat', [[2, 9]], false)),
+  grounded(ext('far_sailboat', 'sailboat', 'flat', [[11, 12]])),
+  grounded(ext('far_rowboat', 'rowboat', 'flat', [[1, 12]])),
 ];
 
 export const SALTSTEP_PLATFORM_TOPDOWN_LAYOUT: TopDownLayout = {
@@ -548,10 +554,10 @@ export const EMBERWATCH_PARADE_OBJECTS: readonly TopDownObject[] = [
   ),
   piece('sparring_ring', 'sparring_ring', 'flat', block(9, 11, 11, 12), false),
   // The bay off the jetty: Tavi's ferry, a rowing boat, rocks, gulls.
-  piece('ferry', 'ferry', 'flat', [[3, 15]], false),
-  piece('rowboat', 'rowboat', 'flat', [[0, 13]], false, { x: 8 }),
-  piece('rocks_bay', 'shore_rocks', 'flat', [[6, 15]], false),
-  piece('gulls', 'gulls', 'flat', [[1, 15]], false),
+  grounded(piece('ferry', 'ferry', 'flat', [[3, 15]], false)),
+  grounded(piece('rowboat', 'rowboat', 'flat', [[0, 13]], false, { x: 8 })),
+  grounded(piece('rocks_bay', 'shore_rocks', 'flat', [[6, 15]], false)),
+  grounded(piece('gulls', 'gulls', 'flat', [[1, 15]], false)),
 ];
 
 export const EMBERWATCH_PARADE_TOPDOWN_LAYOUT: TopDownLayout = {
