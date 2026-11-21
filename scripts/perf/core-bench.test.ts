@@ -126,9 +126,8 @@ describe('core benchmark coverage and frozen calibration', () => {
         .sort((a, b) => a.id.localeCompare(b.id)),
     );
     // Ba Dan's board (32 x 23 since the back row, 2026-11-19) is the largest registered on its own (ADR 0120); its
-    // cases carry their own calibration, made on the 32 x 20 board. The Saltstep market (a 32 x 18 grey blockout with
-    // no scene) is not registered, so it is not measured; when its board is baked it needs its own frozen limits
-    // (ADR 0106).
+    // cases carry their own calibration, made on the 32 x 20 board. The Saltstep market (32 x 18) is smaller, so
+    // it is not measured.
     expect(suite.coverage.topDown.largestMaps).toEqual([
       { id: 'ba_dan_village', width: 32, height: 23 },
     ]);

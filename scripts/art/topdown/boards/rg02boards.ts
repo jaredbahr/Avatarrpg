@@ -10,6 +10,9 @@ import {
   RIVER_ROAD_TERRAIN,
   RIVER_ROAD_TOPDOWN_LAYOUT,
   RIVER_ROAD_WORN,
+  SALTSTEP_MARKET_TERRAIN,
+  SALTSTEP_MARKET_TOPDOWN_LAYOUT,
+  SALTSTEP_MARKET_WORN,
   SALTSTEP_PLATFORM_RAISED,
   SALTSTEP_PLATFORM_TERRAIN,
   SALTSTEP_PLATFORM_TOPDOWN_LAYOUT,
@@ -27,8 +30,16 @@ const span = (x0: number, x1: number, y0: number, y1: number): [number, number][
 };
 
 export const RG02_BOARDS: readonly TopDownBoard[] = [
-  // TODO(region): the Saltstep market's board comes back at its ground and dressing stages
-  // (`docs/places/saltstep_market.md`); it is a grey blockout with no plates until then.
+  rg02Board({
+    id: 'saltstep_market',
+    folder: 'saltstep-market',
+    terrain: SALTSTEP_MARKET_TERRAIN,
+    layout: SALTSTEP_MARKET_TOPDOWN_LAYOUT,
+    // stage 4: the brief's desire lines worn into the quay, the lane and the planks; grey stand-in blocks on the
+    // blocked cells until the set pieces (`docs/places/saltstep_market.md`)
+    wear: { paths: SALTSTEP_MARKET_WORN, wet: 0.2, soft: true },
+    plinths: true,
+  }),
   rg02Board({
     id: 'saltstep_pontoon',
     folder: 'saltstep-pontoon',

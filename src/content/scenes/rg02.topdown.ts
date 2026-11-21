@@ -67,26 +67,37 @@ const flip = (o: TopDownObject): TopDownObject => ({ ...o, flip: true });
 const grounded = (o: TopDownObject): TopDownObject => ({ ...o, grounded: true });
 
 /* ------------------------------------------------------------------ */
-/* Saltstep market                                                     */
+/* Saltstep market (`docs/places/saltstep_market.md`), stage 4         */
 /* ------------------------------------------------------------------ */
 
 export const SALTSTEP_MARKET_TERRAIN = new Rg02Terrain({
   mapId: 'saltstep_market',
   rows: SALTSTEP_MARKET.rows,
+  // The harbour town on the water: grass behind the quay (`,`), the packed-earth coast road and shore lane (`=`, `.`),
+  // the quay's sand (`:`), the pole walk and the platform ring on planks over the harbour (`w`, `W`). Past the grid the
+  // rows carry on: the town off the top, the headland the road comes down, the open harbour south and east.
   chars: {
-    T: RG.void,
-    ',': RG.earth,
-    B: RG.earth,
-    U: RG.earth,
+    ',': RG.grass,
     '.': RG.earth,
+    '=': RG.earth,
     ':': RG.sand,
-    '=': RG.sand,
-    n: RG.sand,
     w: RG.deck,
-    k: RG.deck,
     W: RG.water,
+    // The town's edge (`U`) is the rim: the map edge falls into the void (ADR 0103), the ground's earth face hanging
+    // over it. Stage 5 stands the house backs and trees on its lip.
+    U: RG.void,
+    // GREY STAND-INS until the set-piece plan (stage 5): the other blocked cells (the buildings `B`, the bowl stall
+    // `n`, the platforms' posts `k`) are one-tier blocks of plain flagstone with a cut face and a short hard cast,
+    // blocked terrain with no piece on them. Stage 5 puts the brief's pieces there and the ground goes back under them.
+    B: RG.stone,
+    n: RG.stone,
+    k: RG.stone,
   },
   beyond: RG.void,
+  // the coast road's packed earth is a road the mouth runs out on; the grass is the soil
+  earthTerrain: 'D',
+  raised: { B: 1, n: 1, k: 1 },
+  rock: 'Bnk',
   mouths: [
     mouth('coast-road', 'west', [
       { x: 0, y: 5 },
@@ -95,8 +106,54 @@ export const SALTSTEP_MARKET_TERRAIN = new Rg02Terrain({
   ],
 });
 
-// TODO(region): the market's objects and layout come back at its dressing stage, placed as set pieces from
-// `docs/places/saltstep_market.md`. The earlier layout (drawn to the 24 x 16 rows) is in the history of #844.
+/** The cells of a rectangle that the market's rows make walkable. */
+const marketSpan = (x0: number, x1: number, y0: number, y1: number): [number, number][] => {
+  const out: [number, number][] = [];
+  for (let y = y0; y <= y1; y++)
+    for (let x = x0; x <= x1; x++) {
+      const ch = SALTSTEP_MARKET.rows[y]?.[x] ?? 'W';
+      if (!'UBnkW'.includes(ch)) out.push([x, y]);
+    }
+  return out;
+};
+
+/**
+ * The market's desire lines (the brief's "Daily life"), worn paler where feet go. Only the lines: the rest of the quay,
+ * the grass and the platforms stay calm (`docs/level-design-core.md` G2, G3).
+ */
+export const SALTSTEP_MARKET_WORN: readonly (readonly [number, number])[] = [
+  // the coast road into the cart stop, and on round the bowl stall (everyone's first stop)
+  ...marketSpan(0, 4, 5, 6),
+  ...marketSpan(6, 8, 6, 7),
+  // the pole walk out over the water (the main route)
+  ...marketSpan(7, 8, 8, 10),
+  // the west platform's heart, boats to racks to stalls (short, wet, heavily worn)
+  ...marketSpan(7, 10, 11, 12),
+  // the south walk round the ring
+  ...marketSpan(9, 21, 14, 14),
+  // the east platform and up the ferry jetty
+  ...marketSpan(21, 24, 12, 13),
+  ...marketSpan(25, 27, 11, 11),
+  ...marketSpan(26, 27, 7, 10),
+  // back along the shore to the arrival (the loop)
+  ...marketSpan(9, 25, 6, 6),
+  // the shore lane, carts to the freight office and the freight side (wide)
+  ...marketSpan(2, 21, 4, 4),
+  ...marketSpan(14, 19, 5, 5),
+];
+
+export const SALTSTEP_MARKET_TOPDOWN_LAYOUT: TopDownLayout = {
+  mapId: 'saltstep_market',
+  terrain: {
+    kind: 'classified',
+    classify: SALTSTEP_MARKET_TERRAIN.classify,
+    mouths: SALTSTEP_MARKET_TERRAIN.config.mouths,
+    mouthReach: MOUTH_REACH,
+  },
+  // no set pieces yet: stage 5 places the brief's pieces as boxes on the grey stand-ins
+  objects: [],
+  slots: [],
+};
 
 /* ------------------------------------------------------------------ */
 /* The freight pontoon                                                 */
