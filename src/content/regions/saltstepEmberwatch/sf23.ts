@@ -5,8 +5,8 @@
  * Lines are the merged script's (`docs/story/scripts/act2-sparks.md`, SF-2.3), word for word. The win ("the pole
  * comes up") and the Carry on ("they take one sack of cabbages and wave the cart through") are prose in the script and
  * narrator lines here, as SF-2.1's are; on the Act I loss branch the driver is Dorin and says his line instead of
- * Bo-shan's. The script gives no words for taking the fight up or walking away from it: those are placeholders for
- * the writing pass. It pays a token `SF23_XP_PER_HEAD` on a win (the encounter's `xpPerHead`) and on "Carry on"
+ * Bo-shan's. The words for taking the fight up or walking away from it, and the carter who names the kitchen when the
+ * pole comes up, are the writing pass's (2026-11-21, a draft for the owner; the script's SF-2.3 has them). It pays a token `SF23_XP_PER_HEAD` on a win (the encounter's `xpPerHead`) and on "Carry on"
  * (`grantXp`) alike, as SF-2.2 does.
  *
  * The river road's later states follow `sf23_pole_up` and `sf23_one_sack` (`RIVER_ROAD.sceneGates`, ADR 0123): the
@@ -39,16 +39,19 @@ const NODES: readonly StoryNode[] = [
     kind: 'choice',
     speaker: CORPORAL,
     portrait: NARRATOR,
-    prompt: 'PLACEHOLDER (story): the party decides whether to fight for the bridge.',
+    prompt:
+      'That’s the toll. A sack by the fire and the pole goes up. Don’t make me think of something worse. I’m no good at it.',
     options: [
       {
-        label: 'PLACEHOLDER (story): take the bridge.',
-        detail: 'PLACEHOLDER (story): the guards hold the bridge; the ford is the way round.',
+        label: 'These sacks are spoken for. Lift the pole.',
+        detail:
+          'A fight. His guards hold the bridge. The stream is shallow at the ford, a little way downstream.',
         next: 'sf23_battle',
       },
       {
-        label: 'PLACEHOLDER (story): not now.',
-        detail: 'PLACEHOLDER (story): the party walks away; the corporal stays at the camp.',
+        label: 'Not yet.',
+        detail:
+          'No fight. The pole stays down and the corporal stays by his fire. You can come back.',
         next: 'sf23_not_now',
       },
     ],
@@ -58,7 +61,7 @@ const NODES: readonly StoryNode[] = [
     kind: 'dialogue',
     speaker: CORPORAL,
     portrait: NARRATOR,
-    lines: ['PLACEHOLDER (story): the corporal’s answer when the party walks away.'],
+    lines: ['Then we’ll be here. That’s not a threat. I just can’t think where else we’d be.'],
     next: ROAD,
   },
   {
@@ -73,7 +76,10 @@ const NODES: readonly StoryNode[] = [
     kind: 'dialogue',
     speaker: 'The River Road',
     portrait: NARRATOR,
-    lines: ['The pole comes up.'],
+    lines: [
+      'The pole comes up.',
+      'A carter who has waited on the far bank all morning drives across. She slows beside the corporal and tells him where, in Causeway, a shelf of food is kept hot past midnight.',
+    ],
     next: 'sf23_won',
   },
   {

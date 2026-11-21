@@ -1848,6 +1848,31 @@ are asking a "toll" in food.
 **Corporal:** One sack off every cart. I'm not proud of it. I've got six who haven't eaten hot since the last
 moon, and I'm the one they look at.
 
+> Added 2026-11-21 (the writing pass; DRAFT for the owner). The build's choice had no words. These are in the
+> game (`sf23.ts`, `riverRoad.ts`, the encounter's intro); the facts behind them, and the road's found scenes, are
+> in [../rg02-places.md](../rg02-places.md).
+>
+> **Corporal:** That's the toll. A sack by the fire and the pole goes up. Don't make me think of something worse.
+> I'm no good at it.
+>
+> - **Party:** These sacks are spoken for. Lift the pole. _A fight. His guards hold the bridge. The stream is
+>   shallow at the ford, a little way downstream._
+> - **Party:** Not yet. _No fight. The pole stays down and the corporal stays by his fire. You can come back._
+>
+> **Corporal** (if "Not yet"): Then we'll be here. That's not a threat. I just can't think where else we'd be.
+>
+> **Fight intro:** A pole lies across the plank bridge. Two guards stand behind it, as straight as guards are
+> taught to stand. In the camp at their backs, a pot hangs over a cold fire.
+>
+> **Narrator** (win, after "the pole comes up"): A carter who has waited on the far bank all morning drives
+> across. She slows beside the corporal and tells him where, in Causeway, a shelf of food is kept hot past
+> midnight. _(So the corporal's "Where did you say?" has someone to answer on a table's first trip, before it
+> has seen Causeway. Cut by deleting this line.)_
+>
+> **Narrator** (leaving Emberwatch for the road, after Scene 3.9): The cart turns its back on the bay. Ahead, the
+> road finds the river and keeps beside it. Causeway is a day upstream. / Parcel walks like an ostrich horse who
+> has already picked the place where he is going to stop.
+
 **Win:** the pole comes up. **Corporal:** Where did you say? A kitchen with a late shelf? ...We'll walk it.
 We'll keep our hands where the cook can see them. **Carry on:** they take one sack of cabbages and wave the
 cart through. **Driver (Bo-shan):** That was the good sack. _(Loss branch:_ **Driver (Dorin):** "I have

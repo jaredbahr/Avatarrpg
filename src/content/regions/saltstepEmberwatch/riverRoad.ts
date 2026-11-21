@@ -12,15 +12,19 @@ const NODES: readonly StoryNode[] = [
     kind: 'dialogue',
     speaker: 'River road',
     portrait: 'portrait.narrator',
-    // PLACEHOLDER (story): the cart setting off up the river road, after Scene 3.9.
-    lines: ['PLACEHOLDER (story): the cart sets off up the river road toward Causeway.'],
+    // The cart setting off up the river road, after Scene 3.9 (the writing pass, 2026-11-21; a draft for the owner).
+    // It names no driver, so it is the same line after an Act I win and after a loss.
+    lines: [
+      'The cart turns its back on the bay. Ahead, the road finds the river and keeps beside it. Causeway is a day upstream.',
+      'Parcel walks like an ostrich horse who has already picked the place where he is going to stop.',
+    ],
     next: 'river_road_explore',
   },
   {
     id: 'river_road_explore',
     kind: 'explore',
     mapId: 'river_road',
-    // PLACEHOLDER (story): the road's objective line.
+    // The road's objective line: kept as built (the writing pass, 2026-11-21).
     objective: 'Follow the river road toward Causeway.',
     next: 'river_road_explore',
   },

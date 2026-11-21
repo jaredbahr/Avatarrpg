@@ -157,7 +157,8 @@ export const SALTSTEP_EMBERWATCH_ENCOUNTERS: readonly EncounterDef[] = [
      * 63% here, and with none of it Hard was barely harder than Story (sim, 2026-11-20).
      */
     hard: { power: 3, ap: 1 },
-    intro: 'PLACEHOLDER (story): the pole across the bridge, the guards behind it.',
+    intro:
+      'A pole lies across the plank bridge. Two guards stand behind it, as straight as guards are taught to stand. In the camp at their backs, a pot hangs over a cold fire.',
     tip: 'The guards hold the bridge. The stream is shallow at the ford, downstream: cross there to come at them from the side. The corporal’s Rally makes a guard hit harder, so reach him early.',
   },
 ];

@@ -84,17 +84,17 @@ mason's yard, the side gate, the houses past the canal) are either missing or a 
 
 Roles and story names only; lines belong to the writing pass. Anchor ids stay; their cells move with the plan.
 
-| Who                     | Lives                                                              | Works / stands                        | Why talk to them                                 |
-| ----------------------- | ------------------------------------------------------------------ | ------------------------------------- | ------------------------------------------------ |
-| Mira (`elder_mira`)     | Her house on the square                                            | The table under the awning            | Mira's table; the epilogue; the rubbing          |
-| Gao (`shopkeeper_gao`)  | Behind his shop                                                    | Shop front, the trough, the storeroom | Supplies; the plant chair; SQ-03                 |
-| Pella (`kid_pella`)     | Her house past the canal (with Bo-shan)                            | The court; the table bench            | Tips; SQ-01; the reunion                         |
-| Dorin (`guard_dorin`)   | `PLACEHOLDER (story)`: which house                                 | The gate post; the handover           | Directions; SQ-02; the watch book                |
-| Hanru (`guard_hanru`)   | `PLACEHOLDER (story)`: which house                                 | The gate at night; the hut            | The night watch; the fish prints                 |
-| Bo-shan, Leto, Amri     | Past the canal (`home.*` anchors); Amri's house is in the back row | The welcome crowd; recovery spots     | The return                                       |
-| Hesra                   | **The mason's yard** (story) - today a rim door                    | The yard                              | The boot (C-30)                                  |
-| Pella's household adult | With Pella                                                         | The court and yard                    | `PLACEHOLDER (story)`: stand-in until Nala comes |
-| Relief watch            | -                                                                  | The gate at midday                    | Colour                                           |
+| Who                     | Lives                                                              | Works / stands                        | Why talk to them                                                 |
+| ----------------------- | ------------------------------------------------------------------ | ------------------------------------- | ---------------------------------------------------------------- |
+| Mira (`elder_mira`)     | Her house on the square                                            | The table under the awning            | Mira's table; the epilogue; the rubbing                          |
+| Gao (`shopkeeper_gao`)  | Behind his shop                                                    | Shop front, the trough, the storeroom | Supplies; the plant chair; SQ-03                                 |
+| Pella (`kid_pella`)     | Her house past the canal (with Bo-shan)                            | The court; the table bench            | Tips; SQ-01; the reunion                                         |
+| Dorin (`guard_dorin`)   | The north-east house, by the gate (`docs/story/ba-dan-places.md`)  | The gate post; the handover           | Directions; SQ-02; the watch book                                |
+| Hanru (`guard_hanru`)   | The south-east house, by the canal (`docs/story/ba-dan-places.md`) | The gate at night; the hut            | The night watch; the fish prints                                 |
+| Bo-shan, Leto, Amri     | Past the canal (`home.*` anchors); Amri's house is in the back row | The welcome crowd; recovery spots     | The return                                                       |
+| Hesra                   | **The mason's yard** (story) - today a rim door                    | The yard                              | The boot (C-30)                                                  |
+| Pella's household adult | With Pella                                                         | The court and yard                    | Nala, their aunt, from the start (`docs/story/ba-dan-places.md`) |
+| Relief watch            | -                                                                  | The gate at midday                    | Colour                                                           |
 
 ## Daily life
 
@@ -108,7 +108,8 @@ Roles and story names only; lines belong to the writing pass. Anchor ids stay; t
   the river path (afternoons); the gate post -> the hut.
 - **Stored, made, sold, thrown away:** sold at Gao's (storeroom behind); stone cut at the mason's yard (chips and
   offcuts); vegetables grown in the gardens and carted to the quarry; washing at the canal steps and on the line by
-  the guard hut; `PLACEHOLDER (story)`: where rubbish goes.
+  the guard hut; nothing leaves: chips mend the ruts, scraps go to the heap at the end of the
+  gardens, the rest to Gao's trough-side bucket (`docs/story/ba-dan-places.md`).
 
 ## Shape
 
@@ -162,7 +163,7 @@ keeps plan 3's lamps along the canal.
      with Amri's and Senn's doors.
   6. _The mason's yard:_ pale stone being cut.
   7. _The back path:_ the side gate in a wall behind the house backs.
-  8. _The gardens:_ the vegetable beds (whose: `PLACEHOLDER (story)`).
+  8. _The gardens:_ the vegetable beds (common strips, one to a household; `docs/story/ba-dan-places.md`).
   9. _The river path:_ the way down to the riverside (and later the coast road sign).
   10. _The west ford:_ the old road under water (quiet).
   11. _The tea terrace:_ the view down over the square (quiet).
@@ -199,27 +200,27 @@ keeps plan 3's lamps along the canal.
 All from the story or the canon above; the kit list comes after the blockout. Pieces marked _have_ exist in today's
 art and may be reused if they pass the scale chart.
 
-| Name             | Anchor                     | Belongs with it                                          | Ground under it                     | Whose / why here              |
-| ---------------- | -------------------------- | -------------------------------------------------------- | ----------------------------------- | ----------------------------- |
-| Mira's table     | Table (_have_), awning     | Bench (_have_), repaired chairs, bowls, the covered bowl | The most worn ground in the village | Mira; the village eats here   |
-| Gao's shop front | Shop door                  | Water skins, the plant on the chair, stools, sacks       | Packed apron to the road            | Gao                           |
-| The trough       | Trough (_have_)            | A bucket, a cart's turning patch                         | Wet ruts, hoofprints                | Gao's; carts stop on the road |
-| The east gate    | Gate post in a low wall    | Stool, bell, lamp (_have_), notice board (_have_)        | Worn round the gate, not through it | The watch; "walked around"    |
-| The guard hut    | Hut                        | Cupboard, washing line to the shrine (_have_ shrine)     | Trodden yard                        | Dorin and Hanru               |
-| The wash steps   | Steps down to the canal    | A basket, a board, a cloth                               | Damp kerb                           | `PLACEHOLDER (story)`: whose  |
-| The canal lamps  | Lamp posts on the kerb     | -                                                        | Lamp pools at evening               | The walk home                 |
-| The mason's yard | Stone blocks, a work bench | Chisels, offcuts, the step and windowsill                | Chips and white dust                | The mason; Hesra lodges here  |
-| The side gate    | Gate in a back wall        | Key hook, later the hen on its post                      | A trodden short cut                 | Dorin's key register (SQ-02)  |
-| The gardens      | Vegetable beds             | Tools, a basket, a handcart (_have_)                     | Tilled soil                         | `PLACEHOLDER (story)`: whose  |
-| A quarry house   | House door                 | Doorstep, a pot, a bench; later boots                    | Packed earth to the lane            | The families past the canal   |
+| Name             | Anchor                     | Belongs with it                                          | Ground under it                     | Whose / why here                                          |
+| ---------------- | -------------------------- | -------------------------------------------------------- | ----------------------------------- | --------------------------------------------------------- |
+| Mira's table     | Table (_have_), awning     | Bench (_have_), repaired chairs, bowls, the covered bowl | The most worn ground in the village | Mira; the village eats here                               |
+| Gao's shop front | Shop door                  | Water skins, the plant on the chair, stools, sacks       | Packed apron to the road            | Gao                                                       |
+| The trough       | Trough (_have_)            | A bucket, a cart's turning patch                         | Wet ruts, hoofprints                | Gao's; carts stop on the road                             |
+| The east gate    | Gate post in a low wall    | Stool, bell, lamp (_have_), notice board (_have_)        | Worn round the gate, not through it | The watch; "walked around"                                |
+| The guard hut    | Hut                        | Cupboard, washing line to the shrine (_have_ shrine)     | Trodden yard                        | Dorin and Hanru                                           |
+| The wash steps   | Steps down to the canal    | A basket, a board, a cloth                               | Damp kerb                           | Nobody's; washed by habit (`docs/story/ba-dan-places.md`) |
+| The canal lamps  | Lamp posts on the kerb     | -                                                        | Lamp pools at evening               | The walk home                                             |
+| The mason's yard | Stone blocks, a work bench | Chisels, offcuts, the step and windowsill                | Chips and white dust                | The mason; Hesra lodges here                              |
+| The side gate    | Gate in a back wall        | Key hook, later the hen on its post                      | A trodden short cut                 | Dorin's key register (SQ-02)                              |
+| The gardens      | Vegetable beds             | Tools, a basket, a handcart (_have_)                     | Tilled soil                         | Common strips, a peg each (`docs/story/ba-dan-places.md`) |
+| A quarry house   | House door                 | Doorstep, a pot, a bench; later boots                    | Packed earth to the lane            | The families past the canal                               |
 
 ## Finds
 
-| What draws the eye                 | Where             | What the player gets           | What it should reveal (a need for the writing pass) |
-| ---------------------------------- | ----------------- | ------------------------------ | --------------------------------------------------- |
-| The terrace steps above the square | North of the shop | A view of the village and road | `PLACEHOLDER (story)`: whose terrace it is          |
-| A worked stone left in the yard    | The mason's yard  | A discovery spot               | `PLACEHOLDER (story)`: something of the quarry      |
-| The flooded road going under       | The west ford     | A discovery spot               | `PLACEHOLDER (story)`: what lies west               |
+| What draws the eye                 | Where             | What the player gets           | What it should reveal (a need for the writing pass)             |
+| ---------------------------------- | ----------------- | ------------------------------ | --------------------------------------------------------------- |
+| The terrace steps above the square | North of the shop | A view of the village and road | Nala's tea terrace; two stools (`docs/story/ba-dan-places.md`)  |
+| A worked stone left in the yard    | The mason's yard  | A discovery spot               | Hesra's first block (`docs/story/ba-dan-places.md`)             |
+| The flooded road going under       | The west ford     | A discovery spot               | The hill farms; a waymark stone (`docs/story/ba-dan-places.md`) |
 
 ## Things the blockout must settle
 
