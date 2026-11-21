@@ -148,8 +148,8 @@ happen across the basin instead of something you are told.
 - **Exits:** the coast road mouth (west) keeps all three cues. The ferry is a story exit at the landing: the ramp
   and the post make it read as a way out before the story opens it.
 - **Size:** **32 by 18** cells, up from 24 by 16: about eleven screens at the real view size, six of them named
-  views. When its board is baked it will be the largest top-down board alone, so the perf bench needs new frozen
-  limits (ADR 0106) and the region's board budget needs checking.
+  views. Ba Dan's board has since grown to 32 by 23, so this one is not the largest and the perf bench (ADR 0106)
+  still measures Ba Dan's.
 
 ## Look and sound
 
@@ -166,18 +166,19 @@ happen across the basin instead of something you are told.
 
 Pieces marked _have_ are in the art merged with #844; the rest are for the kit list after the blockout.
 
-| Name               | Anchor                  | Belongs with it                                              | Ground under it                        | Whose / why here                      |
-| ------------------ | ----------------------- | ------------------------------------------------------------ | -------------------------------------- | ------------------------------------- |
-| The bowl stall     | Stall (_have_)          | Bench, stack of bowls, broth pot, an unwashed tub            | Trodden sand, a wet patch by the tub   | The bowl-seller; where the cart stops |
-| The cart stop      | Handcart (_have_), post | A sack, a wheel rut                                          | Ruts and a turning patch               | Where the road ends for wheels        |
-| A tide pole        | Painted pole (_have_)   | Mooring ring, a looped rope, a ladder                        | Weed line on the pole; ripples         | The town; the landmark, repeated      |
-| The customs berth  | Customs stall (_have_)  | Flag, stool, seal on a chain, one crate, mooring post        | Its own floating deck                  | The clerk; it must be able to leave   |
-| Fish racks         | Drying rack (_have_)    | Net pile (_have_), baskets (_have_), a gutting board         | Dark wet planks, scales                | The fishers; between boats and stalls |
-| A trading boat     | Small boat (_have_)     | Baskets, a pole, an awning                                   | Water, a mooring line                  | The boat sellers; they move           |
-| The freight office | Office front            | Brass plate, a half-down shutter, a step                     | Packed apron, cart ruts past the door  | Jin's clerk                           |
-| The ferry landing  | Ramp and post           | Dock lamps (_have_), bollards (_have_), coiled rope (_have_) | Worn planks, lamp pools at dusk        | Tavi                                  |
-| The lantern crates | Crate stack (_have_)    | The chalked note                                             | Planks; nothing else, so it stands out | Named in the story; by the ferry      |
-| The bell           | Bell post               | A rope, a painted board                                      | A worn ring where children stand       | `PLACEHOLDER (story)`: where it hangs |
+| Name                  | Anchor                                                       | Belongs with it                                              | Ground under it                                  | Whose / why here                      |
+| --------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------ | ------------------------------------- |
+| The bowl stall        | Stall (_have_)                                               | Bench, stack of bowls, broth pot, an unwashed tub            | Trodden sand, a wet patch by the tub             | The bowl-seller; where the cart stops |
+| The cart stop         | Handcart (_have_), post                                      | A sack, a wheel rut                                          | Ruts and a turning patch                         | Where the road ends for wheels        |
+| A tide pole           | Painted pole (_have_)                                        | Mooring ring, a looped rope, a ladder                        | Weed line on the pole; ripples                   | The town; the landmark, repeated      |
+| The customs berth     | Customs stall (_have_)                                       | Flag, stool, seal on a chain, one crate, mooring post        | Its own floating deck                            | The clerk; it must be able to leave   |
+| Fish racks            | Drying rack (_have_)                                         | Net pile (_have_), baskets (_have_), a gutting board         | Dark wet planks, scales                          | The fishers; between boats and stalls |
+| A trading boat        | Small boat (_have_)                                          | Baskets, a pole, an awning                                   | Water, a mooring line                            | The boat sellers; they move           |
+| The freight office    | Office front                                                 | Brass plate, a half-down shutter, a step                     | Packed apron, cart ruts past the door            | Jin's clerk                           |
+| The ferry landing     | Ramp and post                                                | Dock lamps (_have_), bollards (_have_), coiled rope (_have_) | Worn planks, lamp pools at dusk                  | Tavi                                  |
+| The lantern crates    | Crate stack (_have_)                                         | The chalked note                                             | Planks; nothing else, so it stands out           | Named in the story; by the ferry      |
+| The bell              | Bell post                                                    | A rope, a painted board                                      | A worn ring where children stand                 | `PLACEHOLDER (story)`: where it hangs |
+| The south walk's draw | A moored boat, a fisher or a small stall (owner, 2026-11-21) | Whatever its owner needs: a line, a basket, a stool          | Water or the walk's open edge, clear of the walk | Pulls the player along the south walk |
 
 ## Finds
 
@@ -242,6 +243,32 @@ A cell one step back is still 80 CSS px, well over the 3rem tap target.
 included (the owner, 2026-11-21: "almost everything gets a shadow"; `docs/art-lessons.md`). The market's old boats,
 rocks and gulls were grounded on main (#933) before this blockout's layout came back; when the pieces return as set
 pieces, each one is grounded the same way.
+
+## Owner decisions on the blockout (2026-11-21)
+
+- **"Layout's right."** Blockout v2 is approved; the rows, exits, spawns and NPC cells stand.
+- **The camera comes back one step on every explore map.** That is a separate change for all explore maps (with this
+  guide's view numbers), not made on this board. The views above were sized at the old zoom; once it lands, the six
+  named views each hold more (the table above: about 15 by 7 cells on an iPad).
+- **The south walk needs a draw** (set-piece stage): something that pulls you along it, such as a moored boat, a
+  fisher or a small stall, so the walk between the two platforms has its own idea. It goes on the kit list at stage 5,
+  on the walk's open side (rows 14 and 15), clear of the walk itself.
+
+## Stage 4: the ground (2026-11-21)
+
+Baked over the RG-02 baker from the region's own tile sets (no new art, no PixelLab credits): the harbour and the
+quay's sand (`rg02_quay`), the planks (`rg02_planks2`), packed earth and flagstones (`rg02_parade`), and the coast's
+grass behind the quay.
+
+- **Wear follows the desire lines above:** the coast road into the cart stop and round the bowl stall, down the pole
+  walk, the west platform's heart, the south walk, the east platform and up the ferry jetty, back along the shore,
+  and the shore lane past the freight office (its widest wear, for the carts). The rest of the quay, the grass and
+  the platforms stay calm.
+- **Wet edges:** the quay's sand darkens at the waterline, every deck has its dark timber lip and short shadow on the
+  water, and about a fifth of the open ground lies damp.
+- **Grey stand-ins:** every blocked cell (the town's edge, the buildings, the bowl stall, the platforms' posts) is a
+  one-tier block of plain flagstone with a cut face and a short hard cast, so nothing reads as finished and every
+  block already has its shadow. Stage 5 replaces each with the brief's piece and the ground under it.
 
 ## What the blockout review should ask
 
