@@ -61,7 +61,8 @@ const ext = (
 const flip = (o: TopDownObject): TopDownObject => ({ ...o, flip: true });
 /**
  * A flat piece with height (a boat, a rock, a piling, a buoy) laid in the plate with its own contact line and short
- * cast, as a prop is: "almost everything gets a shadow" (owner, 2026-11-21; #931).
+ * cast, as a prop is: "almost everything gets a shadow" (owner, 2026-11-21; #931). Gulls sitting on the water too
+ * (owner on #933: "give the gulls one").
  */
 const grounded = (o: TopDownObject): TopDownObject => ({ ...o, grounded: true });
 
@@ -221,9 +222,9 @@ export const SALTSTEP_MARKET_OBJECTS: readonly TopDownObject[] = [
   grounded(flip(piece('rowboat_pier', 'rowboat', 'flat', [[13, 11]], false))),
   grounded(piece('rowboat_west', 'rowboat', 'flat', [[2, 9]], false)),
   grounded(piece('rowboat_out', 'rowboat', 'flat', [[6, 13]], false)),
-  piece('gulls_a', 'gulls', 'flat', [[9, 12]], false),
-  piece('gulls_b', 'gulls', 'flat', [[15, 14]], false),
-  flip(piece('gulls_c', 'gulls', 'flat', [[21, 13]], false)),
+  grounded(piece('gulls_a', 'gulls', 'flat', [[9, 12]], false)),
+  grounded(piece('gulls_b', 'gulls', 'flat', [[15, 14]], false)),
+  grounded(flip(piece('gulls_c', 'gulls', 'flat', [[21, 13]], false))),
   grounded(piece('rocks_w', 'shore_rocks', 'flat', [[0, 8]], false)),
   grounded(flip(piece('rocks_w2', 'shore_rocks', 'flat', [[1, 11]], false))),
   grounded(piece('rocks_e', 'shore_rocks', 'flat', [[23, 9]], false)),
@@ -337,10 +338,10 @@ export const SALTSTEP_PONTOON_OBJECTS: readonly TopDownObject[] = [
   grounded(piece('buoy_b', 'buoy', 'flat', [[2, 11]], false)),
   grounded(piece('buoy_c', 'buoy', 'flat', [[13, 10]], false)),
   grounded(piece('rowboat', 'rowboat', 'flat', [[16, 1]], false)),
-  piece('gulls', 'gulls', 'flat', [[8, 11]], false),
+  grounded(piece('gulls', 'gulls', 'flat', [[8, 11]], false)),
   grounded(ext('far_sailboat', 'sailboat', 'flat', [[3, 13]])),
   grounded(ext('far_rowboat', 'rowboat', 'flat', [[14, 13]])),
-  ext('far_gulls', 'gulls', 'flat', [[20, 10]]),
+  grounded(ext('far_gulls', 'gulls', 'flat', [[20, 10]])),
 ];
 
 /* ------------------------------------------------------------------ */
@@ -397,7 +398,7 @@ export const SALTSTEP_PLATFORM_OBJECTS: readonly TopDownObject[] = [
   grounded(piece('rowboat', 'rowboat', 'flat', [[7, 9]], false)),
   grounded(piece('buoy_a', 'buoy', 'flat', [[1, 1]], false)),
   grounded(piece('buoy_b', 'buoy', 'flat', [[13, 9]], false)),
-  piece('gulls', 'gulls', 'flat', [[2, 9]], false),
+  grounded(piece('gulls', 'gulls', 'flat', [[2, 9]], false)),
   grounded(ext('far_sailboat', 'sailboat', 'flat', [[11, 12]])),
   grounded(ext('far_rowboat', 'rowboat', 'flat', [[1, 12]])),
 ];
@@ -556,7 +557,7 @@ export const EMBERWATCH_PARADE_OBJECTS: readonly TopDownObject[] = [
   grounded(piece('ferry', 'ferry', 'flat', [[3, 15]], false)),
   grounded(piece('rowboat', 'rowboat', 'flat', [[0, 13]], false, { x: 8 })),
   grounded(piece('rocks_bay', 'shore_rocks', 'flat', [[6, 15]], false)),
-  piece('gulls', 'gulls', 'flat', [[1, 15]], false),
+  grounded(piece('gulls', 'gulls', 'flat', [[1, 15]], false)),
 ];
 
 export const EMBERWATCH_PARADE_TOPDOWN_LAYOUT: TopDownLayout = {
